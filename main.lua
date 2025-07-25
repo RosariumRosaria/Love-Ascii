@@ -1,51 +1,80 @@
-require("map")
+local map = require("map.map")
+local engine = require("engine")
+local render = require("render")
 
 function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
-
-
     love.window.setTitle("Hello World")
-    love.window.setMode(800, 600, {resizable = true, vsync = true})
+    love.window.setMode(0, 0, {resizable = true, vsync = true, fullscreen = true})
 
-    tilesize = 32
-    map:load(10, 10, tilesize, "dungeon") -- Initialize the map
+    local scale = 2
+    local font = love.graphics.newFont("assets/FiraCode-Regular.ttf", 16*scale)
+    love.graphics.setFont(font)
+
+    tileSize = 0
+    tileSize = love.graphics.getFont():getHeight() 
+
+
+    local mapWidth = 100
+    local mapHeight = 100
+    local mapDepth = 5;
+    map:load(mapWidth, mapHeight, "town", tileSize, mapDepth)
 
 
     player = {
         char = "@",
-        x = 0,
-        y = 0
+        x = mapWidth / 2,
+        y = mapHeight / 2,
+        z = 1
     }
-
-
     enemy = {
-        char = "E",
+        char = "V",
         x = 10,
-        y = 10
+        y = 10,
+        z= 1
     }
     entities = {player, enemy}
 
 
 end
 
-function love.keypressed(key)
-    if key == "left" then
-        player.x = player.x - 1
-    elseif key == "right" then
-        player.x = player.x + 1
-    elseif key == "up" then
-        player.y = player.y - 1
-    elseif key == "down" then
-        player.y = player.y + 1
-    elseif key == "escape" then
+timeSinceLastUpdate = 0;
+timeBetweenUpdates = 0.1;
+function love.update(dt)
+
+    if (timeSinceLastUpdate > timeBetweenUpdates) then
+        timeSinceLastUpdate = 0;
+        if love.keyboard.isDown("left") then
+            engine:move(player, -1, 0, nil, entities)
+        end
+        if love.keyboard.isDown("right") then
+            engine:move(player, 1, 0, nil, entities)
+        end
+        if love.keyboard.isDown("up") then
+            engine:move(player, 0, -1, nil, entities) 
+        end
+        if love.keyboard.isDown("down") then
+            engine:move(player, 0, 1, nil, entities)
+        end
+        if love.keyboard.isDown("r") then
+               render:switchRadial()
+        end
+    else    
+        timeSinceLastUpdate = timeSinceLastUpdate + dt
+    end
+
+    if love.keyboard.isDown("escape") then
         love.event.quit()
     end
 end
 
-function love.draw()
-    map:draw()
-    for _, entity in ipairs(entities) do
-        love.graphics.print(entity.char, entity.x*tilesize+(tilesize/2), entity.y*tilesize+(tilesize/2))
-    end
 
+
+function love.draw()
+    map:draw(player.x, player.y, 20) --Todo, fix hardcoded draw distance
+    local screenCenterX = love.graphics.getWidth() / tileSize / 2
+    local screenCenterY = love.graphics.getHeight() / tileSize / 2
+    for _, entity in ipairs(entities) do
+        render:drawEntity(entity.char, tileSize, entity.x-player.x+screenCenterX, entity.y-player.y+screenCenterY)
+    end
 end
