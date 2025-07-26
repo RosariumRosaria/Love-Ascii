@@ -57,7 +57,7 @@ function love.update(dt)
             engine:move(player, 0, 1, nil, entities)
         end
         if love.keyboard.isDown("r") then
-               render:switchRadial()
+               renderer:switchRadial()
         end
     else    
         timeSinceLastUpdate = timeSinceLastUpdate + dt
