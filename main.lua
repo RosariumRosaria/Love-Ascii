@@ -1,6 +1,6 @@
 local map = require("map.map")
 local engine = require("engine")
-local render = require("render")
+local renderer = require("renderer")
 
 function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
@@ -15,10 +15,10 @@ function love.load()
     tileSize = love.graphics.getFont():getHeight() 
 
 
-    local mapWidth = 100
-    local mapHeight = 100
+    local mapWidth = 50
+    local mapHeight = 50
     local mapDepth = 5;
-    map:load(mapWidth, mapHeight, "town", tileSize, mapDepth)
+    map:load(mapWidth, mapHeight, mapDepth, "town", tileSize)
 
 
     player = {
@@ -75,6 +75,6 @@ function love.draw()
     local screenCenterX = love.graphics.getWidth() / tileSize / 2
     local screenCenterY = love.graphics.getHeight() / tileSize / 2
     for _, entity in ipairs(entities) do
-        render:drawEntity(entity.char, tileSize, entity.x-player.x+screenCenterX, entity.y-player.y+screenCenterY)
+        renderer:drawEntity(entity.char, tileSize, entity.x-player.x+screenCenterX, entity.y-player.y+screenCenterY)
     end
 end
