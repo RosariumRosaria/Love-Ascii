@@ -1,7 +1,7 @@
 local map = require("map.map")
 local engine = {}
 
-function engine:move(entity, dx, dy, target, entities)
+function engine:move(entity, dx, dy, entities)
     local tarX = entity.x + dx
     local tarY = entity.y + dy
     if (map:walkable(tarX, tarY, entity.z)) then
@@ -14,6 +14,10 @@ function engine:move(entity, dx, dy, target, entities)
         entity.y = tarY
         return true
     end
+    return false
+end
+
+function engine:push(entity, entityOther, dx, dy, entities)
     return false
 end
 

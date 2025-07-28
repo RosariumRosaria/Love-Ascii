@@ -19,7 +19,7 @@ return {
     },
     vWall = {
         name = "wall",
-        char = "─",
+        char = "-",
         walkable = false,
         transparent = false
     },
