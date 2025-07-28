@@ -17,21 +17,18 @@ function renderer:switchRadial()
 end
 
 function renderer:drawEntity(char, tileSize, x, y)
-        local font = love.graphics.getFont()
-        local textWidth = font:getWidth(char)
-        local textHeight = font:getHeight()
-        local xx = x * tileSize + (tileSize - textWidth) / 2
-        local yy = y * tileSize + (tileSize - textHeight) / 2
-        coverUp(x, y, tileSize)
-        love.graphics.print(char, xx, yy)
+    local font = love.graphics.getFont()
+    local textWidth = font:getWidth(char)
+    local textHeight = font:getHeight()
+    local xx = x * tileSize + (tileSize - textWidth) / 2
+    local yy = y * tileSize + (tileSize - textHeight) / 2
+    coverUp(x, y, tileSize)
+    love.graphics.print(char, xx, yy)
 end
 
 function renderer:draw(chars, tileSize, x, y)
     local font = love.graphics.getFont()
-
     local offset = 0.2*tileSize
-
-    
     for i, char in ipairs(chars) do
         char=char.char  
         
@@ -48,7 +45,7 @@ function renderer:draw(chars, tileSize, x, y)
             local dx = x - camX
             local dy = y - camY
 
-            local scale = 0.15
+            local scale = 0.2
 
             local drawX = xx + (i - 1) * offset * dx * scale
             local drawY = yy + (i - 1) * offset * dy * scale
