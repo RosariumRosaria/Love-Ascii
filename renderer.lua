@@ -1,6 +1,6 @@
 local renderer = {}
 
-local radial = false;
+local radial = 1;
 local maxHeight = 5;
 
 local function coverUp(x, y, tileSize) -- TODO: need a solution for this covering things that are above you
@@ -13,10 +13,11 @@ local function coverUp(x, y, tileSize) -- TODO: need a solution for this coverin
 end
 
 function renderer:switchRadial()
-    radial = not radial
+    radial = (radial % 3) + 1
 end
 
-function renderer:drawEntity(char, tileSize, x, y)
+
+function renderer:drawEntity(char, tileSize, x, y) -- TODO only draw if visible
     local font = love.graphics.getFont()
     local textWidth = font:getWidth(char)
     local textHeight = font:getHeight()
@@ -26,7 +27,7 @@ function renderer:drawEntity(char, tileSize, x, y)
     love.graphics.print(char, xx, yy)
 end
 
-function renderer:draw(chars, tileSize, x, y)
+function renderer:draw(chars, tileSize, x, y, visible)
     local font = love.graphics.getFont()
     local offset = 0.2*tileSize
     for i, char in ipairs(chars) do
@@ -36,9 +37,13 @@ function renderer:draw(chars, tileSize, x, y)
         local textHeight = font:getHeight()
         local xx = x * tileSize + (tileSize - textWidth) / 2
         local yy = y * tileSize + (tileSize - textHeight) / 2
+        if not visible then
+            love.graphics.setColor(0.961, 0.871, 0.702, (i+0.5)/maxHeight)
+        else
+            love.graphics.setColor(1, 1, 1, (i+0.5)/maxHeight)
+        end
 
-        love.graphics.setColor(1, 1, 1, (i+1)/maxHeight)
-        if radial then  -- TODO: need a lot of touchups
+        if radial == 1 then  -- TODO: need a lot of touchups
 
             local camX = love.graphics.getWidth() / tileSize / 2
             local camY = love.graphics.getHeight() / tileSize / 2
@@ -52,9 +57,12 @@ function renderer:draw(chars, tileSize, x, y)
 
             love.graphics.print(char, drawX, drawY)
 
-        else
+        elseif radial == 2 then
             love.graphics.print(char, xx - (i - 1) * offset, yy - (i - 1) * offset)
-        end 
+         
+        elseif radial == 3 and i == 1 then
+            love.graphics.print(char, xx, yy)
+        end
         love.graphics.setColor(1, 1, 1, 1) 
     end
 end

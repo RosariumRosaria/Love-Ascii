@@ -13,8 +13,9 @@ function Shadow:Contains(other)
 end
 
 function Shadow.projectTile(row, col)
-    local topLeft = col / (row + 2)
-    local bottomRight = (col + 1) / (row + 1)
+    local epsilon = 0.002 --Small value to avoid corners being invisible
+    local topLeft = col / (row + 2) + epsilon
+    local bottomRight = (col + 1) / (row + 1) - epsilon
     return Shadow:new(topLeft, bottomRight)
 end
 

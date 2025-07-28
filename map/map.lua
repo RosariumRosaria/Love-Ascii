@@ -108,7 +108,7 @@ function map:makeTown(roomCount)
         while overLaps do
             overLaps = false
 
-            local x = math.random(10, self.width - 20)
+            local x = math.random(10, self.width - 20) --TODO make fix magic numbers
             local y = math.random(10, self.height - 20)
             local w = math.random(5, 15)
             local h = math.random(5, 15)
@@ -129,7 +129,7 @@ function map:makeTown(roomCount)
 end
 
 function map:load(width, height, depth, mapType, tileSize)
-    math.randomseed(os.time())
+   -- math.randomseed(os.time())
     self.width = width or 10
     self.height = height or 10
     self.tileSize = tileSize or 16
@@ -151,17 +151,12 @@ function map:load(width, height, depth, mapType, tileSize)
 end
 
 function map:updateVisibility(centerX, centerY, radius)
-    for y = 1, self.height do
-        for x = 1, self.width do
-            local dx = x - centerX
-            local dy = y - centerY
-            if dx * dx + dy * dy <= radius * radius then
+    fovutil:refreshVisibility(centerX, centerY, 8, self.width, self.height, self.tiles, self.visible)
 
-                fovutil:refreshVisibility(centerX, centerY, radius, self.width, self.height, self.visible)
-                self.visible[y][x] = true
+    for y = 1, self.height do -- TODO SO INEFFICIENT, but works for now
+        for x = 1, self.width do
+            if self.visible[y][x] then
                 self.explored[y][x] = true
-            else
-                self.visible[y][x] = false
             end
         end
     end
@@ -182,7 +177,9 @@ function map:draw(centerX, centerY, drawDist)
             local drawX = x - centerX + screenCenterX
             local drawY = y - centerY + screenCenterY
             if self.visible[y][x] then
-                renderer:draw(self.tiles[y][x], self.tileSize, drawX, drawY)
+                renderer:draw(self.tiles[y][x], self.tileSize, drawX, drawY, true)
+            elseif self.explored[y][x] then
+                renderer:draw(self.tiles[y][x], self.tileSize, drawX, drawY, false)
             end
         end
     end

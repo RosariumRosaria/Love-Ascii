@@ -16,12 +16,12 @@ function love.load()
 
     local mapWidth = 50
     local mapHeight = 50
-    local mapDepth = 5;
+    local mapDepth = 7;
 
     player = {
         char = "@",
-        x = mapWidth / 2,
-        y = mapHeight / 2,
+        x = mapWidth / 2 + 1,
+        y = mapHeight / 2 - 2,
         z = 1
     }
     enemy = {
@@ -38,12 +38,14 @@ end
 
 timeSinceLastUpdate = 0;
 timeBetweenUpdates = 0.1;
+
 function love.update(dt) --Todo: Make movement check key pressed, to avoid the timer
     local moved = false;
+    local moveDir = {x = 0, y = 0}
     if (timeSinceLastUpdate > timeBetweenUpdates) then
         timeSinceLastUpdate = 0;
 
-        local moveDir = {x = 0, y = 0}
+
         if love.keyboard.isDown("left") then
             moveDir.x = -1
             moved = true;
@@ -60,15 +62,21 @@ function love.update(dt) --Todo: Make movement check key pressed, to avoid the t
             moveDir.y = 1
             moved = true;
         end
+        if love.keyboard.isDown("e") then
+            engine:push(player, enemy, moveDir.x, moveDir.y, entities)
+            moved = false
+        end
+
         if love.keyboard.isDown("r") then
                renderer:switchRadial()
         end
-        engine:move(player, moveDir.x, moveDir.y, nil, entities)
+
     else    
         timeSinceLastUpdate = timeSinceLastUpdate + dt
     end
 
     if moved then
+        engine:move(player, moveDir.x, moveDir.y, entities)
         map:updateVisibility(player.x, player.y, 20) -- Todo, fix hardcoded radius
     end
 

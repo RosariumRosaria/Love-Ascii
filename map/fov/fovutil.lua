@@ -19,52 +19,94 @@ local function transformOctant(row, col, octant)
 end
 
 
-function fovutil:inbounds(x, y, width, height) 
-    return x >= 1 and x <= width and y >= 1 and y <= height
-end
+function fovutil:paintOctant(playerX, playerY, maxDistance, width, height, mapGrid)
+  for row = maxDistance - 1, 1, -1 do
+    local line = ""
+    for col = 0, row do
+      line =  line.."{ "
+      local x = playerX + col
+      local y = playerY - row
+      if  (fovutil:inbounds(y, x, width, height)) then
+                  line = line .. mapGrid[y][x][1].char
 
-function fovutil:refreshVisibility(playerX, playerY, maxDistance, width, height, tiles)
-  for octant = 0, 7 do
-    fovutil:refreshOctant(playerX, playerY, octant, maxDistance, width, height, tiles)
+      line = line .. tostring(mapGrid[y][x][1].transparent)
+      end
+
+      line = line .. " }"
+    end
+    print(line)
   end
 end
 
-function fovutil:refreshOctant(playerX, playerY, octant, maxDistance, width, height, mapGrid, visiblityGrid)
+function fovutil:paintOctantVisiblity(playerX, playerY, maxDistance, width, height, mapGrid, visiblityGrid)
+  for row = maxDistance - 1, 1, -1 do
+          local line =  " "
+    for col = 0, row do
+
+      local x = playerX + col
+      local y = playerY - row
+      if  (fovutil:inbounds(y, x, width, height) and visiblityGrid[y][x]) then
+             line = line .. mapGrid[y][x][1].char .. " " 
+      else
+             line = line .. "  "
+      end
+  
+    end
+    print(line)
+  end
+  print("@")
+end
+
+
+
+function fovutil:inbounds(x, y, width, height)
+    return x >= 1 and x <= width and y >= 1 and y <= height
+end
+
+function fovutil:refreshVisibility(playerX, playerY, maxDistance, width, height, mapGrid, visibilityGrid)
+  for octant = 0, 7 do
+    fovutil:refreshOctant(playerX, playerY, octant, maxDistance, width, height, mapGrid, visibilityGrid)
+  end
+end
+
+function fovutil:refreshOctant(playerX, playerY, octant, maxDistance, width, height, mapGrid, visibilityGrid)
   local line = shadowLine:new()
   local fullShadow = false
-
+  -- fovutil:paintOctant(playerX, playerY, maxDistance, width, height, mapGrid)
   for row = 1, maxDistance do
     -- Stop once we go out of bounds.
     local dx, dy = transformOctant(row, 0, octant)
-    local pos = {playerX+dx, playerY +dy};
-    if not (fovutil:inbounds(pos[1], pos[2], width, height)) then
+    local posX = playerX+dx
+    local posY=  playerY+dy
+
+    if not (fovutil:inbounds(posX, posY, width, height)) then
       break
     end
 
     for col = 0, row do
       dx, dy = transformOctant(row, col, octant)
-      pos = {playerX+dx, playerY +dy};
+      posX = playerX+dx
+      posY=  playerY+dy
 
-      if not (fovutil:inbounds(pos[1], pos[2], width, height)) then
+      if not (fovutil:inbounds(posX, posY, width, height)) then
         break
       end
 
       if (fullShadow) then
-        visiblityGrid[pos[2]][pos[1]] = false;
+        visibilityGrid[posY][posX] = false
       else 
-        print(row, col)
         local projection = shadow.projectTile(row, col)
         
-        local visible = not line.isInShadow(projection)
-        visiblityGrid[pos[2]][pos[1]] = false
-        
-        if (visible and mapGrid[pos[2]][pos[1]].transparent) then
+        local visible = not line:isInShadow(projection)
+        visibilityGrid[posY][posX] = visible
+        if (visible and not mapGrid[posY][posX][1].transparent) then
           line:AddShadow(projection)
           fullShadow = line:isFullShadow()
         end
       end
     end
   end
+    fovutil:paintOctantVisiblity(playerX, playerY, maxDistance, width, height, mapGrid, visibilityGrid)
 end
 
 return fovutil
