@@ -28,7 +28,7 @@ function renderer:draw(chars, tileSize, x, y, visible)
         local xx = x * tileSize + (tileSize - textWidth) / 2
         local yy = y * tileSize + (tileSize - textHeight) / 2
         if not visible then
-            love.graphics.setColor(0.961, 0.871, 0.702, (i+0.5)/maxHeight)
+            love.graphics.setColor(0.961, 0.871, 0.702, (i-0.8)/maxHeight)
         else
             love.graphics.setColor(1, 1, 1, (i+0.5)/maxHeight)
         end
