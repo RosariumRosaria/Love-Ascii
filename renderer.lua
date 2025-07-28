@@ -3,15 +3,6 @@ local renderer = {}
 local radial = 1;
 local maxHeight = 5;
 
-local function coverUp(x, y, tileSize) -- TODO: need a solution for this covering things that are above you
-
-    love.graphics.setColor(0, 0, 0, 1)
-
-    love.graphics.rectangle("fill", x * tileSize, y * tileSize, tileSize, tileSize)
-
-    love.graphics.setColor(1, 1, 1, 1)
-end
-
 function renderer:switchRadial()
     radial = (radial % 3) + 1
 end
@@ -23,7 +14,6 @@ function renderer:drawEntity(char, tileSize, x, y) -- TODO only draw if visible
     local textHeight = font:getHeight()
     local xx = x * tileSize + (tileSize - textWidth) / 2
     local yy = y * tileSize + (tileSize - textHeight) / 2
-    coverUp(x, y, tileSize)
     love.graphics.print(char, xx, yy)
 end
 

@@ -23,6 +23,11 @@ function map:walkable(x, y, z)
     return self.tiles[y][x][z].walkable
 end
 
+function map:isVisible(x, y)
+    if not self:inbounds(x, y) then return false end
+    return self.visible[y][x]
+end
+
 function map:overlapRect(r1, r2)
     return not (
         r1.x + r1.width <= r2.x or
@@ -151,7 +156,7 @@ function map:load(width, height, depth, mapType, tileSize)
 end
 
 function map:updateVisibility(centerX, centerY, radius)
-    fovutil:refreshVisibility(centerX, centerY, 8, self.width, self.height, self.tiles, self.visible)
+    fovutil:refreshVisibility(centerX, centerY, radius, self.width, self.height, self.tiles, self.visible)
 
     for y = 1, self.height do -- TODO SO INEFFICIENT, but works for now
         for x = 1, self.width do

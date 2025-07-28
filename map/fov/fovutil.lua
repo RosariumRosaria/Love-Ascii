@@ -1,5 +1,6 @@
 local shadowLine = require("map.fov.shadowLine")
 local shadow = require("map.fov.shadow")
+local entities = require("entities.entities")
 local fovutil = {}
 
 local function transformOctant(row, col, octant)
@@ -99,14 +100,13 @@ function fovutil:refreshOctant(playerX, playerY, octant, maxDistance, width, hei
         
         local visible = not line:isInShadow(projection)
         visibilityGrid[posY][posX] = visible
-        if (visible and not mapGrid[posY][posX][1].transparent) then
+        if (visible and not mapGrid[posY][posX][1].transparent or entities:getEntity(posX,posY)) then
           line:AddShadow(projection)
           fullShadow = line:isFullShadow()
         end
       end
     end
   end
-    fovutil:paintOctantVisiblity(playerX, playerY, maxDistance, width, height, mapGrid, visibilityGrid)
 end
 
 return fovutil

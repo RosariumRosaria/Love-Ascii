@@ -2,8 +2,10 @@ local map = require("map.map")
 local engine = require("engine")
 local renderer = require("renderer")
 local fovutil = require("map.fov.fovutil")
-
+local entities = require("entities.entities")
 local tileSize = 16
+
+
 function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
     love.window.setTitle("Hello World")
@@ -20,17 +22,14 @@ function love.load()
 
     player = {
         char = "@",
-        x = mapWidth / 2 + 1,
-        y = mapHeight / 2 - 2,
+        x = 4,
+        y = 4,
         z = 1
     }
-    enemy = {
-        char = "V",
-        x = 10,
-        y = 10,
-        z= 1
-    }
-    entities = {player, enemy}
+
+    entities:addEntity(player)
+    entities:addFromTemplate("vampire", 5, 5, 1)
+    entities:addFromTemplate("crate", 6, 5, 1)
 
     map:load(mapWidth, mapHeight, mapDepth, "town", tileSize)
     map:updateVisibility(player.x, player.y, 20)
@@ -38,6 +37,17 @@ end
 
 timeSinceLastUpdate = 0;
 timeBetweenUpdates = 0.1;
+
+local function getEntity(x, y)
+    for _, entity in ipairs(entities) do
+        if entity.x == x and entity.y == y then
+            print("Found entity at " .. x .. ", " .. y .. ": " .. entity.char)
+            return entity
+        end
+    end
+
+    print("No entity found at " .. x .. ", " .. y)
+end
 
 function love.update(dt) --Todo: Make movement check key pressed, to avoid the timer
     local moved = false;
@@ -62,8 +72,17 @@ function love.update(dt) --Todo: Make movement check key pressed, to avoid the t
             moveDir.y = 1
             moved = true;
         end
+
         if love.keyboard.isDown("e") then
-            engine:push(player, enemy, moveDir.x, moveDir.y, entities)
+  
+            engine:push(player, moveDir.x, moveDir.y)
+            map:updateVisibility(player.x, player.y, 20) -- Todo, fix hardcoded radius
+            moved = false
+        elseif
+            love.keyboard.isDown("q") then
+            local target = entities:getEntity(player.x - moveDir.x, player.y - moveDir.y)
+            engine:pull(player, moveDir.x, moveDir.y)
+            map:updateVisibility(player.x, player.y, 20)
             moved = false
         end
 
@@ -76,12 +95,17 @@ function love.update(dt) --Todo: Make movement check key pressed, to avoid the t
     end
 
     if moved then
-        engine:move(player, moveDir.x, moveDir.y, entities)
+        engine:move(player, moveDir.x, moveDir.y)
         map:updateVisibility(player.x, player.y, 20) -- Todo, fix hardcoded radius
     end
 
     if love.keyboard.isDown("escape") then
         love.event.quit()
+    end
+    if love.keyboard.isDown("z") then
+        for i = 1, 255 do
+        print()
+        end
     end
 end
 
@@ -91,7 +115,9 @@ function love.draw()
     map:draw(player.x, player.y, 20) --Todo, fix hardcoded draw distance
     local screenCenterX = love.graphics.getWidth() / tileSize / 2
     local screenCenterY = love.graphics.getHeight() / tileSize / 2
-    for _, entity in ipairs(entities) do
-        renderer:drawEntity(entity.char, tileSize, entity.x-player.x+screenCenterX, entity.y-player.y+screenCenterY)
+    for _, entity in ipairs(entities:getEntityList()) do
+        if map:isVisible(entity.x, entity.y) then
+            renderer:drawEntity(entity.char, tileSize, entity.x-player.x+screenCenterX, entity.y-player.y+screenCenterY)
+        end
     end
 end
