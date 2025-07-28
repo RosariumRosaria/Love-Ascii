@@ -4,15 +4,22 @@ local entities = {
     entityList = {}
 }
 
+function entities:getTransparency(x,y)
+    entity = entities:getEntity(x,y)
+
+    if not entity then
+        return true
+    end
+
+    return entity.transparent
+end
 
  function entities:getEntity(x, y)
     for _, entity in ipairs(self.entityList) do
         if entity.x == x and entity.y == y then
-            print("Found entity at " .. x .. ", " .. y .. ": " .. entity.char)
             return entity
         end
     end
-    print("No entity found at " .. x .. ", " .. y)
 end
 
 function entities:getEntityList()

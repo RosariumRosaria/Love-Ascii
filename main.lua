@@ -22,8 +22,8 @@ function love.load()
 
     player = {
         char = "@",
-        x = 4,
-        y = 4,
+        x = 20,
+        y = 20,
         z = 1
     }
 
