@@ -7,7 +7,7 @@ local input_handler = {}
 
 local timeSinceLastUpdate = 0
 local timeBetweenUpdates = 0.1
-
+local lastTurn = { x = 0, y = 0 }
 function input_handler:update(dt) --
     timeSinceLastUpdate = timeSinceLastUpdate + dt
     if timeSinceLastUpdate < timeBetweenUpdates then return end
@@ -21,21 +21,34 @@ function input_handler:update(dt) --
     if love.keyboard.isDown("down") then moveDir.y = 1 end
 
     local isMoving = moveDir.x ~= 0 or moveDir.y ~= 0
-
-    if isMoving then
+    local hasMoved = lastTurn.x ~= 0 or lastTurn.y ~= 0
+    if isMoving or hasMoved then
+        if not isMoving then moveDir = lastTurn end
         if love.keyboard.isDown("e") then
             engine:push(player, moveDir.x, moveDir.y)
         elseif love.keyboard.isDown("q") then
             engine:pull(player, moveDir.x, moveDir.y)
-        else
+        elseif love.keyboard.isDown("f") then
+            engine:attack(player, moveDir.x, moveDir.y)
+        elseif love.keyboard.isDown("r") then
+            engine:interact(player, moveDir.x, moveDir.y)
+        elseif love.keyboard.isDown("x") then
+            engine:inspect(player, moveDir.x, moveDir.y)
+        elseif isMoving then
             engine:move(player, moveDir.x, moveDir.y)
         end
         map:updateVisibility(player.x, player.y, 20)
+        lastTurn = moveDir
     end
 
-    if love.keyboard.isDown("r") then
+    if love.keyboard.isDown("z") then
         renderer:switchRadial()
     end
+
+    
+
+
+
 
     if love.keyboard.isDown("escape") then
         love.event.quit()

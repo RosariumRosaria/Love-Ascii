@@ -66,7 +66,7 @@ function visuals:update(dt)
                 visual.i = visual.i + 1
                 visual.lifespan = visual.initialSpan
             else
-                table.remove(self.visualList, i) -- remove the visual completely
+                table.remove(self.visualList, i) 
             end
         end
     end

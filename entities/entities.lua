@@ -13,12 +13,43 @@ function entities:getTransparency(x,y)
     return entity.transparent
 end
 
+function entities:damageEntity(entity, damage)
+    if entity then
+        entity.health = entity.health - damage
+        print("You hit " .. entity.name .. " " .. entity.health .. " remaining!")
+        if entity.health <= 0 then
+            entities:removeEntity(entity)
+        end
+    end
+end
+
+function entities:interactWithEntity(entity) --TODO
+    return print ("Stub")
+end
+
+function entities:inspectEntity(entity)
+    if entity.description then
+        print(entity.description)
+    end 
+end
+
+
  function entities:getEntity(x, y)
     for _, entity in ipairs(self.entityList) do
         if entity.x == x and entity.y == y then
             return entity
         end
     end
+end
+
+function entities:removeEntity(target)
+    for i, entity in ipairs(self.entityList) do
+        if entity == target then
+            table.remove(self.entityList, i)
+            return true
+        end
+    end
+    return false
 end
 
 function entities:getEntityList()
