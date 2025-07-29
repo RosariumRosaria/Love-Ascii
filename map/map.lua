@@ -1,5 +1,5 @@
 local types = require("map.tiletypes")
-local renderer = require("renderer")
+local renderer = require("visuals.renderer")
 local fovutil = require("map.fov.fovutil")
 
 local map = {
@@ -173,18 +173,14 @@ function map:draw(centerX, centerY, drawDist)
     local startX = math.max(centerX - drawDist, 1)
     local startY = math.max(centerY - drawDist, 1)
 
-    --TODO: Why is this here? probably be moved to renderer?
-    local screenCenterX = love.graphics.getWidth() / self.tileSize / 2
-    local screenCenterY = love.graphics.getHeight() / self.tileSize / 2
+
 
     for y = startY, endY do
         for x = startX, endX do
-            local drawX = x - centerX + screenCenterX
-            local drawY = y - centerY + screenCenterY
             if self.visible[y][x] then
-                renderer:draw(self.tiles[y][x], self.tileSize, drawX, drawY, true)
+                renderer:draw(self.tiles[y][x], self.tileSize, x, y, centerX, centerY, true)
             elseif self.explored[y][x] then
-                renderer:draw(self.tiles[y][x], self.tileSize, drawX, drawY, false)
+                renderer:draw(self.tiles[y][x],  self.tileSize, x, y, centerX, centerY, false)
             end
         end
     end

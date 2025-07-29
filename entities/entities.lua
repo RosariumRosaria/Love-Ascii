@@ -6,7 +6,6 @@ local entities = {
 
 function entities:getTransparency(x,y)
     entity = entities:getEntity(x,y)
-
     if not entity then
         return true
     end

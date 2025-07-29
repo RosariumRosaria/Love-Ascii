@@ -1,8 +1,9 @@
 local map = require("map.map")
 local engine = require("engine")
-local renderer = require("renderer")
+local renderer = require("visuals.renderer")
 local fovutil = require("map.fov.fovutil")
 local entities = require("entities.entities")
+local visuals = require("visuals.visuals")
 local tileSize = 16
 
 
@@ -16,8 +17,8 @@ function love.load()
 
     tileSize = love.graphics.getFont():getHeight() 
 
-    local mapWidth = 50
-    local mapHeight = 50
+    local mapWidth = 100
+    local mapHeight = 100
     local mapDepth = 7;
 
     player = {
@@ -89,7 +90,6 @@ function love.update(dt) --Todo: Make movement check key pressed, to avoid the t
         if love.keyboard.isDown("r") then
                renderer:switchRadial()
         end
-
     else    
         timeSinceLastUpdate = timeSinceLastUpdate + dt
     end
@@ -103,10 +103,11 @@ function love.update(dt) --Todo: Make movement check key pressed, to avoid the t
         love.event.quit()
     end
     if love.keyboard.isDown("z") then
-        for i = 1, 255 do
-        print()
-        end
+        os.execute("cls")
     end
+
+    
+    visuals:update(dt) --TODO Need to break this up. Some to a new input handler module, rest to engine
 end
 
 
