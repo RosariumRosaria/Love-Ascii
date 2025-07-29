@@ -1,5 +1,6 @@
 local map = require("map.map")
 local entities = require("entities.entities")
+local visuals = require("visuals.visuals")
 local engine = {}
 
 local function distanceBetween(entity1, entity2)
@@ -29,7 +30,8 @@ function engine:move(entity, dx, dy)
     local tarX = entity.x + dx
     local tarY = entity.y + dy
 
-    if isTileFree(tarX, tarY, entity.z, {[entity] = true}) then
+    if isTileFree(tarX, tarY, entity.z, {[entity] = true}) then       
+        visuals:addFromTemplate("trail", entity.x, entity.y, entity.z) 
         entity.x = tarX
         entity.y = tarY
         return true
@@ -38,7 +40,7 @@ function engine:move(entity, dx, dy)
     return false
 end
 
-function engine:push(entityPusher, dx, dy)
+function engine:push(entityPusher, dx, dy) --TODO Probably some way to integrate pushing and pulling, and to use move
     local entityPushed = entities:getEntity(entityPusher.x + dx, entityPusher.y + dy)
     if not entityPusher then
         print("Pusher entity is nil")
@@ -63,8 +65,6 @@ function engine:push(entityPusher, dx, dy)
     local pusherTarY = entityPusher.y + dy
     local pushedTarX = entityPushed.x + dx
     local pushedTarY = entityPushed.y + dy
-
-    entities:describe(entityPushed)
     if not isTileFree(pusherTarX, pusherTarY, entityPusher.z, {[entityPusher] = true, [entityPushed] = true}) then
         print("Pusher tile not free")
         return false
@@ -73,12 +73,13 @@ function engine:push(entityPusher, dx, dy)
         print("Pushed tile not free")
         return false
     end
-
+    visuals:addFromTemplate("trail", entityPusher.x, entityPusher.y, entityPusher.z) 
     entityPusher.x = pusherTarX
     entityPusher.y = pusherTarY
     entityPushed.x = pushedTarX
     entityPushed.y = pushedTarY
     print("Pushed entity to " .. pushedTarX .. ", " .. pushedTarY)
+
     return true
 end
 
@@ -115,14 +116,17 @@ function engine:pull(entityPuller, dx, dy)
         print("Pulled tile not free")
         return false
     end
-
+    visuals:addFromTemplate("trail", entityPuller.x, entityPuller.y, entityPuller.z) 
     entityPuller.x = pullerTarX
     entityPuller.y = pullerTarY
     entityPulled.x = pulledTarX
     entityPulled.y = pulledTarY
     print("Pulled entity to " .. pulledTarX .. ", " .. pulledTarY)
+
     return true
 end
+
+
 
 
 return engine
