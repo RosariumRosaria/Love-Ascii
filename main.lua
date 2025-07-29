@@ -26,7 +26,8 @@ function love.load()
         char = "@",
         x = 20,
         y = 20,
-        z = 1
+        z = 1,
+        damage = 1
     }
 
     entities:addEntity(player)
@@ -34,7 +35,7 @@ function love.load()
     entities:addFromTemplate("crate", 6, 5, 1)
 
     map:load(mapWidth, mapHeight, mapDepth, "town", tileSize)
-    map:updateVisibility(player.x, player.y, 20)
+    map:updateVisibility(player.x, player.y, 25)
 end
 
 timeSinceLastUpdate = 0;
@@ -50,12 +51,10 @@ end
 
 
 function love.draw()
-    map:draw(player.x, player.y, 20) --Todo, fix hardcoded draw distance
-    local screenCenterX = love.graphics.getWidth() / tileSize / 2
-    local screenCenterY = love.graphics.getHeight() / tileSize / 2
+    map:draw(player.x, player.y, 25) --Todo, fix hardcoded draw distance
     for _, entity in ipairs(entities:getEntityList()) do
         if map:isVisible(entity.x, entity.y) then
-            renderer:drawEntity(entity.char, tileSize, entity.x-player.x+screenCenterX, entity.y-player.y+screenCenterY)
+            renderer:drawEntity(entity.char, tileSize, entity.x, entity.y, player.x, player.y)
         end
     end
 end
