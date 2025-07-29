@@ -53,16 +53,27 @@ function renderer:draw(chars, tileSize, x, y, centerX, centerY, visible)
         elseif radial == 2 then
             love.graphics.print(char, xx - (i - 1) * offset, yy - (i - 1) * offset)
          
-        elseif radial == 3 and i == 1 then
+        elseif radial == 3 then
             love.graphics.print(char, xx, yy)
         end
 
-        local visual = visuals:getVisual(x, y, z)
-        if visual then
-            love.graphics.setColor(visual.colors[1]) 
-            love.graphics.rectangle("fill", xx, yy, tileSize, tileSize) --TODO, maybe some way to make what type of effect dynamic
+        local visual = visuals:getVisual(x, y, i)
+        if visual then --TODO sister make this a function or something please
+            local visualSize = visual.sizes[visual.i]*tileSize
+            if visual.decay then --TODO you didn't think about sizes at all when planning this...
+                local color = visual.colors[1]
+                love.graphics.setColor(
+                    color[1] * visual.lifespan/visual.initialSpan,
+                    color[2] * visual.lifespan/visual.initialSpan,
+                    color[3] * visual.lifespan/visual.initialSpan,
+                    color[4] * visual.lifespan/visual.initialSpan)
+            else
+                love.graphics.setColor(visual.colors[visual.i]) 
+            end
+                            
+            love.graphics.rectangle("fill", xx-((tileSize-visualSize)/2), yy+((tileSize-visualSize)/2), visualSize, visualSize,visualSize/4, visualSize/4) --TODO, maybe some way to make what type of effect dynamic, also consider cases where parts aren't defined 
         end
-
+            --TODO also, this function is getting gross, maybe review all the math you are doing and see if you can break this up
         love.graphics.setColor(1, 1, 1, 1) 
     end
 end

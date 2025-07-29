@@ -7,7 +7,7 @@ local visuals = {
 
 function visuals:getVisual(x, y, z)
     for _, visual in ipairs(self.visualList) do
-        if visual.x == x and visual.y == y then
+        if visual.x == x and visual.y == y and visual.z == z then
             return visual
         end
     end
@@ -62,8 +62,8 @@ function visuals:update(dt)
         local visual = self.visualList[i]
         visual.lifespan = visual.lifespan - dt
         if visual.lifespan <= 0 then
-            if #visual.colors > 1 then
-                table.remove(visual.colors, 1)  -- remove one color
+            if #visual.colors > visual.i then
+                visual.i = visual.i + 1
                 visual.lifespan = visual.initialSpan
             else
                 table.remove(self.visualList, i) -- remove the visual completely
