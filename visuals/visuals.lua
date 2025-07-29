@@ -1,4 +1,4 @@
-local visualTypes = require("visuals/visualTypes") 
+local visualTypes = require("visuals/visual_types") 
 
 local visuals = {
     visualList = {},

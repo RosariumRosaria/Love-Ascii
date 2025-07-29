@@ -1,9 +1,10 @@
 local map = require("map.map")
-local engine = require("engine")
+
 local renderer = require("visuals.renderer")
-local fovutil = require("map.fov.fovutil")
+local fov_handler = require("fov.fov_handler")
 local entities = require("entities.entities")
 local visuals = require("visuals.visuals")
+local input_handler = require("engine.input_handler")
 local tileSize = 16
 
 
@@ -39,75 +40,11 @@ end
 timeSinceLastUpdate = 0;
 timeBetweenUpdates = 0.1;
 
-local function getEntity(x, y)
-    for _, entity in ipairs(entities) do
-        if entity.x == x and entity.y == y then
-            print("Found entity at " .. x .. ", " .. y .. ": " .. entity.char)
-            return entity
-        end
-    end
 
-    print("No entity found at " .. x .. ", " .. y)
-end
 
 function love.update(dt) --Todo: Make movement check key pressed, to avoid the timer
-    local moved = false;
-    local moveDir = {x = 0, y = 0}
-    if (timeSinceLastUpdate > timeBetweenUpdates) then
-        timeSinceLastUpdate = 0;
-
-
-        if love.keyboard.isDown("left") then
-            moveDir.x = -1
-            moved = true;
-        end
-        if love.keyboard.isDown("right") then
-            moveDir.x = 1
-            moved = true;
-        end
-        if love.keyboard.isDown("up") then
-            moveDir.y = -1
-            moved = true
-        end
-        if love.keyboard.isDown("down") then
-            moveDir.y = 1
-            moved = true;
-        end
-
-        if love.keyboard.isDown("e") then
-  
-            engine:push(player, moveDir.x, moveDir.y)
-            map:updateVisibility(player.x, player.y, 20) -- Todo, fix hardcoded radius
-            moved = false
-        elseif
-            love.keyboard.isDown("q") then
-            local target = entities:getEntity(player.x - moveDir.x, player.y - moveDir.y)
-            engine:pull(player, moveDir.x, moveDir.y)
-            map:updateVisibility(player.x, player.y, 20)
-            moved = false
-        end
-
-        if love.keyboard.isDown("r") then
-               renderer:switchRadial()
-        end
-    else    
-        timeSinceLastUpdate = timeSinceLastUpdate + dt
-    end
-
-    if moved then
-        engine:move(player, moveDir.x, moveDir.y)
-        map:updateVisibility(player.x, player.y, 20) -- Todo, fix hardcoded radius
-    end
-
-    if love.keyboard.isDown("escape") then
-        love.event.quit()
-    end
-    if love.keyboard.isDown("z") then
-        os.execute("cls")
-    end
-
-    
-    visuals:update(dt) --TODO Need to break this up. Some to a new input handler module, rest to engine
+    input_handler:update(dt)
+    visuals:update(dt) 
 end
 
 

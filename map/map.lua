@@ -1,6 +1,6 @@
-local types = require("map.tiletypes")
+local types = require("map.tile_types")
 local renderer = require("visuals.renderer")
-local fovutil = require("map.fov.fovutil")
+local fov_handler = require("fov.fov_handler")
 
 local map = {
     width = nil,
@@ -156,7 +156,7 @@ function map:load(width, height, depth, mapType, tileSize)
 end
 
 function map:updateVisibility(centerX, centerY, radius)
-    fovutil:refreshVisibility(centerX, centerY, radius, self.width, self.height, self.tiles, self.visible)
+    fov_handler:refreshVisibility(centerX, centerY, radius, self.width, self.height, self.tiles, self.visible)
 
     for y = 1, self.height do -- TODO SO INEFFICIENT, but works for now
         for x = 1, self.width do

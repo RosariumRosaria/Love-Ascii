@@ -1,4 +1,4 @@
-local entityTypes = require("entities/entityTypes") 
+local entityTypes = require("entities/entity_types") 
 
 local entities = {
     entityList = {}

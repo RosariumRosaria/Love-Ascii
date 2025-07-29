@@ -1,5 +1,5 @@
-local shadowLine = require("map.fov.shadowLine")
-local shadow = require("map.fov.shadow")
+local shadowLine = require("fov.shadow_line")
+local shadow = require("fov.shadow")
 local entities = require("entities.entities")
 local fovutil = {}
 
@@ -65,6 +65,7 @@ function fovutil:inbounds(x, y, width, height)
 end
 
 function fovutil:refreshVisibility(playerX, playerY, maxDistance, width, height, mapGrid, visibilityGrid)
+  visibilityGrid[playerY][playerX] = true
   for octant = 0, 7 do
     fovutil:refreshOctant(playerX, playerY, octant, maxDistance, width, height, mapGrid, visibilityGrid)
   end
@@ -73,6 +74,9 @@ end
 function fovutil:refreshOctant(playerX, playerY, octant, maxDistance, width, height, mapGrid, visibilityGrid)
   local line = shadowLine:new()
   local fullShadow = false
+
+  
+
   -- fovutil:paintOctant(playerX, playerY, maxDistance, width, height, mapGrid)
   for row = 1, maxDistance do
     -- Stop once we go out of bounds.

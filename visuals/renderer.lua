@@ -7,6 +7,13 @@ function renderer:switchRadial()
     radial = (radial % 3) + 1
 end
 
+function renderer:scaleColor(color, scale)
+    love.graphics.setColor(
+        color[1] * scale,
+        color[2] * scale,
+        color[3] * scale,
+        color[4] * scale)
+end
 
 function renderer:drawEntity(char, tileSize, x, y) 
     local font = love.graphics.getFont()
@@ -61,12 +68,7 @@ function renderer:draw(chars, tileSize, x, y, centerX, centerY, visible)
         if visual then --TODO sister make this a function or something please
             local visualSize = visual.sizes[visual.i]*tileSize
             if visual.decay then --TODO you didn't think about sizes at all when planning this...
-                local color = visual.colors[1]
-                love.graphics.setColor(
-                    color[1] * visual.lifespan/visual.initialSpan,
-                    color[2] * visual.lifespan/visual.initialSpan,
-                    color[3] * visual.lifespan/visual.initialSpan,
-                    color[4] * visual.lifespan/visual.initialSpan)
+                renderer:scaleColor(visual.colors[1], visual.lifespan/visual.initialSpan)
             else
                 love.graphics.setColor(visual.colors[visual.i]) 
             end

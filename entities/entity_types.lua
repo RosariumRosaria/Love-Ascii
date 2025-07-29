@@ -3,6 +3,7 @@ return {
         name = "vampire",
         char = "V",
         transparent = true,
+        health = 10,
         moveable = false
     },
     crate = {
@@ -11,4 +12,12 @@ return {
         transparent = false,
         moveable = true
     },
+    door = {
+        name = "door",
+        char = "+",
+        swapchar = "'",
+        transparent = false,
+        interactable = true,
+        moveable = false
+    }
 }
