@@ -8,6 +8,7 @@ local input_handler = {}
 local timeSinceLastUpdate = 0
 local timeBetweenUpdates = 0.1
 local lastTurn = { x = 0, y = 0 }
+local grabbed = nil
 function input_handler:update(dt) --
     timeSinceLastUpdate = timeSinceLastUpdate + dt
     if timeSinceLastUpdate < timeBetweenUpdates then return end
@@ -24,18 +25,25 @@ function input_handler:update(dt) --
     local hasMoved = lastTurn.x ~= 0 or lastTurn.y ~= 0
     if isMoving or hasMoved then
         if not isMoving then moveDir = lastTurn end
-        if love.keyboard.isDown("e") then
-            engine:push(player, moveDir.x, moveDir.y)
-        elseif love.keyboard.isDown("q") then
-            engine:pull(player, moveDir.x, moveDir.y)
-        elseif love.keyboard.isDown("f") then
+        if love.keyboard.isDown("f") then
             engine:attack(player, moveDir.x, moveDir.y)
-        elseif love.keyboard.isDown("r") then
+        elseif love.keyboard.isDown("e") then
             engine:interact(player, moveDir.x, moveDir.y)
-        elseif love.keyboard.isDown("x") then
+        elseif love.keyboard.isDown("r") then
             engine:inspect(player, moveDir.x, moveDir.y)
         elseif isMoving then
-            engine:move(player, moveDir.x, moveDir.y)
+            if love.keyboard.isDown("q") then
+                grabbed = engine:grab(player, moveDir.x, moveDir.y) or grabbed
+                if grabbed then
+                    if player.x == grabbed.x + moveDir.x and player.y == grabbed.y + moveDir.y then
+                        engine:pull(player, moveDir.x, moveDir.y)
+                    elseif player.x + moveDir.x == grabbed.x and player.y + moveDir.y == grabbed.y then
+                        engine:push(player, moveDir.x, moveDir.y)
+                    end
+                end
+            else
+                engine:move(player, moveDir.x, moveDir.y)
+            end
         end
         map:updateVisibility(player.x, player.y, 20)
         lastTurn = moveDir
@@ -44,12 +52,7 @@ function input_handler:update(dt) --
     if love.keyboard.isDown("z") then
         renderer:switchRadial()
     end
-
     
-
-
-
-
     if love.keyboard.isDown("escape") then
         love.event.quit()
     end

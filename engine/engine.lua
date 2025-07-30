@@ -17,7 +17,7 @@ local function isTileFree(x, y, z, skipEntities)
     local entityList  = entities:getEntityList()
     if not map:walkable(x, y, z) then return false end
     for _, ent in ipairs(entityList) do
-        if not skipEntities[ent] and ent.x == x and ent.y == y then
+        if not skipEntities[ent] and not ent.walkable and ent.x == x and ent.y == y then
             return false
         end
     end
@@ -25,7 +25,7 @@ local function isTileFree(x, y, z, skipEntities)
 end
 
 function engine:attack(entity, dx, dy)
-    local targetEntity = entities:getEntity(entity.x + dx, entity.y + dy)
+    local targetEntity = entities:getEntity(entity.x + dx, entity.y + dy, entity.z)
     if not entity then
         print("Attacking entity is nil")
     return false
@@ -47,7 +47,7 @@ function engine:attack(entity, dx, dy)
 end
 
 function engine:interact(entity, dx, dy)
-    local targetEntity = entities:getEntity(entity.x + dx, entity.y + dy)
+    local targetEntity = entities:getEntity(entity.x + dx, entity.y + dy, entity.z)
     if not entity then
         print("Interacting entity is nil")
     return false
@@ -68,7 +68,7 @@ function engine:interact(entity, dx, dy)
 end
 
 function engine:inspect(entity, dx, dy)
-    local targetEntity = entities:getEntity(entity.x + dx, entity.y + dy)
+    local targetEntity = entities:getEntity(entity.x + dx, entity.y + dy, entity.z)
     if not entity then
         print("Inspecting entity is nil")
     return false
@@ -98,8 +98,12 @@ function engine:move(entity, dx, dy)
     return false
 end
 
+function engine:grab(entity, dx, dy)
+    return entities:getEntity(entity.x + dx, entity.y + dy, entity.z) 
+end
+
 function engine:push(entity, dx, dy) --TODO Probably some way to integrate pushing and pulling, and to use move
-    local targetEntity = entities:getEntity(entity.x + dx, entity.y + dy)
+    local targetEntity = entities:getEntity(entity.x + dx, entity.y + dy, entity.z)
     if not entity then
         print("Pusher entity is nil")
         return false
@@ -142,7 +146,7 @@ function engine:push(entity, dx, dy) --TODO Probably some way to integrate pushi
 end
 
 function engine:pull(entity, dx, dy)
-    local targetEntity = entities:getEntity(entity.x - dx, entity.y - dy)
+    local targetEntity = entities:getEntity(entity.x - dx, entity.y - dy, entity.z)
     if not entity then
         print("Puller entity is nil")
         return false
@@ -183,8 +187,5 @@ function engine:pull(entity, dx, dy)
 
     return true
 end
-
-
-
 
 return engine

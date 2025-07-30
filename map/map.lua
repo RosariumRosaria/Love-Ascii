@@ -1,6 +1,7 @@
 local types = require("map.tile_types")
 local renderer = require("visuals.renderer")
 local fov_handler = require("fov.fov_handler")
+local entities = require("entities.entities")
 
 local map = {
     width = nil,
@@ -26,6 +27,11 @@ end
 function map:isVisible(x, y)
     if not self:inbounds(x, y) then return false end
     return self.visible[y][x]
+end
+
+function map:isExplored(x, y)
+    if not self:inbounds(x, y) then return false end
+    return self.explored[y][x]
 end
 
 function map:overlapRect(r1, r2)
@@ -69,19 +75,48 @@ function map:makeBuilding(roomStartX, roomStartY, width, height, depth) -- Todo,
     end
 
     local doorStart = math.random(2, lim - 1)
+    local leftY = doorStart + roomStartY - 1
+    local leftX  = roomStartX
+    local rightY = doorStart + roomStartY - 1
+    local rightX  = roomStartX + width - 1
+    local upY = roomStartY
+    local upX = roomStartX + doorStart - 1
+    local downY = roomStartY + height - 1
+    local downX = roomStartX + doorStart - 1
     if dir == 1 then
-        self.tiles[roomStartY + doorStart - 1][roomStartX][1] = types.floor
-        self.tiles[roomStartY + doorStart - 1][roomStartX][2] = types.air
-    elseif dir == 2 then
-        self.tiles[roomStartY + doorStart - 1][roomStartX + width - 1][1] = types.floor
-        self.tiles[roomStartY + doorStart - 1][roomStartX + width - 1][2] = types.air
-    elseif dir == 3 then
-        self.tiles[roomStartY][roomStartX + doorStart - 1][1] = types.floor
-        self.tiles[roomStartY][roomStartX + doorStart - 1][2] = types.air
-    elseif dir == 4 then
-        self.tiles[roomStartY + height - 1][roomStartX + doorStart - 1][1] = types.floor
-        self.tiles[roomStartY + height - 1][roomStartX + doorStart - 1][2] = types.air
+        self.tiles[leftY][leftX][1] = types.floor
+        self.tiles[leftY][leftX][2] = types.air
+        entities:addFromTemplate("door", leftX, leftY, 1)
+    else
+        self.tiles[leftY][leftX][2] = types.air
+        entities:addFromTemplate("window", leftX, leftY, 1)
     end
+    if dir == 2 then
+        self.tiles[rightY][rightX][1] = types.floor
+        self.tiles[rightY][rightX][2] = types.air
+        entities:addFromTemplate("door", rightX, rightY, 1)
+    else
+        self.tiles[rightY][rightX][2] = types.air
+        entities:addFromTemplate("window", rightX, rightY, 1)
+    end
+    if dir == 3 then
+        self.tiles[upY][upX][1] = types.floor
+        self.tiles[upY][upX][2] = types.air
+        entities:addFromTemplate("door", upX, upY, 1)
+    else
+        self.tiles[upY][upX][2] = types.air
+        entities:addFromTemplate("window", upX, upY, 1)
+    end
+    if dir == 4 then
+        self.tiles[downY][downX][1] = types.floor
+        self.tiles[downY][downX][2] = types.air
+        entities:addFromTemplate("door", downX, downY, 1)
+    else
+        self.tiles[downY][downX][2] = types.air
+        entities:addFromTemplate("window", downX, downY, 1)
+    end
+ --TODO, this might cause problems when you add pathfinding, as entities might require map
+
 
     local building = {
         x = roomStartX,
@@ -172,9 +207,6 @@ function map:draw(centerX, centerY, drawDist)
     local endY = math.min(centerY + drawDist, self.height)
     local startX = math.max(centerX - drawDist, 1)
     local startY = math.max(centerY - drawDist, 1)
-
-
-
     for y = startY, endY do
         for x = startX, endX do
             if self.visible[y][x] then

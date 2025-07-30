@@ -8,7 +8,7 @@ return {
         colors = {{0.75, 0.75, 0.75, 0.5}},
         sizes = {1,1,1}
     },
-    attack = { -- Around mostly to keep the previous syntax marked
+    attack = { 
         name = "attack",
         decay = false,
         i = 1,

@@ -13,7 +13,7 @@ function love.load()
     love.window.setTitle("Hello World")
     love.window.setMode(0, 0, {resizable = true, vsync = true, fullscreen = true})
     local scale = 2
-    local font = love.graphics.newFont("assets/FiraCode-Regular.ttf", 16*scale)
+    local font = love.graphics.newFont(16*scale)
     love.graphics.setFont(font)
 
     tileSize = love.graphics.getFont():getHeight() 
@@ -23,7 +23,7 @@ function love.load()
     local mapDepth = 7;
 
     player = {
-        char = "@",
+        chars = {"@"},
         x = 20,
         y = 20,
         z = 1,
@@ -33,6 +33,7 @@ function love.load()
     entities:addEntity(player)
     entities:addFromTemplate("vampire", 5, 5, 1)
     entities:addFromTemplate("crate", 6, 5, 1)
+    entities:addFromTemplate("barricade", 7, 5, 1)
 
     map:load(mapWidth, mapHeight, mapDepth, "town", tileSize)
     map:updateVisibility(player.x, player.y, 25)
@@ -53,8 +54,6 @@ end
 function love.draw()
     map:draw(player.x, player.y, 25) --Todo, fix hardcoded draw distance
     for _, entity in ipairs(entities:getEntityList()) do
-        if map:isVisible(entity.x, entity.y) then
-            renderer:drawEntity(entity.char, tileSize, entity.x, entity.y, player.x, player.y)
-        end
+        renderer:drawEntity(entity, tileSize, player.x, player.y, map:isVisible(entity.x, entity.y), map:isExplored(entity.x, entity.y))
     end
 end
