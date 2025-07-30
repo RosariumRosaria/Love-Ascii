@@ -74,8 +74,8 @@ function map:makeBuilding(roomStartX, roomStartY, width, height, depth) -- Todo,
         lim = height
     end
 
-    local doorStart = math.random(2, lim - 1)
-    local leftY = doorStart + roomStartY - 1
+    local doorStart = math.random(2, lim - 2)
+    local leftY = doorStart + roomStartY - 2
     local leftX  = roomStartX
     local rightY = doorStart + roomStartY - 1
     local rightX  = roomStartX + width - 1
@@ -191,6 +191,14 @@ function map:load(width, height, depth, mapType, tileSize)
 end
 
 function map:updateVisibility(centerX, centerY, radius)
+
+
+    for y = 1, (self.height) do -- TODO SO INEFFICIENT, but works for now
+        for x = 1, (self.width) do
+            self.visible[y][x] = false
+        end
+    end
+
     fov_handler:refreshVisibility(centerX, centerY, radius, self.width, self.height, self.tiles, self.visible)
 
     for y = 1, self.height do -- TODO SO INEFFICIENT, but works for now

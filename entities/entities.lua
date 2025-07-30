@@ -1,12 +1,12 @@
 local entityTypes = require("entities/entity_types") 
+local ui_handler = require("visuals.ui_handler")
 
 local entities = {
-    entityList = {},
-    tilelikeList = {}
+    entityList = {}
 }
 
 function entities:getTransparency(x,y,z)
-    entity = entities:getEntity(x,y,z)
+    local entity = entities:getEntity(x,y,z)
     if not entity then
         return true
     end
@@ -15,7 +15,7 @@ function entities:getTransparency(x,y,z)
 end
 
 function entities:getBlocks(x,y,z)
-    entity = entities:getEntity(x,y,z)
+    local entity = entities:getEntity(x,y,z)
     if not entity then
         return false
     end
@@ -24,35 +24,38 @@ function entities:getBlocks(x,y,z)
 end
 
 function entities:damageEntity(entity, damage)
-    if entity then
-        entity.health = entity.health - damage
-        print("You hit " .. entity.name .. " " .. entity.health .. " remaining!")
-        if entity.health <= 0 then
-            entities:removeEntity(entity)
-        end
+    if not entity or not entity.stats or not entity.stats.health then
+        return false
+    end
+
+    entity.stats.health.health = entity.stats.health.health - damage
+    local name = entity.name or "Unnamed"
+    ui_handler:addTextToUIByName("terminal", "You hit " .. name .. ": " .. entity.stats.health.health .. " HP remaining!")
+
+    if entity.stats.health.health <= 0 then
+        entities:removeEntity(entity)
     end
 end
 
-function entities:interactWithEntity(entity) --TODO
+
+function entities:interactWithEntity(entity) --TODO complex interactions
     local interaction = entity.interaction
     if not interaction then return end
-    print("Before:", entity.char, entity.walkable)
     for k, v in pairs(interaction) do
         local vv  = entity[k]
         entity[k] = v
         interaction[k] = vv
     end
-    print("After:", entity.char, entity.walkable)
 end
 
 function entities:inspectEntity(entity)
     if entity.description then
-        print(entity.description)
+        ui_handler:addTextToUIByName("terminal", entity.description)
     end 
 end
 
 
- function entities:getEntity(x, y, z)
+ function entities:getEntity(x, y, z) -- TODO what happens if multiple entities in one tile?
     for _, entity in ipairs(self.entityList) do
         if entity.x == x and entity.y == y and entity.z == z then
             return entity
@@ -67,16 +70,6 @@ function entities:removeEntity(target)
             return true
         end
     end
-
-    if entity.tilelike then
-        for i, entity in ipairs(self.tilelikeList) do
-            if entity == target then
-                table.remove(self.tilelikeList, i)
-                return true
-            end
-        end
-    end
-
     return false
 end
 
@@ -86,9 +79,6 @@ end
 
 function entities:addEntity(entity)
     table.insert(self.entityList, entity)
-    if entity.tilelike then
-        table.insert(self.tilelikeList, entity)
-    end
 end
 
 
@@ -122,11 +112,11 @@ end
 
 function entities:describe(entity)
     if not entity then
-        print("Entity is nil!")
+        ui_handler:addTextToUIByName("terminal", "Entity is nil!")
         return false;
     end
     for k, v in pairs(entity) do
-        print("key: " .. tostring(k) .. "value: " .. tostring(v))
+        ui_handler:addTextToUIByName("terminal", "key: " .. tostring(k) .. "value: " .. tostring(v))
     end
 end
 

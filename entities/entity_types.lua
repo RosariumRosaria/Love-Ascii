@@ -5,7 +5,10 @@ return {
         color = {0.6, 0.6, 0.65, 1},
         description = "A vampire, try attacking it!",
         transparent = true,
-        health = 10,
+        stats = {        
+            health = {health = 10, maxHealth = 10},
+        },  
+        damage = 1,
         moveable = false,
         walkable = false,
         attackable = true,

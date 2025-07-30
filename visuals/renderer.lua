@@ -4,6 +4,7 @@ local radial = 1;
 local maxHeight = 5;
 local visuals = require("visuals.visuals")
 local entities = require("entities.entities")
+
 function renderer:distanceBetween(x, y, xx, yy, tileSize)
 
     local screenWidth = love.graphics.getWidth()
@@ -134,9 +135,9 @@ function renderer:draw(chars, tileSize, x, y, centerX, centerY, visible)
         if not visible or not entities:getBlocks(x,y,i) then
             local dx, dy = renderer:getRadialOffset(i, offset, x, y, centerX, centerY)
             love.graphics.print(char, xx + dx, yy + dy)
-            love.graphics.setColor(1, 1, 1, 1) 
         end
         renderer:drawVisual(visuals:getVisual(x, y, i), tileSize, screenX, screenY)
+        love.graphics.setColor(1, 1, 1, 1) 
     end
 end
 

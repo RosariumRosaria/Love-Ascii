@@ -1,10 +1,10 @@
 local map = require("map.map")
-
 local renderer = require("visuals.renderer")
+local visuals = require("visuals.visuals")
+local ui_handler = require("visuals.ui_handler")
+local input_handler = require("engine.input_handler")
 local fov_handler = require("fov.fov_handler")
 local entities = require("entities.entities")
-local visuals = require("visuals.visuals")
-local input_handler = require("engine.input_handler")
 local tileSize = 16
 
 
@@ -27,6 +27,11 @@ function love.load()
         x = 20,
         y = 20,
         z = 1,
+        stats = {        
+            health = {health = 10, maxHealth = 10},
+            stamina = {stamina = 10, maxStamina = 10},
+            hunger = {hunger = 10, maxHunger = 10},
+        },  
         damage = 1
     }
 
@@ -37,6 +42,8 @@ function love.load()
 
     map:load(mapWidth, mapHeight, mapDepth, "town", tileSize)
     map:updateVisibility(player.x, player.y, 25)
+
+    ui_handler:load()
 end
 
 timeSinceLastUpdate = 0;
@@ -52,8 +59,14 @@ end
 
 
 function love.draw()
-    map:draw(player.x, player.y, 25) --Todo, fix hardcoded draw distance
+    local scale = 2
+    local font = love.graphics.newFont(16*scale)
+    love.graphics.setFont(font)
+    map:draw(player.x, player.y, 50) --Todo, fix hardcoded draw distance
     for _, entity in ipairs(entities:getEntityList()) do
         renderer:drawEntity(entity, tileSize, player.x, player.y, map:isVisible(entity.x, entity.y), map:isExplored(entity.x, entity.y))
     end
+
+    ui_handler:draw(player)
 end
+
