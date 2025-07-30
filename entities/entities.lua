@@ -1,11 +1,12 @@
 local entityTypes = require("entities/entity_types") 
 
 local entities = {
-    entityList = {}
+    entityList = {},
+    tilelikeList = {}
 }
 
-function entities:getTransparency(x,y)
-    entity = entities:getEntity(x,y)
+function entities:getTransparency(x,y,z)
+    entity = entities:getEntity(x,y,z)
     if not entity then
         return true
     end
@@ -24,7 +25,15 @@ function entities:damageEntity(entity, damage)
 end
 
 function entities:interactWithEntity(entity) --TODO
-    return print ("Stub")
+    local interaction = entity.interaction
+    if not interaction then return end
+    print("Before:", entity.char, entity.walkable)
+    for k, v in pairs(interaction) do
+        local vv  = entity[k]
+        entity[k] = v
+        interaction[k] = vv
+    end
+    print("After:", entity.char, entity.walkable)
 end
 
 function entities:inspectEntity(entity)
@@ -34,9 +43,9 @@ function entities:inspectEntity(entity)
 end
 
 
- function entities:getEntity(x, y)
+ function entities:getEntity(x, y, z)
     for _, entity in ipairs(self.entityList) do
-        if entity.x == x and entity.y == y then
+        if entity.x == x and entity.y == y and entity.z == z then
             return entity
         end
     end
@@ -49,6 +58,16 @@ function entities:removeEntity(target)
             return true
         end
     end
+
+    if entity.tilelike then
+        for i, entity in ipairs(self.tilelikeList) do
+            if entity == target then
+                table.remove(self.tilelikeList, i)
+                return true
+            end
+        end
+    end
+
     return false
 end
 
@@ -58,6 +77,23 @@ end
 
 function entities:addEntity(entity)
     table.insert(self.entityList, entity)
+    if entity.tilelike then
+        table.insert(self.tilelikeList, entity)
+    end
+end
+
+
+
+local function deepCopy(tbl)
+    local copy = {}
+    for k, v in pairs(tbl) do
+        if type(v) == "table" then
+            copy[k] = deepCopy(v)
+        else
+            copy[k] = v
+        end
+    end
+    return copy
 end
 
 function entities:addFromTemplate(name, x, y, z)
@@ -65,11 +101,7 @@ function entities:addFromTemplate(name, x, y, z)
     if not template then
         error("Entity type '" .. tostring(name) .. "' does not exist")
     end
-    local newEntity = {}
-
-    for k, v in pairs(template) do
-        newEntity[k] = v
-    end
+    local newEntity = deepCopy(template)
 
     newEntity.x = x or 1
     newEntity.y = y or 1

@@ -100,11 +100,15 @@ function fovutil:refreshOctant(playerX, playerY, octant, maxDistance, width, hei
       if (fullShadow) then
         visibilityGrid[posY][posX] = false
       else 
-        local projection = shadow.projectTile(row, col)
-        
+        local projection = shadow.projectTile(row, col)  
         local visible = not line:isInShadow(projection)
         visibilityGrid[posY][posX] = visible
-        if visible and (not mapGrid[posY][posX][1].transparent or not entities:getTransparency(posX, posY)) then
+
+        local transparent = true
+        if #mapGrid[posY][posX] > 1 then
+          transparent = mapGrid[posY][posX][2].transparent
+        end
+        if visible and (not transparent or not entities:getTransparency(posX, posY, 1)) then
           line:AddShadow(projection)
           fullShadow = line:isFullShadow()
         end
