@@ -9,6 +9,7 @@ return {
         moveable = false,
         walkable = false,
         attackable = true,
+        blocks = true,
         defaultInteraction = "attack"
     },
     crate = {
@@ -18,6 +19,7 @@ return {
         color = {0.38, 0.33, 0.30},
         transparent = true,
         moveable = true,
+        blocks = true,
         walkable = false
     },
     barricade = {
@@ -28,6 +30,7 @@ return {
         transparent = false,
         moveable = true,
         tilelike = true,
+        blocks = true,
         walkable = false
     },
     door = {
@@ -40,8 +43,9 @@ return {
         walkable = false,
         tilelike = true,
         interactable = true,
+        blocks = true,
         interaction = {
-            chars = {"'", "'"},
+            chars = {"=", "="},
             transparent = true,
             walkable = true
         }
@@ -56,6 +60,7 @@ return {
         walkable = false,
         tilelike = true,
         interactable = true,
+        blocks = false,
         interaction = {
             chars = {"", "'"},
             transparent = true,
@@ -68,6 +73,7 @@ return {
         color = {0.6, 0.6, 0.65, 1},
         transparent = true,
         moveable = true,
+        blocks = true,
         walkable = true
     }
 }

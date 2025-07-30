@@ -33,7 +33,7 @@ function input_handler:update(dt) --
             engine:inspect(player, moveDir.x, moveDir.y)
         elseif isMoving then
             if love.keyboard.isDown("q") then
-                grabbed = engine:grab(player, moveDir.x, moveDir.y) or grabbed
+                if not grabbed then grabbed = engine:grab(player, moveDir.x, moveDir.y) or grabbed end
                 if grabbed then
                     if player.x == grabbed.x + moveDir.x and player.y == grabbed.y + moveDir.y then
                         engine:pull(player, moveDir.x, moveDir.y)
@@ -42,6 +42,7 @@ function input_handler:update(dt) --
                     end
                 end
             else
+                grabbed = false
                 engine:move(player, moveDir.x, moveDir.y)
             end
         end
