@@ -46,7 +46,7 @@ function input_handler:update(dt) --
                 engine:move(player, moveDir.x, moveDir.y)
             end
         end
-        map:updateVisibility(player.x, player.y, 20)
+        map:updateVisibility(player.x, player.y, 30) --TODO, why do you live in input handler? And magic number...
         lastTurn = moveDir
     end
 
