@@ -14,6 +14,15 @@ function entities:getTransparency(x,y,z)
     return entity.transparent
 end
 
+function entities:getBlocks(x,y,z)
+    entity = entities:getEntity(x,y,z)
+    if not entity then
+        return false
+    end
+
+    return entity.blocks
+end
+
 function entities:damageEntity(entity, damage)
     if entity then
         entity.health = entity.health - damage

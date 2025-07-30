@@ -29,7 +29,7 @@ function renderer:getAlpha(i, maxHeight, centerX, centerY, x, y, tileSize, visib
     local base = renderer:distanceBetween(centerX, centerY, x, y, tileSize)
     local heightFactor = (i + 1) / maxHeight
     if not visible then
-        return math.max(0.1, (i - 0.8) / maxHeight) * base * base
+        return math.max(0.1, (i - 0.7) / maxHeight) * base * base
     else
         return heightFactor * base
     end
@@ -131,7 +131,7 @@ function renderer:draw(chars, tileSize, x, y, centerX, centerY, visible)
         renderer:scaleColor(tile.color, alpha, visible)
 
 
-        if not visible or not entities:getEntity(x,y,i) then
+        if not visible or not entities:getBlocks(x,y,i) then
             local dx, dy = renderer:getRadialOffset(i, offset, x, y, centerX, centerY)
             love.graphics.print(char, xx + dx, yy + dy)
             love.graphics.setColor(1, 1, 1, 1) 
