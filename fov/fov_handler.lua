@@ -20,13 +20,13 @@ local function transformOctant(row, col, octant)
 end
 
 
-function fovutil:paintOctant(playerX, playerY, maxDistance, width, height, mapGrid)
+function fovutil:paintOctant(entityX, entityY, maxDistance, width, height, mapGrid)
   for row = maxDistance - 1, 1, -1 do
     local line = ""
     for col = 0, row do
       line =  line.."{ "
-      local x = playerX + col
-      local y = playerY - row
+      local x = entityX + col
+      local y = entityY - row
       if  (fovutil:inbounds(y, x, width, height)) then
                   line = line .. mapGrid[y][x][1].char
 
@@ -39,13 +39,13 @@ function fovutil:paintOctant(playerX, playerY, maxDistance, width, height, mapGr
   end
 end
 
-function fovutil:paintOctantVisiblity(playerX, playerY, maxDistance, width, height, mapGrid, visiblityGrid)
+function fovutil:paintOctantVisiblity(entityX, entityY, maxDistance, width, height, mapGrid, visiblityGrid)
   for row = maxDistance - 1, 1, -1 do
           local line =  " "
     for col = 0, row do
 
-      local x = playerX + col
-      local y = playerY - row
+      local x = entityX + col
+      local y = entityY - row
       if  (fovutil:inbounds(y, x, width, height) and visiblityGrid[y][x]) then
              line = line .. mapGrid[y][x][1].char .. " " 
       else
@@ -64,25 +64,29 @@ function fovutil:inbounds(x, y, width, height)
     return x >= 1 and x <= width and y >= 1 and y <= height
 end
 
-function fovutil:refreshVisibility(playerX, playerY, maxDistance, width, height, mapGrid, visibilityGrid)
-  visibilityGrid[playerY][playerX] = true
-  for octant = 0, 7 do
-    fovutil:refreshOctant(playerX, playerY, octant, maxDistance, width, height, mapGrid, visibilityGrid)
+function fovutil:refreshVisibility(entityX, entityY, maxDistance, width, height, mapGrid, visibilityGrid, player, targetX, targetY)
+  if player then 
+    visibilityGrid[entityY][entityX] = true
   end
+  for octant = 0, 7 do
+    local visible = fovutil:refreshOctant(entityX, entityY, octant, maxDistance, width, height, mapGrid, visibilityGrid, player, targetX, targetY)  --TODO check if this works really for enemies
+    if visible then return true end 
+  end
+  return false
 end
 
-function fovutil:refreshOctant(playerX, playerY, octant, maxDistance, width, height, mapGrid, visibilityGrid)
+function fovutil:refreshOctant(entityX, entityY, octant, maxDistance, width, height, mapGrid, visibilityGrid, player, targetX, targetY)
   local line = shadowLine:new()
   local fullShadow = false
 
   
 
-  -- fovutil:paintOctant(playerX, playerY, maxDistance, width, height, mapGrid)
+  -- fovutil:paintOctant(entityX, entityY, maxDistance, width, height, mapGrid)
   for row = 1, maxDistance do
     -- Stop once we go out of bounds.
     local dx, dy = transformOctant(row, 0, octant)
-    local posX = playerX+dx
-    local posY=  playerY+dy
+    local posX = entityX+dx
+    local posY=  entityY+dy
 
     if not (fovutil:inbounds(posX, posY, width, height)) then
       break
@@ -90,25 +94,33 @@ function fovutil:refreshOctant(playerX, playerY, octant, maxDistance, width, hei
 
     for col = 0, row do
       dx, dy = transformOctant(row, col, octant)
-      posX = playerX+dx
-      posY=  playerY+dy
+      posX = entityX+dx
+      posY=  entityY+dy
 
       if not (fovutil:inbounds(posX, posY, width, height)) then
         break
       end
 
       if (fullShadow) then
-        visibilityGrid[posY][posX] = false
+        if player then
+          visibilityGrid[posY][posX] = false
+        elseif posX == targetX and posY == targetY then
+          return false
+        end
       else 
         local projection = shadow.projectTile(row, col)  
         local visible = not line:isInShadow(projection)
-        visibilityGrid[posY][posX] = visible
+        if player then
+          visibilityGrid[posY][posX] = visible
+        elseif posX == targetX and posY == targetY then
+          return visible
+        end
 
         local transparent = true
         if #mapGrid[posY][posX] > 1 then
           transparent = mapGrid[posY][posX][2].transparent
         end
-        if visible and (not transparent or not entities:getTransparency(posX, posY, 1)) then
+        if visible and (not transparent or entities:getTagLocation(posX, posY, 1, "solid")) then
           line:AddShadow(projection)
           fullShadow = line:isFullShadow()
         end

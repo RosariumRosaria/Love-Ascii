@@ -1,6 +1,7 @@
 return {
     vampire = {
-        name = "vampire",
+        name = "A vampire",
+        type = "enemy",
         chars = {"V"},
         color = {0.6, 0.6, 0.65, 1},
         description = "A vampire, try attacking it!",
@@ -9,74 +10,90 @@ return {
             health = {health = 10, maxHealth = 10},
         },  
         damage = 1,
-        moveable = false,
-        walkable = false,
-        attackable = true,
-        blocks = true,
-        defaultInteraction = "attack"
+        sight = 16,
+        tags = {
+            solid = false,
+            moveable = true,
+            tilelike = true,
+            blocks = true,
+            attackable = true,
+            walkable = false
+        },
     },
     crate = {
         name = "crate",
         description = "A heavy crate, try pushing it!",
+        type = "prop",
         chars = {"#"},
         color = {0.38, 0.33, 0.30},
-        transparent = true,
-        moveable = true,
-        blocks = true,
-        walkable = false
+        tags = {
+            solid = false,
+            moveable = true,
+            tilelike = true,
+            blocks = true,
+            walkable = false
+        }
     },
     barricade = {
         name = "barricade",
         description = "A heavy barricade, try pushing it!",
+        type = "prop",
         chars = {"[ ]", "[ ]"},
-        color = {0.74, 0.66, 0.60},
-        transparent = false,
-        moveable = true,
-        tilelike = true,
-        blocks = true,
-        walkable = false
+        color = {0.47, 0.23, 0.23, 1},
+        tags = {
+            solid = true,
+            moveable = true,
+            tilelike = true,
+            blocks = true,
+            walkable = false
+        }
     },
     door = {
         name = "door",
-        chars = {"[ ]", "[ ]"},
-        color = {0.6, 0.6, 0.65, 1},
         description = "A door, try opening it!",
-        moveable = false,
-        transparent = false,
-        walkable = false,
-        tilelike = true,
-        interactable = true,
-        blocks = true,
+        type = "prop",
+        chars = {"[", "["},
+        color = {0.47, 0.23, 0.23, 1},
+        tags = {
+            moveable = false,
+            solid = true,
+            walkable = false,
+            tilelike = true,
+            interactable = true,
+            blocks = false
+        },
+        naturalRotation = 0,
         interaction = {
-            chars = {"=", "="},
-            transparent = true,
-            walkable = true
+        naturalRotation = 90,
+            chars = {"-  -", "-  -"},
+            tags = {
+                solid = false,
+                walkable = true
+            }
         }
-    },
+    }, 
     window = {
-        window = "window",
-        chars = {"", "-"},
-        color = {0.5, 0.5, 0.75, 1},
+        name = "window",
         description = "A window, try opening it!",
-        moveable = false,
-        transparent = false,
-        walkable = false,
-        tilelike = true,
-        interactable = true,
-        blocks = false,
+        type = "prop",
+        chars = {" ", "- -", "- -"},
+        color = {0.47, 0.33, 0.23, 1},
+        tags = {
+            moveable = false,
+            solid = true,
+            walkable = false,
+            tilelike = true,
+            interactable = true,
+            blocks = false
+        },
+        naturalRotation = 90,
         interaction = {
-            chars = {"", "'"},
-            transparent = true,
-            walkable = true
+            chars = {" ","'  '","'  '"},
+            naturalRotation = 90,
+            tags = {
+                solid = false,
+                walkable = false
+            }
         }
-    },
-    dummy = { -- TODO
-        name = "dummy",
-        chars = {"~"},
-        color = {0.6, 0.6, 0.65, 1},
-        transparent = true,
-        moveable = true,
-        blocks = true,
-        walkable = true
     }
 }

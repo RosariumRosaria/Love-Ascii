@@ -2,7 +2,8 @@ local map = require("map.map")
 local entities = require("entities.entities")
 local visuals = require("visuals.visuals")
 local ui_handler = require("visuals.ui_handler")
-
+local pathfinder = require("engine.pathfinder")
+local fov_handler = require("fov.fov_handler")
 local engine = {}
 
 local function distanceBetween(entity1, entity2)
@@ -19,7 +20,7 @@ local function isTileFree(x, y, z, skipEntities)
     local entityList  = entities:getEntityList()
     if not map:walkable(x, y, z) then return false end
     for _, ent in ipairs(entityList) do
-        if not skipEntities[ent] and not ent.walkable and ent.x == x and ent.y == y then
+        if not skipEntities[ent] and not entities:getTagEntity(ent, "walkable") and ent.x == x and ent.y == y and ent.z == z then
             return false
         end
     end
@@ -40,8 +41,8 @@ function engine:attack(entity, dx, dy)
         ui_handler:addTextToUIByName("terminal", "Too far apart")
         return false
     end 
-    if not targetEntity.attackable then
-        ui_handler:addTextToUIByName("terminal", "Target not attackable")
+    if not entities:getTagEntity(targetEntity, "attackable") then
+        ui_handler:addTextToUIByName("terminal", targetEntity.name .. " is not attackable")
         return false
     end
     visuals:addFromTemplate("attack", entity.x+dx, entity.y+dy, entity.z) 
@@ -63,7 +64,7 @@ function engine:interact(entity, dx, dy)
         ui_handler:addTextToUIByName("terminal", "Too far apart")
         return false
     end 
-    if not targetEntity.interactable then
+    if not targetEntity.tags.interactable then
         ui_handler:addTextToUIByName("terminal", "Nothing to do here")
         return false
     end
@@ -85,7 +86,9 @@ function engine:inspect(entity, dx, dy)
         return false
     end 
 
+    
     entities:inspectEntity(targetEntity)
+    deepPrint(targetEntity)
 end
 
 function engine:move(entity, dx, dy)
@@ -119,13 +122,11 @@ function engine:push(entity, dx, dy) --TODO Probably some way to integrate pushi
         ui_handler:addTextToUIByName("terminal", "Pusher and pushed entities are too far apart")
         return false
     end 
-    if not targetEntity.moveable then
+    if not targetEntity.tags.moveable then
         ui_handler:addTextToUIByName("terminal", "Pushed entity is not moveable")
         return false
     end
  
-    
-
     local pusherTarX = entity.x + dx
     local pusherTarY = entity.y + dy
     local pushedTarX = targetEntity.x + dx
@@ -162,7 +163,7 @@ function engine:pull(entity, dx, dy)
         ui_handler:addTextToUIByName("terminal", "Puller and Pulled entities are too far apart")
         return false
     end 
-    if not targetEntity.moveable then
+    if not targetEntity.tags.moveable then
         ui_handler:addTextToUIByName("terminal", "Pulled entity is not moveable")
         return false
     end
@@ -189,6 +190,41 @@ function engine:pull(entity, dx, dy)
     ui_handler:addTextToUIByName("terminal", "Pulled " .. targetEntity.name .. " to " .. pulledTarX .. ", " .. pulledTarY)
 
     return true
+end
+
+function engine:processTurn()
+    local entityList = entities:getEntityList()
+    for _, entity in ipairs(entityList) do
+        if entity.type == "enemy" then
+            local visible = fov_handler:refreshVisibility(
+                entity.x, entity.y, entity.sight,
+                map:getWidth(), map:getHeight(), map:getTiles(),
+                nil, false, player.x, player.y)
+
+            if distanceBetween(entity, player) < entity.sight and visible then
+                local step = pathfinder:aStar({entity.x, entity.y}, {player.x, player.y})
+                if step and step[1] and step[2] then
+                    local dx = step[1] - entity.x
+                    local dy = step[2] - entity.y
+                    engine:move(entity, dx, dy)
+                    entity.turnsToIdle = 20
+                    entity.target = {player.x, player.y}
+                    --visuals:addFromTemplate("alert",entity.x,entity.y,1) 
+                end
+            elseif entity.turnsToIdle and entity.turnsToIdle > 0 and entity.target then
+                if entity.turnsToIdle > 15 then entity.target = {player.x, player.y} end --TODO make this more dynamic
+                local step = pathfinder:aStar({entity.x, entity.y}, entity.target)
+                if step and step[1] and step[2] then
+                    local dx = step[1] - entity.x
+                    local dy = step[2] - entity.y
+                    engine:move(entity, dx, dy)
+                    ui_handler:addTextToUIByName("terminal", entity.turnsToIdle)
+                    visuals:addFromTemplate("ping",entity.target[1],entity.target[2],1) 
+                    entity.turnsToIdle = entity.turnsToIdle - 1
+                end
+            end
+        end
+    end
 end
 
 return engine

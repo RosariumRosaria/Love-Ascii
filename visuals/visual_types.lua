@@ -5,7 +5,9 @@ return {
         initialSpan = .4,
         i = 1,
         decay = true,
+        type = "basic",
         colors = {{0.75, 0.75, 0.75, 0.5}},
+        roundedAmount = 1/4,
         sizes = {1,1,1}
     },
     attack = { 
@@ -14,7 +16,32 @@ return {
         i = 1,
         lifespan = 0.3,
         initialSpan = 0.3,
+        type = "basic",
         colors = {{0.5, 0.1, 0.1, 0.3}, {0.4, 0.07, 0.07, 0.25} ,{0.3, 0.04, 0.04, 0.2}},
+        roundedAmount = 1/4,
         sizes = {0.8,0.6,0.4}
+    },
+    ping = {
+        name = "ping",
+        lifespan = 5,
+        initialSpan = 5,
+        i = 1,
+        decay = true,
+        type = "basic",
+        colors = {{0.75, 1, 0.75, 0.5}},
+        sizes = {1,1,1}
+    },
+    alert = {
+        name = "alert",
+        lifespan = 2,
+        initialSpan = 2,
+        i = 1,
+        type = "popup",
+        terminal = {
+            text = "<(o)>",
+            color = {{0, 0, 0.0, 0.5}},
+            outlinecolor = {{1, 1, 1, 0.5}},
+        },
+        sizes = {1,1,1}
     }
 }

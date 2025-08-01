@@ -2,8 +2,19 @@ local ui_handler = {
     uiList = {}
 }
 
-function ui_handler:addUI(x,y,width,height,name,color,outline,outlinecolor,centerText)
-    table.insert(ui_handler.uiList, {x=x,y=y,height=height,width=width,name=name,color=color,outline=outline,outlinecolor=outlinecolor,texts={},centerText=centerText})
+function ui_handler:getUIList(name)
+    return ui_handler.uiList
+end
+
+
+function ui_handler:getScreenCoords(x, y, centerX, centerY, tileSize)
+    local screenX = (x - centerX + love.graphics.getWidth() / tileSize / 2) * tileSize
+    local screenY = (y - centerY + love.graphics.getHeight() / tileSize / 2) * tileSize
+    return screenX, screenY
+end
+
+function ui_handler:addUI(x,y,width,height,name,color,outline,outlinecolor,centerText,tileGrid)
+    table.insert(ui_handler.uiList, {x=x,y=y,height=height,width=width,name=name,color=color,outline=outline,outlinecolor=outlinecolor,texts={},centerText=centerText,tileGrid=tileGrid})
 end
 
 function ui_handler:getUI(name)
@@ -90,6 +101,9 @@ function ui_handler:draw(player)
 
 
     for _, ui in ipairs(self.uiList) do
+        if (tileGrid) then
+            ui.x, ui.y = getScreenCoords(ui.x, ui.y, player.x, player.y, 16)
+        end
         ui_handler:drawUI(ui)
         ui_handler:printUI(ui)
     end
