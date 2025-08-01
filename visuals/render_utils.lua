@@ -159,7 +159,7 @@ end
 
 -- Draws a block of text line-by-line within a bounding box
 function render_utils:drawTextBlock(texts, xScreen, yScreen, width, outline, centerText, color, lineHeight)
-
+    local font = love.graphics.getFont()
     lineHeight = lineHeight or tileSize
     if color then
         love.graphics.setColor(color)
