@@ -1,5 +1,4 @@
 local types = require("map.tile_types")
-local renderer = require("visuals.renderer")
 local fov_handler = require("fov.fov_handler")
 local entities = require("entities.entities")
 
@@ -7,12 +6,14 @@ local map = {
     width = nil,
     height = nil,
     depth = nil,
-    tileSize = nil,
     tiles = {},
     visible = {},
     explored = {}
 }
 
+function map:getTiles()
+    return self.tiles;
+end
 
 function map:inbounds(x, y) -- Can maybe moved to separate file
     return x >= 1 and x <= self.width and y >= 1 and y <= self.height
@@ -32,6 +33,18 @@ end
 function map:isExplored(x, y)
     if not self:inbounds(x, y) then return false end
     return self.explored[y][x]
+end
+
+function map:getWidth()
+    return self.width
+end
+
+function map:getHeight()
+    return self.height
+end
+
+function map:getTiles()
+    return self.tiles
 end
 
 function map:overlapRect(r1, r2)
@@ -73,49 +86,24 @@ function map:makeBuilding(roomStartX, roomStartY, width, height, depth) -- Todo,
     if dir % 2 == 0 then
         lim = height
     end
+    local doorStart = math.random(3, lim - 3)
+    local sides = {
+        { x = roomStartX,                 y = doorStart + roomStartY - 1, rotation = 0}, -- left
+        { x = roomStartX + width - 1,     y = doorStart + roomStartY - 1, rotation = 180}, -- right
+        { x = roomStartX + doorStart - 1, y = roomStartY, rotation = 90},                 -- up
+        { x = roomStartX + doorStart - 1, y = roomStartY + height - 1, rotation = 270 }     -- down
+    }
 
-    local doorStart = math.random(2, lim - 2)
-    local leftY = doorStart + roomStartY - 2
-    local leftX  = roomStartX
-    local rightY = doorStart + roomStartY - 1
-    local rightX  = roomStartX + width - 1
-    local upY = roomStartY
-    local upX = roomStartX + doorStart - 1
-    local downY = roomStartY + height - 1
-    local downX = roomStartX + doorStart - 1
-    if dir == 1 then
-        self.tiles[leftY][leftX][1] = types.floor
-        self.tiles[leftY][leftX][2] = types.air
-        entities:addFromTemplate("door", leftX, leftY, 1)
-    else
-        self.tiles[leftY][leftX][2] = types.air
-        entities:addFromTemplate("window", leftX, leftY, 1)
+    for i, side in ipairs(sides) do
+        self.tiles[side.y][side.x][2] = types.air
+        if dir == i then
+            self.tiles[side.y][side.x][1] = types.floor
+            entities:addFromTemplate("door", side.x, side.y, 1, {rotation = side.rotation })
+        else
+            self.tiles[side.y][side.x][3] = types.air
+            entities:addFromTemplate("window", side.x, side.y, 1, { rotation = side.rotation })
+        end
     end
-    if dir == 2 then
-        self.tiles[rightY][rightX][1] = types.floor
-        self.tiles[rightY][rightX][2] = types.air
-        entities:addFromTemplate("door", rightX, rightY, 1)
-    else
-        self.tiles[rightY][rightX][2] = types.air
-        entities:addFromTemplate("window", rightX, rightY, 1)
-    end
-    if dir == 3 then
-        self.tiles[upY][upX][1] = types.floor
-        self.tiles[upY][upX][2] = types.air
-        entities:addFromTemplate("door", upX, upY, 1)
-    else
-        self.tiles[upY][upX][2] = types.air
-        entities:addFromTemplate("window", upX, upY, 1)
-    end
-    if dir == 4 then
-        self.tiles[downY][downX][1] = types.floor
-        self.tiles[downY][downX][2] = types.air
-        entities:addFromTemplate("door", downX, downY, 1)
-    else
-        self.tiles[downY][downX][2] = types.air
-        entities:addFromTemplate("window", downX, downY, 1)
-    end
- --TODO, this might cause problems when you add pathfinding, as entities might require map
 
 
     local building = {
@@ -168,11 +156,10 @@ function map:makeTown(roomCount)
     end
 end
 
-function map:load(width, height, depth, mapType, tileSize)
+function map:load(width, height, depth, mapType)
    -- math.randomseed(os.time())
     self.width = width or 10
     self.height = height or 10
-    self.tileSize = tileSize or 16
     self.depth = depth or 5
     for y = 1, self.height do
         self.tiles[y] = {}
@@ -199,28 +186,12 @@ function map:updateVisibility(centerX, centerY, radius)
         end
     end
 
-    fov_handler:refreshVisibility(centerX, centerY, radius, self.width, self.height, self.tiles, self.visible)
+    fov_handler:refreshVisibility(centerX, centerY, radius, self.width, self.height, self.tiles, self.visible, true)
 
     for y = 1, self.height do -- TODO SO INEFFICIENT, but works for now
         for x = 1, self.width do
             if self.visible[y][x] then
                 self.explored[y][x] = true
-            end
-        end
-    end
-end
-
-function map:draw(centerX, centerY, drawDist)
-    local endX = math.min(centerX + drawDist, self.width)
-    local endY = math.min(centerY + drawDist, self.height)
-    local startX = math.max(centerX - drawDist, 1)
-    local startY = math.max(centerY - drawDist, 1)
-    for y = startY, endY do
-        for x = startX, endX do
-            if self.visible[y][x] then
-                renderer:draw(self.tiles[y][x], self.tileSize, x, y, centerX, centerY, true)
-            elseif self.explored[y][x] then
-                renderer:draw(self.tiles[y][x],  self.tileSize, x, y, centerX, centerY, false)
             end
         end
     end

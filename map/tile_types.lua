@@ -1,7 +1,7 @@
 return {
     grass = {
         name = "grass",
-        char = ".",
+        chars = {"."},
         walkable = true,
         color = {0.2, 0.5, 0.2, 1},
         transparent = true
@@ -9,7 +9,7 @@ return {
 
     shrub = {
         name = "shrub",
-        char = "*",
+        chars = {"*"},
         walkable = true,
         color = {0.3, 0.6, 0.3, 1},
         transparent = true
@@ -17,7 +17,7 @@ return {
 
     hWall = {
         name = "wall",
-        char = "|",
+        chars = {"|"},
         walkable = false,
         color = {0.6, 0.6, 0.65, 1},
         transparent = false
@@ -25,7 +25,7 @@ return {
 
     vWall = {
         name = "wall",
-        char = "-",
+        chars = {"---"},
         walkable = false,
         color = {0.6, 0.6, 0.65, 1},
         transparent = false
@@ -33,7 +33,7 @@ return {
 
     cWall = {
         name = "wall",
-        char = "+",
+        chars = {"+"},
         walkable = false,
         color = {0.6, 0.6, 0.65, 1},
         transparent = false
@@ -41,7 +41,7 @@ return {
 
     water = {
         name = "water",
-        char = "~",
+        chars = {"~"},
         walkable = false,
         color = {0.2, 0.4, 0.8, 1},
         transparent = true
@@ -49,7 +49,7 @@ return {
 
     floor = {
         name = "floor",
-        char = "::",
+        chars = {"::"},
         walkable = true,
         color = {0.6, 0.5, 0.4, 1},
         transparent = true
@@ -57,7 +57,7 @@ return {
 
     air = {
         name = "air",
-        char = " ",
+        chars = {" "},
         walkable = true,
         color = {0.9, 0.9, 1.0, 0.0},
         transparent = true
