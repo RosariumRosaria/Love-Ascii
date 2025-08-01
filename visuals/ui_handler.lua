@@ -56,22 +56,6 @@ function ui_handler:addTextToUIByName(name, text)
     ui_handler:addTextToUI(ui_handler:getUI(name), text)
 end
 
-function ui_handler:printUI(ui)
-    local scale = 1
-    local font = love.graphics.newFont(16*scale)
-    local textHeight = font:getHeight()
-
-    love.graphics.setFont(font) 
-    for i, text in ipairs(ui.texts) do
-        local dx = ui.outline * 2
-        if (ui.centerText) then
-            dx =  dx + ((ui.width-font:getWidth(text))/2)
-        end
-        love.graphics.print(text, ui.x + dx, ui.y + ui.outline + ((i-1)*textHeight))
-
-    end
-end
-
 function ui_handler:load()
     local screenHeight = love.graphics.getHeight() 
     local screenWidth = love.graphics.getWidth() 
@@ -87,26 +71,6 @@ function ui_handler:load()
 
     ui_handler:addUI(startX,buffer,width,height,"terminal",black,outline,white)
     ui_handler:addUI(startX,startY,width, screenHeight - height - (4*buffer),"status",black,outline,white)
-end
-
-function ui_handler:draw(player)
-    local status = ui_handler:getUI("status")
-    status.texts = {}
-
-    for statName, stat in pairs(player.stats) do
-        local current = stat[statName]
-        local max = stat["max" .. statName:gsub("^%l", string.upper)]
-        ui_handler:addTextToUIByName("status", statName .. ": " .. current .. " / " .. max)
-    end
-
-
-    for _, ui in ipairs(self.uiList) do
-        if (tileGrid) then
-            ui.x, ui.y = getScreenCoords(ui.x, ui.y, player.x, player.y, 16)
-        end
-        ui_handler:drawUI(ui)
-        ui_handler:printUI(ui)
-    end
 end
 
 return ui_handler
