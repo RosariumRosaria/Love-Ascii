@@ -1,107 +1,88 @@
-local visualTypes = require("visuals/visual_types") 
-local ui_handler = require("visuals/ui_handler")
+local visualTypes = require("visuals/visual_types")
 
 local visuals = {
-    visualList = {},
-    visualTypeDict = {}
+  visualList = {},
+  visualTypeDict = {},
 }
 
-
-
 function visuals:getVisuals(x, y, z)
-    local ret = {}
-    for _, visual in ipairs(self.visualList) do
-        if visual.x == x and visual.y == y and visual.z == z then
-            table.insert(ret, visual)
-        end
+  local ret = {}
+  for _, visual in ipairs(self.visualList) do
+    if visual.x == x and visual.y == y and visual.z == z then
+      table.insert(ret, visual)
     end
-    return ret
+  end
+  return ret
 end
 
 function visuals:getVisualList()
-    return self.visualList
+  return self.visualList
 end
 
 function visuals:addVisual(visual)
-    if visual.type == "popup" then
-        self:describe(visual, 1)
-        local font = love.graphics.getFont()
-        local textHeight = font:getHeight()
-        local offset = textHeight
-        ui_handler:addUI(visual.x,visual.y+offset,#visual.terminal.text*16,textHeight,"popup",visual.terminal.color,visual.terminal.outline,visual.terminal.outlinecolor,true)
-    end
-    table.insert(self.visualList, visual)
+  if visual.type == "popup" then
+    self:describe(visual, 1)
+    local font = love.graphics.getFont()
+    local textHeight = font:getHeight()
+    local offset = textHeight
+  end
+  table.insert(self.visualList, visual)
 end
 
 function deepCopy(tbl)
-    local copy = {}
-    for k, v in pairs(tbl) do
-        if type(v) == "table" then
-            copy[k] = deepCopy(v)  -- Recursively copy tables
-        else
-            copy[k] = v
-        end
+  local copy = {}
+  for k, v in pairs(tbl) do
+    if type(v) == "table" then
+      copy[k] = deepCopy(v) -- Recursively copy tables
+    else
+      copy[k] = v
     end
-    return copy
+  end
+  return copy
 end
 
 function visuals:addFromTemplate(name, x, y, z)
-    local template = visualTypes[name]
-    if not template then
-        error("Visual type '" .. tostring(name) .. "' does not exist")
+  local template = visualTypes[name]
+  if not template then
+    error("Visual type '" .. tostring(name) .. "' does not exist")
+  end
+
+  local newVisual = {}
+
+  -- Use deepCopy to preserve the structure of subtables
+  for k, v in pairs(template) do
+    if type(v) == "table" then
+      newVisual[k] = deepCopy(v) -- Make a proper copy of nested tables
+    else
+      newVisual[k] = v
     end
+  end
 
-    local newVisual = {}
+  newVisual.x = x or 1
+  newVisual.y = y or 1
+  newVisual.z = z or 1
 
-    -- Use deepCopy to preserve the structure of subtables
-    for k, v in pairs(template) do
-        if type(v) == "table" then
-            newVisual[k] = deepCopy(v)  -- Make a proper copy of nested tables
-        else
-            newVisual[k] = v
-        end
-    end
-
-    newVisual.x = x or 1
-    newVisual.y = y or 1
-    newVisual.z = z or 1
-
-    self:addVisual(newVisual)
-    return newVisual
-end
-
-
-function visuals:describe(tbl, indent) --TODO, make a generic helper file, maybe this, bounds? Possibly Create from template
-    indent = indent or 0
-    local indentStr = string.rep("  ", indent)
-    for k, v in pairs(tbl) do
-        if type(v) == "table" then
-            print(indentStr .. tostring(k) .. ":")
-            deepPrint(v, indent + 1)
-        else
-            print(indentStr .. tostring(k) .. ": " .. tostring(v))
-        end
-    end
+  self:addVisual(newVisual)
+  return newVisual
 end
 
 function visuals:update(dt)
-    for i = #self.visualList, 1, -1 do
-        local visual = self.visualList[i]
-        visual.lifespan = visual.lifespan - dt
-        if visual.lifespan <= 0 then
-            if visual.colors then
-                if #visual.colors > visual.i then
-                    visual.i = visual.i + 1
-                    visual.lifespan = visual.initialSpan
-                else
-                    table.remove(self.visualList, i) 
-                end
-            else
-                table.remove(self.visualList, i) 
-            end
+  for i = #self.visualList, 1, -1 do
+    local visual = self.visualList[i]
+    visual.lifespan = visual.lifespan - dt
+    if visual.lifespan <= 0 then
+      if visual.colors then
+        if #visual.colors > visual.i then
+          visual.i = visual.i + 1
+          visual.lifespan = visual.initialSpan
+        else
+          table.remove(self.visualList, i)
         end
+      else
+        table.remove(self.visualList, i)
+      end
     end
+  end
 end
-
 
 return visuals
