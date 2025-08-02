@@ -2,10 +2,10 @@ return {
   vampire = {
     name = "A vampire",
     type = "enemy",
+    state = "idle",
     chars = { "V" },
     color = { 0.6, 0.6, 0.65, 1 },
     description = "A vampire, try attacking it!",
-    transparent = true,
     stats = {
       health = { health = 10, maxHealth = 10 },
     },

@@ -21,10 +21,13 @@ _G.deepPrint = function(tbl, indent, visited) --TODO Gross, for debug
     local keyStr = tostring(k)
     if type(v) == "table" then
       ui_handler:addTextToUIByName("terminal", (string.rep("  ", indent) .. keyStr .. " = {"))
+      print(string.rep("  ", indent) .. keyStr .. " = {")
       deepPrint(v, indent + 1, visited)
       ui_handler:addTextToUIByName("terminal", (string.rep("  ", indent) .. "}"))
+      print((string.rep("  ", indent) .. "}"))
     else
       ui_handler:addTextToUIByName("terminal", (string.rep("  ", indent) .. keyStr .. " = " .. tostring(v)))
+      print((string.rep("  ", indent) .. keyStr .. " = " .. tostring(v)))
     end
   end
 end

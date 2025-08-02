@@ -3,6 +3,7 @@ local ui_handler = require("visuals.ui_handler")
 local entities = require("entities.entities")
 local render_utils = require("visuals.render_utils")
 local map = require("map.map")
+local render_primitives = require("visuals.render_primitives")
 
 local render_handler = {}
 local config = require("config")
@@ -11,7 +12,7 @@ local smallTileSize
 local defaultFont
 local smallFont
 
-local maxHeight = 5 --TODO whys is this here. Fine for now.
+local MAX_HEIGHT = 5 --TODO whys is this here. Fine for now.
 local OFFSET_TYPE = 1 -- global rendering style setting
 local OFFSET_AMOUNT
 
@@ -21,26 +22,28 @@ end
 
 function render_handler:drawVisual(visual, centerX, centerY)
   local xScreen, yScreen = render_utils:getScreenCoords(visual.x, visual.y, centerX, centerY)
-  if visual.type == "basic" then
-    local visualSize = visual.sizes[visual.i] * tileSize
-    local color = { 1, 1, 1, 1 }
-    if visual.decay then
-      color = render_utils:scaleColor(visual.colors[1], visual.lifespan / visual.initialSpan)
-    else
-      color = visual.colors[visual.i]
+
+  local color = { 1, 1, 1, 1 }
+
+  if visual.rects then
+    for _, rect in ipairs(visual.rects) do
+      if visual.params.decayOverTime then
+        color = render_utils:scaleColor(rect.colors[1], visual.params.lifespan / visual.params.initialSpan)
+      else
+        color = visual.colors[visual.params.i]
+      end
+      local visualSize = rect.sizes[visual.params.i] * tileSize
+      render_primitives:drawRect(
+        xScreen + ((tileSize - visualSize) / 2),
+        yScreen + ((tileSize - visualSize) / 2),
+        visualSize,
+        visualSize,
+        color,
+        rect.outlineWidth,
+        rect.outlineColor,
+        rect.roundedAmount
+      )
     end
-    render_utils:drawRect(
-      xScreen + ((tileSize - visualSize) / 2),
-      yScreen + ((tileSize - visualSize) / 2),
-      visualSize,
-      visualSize,
-      color,
-      visual.outlineWidth,
-      visual.outlineColor,
-      visual.roundedAmount
-    )
-  elseif visual.type == "popup" then
-    --STUB
   end
 end
 
@@ -51,15 +54,11 @@ end
 function render_handler:drawEntity(entity, centerX, centerY, visible, explored)
   local tilelike = entities:getTagEntity(entity, "tilelike")
 
-  if not visible and not explored and tilelike then
+  if not visible and (not tilelike or not explored) then
     return
   end
 
-  if not visible and not tilelike then
-    return
-  end
-
-  local baseColor = entity.color
+  local baseColor = entity.color or { 1, 1, 1, 1 }
 
   if tilelike then
     baseColor = render_utils:getEffectiveColor(baseColor, visible, explored)
@@ -69,11 +68,11 @@ function render_handler:drawEntity(entity, centerX, centerY, visible, explored)
   local base = render_utils:distanceBetween(entity.x, entity.y, centerX, centerY)
 
   for i, charData in ipairs(entity.chars) do
-    local alpha = render_utils:getAlpha(entity.z + i, maxHeight, centerX, centerY, entity.x, entity.y, visible, base)
-    local scaledColor = render_utils:scaleColor(baseColor, alpha)
+    local alpha = render_utils:getAlpha(entity.z + i, MAX_HEIGHT, centerX, centerY, entity.x, entity.y, visible, base)
+    local scaledColor = { baseColor[1], baseColor[2], baseColor[3], alpha }
     local dx, dy =
       render_utils:getOffset(entity.z + i - 1, OFFSET_TYPE, OFFSET_AMOUNT, entity.x, entity.y, centerX, centerY)
-    render_utils:drawChar(
+    render_primitives:drawChar(
       xScreen + dx,
       yScreen + dy,
       charData,
@@ -98,23 +97,24 @@ function render_handler:drawTile(tileData, x, y, centerX, centerY, visible, expl
 
   for i, tile in ipairs(tileData) do
     local char = tile.chars[1]
-    local alpha = render_utils:getAlpha(i, maxHeight, centerX, centerY, x, y, visible, base)
+    local alpha = render_utils:getAlpha(i, MAX_HEIGHT, centerX, centerY, x, y, visible, base)
     local baseColor = render_utils:getEffectiveColor(tile.color, visible, explored)
     if baseColor and (not visible or not entities:getTagLocation(x, y, i, "blocks")) then
-      local scaledColor = render_utils:scaleColor(baseColor, alpha)
+      local scaledColor = { baseColor[1], baseColor[2], baseColor[3], alpha }
       local dx, dy = render_utils:getOffset(i, OFFSET_TYPE, OFFSET_AMOUNT, x, y, centerX, centerY)
-      render_utils:drawChar(xScreen + dx, yScreen + dy, char, scaledColor, nil, tile.outlineColor, true)
+      render_primitives:drawChar(xScreen + dx, yScreen + dy, char, scaledColor, nil, tile.outlineColor, true)
     end
   end
 end
 
 function render_handler:drawUI(ui, smallTileSize)
-  render_utils:drawPanel(
+  render_primitives:drawPanel(
     ui.x,
     ui.y,
     ui.width,
     ui.height,
     ui.color,
+    ui.outlineWidth,
     ui.outlinecolor,
     ui.texts,
     ui.centerText,
@@ -176,10 +176,11 @@ function render_handler:load()
   defaultFont = config.font
   smallFont = config.smallFont
 
-  maxHeight = 5
+  MAX_HEIGHT = 5
   OFFSET_TYPE = 1
   OFFSET_AMOUNT = 0.25 * tileSize
   render_utils:load()
+  render_primitives:load()
 end
 
 return render_handler
