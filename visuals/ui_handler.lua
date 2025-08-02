@@ -25,6 +25,8 @@ function ui_handler:addUI(x, y, width, height, name, color, outlineWidth, outlin
     texts = {},
     centerText = centerText,
     tileGrid = tileGrid,
+    scrollOffset = 0,
+    capacity = height * 10,
   })
 end
 
@@ -44,7 +46,7 @@ function ui_handler:addTextToUI(ui, text)
 
   local font = love.graphics.getFont()
   local textHeight = font:getHeight()
-  if #ui.texts * textHeight > ui.height then
+  if #ui.texts * textHeight > ui.capacity then
     table.remove(ui.texts, 1)
   end
 end

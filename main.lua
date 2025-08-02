@@ -44,7 +44,7 @@ function love.load()
   local mapHeight = 100
   local mapDepth = 7
 
-  player = {
+  player = { --TODO, why is this global
     chars = { "@" },
     x = 20,
     y = 20,

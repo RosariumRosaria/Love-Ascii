@@ -2,6 +2,7 @@ local engine = require("engine.engine")
 local map = require("map.map")
 local entities = require("entities.entities")
 local render_handler = require("visuals.render_handler")
+local ui_handler = require("visuals.ui_handler")
 
 local input_handler = {}
 
@@ -9,7 +10,8 @@ local timeSinceLastUpdate = 0
 local timeBetweenUpdates = 0.1
 local lastTurn = { x = 0, y = 0 }
 local grabbed = nil
-function input_handler:update(dt) --
+
+function input_handler:update(dt)
   timeSinceLastUpdate = timeSinceLastUpdate + dt
   if timeSinceLastUpdate < timeBetweenUpdates then
     return
@@ -79,6 +81,13 @@ function input_handler:update(dt) --
 
   if tookAction then --Took action needs to check if it worked
     engine:processTurn()
+  end
+end
+
+function love.wheelmoved(_, y)
+  local term = ui_handler:getUI("terminal")
+  if term then
+    term.scrollOffset = math.max(0, term.scrollOffset - y)
   end
 end
 
