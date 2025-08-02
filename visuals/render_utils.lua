@@ -2,14 +2,14 @@ local config = require("config")
 local tileSize
 local render_utils = {}
 
-function render_utils:getAlpha(i, maxHeight, centerX, centerY, x, y, visible, base)
+function render_utils:getHeightLevelScale(i, maxHeight, centerX, centerY, x, y, visible, base)
   local heightFactor = (i + 0.5) / maxHeight
   local alpha = heightFactor * base
   if not visible then
     alpha = alpha * 0.3
   end
 
-  return math.max(math.min(alpha, 1), 0.1)
+  return math.max(math.min(alpha, 2), 0.1)
 end
 
 -- Returns the final color to be used based on visibility and exploration

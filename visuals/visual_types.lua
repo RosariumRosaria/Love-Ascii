@@ -61,7 +61,7 @@ return {
     panels = {
       {
         text = "<(o)>",
-        color = { { 0, 0, 0.0, 0.5 } },
+        colors = { { 0, 0, 0.0, 0.5 } },
         outlinecolor = { { 1, 1, 1, 0.5 } },
         sizes = { 2 },
       },

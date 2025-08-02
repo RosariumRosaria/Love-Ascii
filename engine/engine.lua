@@ -16,7 +16,7 @@ local function distanceBetween(entity1, entity2)
   return math.sqrt((entity1.x - entity2.x) ^ 2 + (entity1.y - entity2.y) ^ 2)
 end
 
-local function isTileFree(x, y, z, skipEntities)
+local function isTileFree(x, y, z, skipEntities) --Maybe we can seperate this adn other helpers into a more generic util module. Too much logic is being done here
   local entityList = entities:getEntityList()
   if not map:walkable(x, y, z) then
     return false
