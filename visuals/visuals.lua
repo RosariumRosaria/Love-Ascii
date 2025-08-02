@@ -20,16 +20,10 @@ function visuals:getVisualList()
 end
 
 function visuals:addVisual(visual)
-  if visual.type == "popup" then
-    self:describe(visual, 1)
-    local font = love.graphics.getFont()
-    local textHeight = font:getHeight()
-    local offset = textHeight
-  end
   table.insert(self.visualList, visual)
 end
 
-function deepCopy(tbl)
+local function deepCopy(tbl)
   local copy = {}
   for k, v in pairs(tbl) do
     if type(v) == "table" then
@@ -66,18 +60,39 @@ function visuals:addFromTemplate(name, x, y, z)
   return newVisual
 end
 
+local function updateVisualParts(parts, nextFrame)
+  local remaining = 0
+
+  for i = #parts, 1, -1 do
+    local part = parts[i]
+    local maxFrames = part.colors and #part.colors or 1
+    if nextFrame > maxFrames then
+      table.remove(parts, i)
+    else
+      remaining = remaining + 1
+    end
+  end
+
+  return remaining
+end
+
 function visuals:update(dt)
   for i = #self.visualList, 1, -1 do
     local visual = self.visualList[i]
-    visual.lifespan = visual.lifespan - dt
-    if visual.lifespan <= 0 then
-      if visual.colors then
-        if #visual.colors > visual.i then
-          visual.i = visual.i + 1
-          visual.lifespan = visual.initialSpan
-        else
-          table.remove(self.visualList, i)
-        end
+    local params = visual.params
+    params.lifespan = params.lifespan - dt
+
+    if params.lifespan <= 0 then
+      local iNext = params.i + 1
+      local totalRemaining = 0
+
+      if visual.rects then
+        totalRemaining = totalRemaining + updateVisualParts(visual.rects, iNext)
+      end
+
+      if totalRemaining > 0 then
+        params.i = iNext
+        params.lifespan = params.initialSpan
       else
         table.remove(self.visualList, i)
       end

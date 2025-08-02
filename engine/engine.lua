@@ -224,7 +224,10 @@ function engine:processTurn()
           engine:move(entity, dx, dy)
           entity.turnsToIdle = 20
           entity.target = { player.x, player.y }
-          --visuals:addFromTemplate("alert",entity.x,entity.y,1)
+          if entity.state == "idle" then
+            visuals:addFromTemplate("alert", entity.x, entity.y, 1)
+            entity.state = "following"
+          end
         end
       elseif entity.turnsToIdle and entity.turnsToIdle > 0 and entity.target then
         if entity.turnsToIdle > 15 then
@@ -238,6 +241,9 @@ function engine:processTurn()
           ui_handler:addTextToUIByName("terminal", entity.turnsToIdle)
           visuals:addFromTemplate("ping", entity.target[1], entity.target[2], 1)
           entity.turnsToIdle = entity.turnsToIdle - 1
+          if entity.turnsToIdle == 0 then
+            entity.state = "idle"
+          end
         end
       end
     end
