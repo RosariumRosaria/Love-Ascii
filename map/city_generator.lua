@@ -50,6 +50,11 @@ function city_generator:makeBuilding(roomStartX, roomStartY, width, height, dept
   if dir % 2 == 0 then
     lim = height
   end
+
+  local dir2 = math.random(1, 4)
+  if dir2 % 2 == 0 then
+    lim = height
+  end
   local doorStart = math.random(3, lim - 3)
   local sides = {
     { x = roomStartX, y = doorStart + roomStartY - 1, rotation = 0 }, -- left
@@ -60,7 +65,7 @@ function city_generator:makeBuilding(roomStartX, roomStartY, width, height, dept
 
   for i, side in ipairs(sides) do
     tiles[side.y][side.x][2] = types.air
-    if dir == i then
+    if dir == i or dir2 == i then
       tiles[side.y][side.x][1] = types.floor
       entities:addFromTemplate("door", side.x, side.y, 1, { rotation = side.rotation })
     else
