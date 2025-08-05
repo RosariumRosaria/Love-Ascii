@@ -83,7 +83,7 @@ end
 function render_handler:drawEntity(entity, centerX, centerY, visible, explored)
   local tilelike = entities:getTagEntity(entity, "tilelike")
 
-  if not visible and (not tilelike or not explored) then
+  if not visible and not (tilelike and explored) then
     return
   end
 

@@ -77,6 +77,7 @@ function engine:interact(entity, dx, dy)
     return false
   end
   entities:interactWithEntity(targetEntity)
+  return true
 end
 
 function engine:inspect(entity, dx, dy)
@@ -230,7 +231,7 @@ function engine:processTurn()
           end
         end
       elseif entity.turnsToIdle and entity.turnsToIdle > 0 and entity.target then
-        if entity.turnsToIdle > 15 then
+        if entity.turnsToIdle > 18 then
           entity.target = { player.x, player.y }
         end --TODO make this more dynamic
 

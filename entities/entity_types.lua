@@ -14,7 +14,7 @@ return {
     tags = {
       solid = false,
       moveable = true,
-      tilelike = true,
+      tilelike = false,
       blocks = true,
       attackable = true,
       walkable = false,

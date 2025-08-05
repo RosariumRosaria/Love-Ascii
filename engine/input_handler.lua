@@ -37,11 +37,9 @@ function input_handler:update(dt)
       moveDir = lastTurn
     end
     if love.keyboard.isDown("f") then
-      engine:attack(player, moveDir.x, moveDir.y)
-      tookAction = true
+      tookAction = engine:attack(player, moveDir.x, moveDir.y)
     elseif love.keyboard.isDown("e") then
-      engine:interact(player, moveDir.x, moveDir.y)
-      tookAction = true
+      tookAction = engine:interact(player, moveDir.x, moveDir.y)
     elseif love.keyboard.isDown("r") then
       engine:inspect(player, moveDir.x, moveDir.y)
     elseif isMoving then
@@ -51,17 +49,14 @@ function input_handler:update(dt)
         end
         if grabbed then
           if player.x == grabbed.x + moveDir.x and player.y == grabbed.y + moveDir.y then
-            engine:pull(player, moveDir.x, moveDir.y)
-            tookAction = true
+            tookAction = engine:pull(player, moveDir.x, moveDir.y)
           elseif player.x + moveDir.x == grabbed.x and player.y + moveDir.y == grabbed.y then
-            engine:push(player, moveDir.x, moveDir.y)
-            tookAction = true
+            tookAction = engine:push(player, moveDir.x, moveDir.y)
           end
         end
       else
         grabbed = false
-        engine:move(player, moveDir.x, moveDir.y)
-        tookAction = true
+        tookAction = engine:move(player, moveDir.x, moveDir.y)
       end
     end
     map:updateVisibility(player.x, player.y, 30) --TODO, why do you live in input handler? And magic number...
@@ -80,7 +75,7 @@ function input_handler:update(dt)
     love.event.quit()
   end
 
-  if tookAction then --Took action needs to check if it worked
+  if tookAction then
     engine:processTurn()
   end
 end
