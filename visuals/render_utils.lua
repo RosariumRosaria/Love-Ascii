@@ -1,5 +1,9 @@
 local config = require("config")
 local tileSize
+local smallTileSize
+local defaultFont
+local smallFont
+local tileSize
 local render_utils = {}
 
 function render_utils:getHeightLevelScale(i, maxHeight, centerX, centerY, x, y, visible, base)
@@ -10,6 +14,17 @@ function render_utils:getHeightLevelScale(i, maxHeight, centerX, centerY, x, y, 
   end
 
   return math.max(math.min(alpha, 2), 0.1)
+end
+
+function render_utils:getMaxTextWidth(texts, font)
+  local maxWidth = ""
+  font = font or defaultFont
+  for _, text in ipairs(texts) do
+    if font:getWidth(text) > font:getWidth(maxWidth) then
+      maxWidth = text
+    end
+  end
+  return font:getWidth(maxWidth)
 end
 
 -- Returns the final color to be used based on visibility and exploration
@@ -80,6 +95,9 @@ end
 
 function render_utils:load()
   tileSize = config.tileSize
+  smallTileSize = config.smallTileSize
+  defaultFont = config.font
+  smallFont = config.smallFont
 end
 
 return render_utils

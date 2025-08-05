@@ -1,6 +1,25 @@
 local map = require("map.map")
+local entities = require("entities.entities")
 
 local pathfinder = {}
+
+local function isTileFree(x, y, z, entityList, goal) --TODO, this and the similar function in engine should be moved
+  if x == goal[1] and y == goal[2] and z == 1 then
+    return true
+  end
+
+  if not map:walkable(x, y, z) then
+    return false
+  end
+
+  for _, ent in ipairs(entityList) do
+    if not entities:getTagEntity(ent, "walkable") and ent.x == x and ent.y == y and ent.z == z then
+      return false
+    end
+  end
+
+  return true
+end
 
 local function put(tab, node, priority)
   for i = 1, #tab do
@@ -18,20 +37,20 @@ local function get(tab)
   return ret
 end
 
-local function getNeighbors(x, y)
+local function getNeighbors(x, y, entityList, goal)
   local candidates = {
     { x + 1, y },
     { x - 1, y },
     { x, y + 1 },
-    { x, y - 1 },
+    { x, y - 1 } --[[,
     { x + 1, y + 1 },
     { x - 1, y - 1 },
     { x + 1, y - 1 },
-    { x - 1, y + 1 },
+    { x - 1, y + 1 }, ]],
   }
   local neighbors = {}
   for _, pos in ipairs(candidates) do
-    if map:walkable(pos[1], pos[2], 1) then
+    if isTileFree(pos[1], pos[2], 1, entityList, goal) then
       table.insert(neighbors, pos)
     end
   end
@@ -63,9 +82,10 @@ local function reconstructPath(came_from, start_key, goal_key) --TODO clean up g
 end
 
 function pathfinder:aStar(start, goal)
+  local entityList = entities:getEntityList()
+
   local frontier = {}
   put(frontier, start, 0)
-
   local came_from = {}
   local cost_so_far = {}
   came_from[key(start[1], start[2])] = nil
@@ -78,7 +98,7 @@ function pathfinder:aStar(start, goal)
     if current[1] == goal[1] and current[2] == goal[2] then
       break
     end
-    for _, next in ipairs(getNeighbors(current[1], current[2])) do
+    for _, next in ipairs(getNeighbors(current[1], current[2], entityList, goal)) do
       local current_key = key(current[1], current[2])
       local next_key = key(next[1], next[2])
       local new_cost = cost_so_far[current_key] + 1 --TODO, add actual costs, as currently it doesn't exist

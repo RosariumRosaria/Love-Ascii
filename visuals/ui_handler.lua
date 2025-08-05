@@ -2,6 +2,16 @@ local ui_handler = {
   uiList = {},
 }
 
+local statusTypes = { "stats", "inventory" }
+local statusPos = 1
+local statusPanel
+
+function ui_handler:switchStatus()
+  statusPos = (statusPos % 2) + 1
+  statusPanel.mode = statusTypes[statusPos]
+  ui_handler:updateStatus()
+end
+
 function ui_handler:getUIList(name)
   return ui_handler.uiList
 end
@@ -13,7 +23,7 @@ function ui_handler:getScreenCoords(x, y, centerX, centerY, tileSize)
 end
 
 function ui_handler:addUI(x, y, width, height, name, color, outlineWidth, outlinecolor, centerText, tileGrid)
-  table.insert(ui_handler.uiList, {
+  local ui = {
     x = x,
     y = y,
     height = height,
@@ -27,7 +37,11 @@ function ui_handler:addUI(x, y, width, height, name, color, outlineWidth, outlin
     tileGrid = tileGrid,
     scrollOffset = 0,
     capacity = height * 10,
-  })
+  }
+
+  table.insert(ui_handler.uiList, ui)
+
+  return ui
 end
 
 function ui_handler:getUI(name)
@@ -68,7 +82,25 @@ function ui_handler:load()
   local white = { 1, 1, 1, 0.5 }
 
   ui_handler:addUI(startX, buffer, width, height, "terminal", black, outlineWidth, white)
-  ui_handler:addUI(startX, startY, width, screenHeight - height - (4 * buffer), "status", black, outlineWidth, white)
+  statusPanel =
+    ui_handler:addUI(startX, startY, width, screenHeight - height - (4 * buffer), "status", black, outlineWidth, white)
+  statusPanel.mode = "inventory"
+end
+
+function ui_handler:updateStatus() --TODO, I wonder if there's a way to make this more dynamically describe whatever I pass it. Maybe if I change the describe() funtion by type?
+  statusPanel.texts = {}
+
+  if statusPanel.mode == "stats" then
+    for statName, stat in pairs(player.stats) do
+      local current = stat[statName]
+      local max = stat["max" .. statName:gsub("^%l", string.upper)]
+      ui_handler:addTextToUIByName("status", statName .. ": " .. current .. " / " .. max)
+    end
+  elseif statusPanel.mode == "inventory" then
+    for itemName, item in pairs(player.inventory) do
+      ui_handler:addTextToUIByName("status", "- " .. itemName)
+    end
+  end
 end
 
 return ui_handler

@@ -40,8 +40,8 @@ function love.load()
   love.window.setTitle("Hello World")
   love.window.setMode(0, 0, { resizable = true, vsync = true, fullscreen = true })
 
-  local mapWidth = 100
-  local mapHeight = 100
+  local mapWidth = 200
+  local mapHeight = 200
   local mapDepth = 7
 
   player = { --TODO, why is this global

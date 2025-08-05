@@ -35,29 +35,25 @@ local function deepCopy(tbl)
   return copy
 end
 
-function visuals:addFromTemplate(name, x, y, z)
+function visuals:addFromTemplate(name, x, y, z, overrides)
   local template = visualTypes[name]
   if not template then
-    error("Visual type '" .. tostring(name) .. "' does not exist")
+    error("Entity type '" .. tostring(name) .. "' does not exist")
   end
+  local newEntity = deepCopy(template)
 
-  local newVisual = {}
+  newEntity.x = x or 1
+  newEntity.y = y or 1
+  newEntity.z = z or 1
 
-  -- Use deepCopy to preserve the structure of subtables
-  for k, v in pairs(template) do
-    if type(v) == "table" then
-      newVisual[k] = deepCopy(v) -- Make a proper copy of nested tables
-    else
-      newVisual[k] = v
+  if overrides then
+    for k, v in pairs(overrides) do
+      newEntity[k] = v
     end
   end
 
-  newVisual.x = x or 1
-  newVisual.y = y or 1
-  newVisual.z = z or 1
-
-  self:addVisual(newVisual)
-  return newVisual
+  self:addVisual(newEntity)
+  return newEntity
 end
 
 local function updateVisualParts(parts, nextFrame)

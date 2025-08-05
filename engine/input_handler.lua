@@ -22,14 +22,11 @@ function input_handler:update(dt)
 
   if love.keyboard.isDown("left") then
     moveDir.x = -1
-  end
-  if love.keyboard.isDown("right") then
+  elseif love.keyboard.isDown("right") then
     moveDir.x = 1
-  end
-  if love.keyboard.isDown("up") then
+  elseif love.keyboard.isDown("up") then
     moveDir.y = -1
-  end
-  if love.keyboard.isDown("down") then
+  elseif love.keyboard.isDown("down") then
     moveDir.y = 1
   end
 
@@ -73,6 +70,10 @@ function input_handler:update(dt)
 
   if love.keyboard.isDown("z") then
     render_handler:switchOffset()
+  end
+
+  if love.keyboard.isDown("x") then
+    ui_handler:switchStatus()
   end
 
   if love.keyboard.isDown("escape") then

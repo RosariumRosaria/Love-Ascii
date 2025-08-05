@@ -53,16 +53,18 @@ return {
   alert = {
     name = "alert",
     params = {
-      lifespan = 2,
-      initialSpan = 2,
+      lifespan = 1,
+      initialSpan = 5,
       i = 1,
       frames = 1,
     },
     panels = {
       {
-        text = "<(o)>",
+        texts = { "<(o)>" },
         colors = { { 0, 0, 0.0, 0.5 } },
         outlinecolor = { { 1, 1, 1, 0.5 } },
+        offsetY = 1.5,
+        centerText = true,
         sizes = { 2 },
       },
     },
