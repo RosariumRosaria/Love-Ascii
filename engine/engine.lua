@@ -16,7 +16,7 @@ local function distanceBetween(entity1, entity2)
   return math.sqrt((entity1.x - entity2.x) ^ 2 + (entity1.y - entity2.y) ^ 2)
 end
 
-local function isTileFree(x, y, z, skipEntities) --Maybe we can seperate this adn other helpers into a more generic util module. Too much logic is being done here
+local function isTileFree(x, y, z, skipEntities) --Maybe we can seperate this and other helpers into a more generic util module. Too much logic is being done here
   local entityList = entities:getEntityList()
   if not map:walkable(x, y, z) then
     return false
@@ -214,7 +214,7 @@ function engine:processTurn()
         false,
         player.x,
         player.y
-      )
+      ) --TODO All of this needs to live somewhere else
 
       if distanceBetween(entity, player) < entity.sight and visible then
         local step = pathfinder:aStar({ entity.x, entity.y }, { player.x, player.y })
@@ -225,7 +225,7 @@ function engine:processTurn()
           entity.turnsToIdle = 20
           entity.target = { player.x, player.y }
           if entity.state == "idle" then
-            visuals:addFromTemplate("alert", entity.x, entity.y, 1)
+            visuals:addFromTemplate("alert", entity.x, entity.y, entity.z, { anchor = entity })
             entity.state = "following"
           end
         end
@@ -233,12 +233,12 @@ function engine:processTurn()
         if entity.turnsToIdle > 15 then
           entity.target = { player.x, player.y }
         end --TODO make this more dynamic
+
         local step = pathfinder:aStar({ entity.x, entity.y }, entity.target)
         if step and step[1] and step[2] then
           local dx = step[1] - entity.x
           local dy = step[2] - entity.y
           engine:move(entity, dx, dy)
-          ui_handler:addTextToUIByName("terminal", entity.turnsToIdle)
           visuals:addFromTemplate("ping", entity.target[1], entity.target[2], 1)
           entity.turnsToIdle = entity.turnsToIdle - 1
           if entity.turnsToIdle == 0 then
@@ -248,6 +248,8 @@ function engine:processTurn()
       end
     end
   end
+
+  ui_handler:updateStatus()
 end
 
 return engine

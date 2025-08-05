@@ -45,6 +45,35 @@ function render_handler:drawVisual(visual, centerX, centerY)
       )
     end
   end
+
+  if visual.panels then --TODO: I think I need some build panel for text function
+    for _, panel in ipairs(visual.panels) do
+      if panel.colors[visual.params.i] then
+        color = panel.colors[visual.params.i]
+      end
+
+      local xScreen, yScreen = render_utils:getScreenCoords(
+        visual.anchor.x or visual.x,
+        visual.anchor.y - panel.offsetY or visual.y,
+        centerX,
+        centerY
+      )
+      render_primitives:drawPanel(
+        xScreen,
+        yScreen,
+        render_utils:getMaxTextWidth(panel.texts, defaultFont),
+        tileSize,
+        color,
+        panel.outlineWidth or 1,
+        panel.outlinecolor[1],
+        panel.texts,
+        panel.centerText,
+        { 1, 1, 1, 1 },
+        smallTileSize,
+        panel.centerText
+      )
+    end
+  end
 end
 
 function render_handler:drawStack(tile, x, y, z, centerX, centerY, visible, explored)

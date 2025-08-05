@@ -1,6 +1,6 @@
 local config = require("config")
 local tileSize
-
+local render_utils = require("visuals.render_utils")
 local render_primitives = {}
 
 -- Draws a filled rect (with optional outline) in screen coordinates
@@ -94,7 +94,7 @@ function render_primitives:drawTextBlock(texts, xScreen, yScreen, width, outline
   for i, text in ipairs(texts) do
     local dx = outline * 2
     if centerText then
-      dx = dx + ((width - font:getWidth(text)) / 2)
+      dx = dx - (font:getWidth(text) / 2)
     end
 
     local drawX = xScreen + dx
@@ -116,10 +116,18 @@ function render_primitives:drawPanel(
   texts,
   centerText,
   textColor,
-  lineHeight
+  lineHeight,
+  centerBox
 )
-  self:drawRect(xScreen, yScreen, width, height, fillColor, outlineWidth, outlineColor)
+  local xOffset = 0
+  if centerBox then
+    local font = love.graphics.getFont()
+    xOffset = font:getWidth(render_utils:getMaxTextWidth(texts) / 2)
+  end
+
+  self:drawRect(xScreen - xOffset, yScreen, width, height, fillColor, outlineWidth, outlineColor)
   self:drawTextBlock(texts, xScreen, yScreen, width, 1, centerText, textColor or { 1, 1, 1, 1 }, lineHeight)
+  love.graphics.getFont()
 end
 
 function render_primitives:load()
