@@ -1,13 +1,12 @@
 local engine = require("engine.engine")
 local map = require("map.map")
-local entities = require("entities.entities")
 local render_handler = require("visuals.render_handler")
 local ui_handler = require("visuals.ui_handler")
-
+local ai_handler = require("engine.ai_handler")
 local input_handler = {}
 
 local timeSinceLastUpdate = 0
-local timeBetweenUpdates = 0.1
+local timeBetweenUpdates = 0.125
 local lastTurn = { x = 0, y = 0 }
 local grabbed = nil
 
@@ -76,7 +75,8 @@ function input_handler:update(dt)
   end
 
   if tookAction then
-    engine:processTurn()
+    ai_handler:processTurn()
+    ui_handler:updateStatus()
   end
 end
 
