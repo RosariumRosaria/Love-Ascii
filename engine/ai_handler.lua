@@ -8,6 +8,7 @@ local engine = require("engine.engine")
 local engine_utils = require("engine.engine_utils")
 
 local ai_handler = {}
+--TODO, rethink some of this, having the following state be the same for wandering and attacking is fine, but once popups are fixed you'll want to incorporate those
 
 function ai_handler:checkValidTarget(entity, target)
   local visible = fov_handler:refreshVisibility(
@@ -25,7 +26,7 @@ function ai_handler:checkValidTarget(entity, target)
   local ret = engine_utils:distanceBetween(entity, target) < entity.sight and visible
 
   if ret then
-    entity.turnsToIdle = 15 --TODO: Should different enemies process memory differently?
+    entity.turnsToIdle = 20 --TODO: Should different enemies process memory differently?
     entity.targetPos = { target.x, target.y }
     entity.targetEntity = target
     entity.state = "following"
@@ -41,7 +42,7 @@ end
 
 function ai_handler:idle(entity)
   if entity.type == "enemy" then
-    local chance = math.random(1, 20)
+    local chance = math.random(1, 5)
     if chance == 1 then
       local tarX = math.random(-10, 10)
       local tarY = math.random(-10, 10)

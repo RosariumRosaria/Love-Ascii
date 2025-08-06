@@ -20,58 +20,60 @@ function render_handler:switchOffset()
   OFFSET_TYPE = (OFFSET_TYPE % 3) + 1
 end
 
-function render_handler:drawVisual(visual, centerX, centerY)
-  local xScreen, yScreen = render_utils:getScreenCoords(visual.x, visual.y, centerX, centerY)
+function render_handler:drawVisual(visual, centerX, centerY, visible)
+  if visible or not visual.params.needsToBeSeen then
+    local xScreen, yScreen = render_utils:getScreenCoords(visual.x, visual.y, centerX, centerY)
 
-  local color = { 1, 1, 1, 1 }
+    local color = { 1, 1, 1, 1 }
 
-  if visual.rects then
-    for _, rect in ipairs(visual.rects) do
-      if visual.params.decayOverTime then
-        color = render_utils:scaleColor(rect.colors[1], visual.params.lifespan / visual.params.initialSpan)
-      else
-        color = rect.colors[visual.params.i]
+    if visual.rects then
+      for _, rect in ipairs(visual.rects) do
+        if visual.params.decayOverTime then
+          color = render_utils:scaleColor(rect.colors[1], visual.params.lifespan / visual.params.initialSpan)
+        else
+          color = rect.colors[visual.params.i]
+        end
+        local visualSize = rect.sizes[visual.params.i] * tileSize
+        render_primitives:drawRect(
+          xScreen + ((tileSize - visualSize) / 2),
+          yScreen + ((tileSize - visualSize) / 2),
+          visualSize,
+          visualSize,
+          color,
+          rect.outlineWidth,
+          rect.outlineColor,
+          rect.roundedAmount
+        )
       end
-      local visualSize = rect.sizes[visual.params.i] * tileSize
-      render_primitives:drawRect(
-        xScreen + ((tileSize - visualSize) / 2),
-        yScreen + ((tileSize - visualSize) / 2),
-        visualSize,
-        visualSize,
-        color,
-        rect.outlineWidth,
-        rect.outlineColor,
-        rect.roundedAmount
-      )
     end
-  end
 
-  if visual.panels then --TODO: I think I need some build panel for text function
-    for _, panel in ipairs(visual.panels) do
-      if panel.colors[visual.params.i] then
-        color = panel.colors[visual.params.i]
+    if visual.panels then --TODO: I think I need some build panel for text function
+      for _, panel in ipairs(visual.panels) do
+        if panel.colors[visual.params.i] then
+          color = panel.colors[visual.params.i]
+        end
+
+        local xScreen, yScreen = render_utils:getScreenCoords(
+          visual.anchor.x or visual.x,
+          visual.anchor.y - panel.offsetY or visual.y,
+          centerX,
+          centerY
+        )
+        render_primitives:drawPanel(
+          xScreen,
+          yScreen,
+          render_utils:getMaxTextWidth(panel.texts, defaultFont),
+          tileSize,
+          color,
+          panel.outlineWidth or 1,
+          panel.outlinecolor[1],
+          panel.texts,
+          panel.centerText,
+          { 1, 1, 1, 1 },
+          smallTileSize,
+          panel.centerText
+        )
       end
-
-      local xScreen, yScreen = render_utils:getScreenCoords(
-        visual.anchor.x or visual.x,
-        visual.anchor.y - panel.offsetY or visual.y,
-        centerX,
-        centerY
-      )
-      render_primitives:drawPanel(
-        xScreen,
-        yScreen,
-        render_utils:getMaxTextWidth(panel.texts, defaultFont),
-        tileSize,
-        color,
-        panel.outlineWidth or 1,
-        panel.outlinecolor[1],
-        panel.texts,
-        panel.centerText,
-        { 1, 1, 1, 1 },
-        smallTileSize,
-        panel.centerText
-      )
     end
   end
 end
@@ -107,9 +109,11 @@ function render_handler:drawEntity(entity, centerX, centerY, visible, explored)
       visible,
       base
     ) + 0.3
+
     local scaledColor = render_utils:scaleColor(baseColor, scale)
+
     local dx, dy =
-      render_utils:getOffset(entity.z + i - 1, OFFSET_TYPE, OFFSET_AMOUNT, entity.x, entity.y, centerX, centerY)
+      render_utils:getOffset(entity.z + i, OFFSET_TYPE, OFFSET_AMOUNT, entity.x, entity.y, centerX, centerY)
     render_primitives:drawChar(
       xScreen + dx,
       yScreen + dy,
@@ -211,7 +215,7 @@ function render_handler:draw(centerX, centerY)
 
   --Draw Visuals
   for _, visual in ipairs(visuals:getVisualList()) do
-    render_handler:drawVisual(visual, centerX, centerY)
+    render_handler:drawVisual(visual, centerX, centerY, map:isVisible(visual.x, visual.y))
   end
 
   --TODO: Is there a better way to know what font I should be using?

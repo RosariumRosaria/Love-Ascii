@@ -7,6 +7,7 @@ return {
       decayOverTime = true,
       i = 1,
       frames = 1,
+      needsToBeSeen = true,
     },
     rects = {
       {
