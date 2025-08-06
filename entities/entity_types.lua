@@ -6,6 +6,7 @@ return {
     chars = { "V" },
     color = { 0.6, 0.6, 0.65, 1 },
     description = "A vampire, try attacking it!",
+    defaultAction = "attackable",
     stats = {
       health = { health = 10, maxHealth = 10 },
     },
@@ -19,6 +20,9 @@ return {
       attackable = true,
       walkable = false,
     },
+    allowedActions = {
+      attackable = true,
+    },
   },
   crate = {
     name = "crate",
@@ -26,6 +30,7 @@ return {
     type = "prop",
     chars = { "#" },
     color = { 0.38, 0.33, 0.30 },
+    defaultAction = "moveable",
     tags = {
       solid = false,
       moveable = true,
@@ -40,6 +45,7 @@ return {
     type = "prop",
     chars = { "[ ]", "[ ]" },
     color = { 0.47, 0.23, 0.23, 1 },
+    defaultAction = "moveable",
     tags = {
       solid = true,
       moveable = true,
@@ -54,6 +60,7 @@ return {
     type = "prop",
     chars = { "[", "[" },
     color = { 0.47, 0.23, 0.23, 1 },
+    defaultAction = "interactable",
     tags = {
       moveable = false,
       solid = true,
@@ -78,6 +85,7 @@ return {
     type = "prop",
     chars = { " ", "--", "--" },
     color = { 0.47, 0.33, 0.23, 1 },
+    defaultAction = "interactable",
     tags = {
       moveable = false,
       solid = true,

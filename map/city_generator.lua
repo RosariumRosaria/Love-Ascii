@@ -15,7 +15,7 @@ function city_generator:overlapRect(r1, r2)
   )
 end
 
-function city_generator:makeBuilding(roomStartX, roomStartY, width, height, depth, tiles) -- Todo, can probably move this and make town to a different file
+function city_generator:makeBuilding(roomStartX, roomStartY, width, height, depth, tiles)
   for y = 1, height do
     for x = 1, width do
       local tileX = roomStartX + x - 1
@@ -45,43 +45,46 @@ function city_generator:makeBuilding(roomStartX, roomStartY, width, height, dept
     end
   end
 
-  local dir = math.random(1, 4)
-  local lim = width
-  if dir % 2 == 0 then
-    lim = height
+  if width <= 2 or height <= 2 then
+    return { x = roomStartX, y = roomStartY, width = width, height = height }
   end
 
-  local dir2 = math.random(1, 4)
-  if dir2 % 2 == 0 then
-    lim = height
+  local function safeDoorStart(len)
+    return math.random(2, math.max(2, len - 1))
   end
-  local doorStart = math.random(3, lim - 3)
+
+  local doorX = safeDoorStart(width)
+  local doorY = safeDoorStart(height)
+
   local sides = {
-    { x = roomStartX, y = doorStart + roomStartY - 1, rotation = 0 }, -- left
-    { x = roomStartX + width - 1, y = doorStart + roomStartY - 1, rotation = 180 }, -- right
-    { x = roomStartX + doorStart - 1, y = roomStartY, rotation = 90 }, -- up
-    { x = roomStartX + doorStart - 1, y = roomStartY + height - 1, rotation = 270 }, -- down
+    { x = roomStartX, y = roomStartY + doorY - 1, rotation = 0 }, -- left wall
+    { x = roomStartX + width - 1, y = roomStartY + doorY - 1, rotation = 180 }, -- right wall
+    { x = roomStartX + doorX - 1, y = roomStartY, rotation = 90 }, -- top wall
+    { x = roomStartX + doorX - 1, y = roomStartY + height - 1, rotation = 270 }, -- bottom wall
   }
 
+  local dir = math.random(1, 4)
+  local dir2 = math.random(1, 4)
+
   for i, side in ipairs(sides) do
-    tiles[side.y][side.x][2] = types.air
-    if dir == i or dir2 == i then
-      tiles[side.y][side.x][1] = types.floor
-      entities:addFromTemplate("door", side.x, side.y, 1, { rotation = side.rotation })
-    else
-      tiles[side.y][side.x][3] = types.air
-      entities:addFromTemplate("window", side.x, side.y, 1, { rotation = side.rotation })
+    if self:inbounds(side.x, side.y, self.width, self.height) then
+      tiles[side.y][side.x][2] = types.air
+      if dir == i or dir2 == i then
+        tiles[side.y][side.x][1] = types.floor
+        entities:addFromTemplate("door", side.x, side.y, 1, { rotation = side.rotation })
+      else
+        tiles[side.y][side.x][3] = types.air
+        entities:addFromTemplate("window", side.x, side.y, 1, { rotation = side.rotation })
+      end
     end
   end
 
-  local building = {
+  return {
     x = roomStartX,
     y = roomStartY,
     width = width,
     height = height,
   }
-
-  return building
 end
 
 function city_generator:makeTown(roomCount, tiles, mapHeight, mapWidth, mapDepth)
@@ -127,7 +130,7 @@ function city_generator:makeTown(roomCount, tiles, mapHeight, mapWidth, mapDepth
       potentialBuilding.y,
       potentialBuilding.width,
       potentialBuilding.height,
-      math.random(2, mapDepth),
+      math.random(3, mapDepth),
       tiles
     )
   end

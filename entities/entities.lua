@@ -19,17 +19,22 @@ function entities:getTagEntity(entity, tag)
   return entity.tags[tag]
 end
 
-function entities:damageEntity(entity, damage)
-  if not entity or not entity.stats or not entity.stats.health then
+function entities:damageEntity(targetEntity, entity)
+  if not entity or not targetEntity or not targetEntity.stats or not targetEntity.stats.health or not entity.damage then
     return false
   end
 
-  entity.stats.health.health = entity.stats.health.health - damage
+  targetEntity.stats.health.health = targetEntity.stats.health.health - entity.damage
+  local targetName = targetEntity.name or "Unnamed"
   local name = entity.name or "Unnamed"
-  ui_handler:addTextToUIByName("terminal", "You hit " .. name .. ": " .. entity.stats.health.health .. " HP remaining!")
+  ui_handler:addTextToUIByName(
+    "terminal",
+    name .. " hit " .. targetName .. ": " .. targetEntity.stats.health.health .. " HP remaining!"
+  )
 
-  if entity.stats.health.health <= 0 then
-    entities:removeEntity(entity)
+  if targetEntity.stats.health.health <= 0 then
+    targetEntity.dead = "true"
+    entities:removeEntity(targetEntity)
   end
 end
 

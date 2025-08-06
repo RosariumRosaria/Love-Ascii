@@ -5,6 +5,24 @@ local engine_utils = require("engine.engine_utils")
 
 local engine = {}
 
+function engine:defaultInteract(entity, dx, dy)
+  local target = entities:getEntity(entity.x + dx, entity.y + dy, entity.z)
+  if not target then
+    return false
+  end
+  local action = target.defaultAction
+  if action == "attackable" and entity.allowedActions[action] then
+    return self:attack(entity, dx, dy)
+  elseif action == "interactable" and entity.allowedActions[action] then
+    return self:interact(entity, dx, dy)
+  elseif action == "moveable" and entity.allowedActions[action] then
+    return self:push(entity, dx, dy)
+  end
+
+  ui_handler:addTextToUIByName("terminal", "No default action for " .. (target.name or "unknown"))
+  return false
+end
+
 local function validateInteraction(actor, target, name)
   if not actor then
     ui_handler:addTextToUIByName("terminal", name .. " actor is nil")
@@ -23,7 +41,7 @@ end
 
 function engine:attack(entity, dx, dy)
   local targetEntity = entities:getEntity(entity.x + dx, entity.y + dy, entity.z)
-  if not validateInteraction(entity, targetEntity, "Push") then
+  if not validateInteraction(entity, targetEntity, "Attack") then
     return false
   end
   if not entities:getTagEntity(targetEntity, "attackable") then
@@ -31,7 +49,7 @@ function engine:attack(entity, dx, dy)
     return false
   end
   visuals:addFromTemplate("attack", entity.x + dx, entity.y + dy, entity.z)
-  entities:damageEntity(targetEntity, entity.damage)
+  entities:damageEntity(targetEntity, entity)
   return true
 end
 
@@ -62,6 +80,7 @@ end
 function engine:move(entity, dx, dy)
   local tarX = entity.x + dx
   local tarY = entity.y + dy
+
   if engine_utils:isTileFree(tarX, tarY, entity.z, { [entity] = true }) then
     visuals:addFromTemplate("trail", entity.x, entity.y, entity.z)
     entity.x = tarX
@@ -69,7 +88,7 @@ function engine:move(entity, dx, dy)
     return true
   end
 
-  return false
+  return engine:defaultInteract(entity, dx, dy)
 end
 
 function engine:grab(entity, dx, dy)

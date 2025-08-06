@@ -49,9 +49,16 @@ function love.load()
     x = 20,
     y = 20,
     z = 1,
-    tags = { blocks = true },
+    name = "Player",
+    tags = { blocks = true, attackable = true },
+    defaultAction = "attackable",
+    allowedActions = {
+      attackable = true,
+      moveable = true,
+      interactable = true,
+    },
     stats = {
-      health = { health = 10, maxHealth = 10 },
+      health = { health = 20, maxHealth = 20 },
       stamina = { stamina = 10, maxStamina = 10 },
       hunger = { hunger = 10, maxHunger = 10 },
     },
@@ -61,11 +68,14 @@ function love.load()
       usableItemDummy = { name = "usableDum" },
       dummyItem = { name = "dummy" },
     },
-    damage = 1,
+    damage = 2,
   }
 
   entities:addEntity(player)
   entities:addFromTemplate("vampire", 5, 5, 1)
+  entities:addFromTemplate("vampire", 5, 6, 1)
+  entities:addFromTemplate("vampire", 5, 6, 1)
+  entities:addFromTemplate("vampire", 9, 6, 1)
   entities:addFromTemplate("crate", 6, 5, 1)
   entities:addFromTemplate("barricade", 7, 5, 1)
 
@@ -77,7 +87,8 @@ function love.load()
 end
 
 function love.update(dt) --Todo: Make movement check key pressed, to avoid the timer
-  input_handler:update(dt)
+  input_handler:update(dt, player.dead)
+
   visuals:update(dt)
 end
 
