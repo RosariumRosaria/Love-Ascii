@@ -76,7 +76,7 @@ return {
     name = "window",
     description = "A window, try opening it!",
     type = "prop",
-    chars = { " ", "- -", "- -" },
+    chars = { " ", "--", "--" },
     color = { 0.47, 0.33, 0.23, 1 },
     tags = {
       moveable = false,

@@ -73,6 +73,7 @@ function love.load()
   map:updateVisibility(player.x, player.y, 25)
 
   ui_handler:load()
+  ui_handler:updateStatus()
 end
 
 function love.update(dt) --Todo: Make movement check key pressed, to avoid the timer

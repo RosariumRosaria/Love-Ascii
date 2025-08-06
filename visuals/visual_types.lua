@@ -36,8 +36,8 @@ return {
   ping = {
     name = "ping",
     params = {
-      lifespan = 5,
-      initialSpan = 5,
+      lifespan = 1,
+      initialSpan = 1,
       decayOverTime = true,
       i = 1,
       frames = 1,
