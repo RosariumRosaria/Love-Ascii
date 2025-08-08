@@ -11,15 +11,13 @@ function engine:defaultInteract(entity, dx, dy)
     return false
   end
   local action = target.defaultAction
-  if action == "attackable" and entity.allowedActions[action] then
-    return self:attack(entity, dx, dy)
-  elseif action == "interactable" and entity.allowedActions[action] then
+  if action == "interactable" and entity.allowedActions[action] then
     return self:interact(entity, dx, dy)
+  elseif action == "attackable" and entity.allowedActions[action] then
+    return self:attack(entity, dx, dy)
   elseif action == "moveable" and entity.allowedActions[action] then
     return self:push(entity, dx, dy)
   end
-
-  ui_handler:addTextToUIByName("terminal", "No default action for " .. (target.name or "unknown"))
   return false
 end
 
@@ -48,8 +46,10 @@ function engine:attack(entity, dx, dy)
     ui_handler:addTextToUIByName("terminal", targetEntity.name .. " is not attackable")
     return false
   end
-  visuals:addFromTemplate("attack", entity.x + dx, entity.y + dy, entity.z)
-  entities:damageEntity(targetEntity, entity)
+  if entity.type ~= targetEntity.type then
+    visuals:addFromTemplate("attack", entity.x + dx, entity.y + dy, entity.z)
+    entities:damageEntity(targetEntity, entity)
+  end
   return true
 end
 

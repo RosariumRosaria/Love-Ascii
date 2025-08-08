@@ -73,8 +73,6 @@ function love.load()
 
   entities:addEntity(player)
   entities:addFromTemplate("vampire", 5, 5, 1)
-  entities:addFromTemplate("vampire", 5, 6, 1)
-  entities:addFromTemplate("vampire", 5, 6, 1)
   entities:addFromTemplate("vampire", 9, 6, 1)
   entities:addFromTemplate("crate", 6, 5, 1)
   entities:addFromTemplate("barricade", 7, 5, 1)

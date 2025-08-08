@@ -11,7 +11,7 @@ return {
       health = { health = 10, maxHealth = 10 },
     },
     damage = 1,
-    sight = 16,
+    sight = 30,
     tags = {
       solid = false,
       moveable = true,
@@ -22,6 +22,21 @@ return {
     },
     allowedActions = {
       attackable = true,
+    },
+  },
+  tree = {
+    name = "a tree",
+    type = "prop",
+    chars = { ".", ".", ".", ".", ".", "*" },
+    color = { 0.6, 0.6, 0.3, 1 },
+    description = "A Tree",
+    tags = {
+      solid = true,
+      moveable = true,
+      tilelike = true,
+      blocks = true,
+      attackable = true,
+      walkable = false,
     },
   },
   crate = {
