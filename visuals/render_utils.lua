@@ -3,6 +3,7 @@ local tileSize
 local smallTileSize
 local defaultFont
 local smallFont
+local raster
 local tileSize
 local render_utils = {}
 
@@ -93,11 +94,70 @@ function render_utils:getOffset(i, offsetType, offset, x, y, centerX, centerY)
   return 0, 0
 end
 
+local GlyphCenterCache = setmetatable({}, { __mode = "k" })
+
+function render_utils:getVisualCenterFromTop(font, ch)
+  local perFont = GlyphCenterCache[font]
+  if not perFont then
+    perFont = {}
+    GlyphCenterCache[font] = perFont
+  end
+  if perFont[ch] then
+    return perFont[ch]
+  end
+
+  local pad = 4
+  local lineH = font:getHeight()
+  local w = math.max(8, math.ceil(font:getWidth(ch)) + pad * 2)
+  local h = lineH + pad * 2
+
+  local canvas = love.graphics.newCanvas(w, h)
+  love.graphics.push("all")
+  love.graphics.setCanvas(canvas)
+  love.graphics.clear(0, 0, 0, 0)
+  love.graphics.setFont(font)
+  love.graphics.print(ch, pad, pad)
+  love.graphics.setCanvas()
+  love.graphics.pop()
+
+  local img = canvas:newImageData()
+  local top, bottom = h, -1
+  for y = 0, h - 1 do
+    local rowHasInk = false
+    for x = 0, w - 1 do
+      local _, _, _, a = img:getPixel(x, y)
+      if a > 0 then
+        rowHasInk = true
+        break
+      end
+    end
+    if rowHasInk then
+      if y < top then
+        top = y
+      end
+      if y > bottom then
+        bottom = y
+      end
+    end
+  end
+
+  local centerFromTop
+  if bottom >= top then
+    centerFromTop = (top + bottom) * 0.5 - pad
+  else
+    centerFromTop = lineH * 0.5
+  end
+
+  perFont[ch] = centerFromTop
+  return centerFromTop
+end
+
 function render_utils:load()
   tileSize = config.tileSize
   smallTileSize = config.smallTileSize
   defaultFont = config.font
   smallFont = config.smallFont
+  raster = config.raster
 end
 
 return render_utils

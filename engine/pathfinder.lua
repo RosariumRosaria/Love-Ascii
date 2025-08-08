@@ -132,7 +132,7 @@ function pathfinder:aStar(start, goal)
 
   local path = reconstructPath(came_from, start, goal)
   if #path > 1 then
-    return path[2] -- next step
+    return reconstructPath(came_from, start, goal)
   else
     return nil
   end

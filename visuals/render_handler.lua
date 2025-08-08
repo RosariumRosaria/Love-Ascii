@@ -47,14 +47,14 @@ function render_handler:drawVisual(visual, centerX, centerY, visible)
       end
     end
 
-    if visual.panels then --TODO: I think I need some build panel for text function
+    if visual.panels then
       for _, panel in ipairs(visual.panels) do
         if panel.colors[visual.params.i] then
           color = panel.colors[visual.params.i]
         end
 
         local xScreen, yScreen = render_utils:getScreenCoords(
-          visual.anchor.x or visual.x,
+          (visual.anchor.x + (1 / 3)) or visual.x,
           visual.anchor.y - panel.offsetY or visual.y,
           centerX,
           centerY
@@ -70,8 +70,7 @@ function render_handler:drawVisual(visual, centerX, centerY, visible)
           panel.texts,
           panel.centerText,
           { 1, 1, 1, 1 },
-          smallTileSize,
-          panel.centerText
+          tileSize
         )
       end
     end
@@ -113,15 +112,13 @@ function render_handler:drawEntity(entity, centerX, centerY, visible, explored)
     local scaledColor = render_utils:scaleColor(baseColor, scale)
 
     local dx, dy =
-      render_utils:getOffset(entity.z + i, OFFSET_TYPE, OFFSET_AMOUNT, entity.x, entity.y, centerX, centerY)
+      render_utils:getOffset(entity.z + i - 1, OFFSET_TYPE, OFFSET_AMOUNT, entity.x, entity.y, centerX, centerY)
     render_primitives:drawChar(
       xScreen + dx,
       yScreen + dy,
       charData,
       scaledColor,
-      nil,
       entity.outlineColor,
-      true,
       entity.rotation,
       entity.naturalRotation
     )
@@ -144,7 +141,7 @@ function render_handler:drawTile(tileData, x, y, centerX, centerY, visible, expl
     if baseColor and (not visible or not entities:getTagLocation(x, y, i, "blocks")) then
       local scaledColor = render_utils:scaleColor(baseColor, alpha)
       local dx, dy = render_utils:getOffset(i, OFFSET_TYPE, OFFSET_AMOUNT, x, y, centerX, centerY)
-      render_primitives:drawChar(xScreen + dx, yScreen + dy, char, scaledColor, nil, tile.outlineColor, true)
+      render_primitives:drawChar(xScreen + dx, yScreen + dy, char, scaledColor, tile.outlineColor)
     end
   end
 end
