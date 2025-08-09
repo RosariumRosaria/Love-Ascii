@@ -90,6 +90,8 @@ function ai_handler:wander(entity)
   if entity.type == "enemy" then
     if entity.turnsToIdle and entity.turnsToIdle > 0 and entity.targetPos then
       if canSeePlayer(entity) then
+        entity.path = nil
+        entity.pathIndex = nil
         return
       end
 
@@ -114,6 +116,8 @@ function ai_handler:wander(entity)
         visuals:addFromTemplate("ping", entity.targetPos[1], entity.targetPos[2], 1)
         entity.state = "idle"
         entity.targetPos = nil
+        entity.path = nil
+        entity.pathIndex = nil
       end
     end
   end
@@ -126,7 +130,7 @@ function ai_handler:chase(entity)
       entity.pathIndex = 2
     end
 
-    if entity.path then
+    if entity.path and entity.pathIndex then
       if entity.pathIndex > #entity.path then
         visuals:addFromTemplate("ping", entity.targetPos[1], entity.targetPos[2], 1)
         entity.state = "idle"
@@ -149,6 +153,8 @@ function ai_handler:chase(entity)
       visuals:addFromTemplate("ping", entity.targetPos[1], entity.targetPos[2], 1)
       entity.state = "idle"
       entity.targetPos = nil
+      entity.path = nil
+      entity.pathIndex = nil
     end
   end
 end

@@ -2,7 +2,7 @@ local map = require("map.map")
 local entities = require("entities.entities")
 
 local pathfinder = {}
-local maxChecks = 100
+local maxChecks = 250
 
 local function isTileFree(x, y, z, entityList, goal)
   if x == goal[1] and y == goal[2] and z == 1 then

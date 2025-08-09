@@ -82,7 +82,8 @@ function engine:move(entity, dx, dy)
   local tarY = entity.y + dy
 
   if engine_utils:isTileFree(tarX, tarY, entity.z, { [entity] = true }) then
-    visuals:addFromTemplate("trail", entity.x, entity.y, entity.z)
+    local visual = visuals:addFromTemplate("trail", entity.x, entity.y, entity.z)
+    visual.rects[1].colors[1] = entity.effectColor or visual.rects[1].colors[1]
     entity.x = tarX
     entity.y = tarY
     return true
@@ -98,6 +99,10 @@ end
 function engine:push(entity, dx, dy) --TODO Probably some way to integrate pushing and pulling, and to use move
   local targetEntity = entities:getEntity(entity.x + dx, entity.y + dy, entity.z)
   if not validateInteraction(entity, targetEntity, "Push") then
+    return false
+  end
+
+  if not targetEntity.tags.moveable then
     return false
   end
 
@@ -126,6 +131,10 @@ end
 function engine:pull(entity, dx, dy)
   local targetEntity = entities:getEntity(entity.x - dx, entity.y - dy, entity.z)
   if not validateInteraction(entity, targetEntity, "Pull") then
+    return false
+  end
+
+  if not targetEntity.tags.moveable then
     return false
   end
   local pullerTarX = entity.x + dx

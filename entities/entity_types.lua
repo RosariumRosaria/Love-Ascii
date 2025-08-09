@@ -4,7 +4,8 @@ return {
     type = "enemy",
     state = "idle",
     chars = { "V" },
-    color = { 0.6, 0.6, 0.65, 1 },
+    color = { 0.7, 0.2, 0.2, 1 },
+    effectColor = { 0.35, 0.1, 0.1, 0.5 },
     description = "A vampire, try attacking it!",
     defaultAction = "attackable",
     stats = {
