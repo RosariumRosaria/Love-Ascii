@@ -19,7 +19,15 @@ function render_primitives:drawRect(xScreen, yScreen, width, height, color, outl
   if outlineWidth and outlineColor then
     love.graphics.setLineWidth(outlineWidth)
     love.graphics.setColor(outlineColor)
-    love.graphics.rectangle("line", xScreen, yScreen, width, height, roundedAmountX, roundedAmountY)
+    love.graphics.rectangle(
+      "line",
+      xScreen - outlineWidth,
+      yScreen - outlineWidth,
+      width + outlineWidth,
+      height + outlineWidth,
+      roundedAmountX,
+      roundedAmountY
+    )
     love.graphics.setLineWidth(1)
   end
 

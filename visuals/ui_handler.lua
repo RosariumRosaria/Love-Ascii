@@ -1,3 +1,7 @@
+local config = require("config")
+
+local smallTileSize
+
 local ui_handler = {
   uiList = {},
 }
@@ -36,7 +40,7 @@ function ui_handler:addUI(x, y, width, height, name, color, outlineWidth, outlin
     centerText = centerText,
     tileGrid = tileGrid,
     scrollOffset = 0,
-    capacity = height * 10,
+    capacity = math.floor(height / smallTileSize) * 10,
   }
 
   table.insert(ui_handler.uiList, ui)
@@ -58,9 +62,7 @@ function ui_handler:addTextToUI(ui, text)
   end
   table.insert(ui.texts, text)
 
-  local font = love.graphics.getFont()
-  local textHeight = font:getHeight()
-  if #ui.texts * textHeight > ui.capacity then
+  if #ui.texts > ui.capacity then
     table.remove(ui.texts, 1)
   end
 end
@@ -80,6 +82,8 @@ function ui_handler:load()
   local startY = height + (2 * buffer)
   local black = { 0, 0, 0, 0.5 }
   local white = { 1, 1, 1, 0.5 }
+
+  smallTileSize = config.smallTileSize
 
   ui_handler:addUI(startX, buffer, width, height, "terminal", black, outlineWidth, white)
   statusPanel =

@@ -49,6 +49,8 @@ function love.load()
     x = 20,
     y = 20,
     z = 1,
+    color = { 0.8, 0.8, 0.9, 1 },
+    effectColor = { 0.45, 0.45, 0.5, 0.5 },
     name = "Player",
     tags = { blocks = true, attackable = true },
     defaultAction = "attackable",
@@ -73,9 +75,11 @@ function love.load()
 
   entities:addEntity(player)
   entities:addFromTemplate("vampire", 5, 5, 1)
+  entities:addFromTemplate("vampire", 8, 6, 1)
+  entities:addFromTemplate("vampire", 9, 11, 1)
   entities:addFromTemplate("vampire", 9, 6, 1)
-  entities:addFromTemplate("crate", 6, 5, 1)
-  entities:addFromTemplate("barricade", 7, 5, 1)
+  entities:addFromTemplate("crate", 10, 10, 1)
+  entities:addFromTemplate("barricade", 15, 14, 1)
 
   map:load(mapWidth, mapHeight, mapDepth, "town")
   map:updateVisibility(player.x, player.y, 25)
