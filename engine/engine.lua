@@ -5,6 +5,22 @@ local engine_utils = require("engine.engine_utils")
 
 local engine = {}
 
+local function validateInteraction(actor, target, name)
+  if not actor then
+    ui_handler:addTextToUIByName("terminal", name .. " actor is nil")
+    return false
+  end
+  if not target then
+    ui_handler:addTextToUIByName("terminal", name .. " target is nil")
+    return false
+  end
+  if engine_utils.distanceBetween(actor, target) > 1 then
+    ui_handler:addTextToUIByName("terminal", name .. " too far apart")
+    return false
+  end
+  return true
+end
+
 function engine:defaultInteract(entity, dx, dy)
   local target = entities:getEntity(entity.x + dx, entity.y + dy, entity.z)
   if not target then
@@ -19,22 +35,6 @@ function engine:defaultInteract(entity, dx, dy)
     return self:push(entity, dx, dy)
   end
   return false
-end
-
-local function validateInteraction(actor, target, name)
-  if not actor then
-    ui_handler:addTextToUIByName("terminal", name .. " actor is nil")
-    return false
-  end
-  if not target then
-    ui_handler:addTextToUIByName("terminal", name .. " target is nil")
-    return false
-  end
-  if engine_utils:distanceBetween(actor, target) > 1 then
-    ui_handler:addTextToUIByName("terminal", name .. " too far apart")
-    return false
-  end
-  return true
 end
 
 function engine:attack(entity, dx, dy)
@@ -74,14 +74,13 @@ function engine:inspect(entity, dx, dy)
   end
 
   entities:inspectEntity(targetEntity)
-  deepPrint(targetEntity)
 end
 
 function engine:move(entity, dx, dy)
   local tarX = entity.x + dx
   local tarY = entity.y + dy
 
-  if engine_utils:isTileFree(tarX, tarY, entity.z, { [entity] = true }) then
+  if engine_utils.isTileFree(tarX, tarY, entity.z, { [entity] = true }) then
     local visual = visuals:addFromTemplate("trail", entity.x, entity.y, entity.z)
     visual.rects[1].colors[1] = entity.effectColor or visual.rects[1].colors[1]
     entity.x = tarX
@@ -110,11 +109,11 @@ function engine:push(entity, dx, dy) --TODO Probably some way to integrate pushi
   local pusherTarY = entity.y + dy
   local pushedTarX = targetEntity.x + dx
   local pushedTarY = targetEntity.y + dy
-  if not engine_utils:isTileFree(pusherTarX, pusherTarY, entity.z, { [entity] = true, [targetEntity] = true }) then
+  if not engine_utils.isTileFree(pusherTarX, pusherTarY, entity.z, { [entity] = true, [targetEntity] = true }) then
     ui_handler:addTextToUIByName("terminal", "Pusher tile not free")
     return false
   end
-  if not engine_utils:isTileFree(pushedTarX, pushedTarY, targetEntity.z, { [targetEntity] = true }) then
+  if not engine_utils.isTileFree(pushedTarX, pushedTarY, targetEntity.z, { [targetEntity] = true }) then
     ui_handler:addTextToUIByName("terminal", "Pushed tile not free")
     return false
   end
@@ -142,13 +141,13 @@ function engine:pull(entity, dx, dy)
   local pulledTarX = targetEntity.x + dx
   local pulledTarY = targetEntity.y + dy
 
-  if not engine_utils:isTileFree(pullerTarX, pullerTarY, entity.z, { [entity] = true }) then
+  if not engine_utils.isTileFree(pullerTarX, pullerTarY, entity.z, { [entity] = true }) then
     ui_handler:addTextToUIByName("terminal", "Puller tile not free")
     return false
   end
 
   if
-    not engine_utils:isTileFree(pulledTarX, pulledTarY, targetEntity.z, { [entity] = true, [targetEntity] = true })
+    not engine_utils.isTileFree(pulledTarX, pulledTarY, targetEntity.z, { [entity] = true, [targetEntity] = true })
   then
     ui_handler:addTextToUIByName("terminal", "Pulled tile not free")
     return false

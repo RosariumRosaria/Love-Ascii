@@ -22,19 +22,19 @@ end
 
 function render_handler:drawVisual(visual, centerX, centerY, visible)
   if visible or not visual.params.needsToBeSeen then
-    local xScreen, yScreen = render_utils:getScreenCoords(visual.x, visual.y, centerX, centerY)
+    local xScreen, yScreen = render_utils.getScreenCoords(visual.x, visual.y, centerX, centerY)
 
     local color = { 1, 1, 1, 1 }
 
     if visual.rects then
       for _, rect in ipairs(visual.rects) do
         if visual.params.decayOverTime then
-          color = render_utils:scaleColor(rect.colors[1], visual.params.lifespan / visual.params.initialSpan)
+          color = render_utils.scaleColor(rect.colors[1], visual.params.lifespan / visual.params.initialSpan)
         else
           color = rect.colors[visual.params.i]
         end
         local visualSize = rect.sizes[visual.params.i] * tileSize
-        render_primitives:drawRect(
+        render_primitives.drawRect(
           xScreen + ((tileSize - visualSize) / 2),
           yScreen + ((tileSize - visualSize) / 2),
           visualSize,
@@ -53,16 +53,16 @@ function render_handler:drawVisual(visual, centerX, centerY, visible)
           color = panel.colors[visual.params.i]
         end
 
-        local xScreen, yScreen = render_utils:getScreenCoords(
+        xScreen, yScreen = render_utils.getScreenCoords(
           (visual.anchor.x + (1 / 3)) or visual.x,
           visual.anchor.y - panel.offsetY or visual.y,
           centerX,
           centerY
         )
-        render_primitives:drawPanel(
+        render_primitives.drawPanel(
           xScreen,
           yScreen,
-          render_utils:getMaxTextWidth(panel.texts, defaultFont),
+          render_utils.getMaxTextWidth(panel.texts, defaultFont),
           tileSize,
           color,
           panel.outlineWidth or 1,
@@ -77,10 +77,6 @@ function render_handler:drawVisual(visual, centerX, centerY, visible)
   end
 end
 
-function render_handler:drawStack(tile, x, y, z, centerX, centerY, visible, explored)
-  --TODO, unify entities and tiles into a stack
-end
-
 function render_handler:drawEntity(entity, centerX, centerY, visible, explored)
   local tilelike = entities:getTagEntity(entity, "tilelike")
 
@@ -91,29 +87,20 @@ function render_handler:drawEntity(entity, centerX, centerY, visible, explored)
   local baseColor = entity.color
 
   if tilelike then
-    baseColor = render_utils:getEffectiveColor(baseColor, visible, explored)
+    baseColor = render_utils.getEffectiveColor(baseColor, visible, explored)
   end
 
-  local xScreen, yScreen = render_utils:getScreenCoords(entity.x, entity.y, centerX, centerY)
-  local base = render_utils:distanceBetween(entity.x, entity.y, centerX, centerY)
+  local xScreen, yScreen = render_utils.getScreenCoords(entity.x, entity.y, centerX, centerY)
+  local base = render_utils.distanceScale(entity.x, entity.y, centerX, centerY)
 
   for i, charData in ipairs(entity.chars) do
-    local scale = render_utils:getHeightLevelScale(
-      entity.z + i,
-      MAX_HEIGHT,
-      centerX,
-      centerY,
-      entity.x,
-      entity.y,
-      visible,
-      base
-    ) + 0.3
+    local scale = render_utils.getHeightLevelScale(entity.z + i, MAX_HEIGHT, visible, base) + 0.3
 
-    local scaledColor = render_utils:scaleColor(baseColor, scale)
+    local scaledColor = render_utils.scaleColor(baseColor, scale)
 
     local dx, dy =
-      render_utils:getOffset(entity.z + i - 1, OFFSET_TYPE, OFFSET_AMOUNT, entity.x, entity.y, centerX, centerY)
-    render_primitives:drawChar(
+      render_utils.getOffset(entity.z + i - 1, OFFSET_TYPE, OFFSET_AMOUNT, entity.x, entity.y, centerX, centerY)
+    render_primitives.drawChar(
       xScreen + dx,
       yScreen + dy,
       charData,
@@ -130,18 +117,18 @@ function render_handler:drawTile(tileData, x, y, centerX, centerY, visible, expl
     return
   end
 
-  local xScreen, yScreen = render_utils:getScreenCoords(x, y, centerX, centerY)
+  local xScreen, yScreen = render_utils.getScreenCoords(x, y, centerX, centerY)
 
-  local base = render_utils:distanceBetween(x, y, centerX, centerY) + 0.3
+  local base = render_utils.distanceScale(x, y, centerX, centerY)
 
   for i, tile in ipairs(tileData) do
     local char = tile.chars[1]
-    local alpha = render_utils:getHeightLevelScale(i, MAX_HEIGHT, centerX, centerY, x, y, visible, base)
-    local baseColor = render_utils:getEffectiveColor(tile.color, visible, explored)
+    local alpha = render_utils.getHeightLevelScale(i, MAX_HEIGHT, visible, base)
+    local baseColor = render_utils.getEffectiveColor(tile.color, visible, explored)
     if baseColor and (not visible or not entities:getTagLocation(x, y, i, "blocks")) then
-      local scaledColor = render_utils:scaleColor(baseColor, alpha)
-      local dx, dy = render_utils:getOffset(i, OFFSET_TYPE, OFFSET_AMOUNT, x, y, centerX, centerY)
-      render_primitives:drawChar(xScreen + dx, yScreen + dy, char, scaledColor, tile.outlineColor)
+      local scaledColor = render_utils.scaleColor(baseColor, alpha)
+      local dx, dy = render_utils.getOffset(i, OFFSET_TYPE, OFFSET_AMOUNT, x, y, centerX, centerY)
+      render_primitives.drawChar(xScreen + dx, yScreen + dy, char, scaledColor, tile.outlineColor)
     end
   end
 end
@@ -160,7 +147,7 @@ function render_handler:drawUI(ui, smallTileSize)
     table.insert(visibleTexts, ui.texts[i])
   end
 
-  render_primitives:drawPanel(
+  render_primitives.drawPanel(
     ui.x,
     ui.y,
     ui.width,
@@ -198,7 +185,7 @@ function render_handler:draw(centerX, centerY)
 
   for y = startY, endY do
     for x = startX, endX do
-      local screenX, screenY = render_utils:getScreenCoords(x, y, centerX, centerY)
+      local screenX, screenY = render_utils.getScreenCoords(x, y, centerX, centerY)
       --Temporary for debugging.
       if OFFSET_TYPE == 3 then
         love.graphics.setColor(0.5, 0.5, 0.5, 0.1)
@@ -206,19 +193,19 @@ function render_handler:draw(centerX, centerY)
         love.graphics.setColor(1, 1, 1, 1)
       end
 
-      render_handler:drawTile(tiles[y][x], x, y, centerX, centerY, map:isVisible(x, y), map:isExplored(x, y))
+      self:drawTile(tiles[y][x], x, y, centerX, centerY, map:isVisible(x, y), map:isExplored(x, y))
     end
   end
 
   --Draw Visuals
   for _, visual in ipairs(visuals:getVisualList()) do
-    render_handler:drawVisual(visual, centerX, centerY, map:isVisible(visual.x, visual.y))
+    self:drawVisual(visual, centerX, centerY, map:isVisible(visual.x, visual.y))
   end
 
   --TODO: Is there a better way to know what font I should be using?
   love.graphics.setFont(smallFont)
   for _, ui in ipairs(ui_handler:getUIList()) do
-    render_handler:drawUI(ui, smallTileSize)
+    self:drawUI(ui, smallTileSize)
   end
   love.graphics.setFont(defaultFont)
 end
@@ -232,8 +219,8 @@ function render_handler:load()
   MAX_HEIGHT = 5
   OFFSET_TYPE = 1
   OFFSET_AMOUNT = 0.25 * tileSize
-  render_utils:load()
-  render_primitives:load()
+  render_utils.load()
+  render_primitives.load()
 end
 
 return render_handler

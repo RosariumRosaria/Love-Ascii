@@ -88,7 +88,7 @@ local function reconstructPath(came_from, start, goal)
   return path
 end
 
-function pathfinder:aStar(start, goal)
+function pathfinder.aStar(start, goal)
   local entityList = entities:getEntityList()
 
   local frontier = {}

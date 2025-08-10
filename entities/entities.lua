@@ -34,7 +34,7 @@ function entities:damageEntity(targetEntity, entity)
 
   if targetEntity.stats.health.health <= 0 then
     targetEntity.dead = "true"
-    entities:removeEntity(targetEntity)
+    self:removeEntity(targetEntity)
   end
 end
 

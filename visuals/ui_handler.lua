@@ -10,20 +10,25 @@ local statusTypes = { "stats", "inventory" }
 local statusPos = 1
 local statusPanel
 
+local function addTextToUI(ui, text)
+  if not ui then
+    return false
+  end
+  table.insert(ui.texts, text)
+
+  if #ui.texts > ui.capacity then
+    table.remove(ui.texts, 1)
+  end
+end
+
 function ui_handler:switchStatus()
   statusPos = (statusPos % 2) + 1
   statusPanel.mode = statusTypes[statusPos]
-  ui_handler:updateStatus()
+  self:updateStatus()
 end
 
-function ui_handler:getUIList(name)
-  return ui_handler.uiList
-end
-
-function ui_handler:getScreenCoords(x, y, centerX, centerY, tileSize)
-  local screenX = (x - centerX + love.graphics.getWidth() / tileSize / 2) * tileSize
-  local screenY = (y - centerY + love.graphics.getHeight() / tileSize / 2) * tileSize
-  return screenX, screenY
+function ui_handler:getUIList()
+  return self.uiList
 end
 
 function ui_handler:addUI(x, y, width, height, name, color, outlineWidth, outlinecolor, centerText, tileGrid)
@@ -43,32 +48,21 @@ function ui_handler:addUI(x, y, width, height, name, color, outlineWidth, outlin
     capacity = math.floor(height / smallTileSize) * 10,
   }
 
-  table.insert(ui_handler.uiList, ui)
+  table.insert(self.uiList, ui)
 
   return ui
 end
 
 function ui_handler:getUI(name)
-  for _, ui in ipairs(ui_handler.uiList) do
+  for _, ui in ipairs(self.uiList) do
     if ui.name == name then
       return ui
     end
   end
 end
 
-function ui_handler:addTextToUI(ui, text)
-  if not ui then
-    return false
-  end
-  table.insert(ui.texts, text)
-
-  if #ui.texts > ui.capacity then
-    table.remove(ui.texts, 1)
-  end
-end
-
 function ui_handler:addTextToUIByName(name, text)
-  ui_handler:addTextToUI(ui_handler:getUI(name), text)
+  addTextToUI(self:getUI(name), text)
 end
 
 function ui_handler:load()
@@ -85,24 +79,24 @@ function ui_handler:load()
 
   smallTileSize = config.smallTileSize
 
-  ui_handler:addUI(startX, buffer, width, height, "terminal", black, outlineWidth, white)
+  self:addUI(startX, buffer, width, height, "terminal", black, outlineWidth, white)
   statusPanel =
-    ui_handler:addUI(startX, startY, width, screenHeight - height - (4 * buffer), "status", black, outlineWidth, white)
+    self:addUI(startX, startY, width, screenHeight - height - (4 * buffer), "status", black, outlineWidth, white)
   statusPanel.mode = "inventory"
 end
 
-function ui_handler:updateStatus() --TODO, I wonder if there's a way to make this more dynamically describe whatever I pass it. Maybe if I change the describe() funtion by type?
+function ui_handler:updateStatus()
   statusPanel.texts = {}
 
   if statusPanel.mode == "stats" then
     for statName, stat in pairs(player.stats) do
       local current = stat[statName]
       local max = stat["max" .. statName:gsub("^%l", string.upper)]
-      ui_handler:addTextToUIByName("status", statName .. ": " .. current .. " / " .. max)
+      self:addTextToUIByName("status", statName .. ": " .. current .. " / " .. max)
     end
   elseif statusPanel.mode == "inventory" then
-    for itemName, item in pairs(player.inventory) do
-      ui_handler:addTextToUIByName("status", "- " .. itemName)
+    for itemName, _ in pairs(player.inventory) do
+      self:addTextToUIByName("status", "- " .. itemName)
     end
   end
 end

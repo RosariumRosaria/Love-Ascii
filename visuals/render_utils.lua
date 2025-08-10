@@ -1,13 +1,9 @@
 local config = require("config")
-local tileSize
-local smallTileSize
 local defaultFont
-local smallFont
-local raster
 local tileSize
 local render_utils = {}
 
-function render_utils:getHeightLevelScale(i, maxHeight, centerX, centerY, x, y, visible, base)
+function render_utils.getHeightLevelScale(i, maxHeight, visible, base)
   local heightFactor = (i + 0.5) / maxHeight
   local alpha = heightFactor * base
   if not visible then
@@ -17,7 +13,7 @@ function render_utils:getHeightLevelScale(i, maxHeight, centerX, centerY, x, y, 
   return math.max(math.min(alpha, 2), 0.1)
 end
 
-function render_utils:getMaxTextWidth(texts, font)
+function render_utils.getMaxTextWidth(texts, font)
   local maxWidth = ""
   font = font or defaultFont
   for _, text in ipairs(texts) do
@@ -29,7 +25,7 @@ function render_utils:getMaxTextWidth(texts, font)
 end
 
 -- Returns the final color to be used based on visibility and exploration
-function render_utils:getEffectiveColor(color, visible, explored)
+function render_utils.getEffectiveColor(color, visible, explored)
   if visible then
     if color then
       return {
@@ -49,7 +45,7 @@ end
 
 -- Takes a color and scales it by a set amount.
 -- If no color is provided, defaults to white.
-function render_utils:scaleColor(color, scale)
+function render_utils.scaleColor(color, scale)
   if color then
     return {
       (color[1] or 1) * scale,
@@ -63,14 +59,13 @@ function render_utils:scaleColor(color, scale)
 end
 
 -- Converts XY map to XY screen coordinates based on camera center
-function render_utils:getScreenCoords(x, y, centerX, centerY)
+function render_utils.getScreenCoords(x, y, centerX, centerY)
   local screenX = (x - centerX + love.graphics.getWidth() / tileSize / 2) * tileSize
   local screenY = (y - centerY + love.graphics.getHeight() / tileSize / 2) * tileSize
   return screenX, screenY
 end
 
--- Gets distance between map positions and returns a normalized alpha value based on screen size
-function render_utils:distanceBetween(x1, y1, x2, y2)
+function render_utils.distanceScale(x1, y1, x2, y2)
   local screenWidth = love.graphics.getWidth()
   local screenHeight = love.graphics.getHeight()
 
@@ -84,7 +79,7 @@ function render_utils:distanceBetween(x1, y1, x2, y2)
 end
 
 -- Gets a visual offset based on height and offset type
-function render_utils:getOffset(i, offsetType, offset, x, y, centerX, centerY)
+function render_utils.getOffset(i, offsetType, offset, x, y, centerX, centerY)
   if offsetType == 1 then
     local scale = 0.1
     return (i - 1) * offset * (x - centerX) * scale, (i - 1) * offset * (y - centerY) * scale
@@ -96,7 +91,7 @@ end
 
 local GlyphCenterCache = setmetatable({}, { __mode = "k" })
 
-function render_utils:getVisualCenterFromTop(font, ch)
+function render_utils.getVisualCenterFromTop(font, ch)
   local perFont = GlyphCenterCache[font]
   if not perFont then
     perFont = {}
@@ -152,12 +147,9 @@ function render_utils:getVisualCenterFromTop(font, ch)
   return centerFromTop
 end
 
-function render_utils:load()
+function render_utils.load()
   tileSize = config.tileSize
-  smallTileSize = config.smallTileSize
   defaultFont = config.font
-  smallFont = config.smallFont
-  raster = config.raster
 end
 
 return render_utils

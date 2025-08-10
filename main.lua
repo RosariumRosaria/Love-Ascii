@@ -4,7 +4,7 @@ local render_handler = require("visuals.render_handler")
 local visuals = require("visuals.visuals")
 local ui_handler = require("visuals.ui_handler")
 local input_handler = require("engine.input_handler")
-local fov_handler = require("fov.fov_handler")
+local visualizer = require("voroni.visualizer")
 local entities = require("entities.entities")
 
 _G.deepPrint = function(tbl, indent, visited) --TODO Gross, for debug
@@ -95,5 +95,6 @@ function love.update(dt) --Todo: Make movement check key pressed, to avoid the t
 end
 
 function love.draw()
-  render_handler:draw(player.x, player.y)
+  --render_handler:draw(player.x, player.y)
+  visualizer:draw()
 end

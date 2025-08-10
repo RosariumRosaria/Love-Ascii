@@ -3,6 +3,7 @@ local map = require("map.map")
 local render_handler = require("visuals.render_handler")
 local ui_handler = require("visuals.ui_handler")
 local ai_handler = require("engine.ai_handler")
+local voroni_generator = require("voroni.voroni_generator")
 local input_handler = {}
 
 local timeSinceLastUpdate = 0
@@ -66,7 +67,8 @@ function input_handler:update(dt, playerDead)
       elseif love.keyboard.isDown("e") then
         tookAction = engine:interact(player, moveDir.x, moveDir.y)
         if not tookAction then
-          engine:interact(player, -1 * moveDir.x, -1 * moveDir.y) --TODO should this be in input handler? Also investigate double priting
+          engine:interact(player, -1 * moveDir.x, -1 * moveDir.y)
+          --TODO should this be in input handler? Also investigate double priting
         end
       elseif love.keyboard.isDown("r") then
         engine:inspect(player, moveDir.x, moveDir.y)
@@ -94,10 +96,12 @@ function input_handler:update(dt, playerDead)
 
   if love.keyboard.isDown("z") then
     render_handler:switchOffset()
+    voroni_generator:reload(30)
   end
 
   if love.keyboard.isDown("x") then
     ui_handler:switchStatus()
+    voroni_generator:lloyd()
   end
 
   if love.keyboard.isDown("escape") then

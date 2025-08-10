@@ -1,43 +1,26 @@
 local map = require("map.map")
 local entities = require("entities.entities")
 local visuals = require("visuals.visuals")
-local ui_handler = require("visuals.ui_handler")
 local pathfinder = require("engine.pathfinder")
 local fov_handler = require("fov.fov_handler")
 local engine = require("engine.engine")
 local engine_utils = require("engine.engine_utils")
 
 local ai_handler = {}
---TODO, rethink some of this, having the following state be the same for wandering and attacking is fine, but once popups are fixed you'll want to incorporate those
+--[[ TODO, At some point the flow should probably be more like
+  -Entity gets list of entities in area
+  -Entity has a list of states it can have, and maybe overrides for what those states can do
+  -IE, basic enemies would get a list of all entities near them,
+  filter to those they can see,
+  then those they can see and are not also enemies,
+  then those they can pathfind too
+  Then pick based on some waits to be a target
+]]
 
-function ai_handler:checkValidTarget(entity, target, state)
-  local visible = fov_handler:refreshVisibility(
-    entity.x,
-    entity.y,
-    entity.sight,
-    map:getWidth(),
-    map:getHeight(),
-    map:getTiles(),
-    nil,
-    false,
-    target.x,
-    target.y
-  )
-  local ret = engine_utils:distanceBetween(entity, target) < entity.sight and visible
-
-  if ret then
-    entity.turnsToIdle = 25 --TODO: Should different enemies process memory differently?
-    entity.targetPos = { target.x, target.y }
-    entity.targetEntity = target
-    entity.state = state
-  end
-  return ret
-end
-
-local function canSeePlayer(entity)
+local function canSee(entity, target)
   entity.canSee = false
-  if engine_utils:distanceBetween(entity, player) < entity.sight then
-    entity.canSee = fov_handler:refreshVisibility(
+  if engine_utils.distanceBetween(entity, target) < entity.sight then
+    entity.canSee = fov_handler.refreshVisibility(
       entity.x,
       entity.y,
       entity.sight,
@@ -46,15 +29,15 @@ local function canSeePlayer(entity)
       map:getTiles(),
       nil,
       false,
-      player.x,
-      player.y
+      target.x,
+      target.y
     )
   end
 
   if entity.canSee then
     entity.state = "chasing"
-    entity.targetEntity = player
-    entity.targetPos = { player.x, player.y }
+    entity.targetEntity = target
+    entity.targetPos = { target.x, target.y }
     entity.turnsToIdle = 20
     return true
   end
@@ -62,9 +45,9 @@ local function canSeePlayer(entity)
   return false
 end
 
-function ai_handler:idle(entity)
+local function idle(entity)
   if entity.type == "enemy" then
-    if canSeePlayer(entity) then
+    if canSee(entity, player) then
       return
     end
     local chance = math.random(1, 5)
@@ -86,10 +69,10 @@ function ai_handler:idle(entity)
   end
 end
 
-function ai_handler:wander(entity)
+local function wander(entity)
   if entity.type == "enemy" then
     if entity.turnsToIdle and entity.turnsToIdle > 0 and entity.targetPos then
-      if canSeePlayer(entity) then
+      if canSee(entity, player) then
         entity.path = nil
         entity.pathIndex = nil
         return
@@ -101,7 +84,7 @@ function ai_handler:wander(entity)
         return
       end
 
-      entity.path = pathfinder:aStar({ entity.x, entity.y }, entity.targetPos)
+      entity.path = pathfinder.aStar({ entity.x, entity.y }, entity.targetPos)
       if entity.path then
         local step = entity.path[2]
         if step and step[1] and step[2] then
@@ -123,10 +106,10 @@ function ai_handler:wander(entity)
   end
 end
 
-function ai_handler:chase(entity)
+local function chase(entity)
   if entity.turnsToIdle and entity.turnsToIdle > 0 and entity.targetPos then
-    if canSeePlayer(entity) then
-      entity.path = pathfinder:aStar({ entity.x, entity.y }, entity.targetPos)
+    if canSee(entity, player) then
+      entity.path = pathfinder.aStar({ entity.x, entity.y }, entity.targetPos)
       entity.pathIndex = 2
     end
 
@@ -159,13 +142,13 @@ function ai_handler:chase(entity)
   end
 end
 
-function ai_handler:processEnemy(entity)
+local function processEnemy(entity)
   if entity.state == "idle" then
-    ai_handler:idle(entity)
+    idle(entity)
   elseif entity.state == "wandering" then
-    ai_handler:wander(entity)
+    wander(entity)
   elseif entity.state == "chasing" then
-    ai_handler:chase(entity)
+    chase(entity)
   end
 
   if entity.canSee and not entity.couldSee then
@@ -175,11 +158,11 @@ function ai_handler:processEnemy(entity)
   entity.couldSee = entity.canSee
 end
 
-function ai_handler:processTurn()
+function ai_handler.processTurn()
   local entityList = entities:getEntityList()
   for _, entity in ipairs(entityList) do
     if entity.type == "enemy" then
-      ai_handler:processEnemy(entity)
+      processEnemy(entity)
     end
   end
 end
