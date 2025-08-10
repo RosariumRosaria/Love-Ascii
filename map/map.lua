@@ -1,6 +1,7 @@
 local fov_handler = require("fov.fov_handler")
 local city_generator = require("map.city_generator")
 local types = require("map.tile_types")
+local voroni_generator = require("voroni.voroni_generator")
 
 local map = {
   width = nil,
@@ -11,8 +12,19 @@ local map = {
   explored = {},
 }
 
-function map:inbounds(x, y) -- Can maybe moved to separate file
+function map:inbounds(x, y)
   return x >= 1 and x <= self.width and y >= 1 and y <= self.height
+end
+
+function map:getTile(x, y, z)
+  if not map:inbounds(x, y) then
+    return nil
+  end
+  if not self.tiles[y] or not self.tiles[y][x][z] then
+    return nil
+  end
+
+  return self.tiles[y][x][z]
 end
 
 function map:walkable(x, y, z)
@@ -68,7 +80,10 @@ function map:load(width, height, depth, mapType)
     end
   end
   if mapType == "town" then
-    city_generator:makeTown(205, self.tiles, self.height, self.width, self.depth) -- TODO Hardcoded for 205, should be changed
+    -- TODO Hardcoded for 205, should be changed
+    voroni_generator:load(self.width, self.height, self.tiles, 30)
+
+    --city_generator:makeTown(205, self.tiles, self.height, self.width, self.depth)
   end
 end
 
@@ -79,7 +94,7 @@ function map:updateVisibility(centerX, centerY, radius)
     end
   end
 
-  fov_handler:refreshVisibility(centerX, centerY, radius, self.width, self.height, self.tiles, self.visible, true)
+  fov_handler.refreshVisibility(centerX, centerY, radius, self.width, self.height, self.tiles, self.visible, true)
 
   for y = 1, self.height do -- TODO SO INEFFICIENT, but works for now
     for x = 1, self.width do

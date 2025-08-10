@@ -4,7 +4,7 @@ local map = require("map.map")
 
 local engine_utils = {}
 
-function engine_utils:distanceBetween(entity1, entity2)
+function engine_utils.distanceBetween(entity1, entity2)
   if not entity1 then
     ui_handler:addTextToUIByName("terminal", "entity1 is nil")
   end
@@ -14,7 +14,7 @@ function engine_utils:distanceBetween(entity1, entity2)
   return math.sqrt((entity1.x - entity2.x) ^ 2 + (entity1.y - entity2.y) ^ 2)
 end
 
-function engine_utils:isTileFree(x, y, z, skipEntities) --Maybe we can seperate this and other helpers into a more generic util module. Too much logic is being done here
+function engine_utils.isTileFree(x, y, z, skipEntities)
   local entityList = entities:getEntityList()
   if not map:walkable(x, y, z) then
     return false

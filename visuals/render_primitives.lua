@@ -3,8 +3,7 @@ local tileSize
 local render_utils = require("visuals.render_utils")
 local render_primitives = {}
 
--- Draws a filled rect (with optional outline) in screen coordinates
-function render_primitives:drawRect(xScreen, yScreen, width, height, color, outlineWidth, outlineColor, roundedAmount)
+function render_primitives.drawRect(xScreen, yScreen, width, height, color, outlineWidth, outlineColor, roundedAmount)
   local roundedAmountX = 0
   local roundedAmountY = 0
 
@@ -34,7 +33,7 @@ function render_primitives:drawRect(xScreen, yScreen, width, height, color, outl
   love.graphics.setColor(1, 1, 1, 1)
 end
 
-function render_primitives:drawChar(xScreen, yScreen, text, color, outlineColor, rotation, naturalRotation)
+function render_primitives.drawChar(xScreen, yScreen, text, color, outlineColor, rotation, naturalRotation)
   if not text or text == "" then
     return
   end
@@ -42,7 +41,7 @@ function render_primitives:drawChar(xScreen, yScreen, text, color, outlineColor,
   local font = love.graphics.getFont()
   local textWidth = font:getWidth(text)
 
-  local centerFromTop = render_utils:getVisualCenterFromTop(font, text)
+  local centerFromTop = render_utils.getVisualCenterFromTop(font, text)
 
   local cx = xScreen + tileSize * 0.5
   local cy = yScreen + tileSize * 0.5
@@ -63,8 +62,7 @@ function render_primitives:drawChar(xScreen, yScreen, text, color, outlineColor,
   love.graphics.setColor(1, 1, 1, 1)
 end
 
---Draws a block
-function render_primitives:drawTextBlock(texts, xScreen, yScreen, width, outline, centerText, color, lineHeight)
+function render_primitives.drawTextBlock(texts, xScreen, yScreen, width, outline, centerText, color, lineHeight)
   local font = love.graphics.getFont()
   lineHeight = lineHeight or tileSize
   if color then
@@ -84,8 +82,7 @@ function render_primitives:drawTextBlock(texts, xScreen, yScreen, width, outline
   end
 end
 
--- Draws a panel, just calls the rect and textBlock functions
-function render_primitives:drawPanel(
+function render_primitives.drawPanel(
   xScreen,
   yScreen,
   width,
@@ -98,11 +95,20 @@ function render_primitives:drawPanel(
   textColor,
   lineHeight
 )
-  self:drawRect(xScreen, yScreen, width, height, fillColor, outlineWidth, outlineColor)
-  self:drawTextBlock(texts, xScreen, yScreen, width, 1, centerText, textColor or { 1, 1, 1, 1 }, lineHeight)
+  render_primitives.drawRect(xScreen, yScreen, width, height, fillColor, outlineWidth, outlineColor)
+  render_primitives.drawTextBlock(
+    texts,
+    xScreen,
+    yScreen,
+    width,
+    1,
+    centerText,
+    textColor or { 1, 1, 1, 1 },
+    lineHeight
+  )
 end
 
-function render_primitives:load()
+function render_primitives.load()
   tileSize = config.tileSize
 end
 

@@ -1,7 +1,11 @@
 local shadowLine = require("fov.shadow_line")
 local shadow = require("fov.shadow")
 local entities = require("entities.entities")
-local fovutil = {}
+local fov_handler = {}
+
+local function inbounds(x, y, width, height)
+  return x >= 1 and x <= width and y >= 1 and y <= height
+end
 
 local function transformOctant(row, col, octant)
   local dx, dy
@@ -27,83 +31,7 @@ local function transformOctant(row, col, octant)
   return dx, dy
 end
 
-function fovutil:paintOctant(entityX, entityY, maxDistance, width, height, mapGrid)
-  for row = maxDistance - 1, 1, -1 do
-    local line = ""
-    for col = 0, row do
-      line = line .. "{ "
-      local x = entityX + col
-      local y = entityY - row
-      if fovutil:inbounds(y, x, width, height) then
-        line = line .. mapGrid[y][x][1].char
-
-        line = line .. tostring(mapGrid[y][x][1].transparent)
-      end
-
-      line = line .. " }"
-    end
-    print(line)
-  end
-end
-
-function fovutil:paintOctantVisiblity(entityX, entityY, maxDistance, width, height, mapGrid, visiblityGrid)
-  for row = maxDistance - 1, 1, -1 do
-    local line = " "
-    for col = 0, row do
-      local x = entityX + col
-      local y = entityY - row
-      if fovutil:inbounds(y, x, width, height) and visiblityGrid[y][x] then
-        line = line .. mapGrid[y][x][1].char .. " "
-      else
-        line = line .. "  "
-      end
-    end
-    print(line)
-  end
-  print("@")
-end
-
-function fovutil:inbounds(x, y, width, height)
-  return x >= 1 and x <= width and y >= 1 and y <= height
-end
-
-function fovutil:refreshVisibility(
-  entityX,
-  entityY,
-  maxDistance,
-  width,
-  height,
-  mapGrid,
-  visibilityGrid,
-  player,
-  targetX,
-  targetY
-)
-  if player then
-    visibilityGrid[entityY][entityX] = true
-  end
-  for octant = 0, 7 do
-    local visible = fovutil:refreshOctant(
-      entityX,
-      entityY,
-      octant,
-      maxDistance,
-      width,
-      height,
-      mapGrid,
-      visibilityGrid,
-      player,
-      targetX,
-      targetY
-    ) --TODO check if this works really for enemies
-    if visible then
-      return true
-    end
-  end
-  return false
-end
-
-function fovutil:refreshOctant(
+local function refreshOctant(
   entityX,
   entityY,
   octant,
@@ -119,14 +47,12 @@ function fovutil:refreshOctant(
   local line = shadowLine:new()
   local fullShadow = false
 
-  -- fovutil:paintOctant(entityX, entityY, maxDistance, width, height, mapGrid)
   for row = 1, maxDistance do
-    -- Stop once we go out of bounds.
     local dx, dy = transformOctant(row, 0, octant)
     local posX = entityX + dx
     local posY = entityY + dy
 
-    if not (fovutil:inbounds(posX, posY, width, height)) then
+    if not (inbounds(posX, posY, width, height)) then
       break
     end
 
@@ -135,7 +61,7 @@ function fovutil:refreshOctant(
       posX = entityX + dx
       posY = entityY + dy
 
-      if not (fovutil:inbounds(posX, posY, width, height)) then
+      if not (inbounds(posX, posY, width, height)) then
         break
       end
 
@@ -167,4 +93,40 @@ function fovutil:refreshOctant(
   end
 end
 
-return fovutil
+function fov_handler.refreshVisibility(
+  entityX,
+  entityY,
+  maxDistance,
+  width,
+  height,
+  mapGrid,
+  visibilityGrid,
+  player,
+  targetX,
+  targetY
+)
+  if player then
+    visibilityGrid[entityY][entityX] = true
+  end
+  for octant = 0, 7 do
+    local visible = refreshOctant(
+      entityX,
+      entityY,
+      octant,
+      maxDistance,
+      width,
+      height,
+      mapGrid,
+      visibilityGrid,
+      player,
+      targetX,
+      targetY
+    ) --TODO check if this works really for enemies
+    if visible then
+      return true
+    end
+  end
+  return false
+end
+
+return fov_handler

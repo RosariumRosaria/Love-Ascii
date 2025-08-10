@@ -2,11 +2,11 @@ local entities = require("entities.entities")
 local types = require("map.tile_types")
 local city_generator = { width = nil, height = nil, depth = nil }
 
-function city_generator:inbounds(x, y, width, height) -- Can maybe moved to separate file
-  return x >= 1 and x <= self.width and y >= 1 and y <= self.height
+local function inbounds(x, y, width, height) -- Can maybe moved to separate file
+  return x >= 1 and x <= width and y >= 1 and y <= height
 end
 
-function city_generator:overlapRect(r1, r2)
+local function overlapRect(r1, r2)
   return not (
     r1.x + r1.width <= r2.x
     or r2.x + r2.width <= r1.x
@@ -20,7 +20,7 @@ function city_generator:makeBuilding(roomStartX, roomStartY, width, height, dept
     for x = 1, width do
       local tileX = roomStartX + x - 1
       local tileY = roomStartY + y - 1
-      if self:inbounds(tileX, tileY, self.width, self.height) then
+      if inbounds(tileX, tileY, self.width, self.height) then
         if
           (x == 1 and y == 1)
           or (x == width and y == height)
@@ -57,10 +57,10 @@ function city_generator:makeBuilding(roomStartX, roomStartY, width, height, dept
   local doorY = safeDoorStart(height)
 
   local sides = {
-    { x = roomStartX, y = roomStartY + doorY - 1, rotation = 0 }, -- left wall
-    { x = roomStartX + width - 1, y = roomStartY + doorY - 1, rotation = 180 }, -- right wall
-    { x = roomStartX + doorX - 1, y = roomStartY, rotation = 90 }, -- top wall
-    { x = roomStartX + doorX - 1, y = roomStartY + height - 1, rotation = 270 }, -- bottom wall
+    { x = roomStartX, y = roomStartY + doorY - 1, rotation = 0 },
+    { x = roomStartX + width - 1, y = roomStartY + doorY - 1, rotation = 180 },
+    { x = roomStartX + doorX - 1, y = roomStartY, rotation = 90 },
+    { x = roomStartX + doorX - 1, y = roomStartY + height - 1, rotation = 270 },
   }
 
   local dir = math.random(1, 4)
@@ -103,7 +103,7 @@ function city_generator:makeTown(roomCount, tiles, mapHeight, mapWidth, mapDepth
 
   local buildings = {}
 
-  for i = 1, roomCount do
+  for _ = 1, roomCount do
     local potentialBuilding
     local overLaps = true
 
@@ -117,7 +117,7 @@ function city_generator:makeTown(roomCount, tiles, mapHeight, mapWidth, mapDepth
       potentialBuilding = { x = x, y = y, width = w, height = h }
 
       for _, other in ipairs(buildings) do
-        if self:overlapRect(potentialBuilding, other) then
+        if overlapRect(potentialBuilding, other) then
           overLaps = true
           break
         end
