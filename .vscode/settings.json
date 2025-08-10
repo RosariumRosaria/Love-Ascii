@@ -1,8 +1,0 @@
-{
-  "Lua.runtime.version": "Lua 5.1",
-  "Lua.diagnostics.globals": ["love"],
-  "[lua]": {
-    "editor.defaultFormatter": "JohnnyMorganz.stylua"
-  },
-  "editor.formatOnSave": true
-}
