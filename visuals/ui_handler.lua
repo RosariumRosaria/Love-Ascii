@@ -21,17 +21,17 @@ local function addTextToUI(ui, text)
   end
 end
 
-function ui_handler:switchStatus()
+function ui_handler:switch_status()
   statusPos = (statusPos % 2) + 1
   statusPanel.mode = statusTypes[statusPos]
-  self:updateStatus()
+  self:update_status()
 end
 
-function ui_handler:getUIList()
+function ui_handler:get_ui_list()
   return self.uiList
 end
 
-function ui_handler:addUI(x, y, width, height, name, color, outlineWidth, outlinecolor, centerText, tileGrid)
+function ui_handler:addUI(x, y, width, height, name, color, outlineWidth, outlinecolor, center_text, tileGrid)
   local ui = {
     x = x,
     y = y,
@@ -42,9 +42,9 @@ function ui_handler:addUI(x, y, width, height, name, color, outlineWidth, outlin
     outlineWidth = outlineWidth,
     outlinecolor = outlinecolor,
     texts = {},
-    centerText = centerText,
+    center_text = center_text,
     tileGrid = tileGrid,
-    scrollOffset = 0,
+    scroll_offset = 0,
     capacity = math.floor(height / smallTileSize) * 10,
   }
 
@@ -53,7 +53,7 @@ function ui_handler:addUI(x, y, width, height, name, color, outlineWidth, outlin
   return ui
 end
 
-function ui_handler:getUI(name)
+function ui_handler:get_ui(name)
   for _, ui in ipairs(self.uiList) do
     if ui.name == name then
       return ui
@@ -61,8 +61,8 @@ function ui_handler:getUI(name)
   end
 end
 
-function ui_handler:addTextToUIByName(name, text)
-  addTextToUI(self:getUI(name), text)
+function ui_handler:add_text_to_ui_by_name(name, text)
+  addTextToUI(self:get_ui(name), text)
 end
 
 function ui_handler:load()
@@ -85,18 +85,18 @@ function ui_handler:load()
   statusPanel.mode = "inventory"
 end
 
-function ui_handler:updateStatus()
+function ui_handler:update_status()
   statusPanel.texts = {}
 
   if statusPanel.mode == "stats" then
     for statName, stat in pairs(player.stats) do
       local current = stat[statName]
       local max = stat["max" .. statName:gsub("^%l", string.upper)]
-      self:addTextToUIByName("status", statName .. ": " .. current .. " / " .. max)
+      self:add_text_to_ui_by_name("status", statName .. ": " .. current .. " / " .. max)
     end
   elseif statusPanel.mode == "inventory" then
     for itemName, _ in pairs(player.inventory) do
-      self:addTextToUIByName("status", "- " .. itemName)
+      self:add_text_to_ui_by_name("status", "- " .. itemName)
     end
   end
 end

@@ -5,9 +5,9 @@ return {
     state = "idle",
     chars = { "V" },
     color = { 0.7, 0.2, 0.2, 1 },
-    effectColor = { 0.35, 0.1, 0.1, 0.5 },
+    effect_color = { 0.35, 0.1, 0.1, 0.5 },
     description = "A vampire, try attacking it!",
-    defaultAction = "attackable",
+    default_action = "attackable",
     stats = {
       health = { health = 10, maxHealth = 10 },
     },
@@ -21,7 +21,7 @@ return {
       attackable = true,
       walkable = false,
     },
-    allowedActions = {
+    allowed_actions = {
       attackable = true,
     },
   },
@@ -46,7 +46,7 @@ return {
     type = "prop",
     chars = { "#" },
     color = { 0.38, 0.33, 0.30 },
-    defaultAction = "moveable",
+    default_action = "moveable",
     tags = {
       solid = false,
       moveable = true,
@@ -61,7 +61,7 @@ return {
     type = "prop",
     chars = { "[ ]", "[ ]" },
     color = { 0.47, 0.23, 0.23, 1 },
-    defaultAction = "moveable",
+    default_action = "moveable",
     tags = {
       solid = true,
       moveable = true,
@@ -76,7 +76,7 @@ return {
     type = "prop",
     chars = { "[", "[" },
     color = { 0.47, 0.23, 0.23, 1 },
-    defaultAction = "interactable",
+    default_action = "interactable",
     tags = {
       moveable = false,
       solid = true,
@@ -85,9 +85,9 @@ return {
       interactable = true,
       blocks = false,
     },
-    naturalRotation = 0,
+    natural_rotation = 0,
     interaction = {
-      naturalRotation = 90,
+      natural_rotation = 90,
       chars = { "-  -", "-  -" },
       tags = {
         solid = false,
@@ -101,7 +101,7 @@ return {
     type = "prop",
     chars = { " ", "--", "--" },
     color = { 0.47, 0.33, 0.23, 1 },
-    defaultAction = "interactable",
+    default_action = "interactable",
     tags = {
       moveable = false,
       solid = true,
@@ -110,10 +110,10 @@ return {
       interactable = true,
       blocks = false,
     },
-    naturalRotation = 90,
+    natural_rotation = 90,
     interaction = {
       chars = { " ", "'  '", "'  '" },
-      naturalRotation = 90,
+      natural_rotation = 90,
       tags = {
         solid = false,
         walkable = false,

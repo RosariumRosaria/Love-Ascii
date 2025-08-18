@@ -3,7 +3,16 @@ local tileSize
 local render_utils = require("visuals.render_utils")
 local render_primitives = {}
 
-function render_primitives.drawRect(xScreen, yScreen, width, height, color, outlineWidth, outlineColor, roundedAmount)
+function render_primitives.draw_rect(
+  x_screen,
+  y_screen,
+  width,
+  height,
+  color,
+  outlineWidth,
+  outlineColor,
+  roundedAmount
+)
   local roundedAmountX = 0
   local roundedAmountY = 0
 
@@ -13,15 +22,15 @@ function render_primitives.drawRect(xScreen, yScreen, width, height, color, outl
   end
 
   love.graphics.setColor(color)
-  love.graphics.rectangle("fill", xScreen, yScreen, width, height, roundedAmountX, roundedAmountY)
+  love.graphics.rectangle("fill", x_screen, y_screen, width, height, roundedAmountX, roundedAmountY)
 
   if outlineWidth and outlineColor then
     love.graphics.setLineWidth(outlineWidth)
     love.graphics.setColor(outlineColor)
     love.graphics.rectangle(
       "line",
-      xScreen - outlineWidth,
-      yScreen - outlineWidth,
+      x_screen - outlineWidth,
+      y_screen - outlineWidth,
       width + outlineWidth,
       height + outlineWidth,
       roundedAmountX,
@@ -33,23 +42,23 @@ function render_primitives.drawRect(xScreen, yScreen, width, height, color, outl
   love.graphics.setColor(1, 1, 1, 1)
 end
 
-function render_primitives.drawChar(xScreen, yScreen, text, color, outlineColor, rotation, naturalRotation)
+function render_primitives.draw_char(x_screen, y_screen, text, color, outlineColor, rotation, naturalRotation)
   if not text or text == "" then
     return
   end
 
   local font = love.graphics.getFont()
-  local textWidth = font:getWidth(text)
+  local text_width = font:getWidth(text)
 
-  local centerFromTop = render_utils.getVisualCenterFromTop(font, text)
+  local center_from_top = render_utils.getVisualCenterFromTop(font, text)
 
-  local cx = xScreen + tileSize * 0.5
-  local cy = yScreen + tileSize * 0.5
+  local cx = x_screen + tileSize * 0.5
+  local cy = y_screen + tileSize * 0.5
 
   local rads = math.rad(((rotation or 0) - (naturalRotation or 0)) % 360)
 
-  local ox = textWidth * 0.5
-  local oy = centerFromTop
+  local ox = text_width * 0.5
+  local oy = center_from_top
 
   if outlineColor then
     love.graphics.setColor(outlineColor)
@@ -62,7 +71,7 @@ function render_primitives.drawChar(xScreen, yScreen, text, color, outlineColor,
   love.graphics.setColor(1, 1, 1, 1)
 end
 
-function render_primitives.drawTextBlock(texts, xScreen, yScreen, width, outline, centerText, color, lineHeight)
+function render_primitives.drawTextBlock(texts, x_screen, y_screen, width, outline, center_text, color, lineHeight)
   local font = love.graphics.getFont()
   lineHeight = lineHeight or tileSize
   if color then
@@ -71,20 +80,20 @@ function render_primitives.drawTextBlock(texts, xScreen, yScreen, width, outline
 
   for i, text in ipairs(texts) do
     local dx = 0
-    if centerText then
+    if center_text then
       dx = dx + (width - font:getWidth(text)) / 2
     end
 
-    local drawX = xScreen + dx
-    local drawY = yScreen + outline + ((i - 1) * lineHeight)
+    local drawX = x_screen + dx
+    local drawY = y_screen + outline + ((i - 1) * lineHeight)
 
     love.graphics.print(text, drawX, drawY)
   end
 end
 
-function render_primitives.drawPanel(
-  xScreen,
-  yScreen,
+function render_primitives.draw_panel(
+  x_screen,
+  y_screen,
   width,
   height,
   fillColor,
@@ -95,11 +104,11 @@ function render_primitives.drawPanel(
   textColor,
   lineHeight
 )
-  render_primitives.drawRect(xScreen, yScreen, width, height, fillColor, outlineWidth, outlineColor)
+  render_primitives.draw_rect(x_screen, y_screen, width, height, fillColor, outlineWidth, outlineColor)
   render_primitives.drawTextBlock(
     texts,
-    xScreen,
-    yScreen,
+    x_screen,
+    y_screen,
     width,
     1,
     centerText,

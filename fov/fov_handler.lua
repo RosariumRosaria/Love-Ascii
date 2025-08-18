@@ -84,7 +84,7 @@ local function refreshOctant(
         if #mapGrid[posY][posX] > 1 then
           transparent = mapGrid[posY][posX][2].transparent
         end
-        if visible and (not transparent or entities:getTagLocation(posX, posY, 1, "solid")) then
+        if visible and (not transparent or entities:get_tag_location(posX, posY, 1, "solid")) then
           line:AddShadow(projection)
           fullShadow = line:isFullShadow()
         end

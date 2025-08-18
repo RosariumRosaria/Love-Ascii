@@ -15,7 +15,7 @@ function visuals:getVisuals(x, y, z)
   return ret
 end
 
-function visuals:getVisualList()
+function visuals:get_visual_list()
   return self.visualList
 end
 
@@ -35,7 +35,7 @@ local function deepCopy(tbl)
   return copy
 end
 
-function visuals:addFromTemplate(name, x, y, z, overrides)
+function visuals:add_from_template(name, x, y, z, overrides)
   local template = visualTypes[name]
   if not template then
     error("Entity type '" .. tostring(name) .. "' does not exist")

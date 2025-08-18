@@ -3,13 +3,13 @@ local voroni_generator = require("voroni.voroni_generator")
 
 local visualizer = {}
 
-function visualizer:drawMap()
-  for y = 1, self.mapHeight do
-    for x = 1, self.mapWidth do
+function visualizer:draw_map()
+  for y = 1, self.map_height do
+    for x = 1, self.map_width do
       local tile = map:getTile(x, y, 1)
-      local tileColor = tile and tile.color
-      if tileColor then
-        love.graphics.setColor(tileColor)
+      local tile_color = tile and tile.color
+      if tile_color then
+        love.graphics.setColor(tile_color)
       end
       love.graphics.rectangle(
         "fill",
@@ -23,31 +23,30 @@ function visualizer:drawMap()
   love.graphics.setColor(1, 1, 1, 1)
 end
 
-function visualizer:drawPointSet()
-  local pointSet = voroni_generator:getRegions()
-  if pointSet then
-    for _, point in ipairs(pointSet) do
+function visualizer:draw_point_set()
+  local point_set = voroni_generator:get_regions()
+
+  if point_set then
+    for _, point in ipairs(point_set) do
       love.graphics.setColor(0, 0, 0, 1)
       love.graphics.circle(
         "fill",
-        self.startX + (point.centroidX - 1) * self.scale,
-        self.startY + (point.centroidY - 1) * self.scale,
-        self.scale,
-        self.scale
+        self.startX + (point.centroid_x - 1) * self.scale,
+        self.startY + (point.centroid_y - 1) * self.scale,
+        self.scale * 2
       )
     end
   end
 
-  pointSet = voroni_generator:getSeeds()
-  if pointSet then
-    for _, point in ipairs(pointSet) do
+  point_set = voroni_generator:get_seeds()
+  if point_set then
+    for _, point in ipairs(point_set) do
       love.graphics.setColor(1, 0, 0, 1)
       love.graphics.circle(
         "fill",
         self.startX + (point[1] - 1) * self.scale,
         self.startY + (point[2] - 1) * self.scale,
-        self.scale,
-        self.scale
+        self.scale * 2
       )
     end
   end
@@ -56,17 +55,15 @@ function visualizer:drawPointSet()
 end
 
 function visualizer:draw()
-  -- Cache layout/state on self so helpers use it (and self is no longer "unused")
   self.screenWidth = love.graphics.getWidth()
   self.screenHeight = love.graphics.getHeight()
-  self.mapWidth = map:getWidth()
-  self.mapHeight = map:getHeight()
-  self.scale = math.min(self.screenWidth / self.mapWidth, self.screenHeight / self.mapHeight)
-  self.startX = (self.screenWidth - self.mapWidth * self.scale) / 2
-  self.startY = (self.screenHeight - self.mapHeight * self.scale) / 2
-
-  self:drawMap()
-  self:drawPointSet()
+  self.map_width = map:get_width()
+  self.map_height = map:get_height()
+  self.scale = math.min(self.screenWidth / self.map_width, self.screenHeight / self.map_height)
+  self.startX = (self.screenWidth - self.map_width * self.scale) / 2
+  self.startY = (self.screenHeight - self.map_height * self.scale) / 2
+  self:draw_map()
+  self:draw_point_set()
 end
 
 return visualizer
