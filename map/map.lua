@@ -37,29 +37,29 @@ function map:walkable(x, y, z)
   return self.tiles[y][x][z].walkable
 end
 
-function map:isVisible(x, y)
+function map:is_visible(x, y)
   if not self:inbounds(x, y) then
     return false
   end
   return self.visible[y][x]
 end
 
-function map:isExplored(x, y)
+function map:is_explored(x, y)
   if not self:inbounds(x, y) then
     return false
   end
   return self.explored[y][x]
 end
 
-function map:getWidth()
+function map:get_width()
   return self.width
 end
 
-function map:getHeight()
+function map:get_height()
   return self.height
 end
 
-function map:getTiles()
+function map:get_tiles()
   return self.tiles
 end
 
@@ -81,13 +81,13 @@ function map:load(width, height, depth, mapType)
   end
   if mapType == "town" then
     -- TODO Hardcoded for 205, should be changed
-    voroni_generator:load(self.width, self.height, self.tiles, 30)
+    voroni_generator:load(self.width, self.height, self.tiles, 125)
 
     --city_generator:makeTown(205, self.tiles, self.height, self.width, self.depth)
   end
 end
 
-function map:updateVisibility(centerX, centerY, radius)
+function map:update_visibility(centerX, centerY, radius)
   for y = 1, self.height do -- TODO SO INEFFICIENT, but works for now
     for x = 1, self.width do
       self.visible[y][x] = false

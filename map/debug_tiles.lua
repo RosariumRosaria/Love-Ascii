@@ -41,4 +41,6 @@ return {
   red = { name = "floor", chars = { "::" }, walkable = true, color = { 1.0, 0.4, 0.94, 1 }, transparent = true },
   maroon = { name = "floor", chars = { "::" }, walkable = true, color = { 1.0, 0.4, 0.76, 1 }, transparent = true },
   navy = { name = "floor", chars = { "::" }, walkable = true, color = { 1.0, 0.4, 0.58, 1 }, transparent = true },
+  dark_gray = { name = "floor", chars = { "::" }, walkable = true, color = { 0.2, 0.2, 0.2, 1 }, transparent = true },
+  white = { name = "floor", chars = { "::" }, walkable = true, color = { 0.7, 0.7, 0.7, 1 }, transparent = true },
 }

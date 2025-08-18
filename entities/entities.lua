@@ -2,43 +2,49 @@ local entityTypes = require("entities/entity_types")
 local ui_handler = require("visuals.ui_handler")
 
 local entities = {
-  entityList = {},
-  entitiesByZ = {},
+  entity_list = {},
+  entities_by_z_level = {},
 }
 
-function entities:getTagLocation(x, y, z, tag)
-  local entity = entities:getEntity(x, y, z or 1)
+function entities:get_tag_location(x, y, z, tag)
+  local entity = entities:get_entity(x, y, z or 1)
   if not entity then
     return false
   end
 
-  return entities:getTagEntity(entity, tag)
+  return entities:get_tag_entity(entity, tag)
 end
 
-function entities:getTagEntity(entity, tag)
+function entities:get_tag_entity(entity, tag)
   return entity.tags[tag]
 end
 
-function entities:damageEntity(targetEntity, entity)
-  if not entity or not targetEntity or not targetEntity.stats or not targetEntity.stats.health or not entity.damage then
+function entities:damage_entity(target_entity, entity)
+  if
+    not entity
+    or not target_entity
+    or not target_entity.stats
+    or not target_entity.stats.health
+    or not entity.damage
+  then
     return false
   end
 
-  targetEntity.stats.health.health = targetEntity.stats.health.health - entity.damage
-  local targetName = targetEntity.name or "Unnamed"
+  target_entity.stats.health.health = target_entity.stats.health.health - entity.damage
+  local targetName = target_entity.name or "Unnamed"
   local name = entity.name or "Unnamed"
-  ui_handler:addTextToUIByName(
+  ui_handler:add_text_to_ui_by_name(
     "terminal",
-    name .. " hit " .. targetName .. ": " .. targetEntity.stats.health.health .. " HP remaining!"
+    name .. " hit " .. targetName .. ": " .. target_entity.stats.health.health .. " HP remaining!"
   )
 
-  if targetEntity.stats.health.health <= 0 then
-    targetEntity.dead = "true"
-    self:removeEntity(targetEntity)
+  if target_entity.stats.health.health <= 0 then
+    target_entity.dead = "true"
+    self:remove_entity(target_entity)
   end
 end
 
-function entities:interactWithEntity(entity)
+function entities:interact_with_entity(entity)
   local interaction = entity.interaction
   if not interaction then
     return
@@ -57,29 +63,29 @@ function entities:interactWithEntity(entity)
   end
 end
 
-function entities:inspectEntity(entity)
+function entities:inspect_entity(entity)
   if entity.description then
-    ui_handler:addTextToUIByName("terminal", entity.description)
+    ui_handler:add_text_to_ui_by_name("terminal", entity.description)
   end
 end
 
-function entities:getEntity(x, y, z)
-  for _, entity in ipairs(self.entityList) do
+function entities:get_entity(x, y, z)
+  for _, entity in ipairs(self.entity_list) do
     if entity.x == x and entity.y == y and entity.z == z then
       return entity
     end
   end
 end
 
-function entities:removeEntity(target)
-  for i, entity in ipairs(self.entityList) do
+function entities:remove_entity(target)
+  for i, entity in ipairs(self.entity_list) do
     if entity == target then
-      table.remove(self.entityList, i)
+      table.remove(self.entity_list, i)
       break
     end
   end
 
-  local zList = self.entitiesByZ[target.z]
+  local zList = self.entities_by_z_level[target.z]
   if zList then
     for i, entity in ipairs(zList) do
       if entity == target then
@@ -89,38 +95,38 @@ function entities:removeEntity(target)
     end
 
     if #zList == 0 then
-      self.entitiesByZ[target.z] = nil
+      self.entities_by_z_level[target.z] = nil
     end
   end
 
   return true
 end
 
-function entities:getEntityListAtZLevel(z)
-  return self.entitiesByZ[z] or {}
+function entities:get_entity_list_by_z_level(z)
+  return self.entities_by_z_level[z] or {}
 end
 
-function entities:getEntityList()
-  return self.entityList
+entities["get_entity_list"] = function(self)
+  return self.entity_list
 end
 
-function entities:addEntity(entity)
-  table.insert(self.entityList, entity)
+function entities:add_entity(entity)
+  table.insert(self.entity_list, entity)
 
   local z = entity.z
 
-  if not self.entitiesByZ[z] then
-    self.entitiesByZ[z] = {}
+  if not self.entities_by_z_level[z] then
+    self.entities_by_z_level[z] = {}
   end
 
-  table.insert(self.entitiesByZ[z], entity)
+  table.insert(self.entities_by_z_level[z], entity)
 end
 
-local function deepCopy(tbl)
+local function deep_copy(tbl)
   local copy = {}
   for k, v in pairs(tbl) do
     if type(v) == "table" then
-      copy[k] = deepCopy(v)
+      copy[k] = deep_copy(v)
     else
       copy[k] = v
     end
@@ -128,34 +134,34 @@ local function deepCopy(tbl)
   return copy
 end
 
-function entities:addFromTemplate(name, x, y, z, overrides)
+function entities:add_from_template(name, x, y, z, overrides)
   local template = entityTypes[name]
   if not template then
     error("Entity type '" .. tostring(name) .. "' does not exist")
   end
-  local newEntity = deepCopy(template)
+  local new_entity = deep_copy(template)
 
-  newEntity.x = x or 1
-  newEntity.y = y or 1
-  newEntity.z = z or 1
+  new_entity.x = x or 1
+  new_entity.y = y or 1
+  new_entity.z = z or 1
 
   if overrides then
     for k, v in pairs(overrides) do
-      newEntity[k] = v
+      new_entity[k] = v
     end
   end
 
-  self:addEntity(newEntity)
-  return newEntity
+  self:add_entity(new_entity)
+  return new_entity
 end
 
 function entities:describe(entity)
   if not entity then
-    ui_handler:addTextToUIByName("terminal", "Entity is nil!")
+    ui_handler:add_text_to_ui_by_name("terminal", "Entity is nil!")
     return false
   end
   for k, v in pairs(entity) do
-    ui_handler:addTextToUIByName("terminal", "key: " .. tostring(k) .. "value: " .. tostring(v))
+    ui_handler:add_text_to_ui_by_name("terminal", "key: " .. tostring(k) .. "value: " .. tostring(v))
   end
 end
 

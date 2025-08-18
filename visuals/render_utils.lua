@@ -3,7 +3,7 @@ local defaultFont
 local tileSize
 local render_utils = {}
 
-function render_utils.getHeightLevelScale(i, maxHeight, visible, base)
+function render_utils.height_level_scale(i, maxHeight, visible, base)
   local heightFactor = (i + 0.5) / maxHeight
   local alpha = heightFactor * base
   if not visible then
@@ -25,7 +25,7 @@ function render_utils.getMaxTextWidth(texts, font)
 end
 
 -- Returns the final color to be used based on visibility and exploration
-function render_utils.getEffectiveColor(color, visible, explored)
+function render_utils.get_effective_color(color, visible, explored)
   if visible then
     if color then
       return {
@@ -45,7 +45,7 @@ end
 
 -- Takes a color and scales it by a set amount.
 -- If no color is provided, defaults to white.
-function render_utils.scaleColor(color, scale)
+function render_utils.scale_color(color, scale)
   if color then
     return {
       (color[1] or 1) * scale,
@@ -59,13 +59,13 @@ function render_utils.scaleColor(color, scale)
 end
 
 -- Converts XY map to XY screen coordinates based on camera center
-function render_utils.getScreenCoords(x, y, centerX, centerY)
+function render_utils.get_screen_coords(x, y, centerX, centerY)
   local screenX = (x - centerX + love.graphics.getWidth() / tileSize / 2) * tileSize
   local screenY = (y - centerY + love.graphics.getHeight() / tileSize / 2) * tileSize
   return screenX, screenY
 end
 
-function render_utils.distanceScale(x1, y1, x2, y2)
+function render_utils.distance_scale(x1, y1, x2, y2)
   local screenWidth = love.graphics.getWidth()
   local screenHeight = love.graphics.getHeight()
 
@@ -79,7 +79,7 @@ function render_utils.distanceScale(x1, y1, x2, y2)
 end
 
 -- Gets a visual offset based on height and offset type
-function render_utils.getOffset(i, offsetType, offset, x, y, centerX, centerY)
+function render_utils.get_offset(i, offsetType, offset, x, y, centerX, centerY)
   if offsetType == 1 then
     local scale = 0.1
     return (i - 1) * offset * (x - centerX) * scale, (i - 1) * offset * (y - centerY) * scale

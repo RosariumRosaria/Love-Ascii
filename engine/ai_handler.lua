@@ -17,16 +17,24 @@ local ai_handler = {}
   Then pick based on some waits to be a target
 ]]
 
-local function canSee(entity, target)
-  entity.canSee = false
-  if engine_utils.distanceBetween(entity, target) < entity.sight then
-    entity.canSee = fov_handler.refreshVisibility(
+local function clamp(val, min, max)
+  return math.max(min, math.min(max, val))
+end
+
+local function can_see(entity, target)
+  if not entity.sight or entity.sight <= 0 then
+    return false
+  end
+
+  entity.can_see = false
+  if engine_utils.distance_between(entity, target) < entity.sight then
+    entity.can_see = fov_handler.refreshVisibility(
       entity.x,
       entity.y,
       entity.sight,
-      map:getWidth(),
-      map:getHeight(),
-      map:getTiles(),
+      map:get_width(),
+      map:get_height(),
+      map:get_tiles(),
       nil,
       false,
       target.x,
@@ -34,11 +42,13 @@ local function canSee(entity, target)
     )
   end
 
-  if entity.canSee then
+  if entity.can_see then
     entity.state = "chasing"
-    entity.targetEntity = target
-    entity.targetPos = { target.x, target.y }
-    entity.turnsToIdle = 20
+    entity.target_entity = target
+    entity.target_pos = { target.x, target.y }
+    entity.turns_to_idle = 20
+    entity.path = nil
+    entity.path_index = nil
     return true
   end
 
@@ -47,17 +57,20 @@ end
 
 local function idle(entity)
   if entity.type == "enemy" then
-    if canSee(entity, player) then
+    if can_see(entity, player) then
       return
     end
     local chance = math.random(1, 5)
     if chance == 1 then
       local tarX = entity.x + math.random(-10, 10)
       local tarY = entity.y + math.random(-10, 10)
+      local map_width, map_height = map:get_width(), map:get_height()
+      tarX = clamp(tarX, 1, map_width)
+      tarY = clamp(tarY, 1, map_height)
       if tarX ~= entity.x or tarY ~= entity.y then
         entity.state = "wandering"
-        entity.targetPos = { tarX, tarY }
-        entity.turnsToIdle = 20
+        entity.target_pos = { tarX, tarY }
+        entity.turns_to_idle = 20
       end
     elseif chance == 2 or chance == 3 then
       local axis = math.random(1, 2)
@@ -71,20 +84,22 @@ end
 
 local function wander(entity)
   if entity.type == "enemy" then
-    if entity.turnsToIdle and entity.turnsToIdle > 0 and entity.targetPos then
-      if canSee(entity, player) then
+    if entity.turns_to_idle and entity.turns_to_idle > 0 and entity.target_pos then
+      if can_see(entity, player) then
         entity.path = nil
-        entity.pathIndex = nil
+        entity.path_index = nil
         return
       end
 
-      if entity.x == entity.targetPos[1] and entity.y == entity.targetPos[2] then
+      if entity.x == entity.target_pos[1] and entity.y == entity.target_pos[2] then
         entity.state = "idle"
-        entity.targetPos = nil
+        entity.target_pos = nil
+        entity.path = nil
+        entity.path_index = nil
         return
       end
 
-      entity.path = pathfinder.aStar({ entity.x, entity.y }, entity.targetPos)
+      entity.path = pathfinder.a_star({ entity.x, entity.y }, entity.target_pos)
       if entity.path then
         local step = entity.path[2]
         if step and step[1] and step[2] then
@@ -94,55 +109,55 @@ local function wander(entity)
         end
       end
 
-      entity.turnsToIdle = entity.turnsToIdle - 1
-      if entity.turnsToIdle <= 1 then
-        visuals:addFromTemplate("ping", entity.targetPos[1], entity.targetPos[2], 1)
+      entity.turns_to_idle = entity.turns_to_idle - 1
+      if entity.turns_to_idle <= 1 then
+        visuals:add_from_template("ping", entity.target_pos[1], entity.target_pos[2], 1)
         entity.state = "idle"
-        entity.targetPos = nil
+        entity.target_pos = nil
         entity.path = nil
-        entity.pathIndex = nil
+        entity.path_index = nil
       end
     end
   end
 end
 
 local function chase(entity)
-  if entity.turnsToIdle and entity.turnsToIdle > 0 and entity.targetPos then
-    if canSee(entity, player) then
-      entity.path = pathfinder.aStar({ entity.x, entity.y }, entity.targetPos)
-      entity.pathIndex = 2
+  if entity.turns_to_idle and entity.turns_to_idle > 0 and entity.target_pos then
+    if can_see(entity, player) then
+      entity.path = pathfinder.a_star({ entity.x, entity.y }, entity.target_pos)
+      entity.path_index = 2
     end
 
-    if entity.path and entity.pathIndex then
-      if entity.pathIndex > #entity.path then
-        visuals:addFromTemplate("ping", entity.targetPos[1], entity.targetPos[2], 1)
+    if entity.path and entity.path_index then
+      if entity.path_index > #entity.path then
+        visuals:add_from_template("ping", entity.target_pos[1], entity.target_pos[2], 1)
         entity.state = "idle"
-        entity.targetPos = nil
+        entity.target_pos = nil
         return
       end
 
-      local step = entity.path[entity.pathIndex]
+      local step = entity.path[entity.path_index]
       if step and step[1] and step[2] then
         local dx = step[1] - entity.x
         local dy = step[2] - entity.y
         if engine:move(entity, dx, dy) then
-          entity.pathIndex = entity.pathIndex + 1
+          entity.path_index = entity.path_index + 1
         end
       end
     end
 
-    entity.turnsToIdle = entity.turnsToIdle - 1
-    if entity.turnsToIdle <= 1 then
-      visuals:addFromTemplate("ping", entity.targetPos[1], entity.targetPos[2], 1)
+    entity.turns_to_idle = entity.turns_to_idle - 1
+    if entity.turns_to_idle <= 1 then
+      visuals:add_from_template("ping", entity.target_pos[1], entity.target_pos[2], 1)
       entity.state = "idle"
-      entity.targetPos = nil
+      entity.target_pos = nil
       entity.path = nil
-      entity.pathIndex = nil
+      entity.path_index = nil
     end
   end
 end
 
-local function processEnemy(entity)
+local function process_enemy(entity)
   if entity.state == "idle" then
     idle(entity)
   elseif entity.state == "wandering" then
@@ -151,18 +166,18 @@ local function processEnemy(entity)
     chase(entity)
   end
 
-  if entity.canSee and not entity.couldSee then
-    visuals:addFromTemplate("alert", entity.x, entity.y, entity.z, { anchor = entity })
+  if entity.can_see and not entity.could_see then
+    visuals:add_from_template("alert", entity.x, entity.y, entity.z, { anchor = entity })
   end
 
-  entity.couldSee = entity.canSee
+  entity.could_see = entity.can_see
 end
 
-function ai_handler.processTurn()
-  local entityList = entities:getEntityList()
-  for _, entity in ipairs(entityList) do
+function ai_handler.process_turn()
+  local entity_list = entities:get_entity_list()
+  for _, entity in ipairs(entity_list) do
     if entity.type == "enemy" then
-      processEnemy(entity)
+      process_enemy(entity)
     end
   end
 end
