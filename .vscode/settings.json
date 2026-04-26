@@ -1,0 +1,11 @@
+{
+     "Lua.workspace.library": [
+      "path/to/love/definitions",
+      "${addons}/love2d/module/library"
+    ],
+    "Lua.runtime.version": "LuaJIT",
+    "Lua.workspace.checkThirdParty": false,
+    "Lua.runtime.special": {
+      "love.filesystem.load": "loadfile"
+    }
+   }
