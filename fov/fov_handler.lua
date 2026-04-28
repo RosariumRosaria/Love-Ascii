@@ -1,13 +1,13 @@
-local shadowLine = require("fov.shadow_line")
+local shadow_line = require("fov.shadow_line")
 local shadow = require("fov.shadow")
 local entities = require("entities.entities")
 local fov_handler = {}
 
-local function inbounds(x, y, width, height)
+local function in_bounds(x, y, width, height) --TODO This is defined in like 4 places
 	return x >= 1 and x <= width and y >= 1 and y <= height
 end
 
-local function transformOctant(row, col, octant)
+local function transform_octant(row, col, octant)
 	local dx, dy
 	if octant == 0 then
 		dx, dy = col, -row
@@ -31,96 +31,96 @@ local function transformOctant(row, col, octant)
 	return dx, dy
 end
 
-local function refreshOctant(
-	entityX,
-	entityY,
+local function refresh_octant(
+	entity_x,
+	entity_y,
 	octant,
-	maxDistance,
+	max_distance,
 	width,
 	height,
-	mapGrid,
-	visibilityGrid,
+	map_grid,
+	visibility_grid,
 	player,
-	targetX,
-	targetY
+	target_x,
+	target_y
 )
-	local line = shadowLine:new()
-	local fullShadow = false
+	local line = shadow_line:new()
+	local full_shadow = false
 
-	for row = 1, maxDistance do
-		local dx, dy = transformOctant(row, 0, octant)
-		local posX = entityX + dx
-		local posY = entityY + dy
+	for row = 1, max_distance do
+		local dx, dy = transform_octant(row, 0, octant)
+		local pos_x = entity_x + dx
+		local pos_y = entity_y + dy
 
-		if not (inbounds(posX, posY, width, height)) then
+		if not (in_bounds(pos_x, pos_y, width, height)) then
 			break
 		end
 
 		for col = 0, row do
-			dx, dy = transformOctant(row, col, octant)
-			posX = entityX + dx
-			posY = entityY + dy
+			dx, dy = transform_octant(row, col, octant)
+			pos_x = entity_x + dx
+			pos_y = entity_y + dy
 
-			if not (inbounds(posX, posY, width, height)) then
+			if not (in_bounds(pos_x, pos_y, width, height)) then
 				break
 			end
 
-			if fullShadow then
+			if full_shadow then
 				if player then
-					visibilityGrid[posY][posX] = false
-				elseif posX == targetX and posY == targetY then
+					visibility_grid[pos_y][pos_x] = false
+				elseif pos_x == target_x and pos_y == target_y then
 					return false
 				end
 			else
-				local projection = shadow.projectTile(row, col)
-				local visible = not line:isInShadow(projection)
+				local projection = shadow.project_tile(row, col)
+				local visible = not line:is_in_shadow(projection)
 				if player then
-					visibilityGrid[posY][posX] = visible
-				elseif posX == targetX and posY == targetY then
+					visibility_grid[pos_y][pos_x] = visible
+				elseif pos_x == target_x and pos_y == target_y then
 					return visible
 				end
 
 				local transparent = true
-				if #mapGrid[posY][posX] > 1 then
-					transparent = mapGrid[posY][posX][2].transparent
+				if #map_grid[pos_y][pos_x] > 1 then
+					transparent = map_grid[pos_y][pos_x][2].transparent
 				end
-				if visible and (not transparent or entities:get_tag_location(posX, posY, 1, "solid")) then
-					line:AddShadow(projection)
-					fullShadow = line:isFullShadow()
+				if visible and (not transparent or entities:get_tag_location(pos_x, pos_y, 1, "solid")) then
+					line:add_shadow(projection)
+					full_shadow = line:is_full_shadow()
 				end
 			end
 		end
 	end
 end
 
-function fov_handler.refreshVisibility(
-	entityX,
-	entityY,
-	maxDistance,
+function fov_handler.refresh_visibility(
+	entity_x,
+	entity_y,
+	max_distance,
 	width,
 	height,
-	mapGrid,
-	visibilityGrid,
+	map_grid,
+	visibility_grid,
 	player,
-	targetX,
-	targetY
+	target_x,
+	target_y
 )
 	if player then
-		visibilityGrid[entityY][entityX] = true
+		visibility_grid[entity_y][entity_x] = true
 	end
 	for octant = 0, 7 do
-		local visible = refreshOctant(
-			entityX,
-			entityY,
+		local visible = refresh_octant(
+			entity_x,
+			entity_y,
 			octant,
-			maxDistance,
+			max_distance,
 			width,
 			height,
-			mapGrid,
-			visibilityGrid,
+			map_grid,
+			visibility_grid,
 			player,
-			targetX,
-			targetY
+			target_x,
+			target_y
 		) --TODO check if this works really for enemies
 		if visible then
 			return true

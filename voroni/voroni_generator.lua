@@ -6,14 +6,14 @@ local voroni_generator = {
 	map = nil,
 	seeds = nil,
 	regions = nil,
-	regionGrid = nil,
+	region_grid = nil,
 	city = nil,
 }
 
 local main_road_size = 3
 local off_road_size = 2
 
-local function contains(tbl, val)
+local function contains(tbl, val) --TODO probably should be in a helper file
 	for _, v in ipairs(tbl) do
 		if v == val then
 			return true
@@ -22,7 +22,7 @@ local function contains(tbl, val)
 	return false
 end
 
-local function getDistance(pos1, pos2)
+local function get_distance(pos1, pos2)
 	return (pos1[1] - pos2[1]) ^ 2 + (pos1[2] - pos2[2]) ^ 2
 end
 
@@ -30,7 +30,7 @@ local function get_nearest_seed(seeds, pos)
 	local nearest_seed = nil
 	local nearest_distance = nil
 	for i, seed in ipairs(seeds) do
-		local distance = getDistance(seed, pos)
+		local distance = get_distance(seed, pos)
 		if not nearest_distance or distance < nearest_distance then
 			nearest_distance = distance
 			nearest_seed = i
@@ -47,47 +47,47 @@ function voroni_generator:get_seeds()
 	return self.seeds
 end
 
-function voroni_generator:inbounds(x, y)
+function voroni_generator:in_bounds(x, y) --TODO probably shouldn't be here
 	return x >= 1 and x <= self.width and y >= 1 and y <= self.height
 end
 
 function voroni_generator:find_regions()
 	for y = 1, self.height do
 		for x = 1, self.width do
-			local nearestSeed = get_nearest_seed(self.seeds, { x, y })
-			self.regionGrid[y][x] = nearestSeed
+			local nearest_seed = get_nearest_seed(self.seeds, { x, y })
+			self.region_grid[y][x] = nearest_seed
 		end
 	end
 end
 
 function voroni_generator:find_region_metadata()
 	for _, reg in pairs(self.regions) do
-		reg.sumX, reg.sumY, reg.count = 0, 0, 0
+		reg.sum_x, reg.sum_y, reg.count = 0, 0, 0
 	end
 
 	for y = 1, self.height do
 		for x = 1, self.width do
-			local id = self.regionGrid[y][x]
+			local id = self.region_grid[y][x]
 			local reg = self.regions[id]
-			reg.sumX = reg.sumX + x
-			reg.sumY = reg.sumY + y
+			reg.sum_x = reg.sum_x + x
+			reg.sum_y = reg.sum_y + y
 			reg.count = reg.count + 1
 		end
 	end
 
 	for _, reg in pairs(self.regions) do
 		if reg.count ~= 0 then
-			reg.centroid_x = math.floor(reg.sumX / reg.count + 0.5)
-			reg.centroid_y = math.floor(reg.sumY / reg.count + 0.5)
+			reg.centroid_x = math.floor(reg.sum_x / reg.count + 0.5)
+			reg.centroid_y = math.floor(reg.sum_y / reg.count + 0.5)
 		end
 	end
 end
 
-function voroni_generator:sow_seeds(seedNum)
-	for i = 1, seedNum do
+function voroni_generator:sow_seeds(seed_num)
+	for i = 1, seed_num do
 		self.regions[i] = {}
-		self.regions[i].sumX = 0
-		self.regions[i].sumY = 0
+		self.regions[i].sum_x = 0
+		self.regions[i].sum_y = 0
 		self.regions[i].count = 0
 		local x = math.random(1, self.width)
 		local y = math.random(1, self.height)
@@ -116,11 +116,11 @@ function voroni_generator:lloyd()
 end
 
 function voroni_generator:paint_regions(ids, color)
-	local typeKeys = tile_types.typeKeys
+	local type_keys = tile_types.type_keys
 	for y = 1, self.height do
 		for x = 1, self.width do
-			local id = self.regionGrid[y][x]
-			local key = typeKeys[(id % #typeKeys) + 1]
+			local id = self.region_grid[y][x]
+			local key = type_keys[(id % #type_keys) + 1]
 			self.map[y][x][1] = tile_types[key]
 
 			if contains(ids, id) then
@@ -137,9 +137,9 @@ function voroni_generator:find_neighbors()
 	end
 	for y = 1, self.height do
 		for x = 1, self.width do
-			local a = self.regionGrid[y][x]
-			local b = (x < self.width) and self.regionGrid[y][x + 1] or a
-			local c = (y < self.height) and self.regionGrid[y + 1][x] or a
+			local a = self.region_grid[y][x]
+			local b = (x < self.width) and self.region_grid[y][x + 1] or a
+			local c = (y < self.height) and self.region_grid[y + 1][x] or a
 			if a ~= b then
 				neighbors[a][b], neighbors[b][a] = true, true
 			end
@@ -173,7 +173,7 @@ function voroni_generator:find_city(city_size)
 	self.city = {}
 	local cy = math.floor(self.height / 2)
 	local cx = math.floor(self.width / 2)
-	local center_region = self.regionGrid[cy][cx]
+	local center_region = self.region_grid[cy][cx]
 	self:expand_city(city_size, center_region)
 end
 
@@ -182,11 +182,11 @@ function voroni_generator:load(width, height, map, regions)
 	self.width = width or self.width
 	self.height = height or self.height
 	self.map = map or self.map
-	self.regionGrid = {}
+	self.region_grid = {}
 	for y = 1, self.height do
-		self.regionGrid[y] = {}
+		self.region_grid[y] = {}
 		for x = 1, self.width do
-			self.regionGrid[y][x] = nil
+			self.region_grid[y][x] = nil
 		end
 	end
 	self:reload(regions or 100)
@@ -202,37 +202,37 @@ function voroni_generator:prims()
 
 	local cy = math.floor(self.height / 2)
 	local cx = math.floor(self.width / 2)
-	local center_id = self.regionGrid[cy][cx]
+	local center_id = self.region_grid[cy][cx]
 
 	in_mst[center_id] = true
 
 	local i = 1
 	while i < #self.city do
-		local minDist = nil
-		local minID = nil
-		local parentID = nil
+		local min_dist = nil
+		local min_id = nil
+		local parent_id = nil
 		for _, id in ipairs(self.city) do
 			if in_mst[id] then
 				for _, neighbor_id in ipairs(self.regions[id].neighbors) do
 					if not in_mst[neighbor_id] and contains(self.city, neighbor_id) then
-						local dist = getDistance(
+						local dist = get_distance(
 							{ self.regions[id].centroid_x, self.regions[id].centroid_y },
 							{ self.regions[neighbor_id].centroid_x, self.regions[neighbor_id].centroid_y }
 						)
-						if not minDist or minDist > dist then
-							minID = neighbor_id
-							parentID = id
-							minDist = dist
+						if not min_dist or min_dist > dist then
+							min_id = neighbor_id
+							parent_id = id
+							min_dist = dist
 						end
 					end
 				end
 			end
 		end
-		if not minID then
+		if not min_id then
 			break
 		end
-		in_mst[minID] = true
-		table.insert(mst, { parentID, minID, minDist })
+		in_mst[min_id] = true
+		table.insert(mst, { parent_id, min_id, min_dist })
 		i = i + 1
 	end
 	return mst
@@ -243,8 +243,8 @@ function voroni_generator:pave_circle(cx, cy, radius)
 	for y = -radius, radius do
 		for x = -radius, radius do
 			local px, py = x + cx, y + cy
-			if getDistance({ px, py }, { cx, cy }) < rad_dist then
-				if self:inbounds(py, px) then
+			if get_distance({ px, py }, { cx, cy }) < rad_dist then
+				if self:in_bounds(px, py) then
 					self.map[py][px][1] = tile_types["white"]
 				end
 			end

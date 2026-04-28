@@ -6,15 +6,15 @@ local visualizer = {}
 function visualizer:draw_map()
 	for y = 1, self.map_height do
 		for x = 1, self.map_width do
-			local tile = map:getTile(x, y, 1)
+			local tile = map:get_tile(x, y, 1)
 			local tile_color = tile and tile.color
 			if tile_color then
 				love.graphics.setColor(tile_color)
 			end
 			love.graphics.rectangle(
 				"fill",
-				self.startX + (x - 1) * self.scale,
-				self.startY + (y - 1) * self.scale,
+				self.start_x + (x - 1) * self.scale,
+				self.start_y + (y - 1) * self.scale,
 				self.scale,
 				self.scale
 			)
@@ -31,8 +31,8 @@ function visualizer:draw_point_set()
 			love.graphics.setColor(0, 0, 0, 1)
 			love.graphics.circle(
 				"fill",
-				self.startX + (point.centroid_x - 1) * self.scale,
-				self.startY + (point.centroid_y - 1) * self.scale,
+				self.start_x + (point.centroid_x - 1) * self.scale,
+				self.start_y + (point.centroid_y - 1) * self.scale,
 				self.scale * 2
 			)
 		end
@@ -44,8 +44,8 @@ function visualizer:draw_point_set()
 			love.graphics.setColor(1, 0, 0, 1)
 			love.graphics.circle(
 				"fill",
-				self.startX + (point[1] - 1) * self.scale,
-				self.startY + (point[2] - 1) * self.scale,
+				self.start_x + (point[1] - 1) * self.scale,
+				self.start_y + (point[2] - 1) * self.scale,
 				self.scale * 2
 			)
 		end
@@ -55,13 +55,13 @@ function visualizer:draw_point_set()
 end
 
 function visualizer:draw()
-	self.screenWidth = love.graphics.getWidth()
-	self.screenHeight = love.graphics.getHeight()
+	self.screen_width = love.graphics.getWidth()
+	self.screen_height = love.graphics.getHeight()
 	self.map_width = map:get_width()
 	self.map_height = map:get_height()
-	self.scale = math.min(self.screenWidth / self.map_width, self.screenHeight / self.map_height)
-	self.startX = (self.screenWidth - self.map_width * self.scale) / 2
-	self.startY = (self.screenHeight - self.map_height * self.scale) / 2
+	self.scale = math.min(self.screen_width / self.map_width, self.screen_height / self.map_height)
+	self.start_x = (self.screen_width - self.map_width * self.scale) / 2
+	self.start_y = (self.screen_height - self.map_height * self.scale) / 2
 	self:draw_map()
 	self:draw_point_set()
 end

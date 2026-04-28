@@ -1,4 +1,4 @@
-local entityTypes = require("entities/entity_types")
+local entity_types = require("entities/entity_types")
 local ui_handler = require("visuals.ui_handler")
 
 local entities = {
@@ -31,15 +31,15 @@ function entities:damage_entity(target_entity, entity)
 	end
 
 	target_entity.stats.health.health = target_entity.stats.health.health - entity.damage
-	local targetName = target_entity.name or "Unnamed"
+	local target_name = target_entity.name or "Unnamed"
 	local name = entity.name or "Unnamed"
 	ui_handler:add_text_to_ui_by_name(
 		"terminal",
-		name .. " hit " .. targetName .. ": " .. target_entity.stats.health.health .. " HP remaining!"
+		name .. " hit " .. target_name .. ": " .. target_entity.stats.health.health .. " HP remaining!"
 	)
 
 	if target_entity.stats.health.health <= 0 then
-		target_entity.dead = "true"
+		target_entity.dead = true
 		self:remove_entity(target_entity)
 	end
 end
@@ -52,10 +52,10 @@ function entities:interact_with_entity(entity)
 
 	for k, v in pairs(interaction) do
 		if k == "tags" and type(v) == "table" and type(entity[k]) == "table" then
-			for tagKey, tagVal in pairs(v) do
-				local oldVal = entity[k][tagKey]
-				entity[k][tagKey] = tagVal
-				interaction[k][tagKey] = oldVal
+			for tag_key, tag_val in pairs(v) do
+				local old_val = entity[k][tag_key]
+				entity[k][tag_key] = tag_val
+				interaction[k][tag_key] = old_val
 			end
 		else
 			entity[k], interaction[k] = v, entity[k]
@@ -85,16 +85,16 @@ function entities:remove_entity(target)
 		end
 	end
 
-	local zList = self.entities_by_z_level[target.z]
-	if zList then
-		for i, entity in ipairs(zList) do
+	local z_list = self.entities_by_z_level[target.z]
+	if z_list then
+		for i, entity in ipairs(z_list) do
 			if entity == target then
-				table.remove(zList, i)
+				table.remove(z_list, i)
 				break
 			end
 		end
 
-		if #zList == 0 then
+		if #z_list == 0 then
 			self.entities_by_z_level[target.z] = nil
 		end
 	end
@@ -135,7 +135,7 @@ local function deep_copy(tbl)
 end
 
 function entities:add_from_template(name, x, y, z, overrides)
-	local template = entityTypes[name]
+	local template = entity_types[name]
 	if not template then
 		error("Entity type '" .. tostring(name) .. "' does not exist")
 	end

@@ -7,42 +7,48 @@ local render_primitives = require("visuals.render_primitives")
 
 local render_handler = {}
 local config = require("config")
-local tileSize
-local smallTileSize
-local defaultFont
-local smallFont
+local tile_size
+local small_tile_size
+local default_font
+local small_font
 
 local MAX_HEIGHT = 5 --TODO whys is this here. Fine for now.
-local OFFSET_TYPE = 1
+local offset_type = 1
 local OFFSET_AMOUNT
+local show_grid = false
 
 function render_handler:switch_offset()
-	OFFSET_TYPE = (OFFSET_TYPE % 3) + 1
+	offset_type = (offset_type % 3) + 1
+end
+
+function render_handler:toggle_grid()
+	show_grid = not show_grid
 end
 
 function render_handler:draw_visual(visual, center_x, center_y, visible)
-	if visible or not visual.params.needsToBeSeen then
-		local x_screem, y_screen = render_utils.get_screen_coords(visual.x, visual.y, center_x, center_y)
+	if visible or not visual.params.needs_to_be_seen then
+		local x_screen, y_screen = render_utils.get_screen_coords(visual.x, visual.y, center_x, center_y)
 
 		local color = { 1, 1, 1, 1 }
 
 		if visual.rects then
 			for _, rect in ipairs(visual.rects) do
-				if visual.params.decayOverTime then
-					color = render_utils.scale_color(rect.colors[1], visual.params.lifespan / visual.params.initialSpan)
+				if visual.params.decay_over_time then
+					color =
+						render_utils.scale_color(rect.colors[1], visual.params.lifespan / visual.params.initial_lifespan)
 				else
 					color = rect.colors[visual.params.i]
 				end
-				local visualSize = rect.sizes[visual.params.i] * tileSize
+				local visual_size = rect.sizes[visual.params.i] * tile_size
 				render_primitives.draw_rect(
-					x_screem + ((tileSize - visualSize) / 2),
-					y_screen + ((tileSize - visualSize) / 2),
-					visualSize,
-					visualSize,
+					x_screen + ((tile_size - visual_size) / 2),
+					y_screen + ((tile_size - visual_size) / 2),
+					visual_size,
+					visual_size,
 					color,
-					rect.outlineWidth,
-					rect.outlineColor,
-					rect.roundedAmount
+					rect.outline_width,
+					rect.outline_color,
+					rect.rounded_amount
 				)
 			end
 		end
@@ -53,24 +59,24 @@ function render_handler:draw_visual(visual, center_x, center_y, visible)
 					color = panel.colors[visual.params.i]
 				end
 
-				x_screem, y_screen = render_utils.get_screen_coords(
+				x_screen, y_screen = render_utils.get_screen_coords(
 					(visual.anchor.x + (1 / 3)) or visual.x,
-					visual.anchor.y - panel.offsetY or visual.y,
+					visual.anchor.y - panel.offset_y or visual.y,
 					center_x,
 					center_y
 				)
 				render_primitives.draw_panel(
-					x_screem,
+					x_screen,
 					y_screen,
-					render_utils.getMaxTextWidth(panel.texts, defaultFont),
-					tileSize,
+					render_utils.get_max_text_width(panel.texts, default_font),
+					tile_size,
 					color,
-					panel.outlineWidth or 1,
-					panel.outlinecolor[1],
+					panel.outline_width or 1,
+					panel.outline_color[1],
 					panel.texts,
-					panel.centerText,
+					panel.center_text,
 					{ 1, 1, 1, 1 },
-					tileSize
+					tile_size
 				)
 			end
 		end
@@ -90,7 +96,7 @@ function render_handler:draw_entity(entity, center_x, center_y, visible, explore
 		base_color = render_utils.get_effective_color(base_color, visible, explored)
 	end
 
-	local x_screem, y_screen = render_utils.get_screen_coords(entity.x, entity.y, center_x, center_y)
+	local x_screen, y_screen = render_utils.get_screen_coords(entity.x, entity.y, center_x, center_y)
 	local base = render_utils.distance_scale(entity.x, entity.y, center_x, center_y)
 
 	for i, char_data in ipairs(entity.chars) do
@@ -100,7 +106,7 @@ function render_handler:draw_entity(entity, center_x, center_y, visible, explore
 
 		local dx, dy = render_utils.get_offset(
 			entity.z + i - 1,
-			OFFSET_TYPE,
+			offset_type,
 			OFFSET_AMOUNT,
 			entity.x,
 			entity.y,
@@ -108,13 +114,13 @@ function render_handler:draw_entity(entity, center_x, center_y, visible, explore
 			center_y
 		)
 		render_primitives.draw_char(
-			x_screem + dx,
+			x_screen + dx,
 			y_screen + dy,
 			char_data,
 			scaled_color,
-			entity.outlineColor,
+			entity.outline_color,
 			entity.rotation,
-			entity.naturalRotation
+			entity.natural_rotation
 		)
 	end
 end
@@ -124,7 +130,7 @@ function render_handler:draw_tile(tile_data, x, y, center_x, center_y, visible, 
 		return
 	end
 
-	local x_screem, y_screen = render_utils.get_screen_coords(x, y, center_x, center_y)
+	local x_screen, y_screen = render_utils.get_screen_coords(x, y, center_x, center_y)
 
 	local base = render_utils.distance_scale(x, y, center_x, center_y)
 
@@ -134,14 +140,14 @@ function render_handler:draw_tile(tile_data, x, y, center_x, center_y, visible, 
 		local base_color = render_utils.get_effective_color(tile.color, visible, explored)
 		if base_color and (not visible or not entities:get_tag_location(x, y, i, "blocks")) then
 			local scaled_color = render_utils.scale_color(base_color, alpha)
-			local dx, dy = render_utils.get_offset(i, OFFSET_TYPE, OFFSET_AMOUNT, x, y, center_x, center_y)
-			render_primitives.draw_char(x_screem + dx, y_screen + dy, char, scaled_color, tile.outlineColor)
+			local dx, dy = render_utils.get_offset(i, offset_type, OFFSET_AMOUNT, x, y, center_x, center_y)
+			render_primitives.draw_char(x_screen + dx, y_screen + dy, char, scaled_color, tile.outline_color)
 		end
 	end
 end
 
 function render_handler:draw_ui(ui)
-	local max_lines = math.floor(ui.height / smallTileSize)
+	local max_lines = math.floor(ui.height / small_tile_size)
 	local total_lines = #ui.texts
 
 	ui.scroll_offset = math.max(0, math.min(ui.scroll_offset, math.max(0, total_lines - max_lines)))
@@ -160,23 +166,23 @@ function render_handler:draw_ui(ui)
 		ui.width,
 		ui.height,
 		ui.color,
-		ui.outlineWidth,
-		ui.outlinecolor,
+		ui.outline_width,
+		ui.outline_color,
 		visible_texts,
-		ui.centerText,
+		ui.center_text,
 		{ 1, 1, 1, 1 },
-		smallTileSize
+		small_tile_size
 	)
 end
 
 function render_handler:draw(center_x, center_y)
-	local drawDist = 50 --TODO MAGIC
+	local draw_dist = 50 --TODO MAGIC
 
 	--Draw Map
-	local endX = math.min(center_x + drawDist, map:get_width())
-	local endY = math.min(center_y + drawDist, map:get_height())
-	local startX = math.max(center_x - drawDist, 1)
-	local startY = math.max(center_y - drawDist, 1)
+	local end_x = math.min(center_x + draw_dist, map:get_width())
+	local end_y = math.min(center_y + draw_dist, map:get_height())
+	local start_x = math.max(center_x - draw_dist, 1)
+	local start_y = math.max(center_y - draw_dist, 1)
 	local tiles = map:get_tiles()
 
 	--Draw Entities
@@ -190,13 +196,12 @@ function render_handler:draw(center_x, center_y)
 		)
 	end
 
-	for y = startY, endY do
-		for x = startX, endX do
-			local screenX, screenY = render_utils.get_screen_coords(x, y, center_x, center_y)
-			--Temporary for debugging.
-			if OFFSET_TYPE == 3 then
+	for y = start_y, end_y do
+		for x = start_x, end_x do
+			local screen_x, screen_y = render_utils.get_screen_coords(x, y, center_x, center_y)
+			if show_grid then
 				love.graphics.setColor(0.5, 0.5, 0.5, 0.1)
-				love.graphics.rectangle("line", screenX, screenY, tileSize, tileSize)
+				love.graphics.rectangle("line", screen_x, screen_y, tile_size, tile_size)
 				love.graphics.setColor(1, 1, 1, 1)
 			end
 
@@ -210,22 +215,22 @@ function render_handler:draw(center_x, center_y)
 	end
 
 	--TODO: Is there a better way to know what font I should be using?
-	love.graphics.setFont(smallFont)
+	love.graphics.setFont(small_font)
 	for _, ui in ipairs(ui_handler:get_ui_list()) do
 		self:draw_ui(ui)
 	end
-	love.graphics.setFont(defaultFont)
+	love.graphics.setFont(default_font)
 end
 
 function render_handler:load()
-	tileSize = config.tileSize
-	smallTileSize = config.smallTileSize
-	defaultFont = config.font
-	smallFont = config.smallFont
+	tile_size = config.tile_size
+	small_tile_size = config.small_tile_size
+	default_font = config.font
+	small_font = config.small_font
 
 	MAX_HEIGHT = 5
-	OFFSET_TYPE = 1
-	OFFSET_AMOUNT = 0.25 * tileSize
+	offset_type = 1
+	OFFSET_AMOUNT = 0.25 * tile_size
 	render_utils.load()
 	render_primitives.load()
 end

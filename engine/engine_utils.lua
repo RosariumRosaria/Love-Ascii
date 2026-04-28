@@ -7,9 +7,11 @@ local engine_utils = {}
 function engine_utils.distance_between(entity1, entity2)
 	if not entity1 then
 		ui_handler:add_text_to_ui_by_name("terminal", "entity1 is nil")
+		return nil
 	end
 	if not entity2 then
 		ui_handler:add_text_to_ui_by_name("terminal", "entity2 is nil")
+		return nil
 	end
 	return math.sqrt((entity1.x - entity2.x) ^ 2 + (entity1.y - entity2.y) ^ 2)
 end

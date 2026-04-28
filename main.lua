@@ -7,7 +7,7 @@ local input_handler = require("engine.input_handler")
 local visualizer = require("voroni.visualizer")
 local entities = require("entities.entities")
 
-_G.deepPrint = function(tbl, indent, visited) --TODO Gross, for debug
+_G.deep_print = function(tbl, indent, visited) --TODO Gross, for debug
 	indent = indent or 0
 	visited = visited or {}
 
@@ -18,16 +18,16 @@ _G.deepPrint = function(tbl, indent, visited) --TODO Gross, for debug
 	visited[tbl] = true
 
 	for k, v in pairs(tbl) do
-		local keyStr = tostring(k)
+		local key_str = tostring(k)
 		if type(v) == "table" then
-			ui_handler:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. keyStr .. " = {"))
-			print(string.rep("  ", indent) .. keyStr .. " = {")
-			deepPrint(v, indent + 1, visited)
+			ui_handler:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. key_str .. " = {"))
+			print(string.rep("  ", indent) .. key_str .. " = {")
+			deep_print(v, indent + 1, visited)
 			ui_handler:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. "}"))
 			print((string.rep("  ", indent) .. "}"))
 		else
-			ui_handler:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. keyStr .. " = " .. tostring(v)))
-			print((string.rep("  ", indent) .. keyStr .. " = " .. tostring(v)))
+			ui_handler:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. key_str .. " = " .. tostring(v)))
+			print((string.rep("  ", indent) .. key_str .. " = " .. tostring(v)))
 		end
 	end
 end
@@ -40,14 +40,14 @@ function love.load()
 	love.window.setTitle("Hello World")
 	love.window.setMode(0, 0, { resizable = true, vsync = true, fullscreen = true })
 
-	local mapWidth = 500
-	local mapHeight = 500
-	local mapDepth = 7
+	local map_width = 500
+	local map_height = 500
+	local map_depth = 7
 
 	player = { --TODO, why is this global
 		chars = { "@" },
-		x = 220,
-		y = 220,
+		x = 20,
+		y = 20,
 		z = 1,
 		color = { 0.8, 0.8, 0.9, 1 },
 		effect_color = { 0.45, 0.45, 0.5, 0.5 },
@@ -60,15 +60,15 @@ function love.load()
 			interactable = true,
 		},
 		stats = {
-			health = { health = 20, maxHealth = 20 },
-			stamina = { stamina = 10, maxStamina = 10 },
-			hunger = { hunger = 10, maxHunger = 10 },
+			health = { health = 20, max_health = 20 },
+			stamina = { stamina = 10, max_stamina = 10 },
+			hunger = { hunger = 10, max_hunger = 10 },
 		},
 		inventory = {
 			sword = { name = "sword" },
 			armor = { name = "armor" },
-			usableItemDummy = { name = "usableDum" },
-			dummyItem = { name = "dummy" },
+			usable_item_dummy = { name = "usable_dummy" },
+			dummy_item = { name = "dummy" },
 		},
 		damage = 2,
 	}
@@ -81,7 +81,7 @@ function love.load()
 	entities:add_from_template("crate", 10, 10, 1)
 	entities:add_from_template("barricade", 15, 14, 1)
 
-	map:load(mapWidth, mapHeight, mapDepth, "town")
+	map:load(map_width, map_height, map_depth, "town")
 	map:update_visibility(player.x, player.y, 25)
 
 	ui_handler:load()
@@ -96,5 +96,5 @@ end
 
 function love.draw()
 	render_handler:draw(player.x, player.y)
-	visualizer:draw()
+	--visualizer:draw()
 end

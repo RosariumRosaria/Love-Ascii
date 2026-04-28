@@ -29,6 +29,10 @@ function love:keypressed(key)
 		end
 		table.insert(direction_keys, key)
 	end
+
+	if key == "g" then
+		render_handler:toggle_grid()
+	end
 end
 
 function love:keyreleased(key)
@@ -96,12 +100,13 @@ function input_handler:update(dt, player_dead)
 
 	if love.keyboard.isDown("z") then
 		render_handler:switch_offset()
-		voroni_generator:reload(125)
+		--voroni_generator:reload(125)
 	end
+
 
 	if love.keyboard.isDown("x") then
 		ui_handler:switch_status()
-		voroni_generator:lloyd()
+		--oroni_generator:lloyd()
 	end
 
 	if love.keyboard.isDown("escape") then

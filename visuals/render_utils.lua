@@ -1,27 +1,28 @@
 local config = require("config")
-local defaultFont
-local tileSize
+local default_font
+local tile_size
 local render_utils = {}
 
-function render_utils.height_level_scale(i, maxHeight, visible, base)
-	local heightFactor = (i + 0.5) / maxHeight
-	local alpha = heightFactor * base
+function render_utils.height_level_scale(i, max_height, visible, base)
+	local height_factor = 0.5 + (i / max_height)
+	local alpha = height_factor * base
 	if not visible then
 		alpha = alpha * 0.3
 	end
 
-	return math.max(math.min(alpha, 2), 0.1)
+	return math.max(math.min(alpha, 2), 0.25)
 end
 
-function render_utils.getMaxTextWidth(texts, font)
-	local maxWidth = ""
-	font = font or defaultFont
+function render_utils.get_max_text_width(texts, font)
+	local max_width = 0
+	font = font or default_font
 	for _, text in ipairs(texts) do
-		if font:getWidth(text) > font:getWidth(maxWidth) then
-			maxWidth = text
+		local curr_width = font:getWidth(text)
+		if curr_width > max_width then
+			max_width = curr_width
 		end
 	end
-	return font:getWidth(maxWidth)
+	return max_width
 end
 
 -- Returns the final color to be used based on visibility and exploration
@@ -59,52 +60,52 @@ function render_utils.scale_color(color, scale)
 end
 
 -- Converts XY map to XY screen coordinates based on camera center
-function render_utils.get_screen_coords(x, y, centerX, centerY)
-	local screenX = (x - centerX + love.graphics.getWidth() / tileSize / 2) * tileSize
-	local screenY = (y - centerY + love.graphics.getHeight() / tileSize / 2) * tileSize
-	return screenX, screenY
+function render_utils.get_screen_coords(x, y, center_x, center_y)
+	local screen_x = (x - center_x + love.graphics.getWidth() / tile_size / 2) * tile_size
+	local screen_y = (y - center_y + love.graphics.getHeight() / tile_size / 2) * tile_size
+	return screen_x, screen_y
 end
 
 function render_utils.distance_scale(x1, y1, x2, y2)
-	local screenWidth = love.graphics.getWidth()
-	local screenHeight = love.graphics.getHeight()
+	local screen_width = love.graphics.getWidth()
+	local screen_height = love.graphics.getHeight()
 
-	local tilesWide = screenWidth / tileSize
-	local tilesHigh = screenHeight / tileSize
+	local tiles_wide = screen_width / tile_size
+	local tiles_high = screen_height / tile_size
 
-	local maxDist = math.sqrt((tilesWide / 2) ^ 2 + (tilesHigh / 2) ^ 2)
+	local max_dist = math.sqrt((tiles_wide / 2) ^ 2 + (tiles_high / 2) ^ 2)
 	local dist = math.sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2)
 
-	return math.min(math.max(1 - (dist / maxDist), 0.05), 1)
+	return math.min(math.max(1 - (dist / max_dist), 0.05), 1)
 end
 
 -- Gets a visual offset based on height and offset type
-function render_utils.get_offset(i, offsetType, offset, x, y, centerX, centerY)
-	if offsetType == 1 then
+function render_utils.get_offset(i, offset_type, offset, x, y, center_x, center_y)
+	if offset_type == 1 then
 		local scale = 0.1
-		return (i - 1) * offset * (x - centerX) * scale, (i - 1) * offset * (y - centerY) * scale
-	elseif offsetType == 2 then
+		return (i - 1) * offset * (x - center_x) * scale, (i - 1) * offset * (y - center_y) * scale
+	elseif offset_type == 2 then
 		return -(i - 1) * offset, -(i - 1) * offset
 	end
 	return 0, 0
 end
 
-local GlyphCenterCache = setmetatable({}, { __mode = "k" })
+local glyph_center_cache = setmetatable({}, { __mode = "k" })
 
-function render_utils.getVisualCenterFromTop(font, ch)
-	local perFont = GlyphCenterCache[font]
-	if not perFont then
-		perFont = {}
-		GlyphCenterCache[font] = perFont
+function render_utils.get_visual_center_from_top(font, ch)
+	local per_font = glyph_center_cache[font]
+	if not per_font then
+		per_font = {}
+		glyph_center_cache[font] = per_font
 	end
-	if perFont[ch] then
-		return perFont[ch]
+	if per_font[ch] then
+		return per_font[ch]
 	end
 
 	local pad = 4
-	local lineH = font:getHeight()
+	local line_height = font:getHeight()
 	local w = math.max(8, math.ceil(font:getWidth(ch)) + pad * 2)
-	local h = lineH + pad * 2
+	local h = line_height + pad * 2
 
 	local canvas = love.graphics.newCanvas(w, h)
 	love.graphics.push("all")
@@ -118,15 +119,15 @@ function render_utils.getVisualCenterFromTop(font, ch)
 	local img = canvas:newImageData()
 	local top, bottom = h, -1
 	for y = 0, h - 1 do
-		local rowHasInk = false
+		local row_has_ink = false
 		for x = 0, w - 1 do
 			local _, _, _, a = img:getPixel(x, y)
 			if a > 0 then
-				rowHasInk = true
+				row_has_ink = true
 				break
 			end
 		end
-		if rowHasInk then
+		if row_has_ink then
 			if y < top then
 				top = y
 			end
@@ -136,20 +137,20 @@ function render_utils.getVisualCenterFromTop(font, ch)
 		end
 	end
 
-	local centerFromTop
+	local center_from_top
 	if bottom >= top then
-		centerFromTop = (top + bottom) * 0.5 - pad
+		center_from_top = (top + bottom) * 0.5 - pad
 	else
-		centerFromTop = lineH * 0.5
+		center_from_top = line_height * 0.5
 	end
 
-	perFont[ch] = centerFromTop
-	return centerFromTop
+	per_font[ch] = center_from_top
+	return center_from_top
 end
 
 function render_utils.load()
-	tileSize = config.tileSize
-	defaultFont = config.font
+	tile_size = config.tile_size
+	default_font = config.font
 end
 
 return render_utils

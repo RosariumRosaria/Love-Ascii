@@ -28,7 +28,7 @@ local function can_see(entity, target)
 
 	entity.can_see = false
 	if engine_utils.distance_between(entity, target) < entity.sight then
-		entity.can_see = fov_handler.refreshVisibility(
+		entity.can_see = fov_handler.refresh_visibility(
 			entity.x,
 			entity.y,
 			entity.sight,
@@ -62,14 +62,14 @@ local function idle(entity)
 		end
 		local chance = math.random(1, 5)
 		if chance == 1 then
-			local tarX = entity.x + math.random(-10, 10)
-			local tarY = entity.y + math.random(-10, 10)
+			local tar_x = entity.x + math.random(-10, 10)
+			local tar_y = entity.y + math.random(-10, 10)
 			local map_width, map_height = map:get_width(), map:get_height()
-			tarX = clamp(tarX, 1, map_width)
-			tarY = clamp(tarY, 1, map_height)
-			if tarX ~= entity.x or tarY ~= entity.y then
+			tar_x = clamp(tar_x, 1, map_width)
+			tar_y = clamp(tar_y, 1, map_height)
+			if tar_x ~= entity.x or tar_y ~= entity.y then
 				entity.state = "wandering"
-				entity.target_pos = { tarX, tarY }
+				entity.target_pos = { tar_x, tar_y }
 				entity.turns_to_idle = 20
 			end
 		elseif chance == 2 or chance == 3 then

@@ -1,16 +1,16 @@
 local config = require("config")
 
-local smallTileSize
+local small_tile_size
 
 local ui_handler = {
-	uiList = {},
+	ui_list = {},
 }
 
-local statusTypes = { "stats", "inventory" }
-local statusPos = 1
-local statusPanel
+local status_types = { "stats", "inventory" }
+local status_position = 1
+local status_panel
 
-local function addTextToUI(ui, text)
+local function add_text_to_ui(ui, text)
 	if not ui then
 		return false
 	end
@@ -22,16 +22,16 @@ local function addTextToUI(ui, text)
 end
 
 function ui_handler:switch_status()
-	statusPos = (statusPos % 2) + 1
-	statusPanel.mode = statusTypes[statusPos]
+	status_position = (status_position % 2) + 1
+	status_panel.mode = status_types[status_position]
 	self:update_status()
 end
 
 function ui_handler:get_ui_list()
-	return self.uiList
+	return self.ui_list
 end
 
-function ui_handler:addUI(x, y, width, height, name, color, outlineWidth, outlinecolor, center_text, tileGrid)
+function ui_handler:add_ui(x, y, width, height, name, color, outline_width, outline_color, center_text, tile_grid)
 	local ui = {
 		x = x,
 		y = y,
@@ -39,22 +39,22 @@ function ui_handler:addUI(x, y, width, height, name, color, outlineWidth, outlin
 		width = width,
 		name = name,
 		color = color,
-		outlineWidth = outlineWidth,
-		outlinecolor = outlinecolor,
+		outline_width = outline_width,
+		outline_color = outline_color,
 		texts = {},
 		center_text = center_text,
-		tileGrid = tileGrid,
+		tile_grid = tile_grid,
 		scroll_offset = 0,
-		capacity = math.floor(height / smallTileSize) * 10,
+		capacity = math.floor(height / small_tile_size) * 10,
 	}
 
-	table.insert(self.uiList, ui)
+	table.insert(self.ui_list, ui)
 
 	return ui
 end
 
 function ui_handler:get_ui(name)
-	for _, ui in ipairs(self.uiList) do
+	for _, ui in ipairs(self.ui_list) do
 		if ui.name == name then
 			return ui
 		end
@@ -62,41 +62,49 @@ function ui_handler:get_ui(name)
 end
 
 function ui_handler:add_text_to_ui_by_name(name, text)
-	addTextToUI(self:get_ui(name), text)
+	add_text_to_ui(self:get_ui(name), text)
 end
 
 function ui_handler:load()
-	local screenHeight = love.graphics.getHeight()
-	local screenWidth = love.graphics.getWidth()
-	local outlineWidth = screenWidth / 400
-	local buffer = 4 * outlineWidth
-	local width = screenWidth / 6
-	local startX = screenWidth - width - buffer
-	local height = (screenHeight * 4 / 6) - buffer
-	local startY = height + (2 * buffer)
+	local screen_height = love.graphics.getHeight()
+	local screen_width = love.graphics.getWidth()
+	local outline_width = screen_width / 400
+	local buffer = 4 * outline_width
+	local width = screen_width / 6
+	local start_x = screen_width - width - buffer
+	local height = (screen_height * 4 / 6) - buffer
+	local start_y = height + (2 * buffer)
 	local black = { 0, 0, 0, 0.5 }
 	local white = { 1, 1, 1, 0.5 }
 
-	smallTileSize = config.smallTileSize
+	small_tile_size = config.small_tile_size
 
-	self:addUI(startX, buffer, width, height, "terminal", black, outlineWidth, white)
-	statusPanel =
-		self:addUI(startX, startY, width, screenHeight - height - (4 * buffer), "status", black, outlineWidth, white)
-	statusPanel.mode = "inventory"
+	self:add_ui(start_x, buffer, width, height, "terminal", black, outline_width, white)
+	status_panel = self:add_ui(
+		start_x,
+		start_y,
+		width,
+		screen_height - height - (4 * buffer),
+		"status",
+		black,
+		outline_width,
+		white
+	)
+	status_panel.mode = "inventory"
 end
 
 function ui_handler:update_status()
-	statusPanel.texts = {}
+	status_panel.texts = {}
 
-	if statusPanel.mode == "stats" then
-		for statName, stat in pairs(player.stats) do
-			local current = stat[statName]
-			local max = stat["max" .. statName:gsub("^%l", string.upper)]
-			self:add_text_to_ui_by_name("status", statName .. ": " .. current .. " / " .. max)
+	if status_panel.mode == "stats" then
+		for stat_name, stat in pairs(player.stats) do
+			local current = stat[stat_name]
+			local max = stat["max_" .. stat_name]
+			self:add_text_to_ui_by_name("status", stat_name .. ": " .. current .. " / " .. max)
 		end
-	elseif statusPanel.mode == "inventory" then
-		for itemName, _ in pairs(player.inventory) do
-			self:add_text_to_ui_by_name("status", "- " .. itemName)
+	elseif status_panel.mode == "inventory" then
+		for item_name, _ in pairs(player.inventory) do
+			self:add_text_to_ui_by_name("status", "- " .. item_name)
 		end
 	end
 end
