@@ -15,27 +15,27 @@ return {
 		transparent = true,
 	},
 
-	hWall = {
+	h_wall = {
 		name = "wall",
 		chars = { "|" },
 		walkable = false,
-		color = { 0.4, 0.4, 0.45, 1 },
+		color = { 0.75, 0.75, 0.8, 1 },
 		transparent = false,
 	},
 
-	vWall = {
+	v_wall = {
 		name = "wall",
 		chars = { "- -" },
 		walkable = false,
-		color = { 0.4, 0.4, 0.45, 1 },
+		color = { 0.75, 0.75, 0.8, 1 },
 		transparent = false,
 	},
 
-	cWall = {
+	c_wall = {
 		name = "wall",
 		chars = { "+" },
 		walkable = false,
-		color = { 0.4, 0.4, 0.45, 1 },
+		color = { 0.75, 0.75, 0.8, 1 },
 		transparent = false,
 	},
 

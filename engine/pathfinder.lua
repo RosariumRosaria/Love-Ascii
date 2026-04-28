@@ -129,12 +129,7 @@ function pathfinder.a_star(start, goal)
 		return nil
 	end
 
-	local path = reconstruct_path(came_from, start, goal)
-	if #path > 1 then
-		return reconstruct_path(came_from, start, goal)
-	else
-		return nil
-	end
+	return reconstruct_path(came_from, start, goal)
 end
 
 return pathfinder

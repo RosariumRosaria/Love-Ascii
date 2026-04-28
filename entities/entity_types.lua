@@ -9,7 +9,7 @@ return {
 		description = "A vampire, try attacking it!",
 		default_action = "attackable",
 		stats = {
-			health = { health = 10, maxHealth = 10 },
+			health = { health = 10, max_health = 10 },
 		},
 		damage = 1,
 		sight = 30,

@@ -12,12 +12,12 @@ local map = {
 	explored = {},
 }
 
-function map:inbounds(x, y)
+function map:in_bounds(x, y) --TODO again this should be standard
 	return x >= 1 and x <= self.width and y >= 1 and y <= self.height
 end
 
-function map:getTile(x, y, z)
-	if not map:inbounds(x, y) then
+function map:get_tile(x, y, z)
+	if not map:in_bounds(x, y) then
 		return nil
 	end
 	if not self.tiles[y] or not self.tiles[y][x][z] then
@@ -28,7 +28,7 @@ function map:getTile(x, y, z)
 end
 
 function map:walkable(x, y, z)
-	if not self:inbounds(x, y) then
+	if not self:in_bounds(x, y) then
 		return false
 	end
 	if not self.tiles[y] or not self.tiles[y][x][z] then
@@ -38,14 +38,14 @@ function map:walkable(x, y, z)
 end
 
 function map:is_visible(x, y)
-	if not self:inbounds(x, y) then
+	if not self:in_bounds(x, y) then
 		return false
 	end
 	return self.visible[y][x]
 end
 
 function map:is_explored(x, y)
-	if not self:inbounds(x, y) then
+	if not self:in_bounds(x, y) then
 		return false
 	end
 	return self.explored[y][x]
@@ -63,7 +63,7 @@ function map:get_tiles()
 	return self.tiles
 end
 
-function map:load(width, height, depth, mapType)
+function map:load(width, height, depth, map_type)
 	-- math.randomseed(os.time())
 	self.width = width or 10
 	self.height = height or 10
@@ -79,22 +79,21 @@ function map:load(width, height, depth, mapType)
 			self.tiles[y][x][1] = types.grass
 		end
 	end
-	if mapType == "town" then
-		-- TODO Hardcoded for 205, should be changed
-		voroni_generator:load(self.width, self.height, self.tiles, 125)
-
-		--city_generator:makeTown(205, self.tiles, self.height, self.width, self.depth)
+	if map_type == "town" then
+		--voroni_generator:load(self.width, self.height, self.tiles, 125)
+		-- TODO Hardcoded, should be changed
+		city_generator:make_town(205, self.tiles, self.height, self.width, self.depth)
 	end
 end
 
-function map:update_visibility(centerX, centerY, radius)
+function map:update_visibility(center_x, center_y, radius)
 	for y = 1, self.height do -- TODO SO INEFFICIENT, but works for now
 		for x = 1, self.width do
 			self.visible[y][x] = false
 		end
 	end
 
-	fov_handler.refreshVisibility(centerX, centerY, radius, self.width, self.height, self.tiles, self.visible, true)
+	fov_handler.refresh_visibility(center_x, center_y, radius, self.width, self.height, self.tiles, self.visible, true)
 
 	for y = 1, self.height do -- TODO SO INEFFICIENT, but works for now
 		for x = 1, self.width do

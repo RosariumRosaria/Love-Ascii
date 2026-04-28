@@ -1,5 +1,5 @@
 return {
-	typeKeys = {
+	type_keys = {
 		"crimson",
 		"orange",
 		"pink",

@@ -1,5 +1,5 @@
 local config = require("config")
-local tileSize
+local tile_size
 local render_utils = require("visuals.render_utils")
 local render_primitives = {}
 
@@ -9,32 +9,32 @@ function render_primitives.draw_rect(
 	width,
 	height,
 	color,
-	outlineWidth,
-	outlineColor,
-	roundedAmount
+	outline_width,
+	outline_color,
+	rounded_amount
 )
-	local roundedAmountX = 0
-	local roundedAmountY = 0
+	local rounded_amount_x = 0
+	local rounded_amount_y = 0
 
-	if roundedAmount then
-		roundedAmountX = width * roundedAmount
-		roundedAmountY = height * roundedAmount
+	if rounded_amount then
+		rounded_amount_x = width * rounded_amount
+		rounded_amount_y = height * rounded_amount
 	end
 
 	love.graphics.setColor(color)
-	love.graphics.rectangle("fill", x_screen, y_screen, width, height, roundedAmountX, roundedAmountY)
+	love.graphics.rectangle("fill", x_screen, y_screen, width, height, rounded_amount_x, rounded_amount_y)
 
-	if outlineWidth and outlineColor then
-		love.graphics.setLineWidth(outlineWidth)
-		love.graphics.setColor(outlineColor)
+	if outline_width and outline_color then
+		love.graphics.setLineWidth(outline_width)
+		love.graphics.setColor(outline_color)
 		love.graphics.rectangle(
 			"line",
-			x_screen - outlineWidth,
-			y_screen - outlineWidth,
-			width + outlineWidth,
-			height + outlineWidth,
-			roundedAmountX,
-			roundedAmountY
+			x_screen - outline_width,
+			y_screen - outline_width,
+			width + outline_width,
+			height + outline_width,
+			rounded_amount_x,
+			rounded_amount_y
 		)
 		love.graphics.setLineWidth(1)
 	end
@@ -42,7 +42,7 @@ function render_primitives.draw_rect(
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
-function render_primitives.draw_char(x_screen, y_screen, text, color, outlineColor, rotation, naturalRotation)
+function render_primitives.draw_char(x_screen, y_screen, text, color, outline_color, rotation, natural_rotation)
 	if not text or text == "" then
 		return
 	end
@@ -50,18 +50,18 @@ function render_primitives.draw_char(x_screen, y_screen, text, color, outlineCol
 	local font = love.graphics.getFont()
 	local text_width = font:getWidth(text)
 
-	local center_from_top = render_utils.getVisualCenterFromTop(font, text)
+	local center_from_top = render_utils.get_visual_center_from_top(font, text)
 
-	local cx = x_screen + tileSize * 0.5
-	local cy = y_screen + tileSize * 0.5
+	local cx = x_screen + tile_size * 0.5
+	local cy = y_screen + tile_size * 0.5
 
-	local rads = math.rad(((rotation or 0) - (naturalRotation or 0)) % 360)
+	local rads = math.rad(((rotation or 0) - (natural_rotation or 0)) % 360)
 
 	local ox = text_width * 0.5
 	local oy = center_from_top
 
-	if outlineColor then
-		love.graphics.setColor(outlineColor)
+	if outline_color then
+		love.graphics.setColor(outline_color)
 		love.graphics.print(text, cx + 1, cy + 1, rads, 1, 1, ox, oy)
 	end
 
@@ -71,9 +71,9 @@ function render_primitives.draw_char(x_screen, y_screen, text, color, outlineCol
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
-function render_primitives.drawTextBlock(texts, x_screen, y_screen, width, outline, center_text, color, lineHeight)
+function render_primitives.draw_text_block(texts, x_screen, y_screen, width, outline, center_text, color, line_height)
 	local font = love.graphics.getFont()
-	lineHeight = lineHeight or tileSize
+	line_height = line_height or tile_size
 	if color then
 		love.graphics.setColor(color)
 	end
@@ -84,10 +84,10 @@ function render_primitives.drawTextBlock(texts, x_screen, y_screen, width, outli
 			dx = dx + (width - font:getWidth(text)) / 2
 		end
 
-		local drawX = x_screen + dx
-		local drawY = y_screen + outline + ((i - 1) * lineHeight)
+		local draw_x = x_screen + dx
+		local draw_y = y_screen + outline + ((i - 1) * line_height)
 
-		love.graphics.print(text, drawX, drawY)
+		love.graphics.print(text, draw_x, draw_y)
 	end
 end
 
@@ -96,29 +96,29 @@ function render_primitives.draw_panel(
 	y_screen,
 	width,
 	height,
-	fillColor,
-	outlineWidth,
-	outlineColor,
+	fill_color,
+	outline_width,
+	outline_color,
 	texts,
-	centerText,
-	textColor,
-	lineHeight
+	center_text,
+	text_color,
+	line_height
 )
-	render_primitives.draw_rect(x_screen, y_screen, width, height, fillColor, outlineWidth, outlineColor)
-	render_primitives.drawTextBlock(
+	render_primitives.draw_rect(x_screen, y_screen, width, height, fill_color, outline_width, outline_color)
+	render_primitives.draw_text_block(
 		texts,
 		x_screen,
 		y_screen,
 		width,
 		1,
-		centerText,
-		textColor or { 1, 1, 1, 1 },
-		lineHeight
+		center_text,
+		text_color or { 1, 1, 1, 1 },
+		line_height
 	)
 end
 
 function render_primitives.load()
-	tileSize = config.tileSize
+	tile_size = config.tile_size
 end
 
 return render_primitives
