@@ -1,10 +1,7 @@
 local entities = require("entities.entities")
 local types = require("map.tile_types")
+local utils = require("utils")
 local city_generator = { width = nil, height = nil, depth = nil }
-
-local function in_bounds(x, y, width, height) -- Can maybe moved to separate file
-	return x >= 1 and x <= width and y >= 1 and y <= height
-end
 
 local function overlapping_rectangles(r1, r2) -- Can maybe moved to separate file
 	return not (
@@ -20,7 +17,7 @@ function city_generator:make_building(room_start_x, room_start_y, width, height,
 		for x = 1, width do
 			local tile_x = room_start_x + x - 1
 			local tile_y = room_start_y + y - 1
-			if in_bounds(tile_x, tile_y, self.width, self.height) then
+			if utils.in_bounds(tile_x, tile_y, self.width, self.height) then
 				if
 					(x == 1 and y == 1)
 					or (x == width and y == height)
@@ -67,7 +64,7 @@ function city_generator:make_building(room_start_x, room_start_y, width, height,
 	local dir2 = math.random(1, 4)
 
 	for i, side in ipairs(sides) do
-		if in_bounds(side.x, side.y, self.width, self.height) then
+		if utils.in_bounds(side.x, side.y, self.width, self.height) then
 			tiles[side.y][side.x][2] = types.air
 			if dir == i or dir2 == i then
 				tiles[side.y][side.x][1] = types.floor

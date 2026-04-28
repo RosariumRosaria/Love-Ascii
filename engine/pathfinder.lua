@@ -1,5 +1,7 @@
+--NOTE Based off of Redbob
 local map = require("map.map")
 local entities = require("entities.entities")
+local utils = require("utils")
 
 local pathfinder = {}
 local max_checks = 250
@@ -38,13 +40,6 @@ local function get(queue)
 	return ret
 end
 
-local function shuffle(list)
-	for i = #list, 2, -1 do
-		local j = math.random(1, i)
-		list[i], list[j] = list[j], list[i]
-	end
-end
-
 local function get_neighbors(x, y, entity_list, goal)
 	local candidates = {
 		{ x + 1, y },
@@ -53,7 +48,7 @@ local function get_neighbors(x, y, entity_list, goal)
 		{ x, y - 1 },
 	}
 
-	shuffle(candidates)
+	utils.shuffle(candidates)
 
 	local neighbors = {}
 	for _, pos in ipairs(candidates) do

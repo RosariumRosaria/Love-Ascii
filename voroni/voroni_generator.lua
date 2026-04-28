@@ -1,4 +1,5 @@
 local tile_types = require("map.debug_tiles")
+local utils = require("utils")
 
 local voroni_generator = {
 	width = nil,
@@ -12,15 +13,6 @@ local voroni_generator = {
 
 local main_road_size = 3
 local off_road_size = 2
-
-local function contains(tbl, val) --TODO probably should be in a helper file
-	for _, v in ipairs(tbl) do
-		if v == val then
-			return true
-		end
-	end
-	return false
-end
 
 local function get_distance(pos1, pos2)
 	return (pos1[1] - pos2[1]) ^ 2 + (pos1[2] - pos2[2]) ^ 2
@@ -47,8 +39,8 @@ function voroni_generator:get_seeds()
 	return self.seeds
 end
 
-function voroni_generator:in_bounds(x, y) --TODO probably shouldn't be here
-	return x >= 1 and x <= self.width and y >= 1 and y <= self.height
+function voroni_generator:in_bounds(x, y)
+	return utils.in_bounds(x, y, self.width, self.height)
 end
 
 function voroni_generator:find_regions()
@@ -123,7 +115,7 @@ function voroni_generator:paint_regions(ids, color)
 			local key = type_keys[(id % #type_keys) + 1]
 			self.map[y][x][1] = tile_types[key]
 
-			if contains(ids, id) then
+			if utils.contains(ids, id) then
 				self.map[y][x][1] = tile_types[color]
 			end
 		end
@@ -162,7 +154,7 @@ function voroni_generator:expand_city(city_size, id)
 	if city_size > 1 then
 		city_size = city_size - 1
 		for _, neighbor_id in ipairs(self.regions[id].neighbors) do
-			if not contains(self.city, neighbor_id) then
+			if not utils.contains(self.city, neighbor_id) then
 				self:expand_city(city_size, neighbor_id)
 			end
 		end
@@ -214,7 +206,7 @@ function voroni_generator:prims()
 		for _, id in ipairs(self.city) do
 			if in_mst[id] then
 				for _, neighbor_id in ipairs(self.regions[id].neighbors) do
-					if not in_mst[neighbor_id] and contains(self.city, neighbor_id) then
+					if not in_mst[neighbor_id] and utils.contains(self.city, neighbor_id) then
 						local dist = get_distance(
 							{ self.regions[id].centroid_x, self.regions[id].centroid_y },
 							{ self.regions[neighbor_id].centroid_x, self.regions[neighbor_id].centroid_y }
