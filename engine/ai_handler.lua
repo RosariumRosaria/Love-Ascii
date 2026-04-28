@@ -5,6 +5,7 @@ local pathfinder = require("engine.pathfinder")
 local fov_handler = require("fov.fov_handler")
 local engine = require("engine.engine")
 local engine_utils = require("engine.engine_utils")
+local utils = require("utils")
 
 local ai_handler = {}
 --[[ TODO, At some point the flow should probably be more like
@@ -17,21 +18,17 @@ local ai_handler = {}
   Then pick based on some waits to be a target
 ]]
 
-local function clamp(val, min, max)
-	return math.max(min, math.min(max, val))
-end
-
 local function can_see(entity, target)
-	if not entity.sight or entity.sight <= 0 then
+	if not entity.stats.sight or entity.stats.sight.sight <= 0 then
 		return false
 	end
 
 	entity.can_see = false
-	if engine_utils.distance_between(entity, target) < entity.sight then
+	if engine_utils.distance_between(entity, target) < entity.stats.sight.sight then
 		entity.can_see = fov_handler.refresh_visibility(
 			entity.x,
 			entity.y,
-			entity.sight,
+			entity.stats.sight.sight,
 			map:get_width(),
 			map:get_height(),
 			map:get_tiles(),
@@ -57,7 +54,7 @@ end
 
 local function idle(entity)
 	if entity.type == "enemy" then
-		if can_see(entity, player) then
+		if can_see(entity, entities.player) then --This is ugly, treats the player as special
 			return
 		end
 		local chance = math.random(1, 5)
@@ -65,8 +62,8 @@ local function idle(entity)
 			local tar_x = entity.x + math.random(-10, 10)
 			local tar_y = entity.y + math.random(-10, 10)
 			local map_width, map_height = map:get_width(), map:get_height()
-			tar_x = clamp(tar_x, 1, map_width)
-			tar_y = clamp(tar_y, 1, map_height)
+			tar_x = utils.clamp(tar_x, 1, map_width)
+			tar_y = utils.clamp(tar_y, 1, map_height)
 			if tar_x ~= entity.x or tar_y ~= entity.y then
 				entity.state = "wandering"
 				entity.target_pos = { tar_x, tar_y }
@@ -85,7 +82,7 @@ end
 local function wander(entity)
 	if entity.type == "enemy" then
 		if entity.turns_to_idle and entity.turns_to_idle > 0 and entity.target_pos then
-			if can_see(entity, player) then
+			if can_see(entity, entities.player) then
 				entity.path = nil
 				entity.path_index = nil
 				return
@@ -123,7 +120,7 @@ end
 
 local function chase(entity)
 	if entity.turns_to_idle and entity.turns_to_idle > 0 and entity.target_pos then
-		if can_see(entity, player) then
+		if can_see(entity, entities.player) then
 			entity.path = pathfinder.a_star({ entity.x, entity.y }, entity.target_pos)
 			entity.path_index = 2
 		end

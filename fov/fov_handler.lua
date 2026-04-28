@@ -1,11 +1,10 @@
+--NOTE Based off of https://journal.stuffwithstuff.com/2015/09/07/what-the-hero-sees/
+
 local shadow_line = require("fov.shadow_line")
 local shadow = require("fov.shadow")
 local entities = require("entities.entities")
+local utils = require("utils")
 local fov_handler = {}
-
-local function in_bounds(x, y, width, height) --TODO This is defined in like 4 places
-	return x >= 1 and x <= width and y >= 1 and y <= height
-end
 
 local function transform_octant(row, col, octant)
 	local dx, dy
@@ -52,7 +51,7 @@ local function refresh_octant(
 		local pos_x = entity_x + dx
 		local pos_y = entity_y + dy
 
-		if not (in_bounds(pos_x, pos_y, width, height)) then
+		if not (utils.in_bounds(pos_x, pos_y, width, height)) then
 			break
 		end
 
@@ -61,7 +60,7 @@ local function refresh_octant(
 			pos_x = entity_x + dx
 			pos_y = entity_y + dy
 
-			if not (in_bounds(pos_x, pos_y, width, height)) then
+			if not (utils.in_bounds(pos_x, pos_y, width, height)) then
 				break
 			end
 
@@ -101,11 +100,11 @@ function fov_handler.refresh_visibility(
 	height,
 	map_grid,
 	visibility_grid,
-	player,
+	is_player,
 	target_x,
 	target_y
 )
-	if player then
+	if is_player then
 		visibility_grid[entity_y][entity_x] = true
 	end
 	for octant = 0, 7 do
@@ -118,7 +117,7 @@ function fov_handler.refresh_visibility(
 			height,
 			map_grid,
 			visibility_grid,
-			player,
+			is_player,
 			target_x,
 			target_y
 		) --TODO check if this works really for enemies

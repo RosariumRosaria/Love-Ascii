@@ -1,10 +1,21 @@
 local entity_types = require("entities/entity_types")
 local ui_handler = require("visuals.ui_handler")
+local utils = require("utils")
 
 local entities = {
 	entity_list = {},
+	player = nil,
 	entities_by_z_level = {},
 }
+
+function entities:set_player(p)
+	self.player = p
+	self:add_entity(p)
+end
+
+function entities:is_player(entity)
+	return entity == self.player
+end
 
 function entities:get_tag_location(x, y, z, tag)
 	local entity = entities:get_entity(x, y, z or 1)
@@ -106,7 +117,7 @@ function entities:get_entity_list_by_z_level(z)
 	return self.entities_by_z_level[z] or {}
 end
 
-entities["get_entity_list"] = function(self)
+function entities:get_entity_list()
 	return self.entity_list
 end
 
@@ -122,24 +133,12 @@ function entities:add_entity(entity)
 	table.insert(self.entities_by_z_level[z], entity)
 end
 
-local function deep_copy(tbl)
-	local copy = {}
-	for k, v in pairs(tbl) do
-		if type(v) == "table" then
-			copy[k] = deep_copy(v)
-		else
-			copy[k] = v
-		end
-	end
-	return copy
-end
-
 function entities:add_from_template(name, x, y, z, overrides)
 	local template = entity_types[name]
 	if not template then
 		error("Entity type '" .. tostring(name) .. "' does not exist")
 	end
-	local new_entity = deep_copy(template)
+	local new_entity = utils.deep_copy(template)
 
 	new_entity.x = x or 1
 	new_entity.y = y or 1

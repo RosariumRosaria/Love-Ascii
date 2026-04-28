@@ -1,7 +1,13 @@
 local map = require("map.map")
 local voroni_generator = require("voroni.voroni_generator")
 
-local visualizer = {}
+local visualizer = {
+	visible = false,
+}
+
+function visualizer:toggle()
+	self.visible = not self.visible
+end
 
 function visualizer:draw_map()
 	for y = 1, self.map_height do
@@ -55,6 +61,7 @@ function visualizer:draw_point_set()
 end
 
 function visualizer:draw()
+	if not self.visible then return end
 	self.screen_width = love.graphics.getWidth()
 	self.screen_height = love.graphics.getHeight()
 	self.map_width = map:get_width()

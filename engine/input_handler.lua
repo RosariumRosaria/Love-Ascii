@@ -1,15 +1,17 @@
 local engine = require("engine.engine")
-local map = require("map.map")
 local render_handler = require("visuals.render_handler")
 local ui_handler = require("visuals.ui_handler")
-local ai_handler = require("engine.ai_handler")
 local voroni_generator = require("voroni.voroni_generator")
-local input_handler = {}
+local visualizer = require("voroni.visualizer")
+
+local input_handler = {
+	actor = nil,
+}
 
 local time_since_last_turn = 0
 local time_between_turns = 0.125
 local last_turn = { x = 0, y = 0 }
-local grabbed = nil
+local grabbed = nil --TODO would need to be moved if multiple actors was to be supported
 
 local direction_keys = {}
 local key_to_dir = {
@@ -19,7 +21,11 @@ local key_to_dir = {
 	down = { x = 0, y = 1 },
 }
 
-function love:keypressed(key)
+function input_handler:set_actor(entity)
+	self.actor = entity
+end
+
+function love.keypressed(key)
 	if key_to_dir[key] then
 		for i, v in ipairs(direction_keys) do
 			if v == key then
@@ -33,9 +39,13 @@ function love:keypressed(key)
 	if key == "g" then
 		render_handler:toggle_grid()
 	end
+
+	if key == "v" then
+		visualizer:toggle()
+	end
 end
 
-function love:keyreleased(key)
+function love.keyreleased(key)
 	if key_to_dir[key] then
 		for i, v in ipairs(direction_keys) do
 			if v == key then
@@ -46,7 +56,12 @@ function love:keyreleased(key)
 	end
 end
 
-function input_handler:update(dt, player_dead)
+function input_handler:update(dt)
+	local actor = self.actor
+	if not actor then
+		return
+	end
+
 	time_since_last_turn = time_since_last_turn + dt
 	if time_since_last_turn < time_between_turns then
 		return
@@ -61,39 +76,39 @@ function input_handler:update(dt, player_dead)
 
 	local is_moving = move_dir.x ~= 0 or move_dir.y ~= 0
 	local has_moved = last_turn.x ~= 0 or last_turn.y ~= 0
-	if not player_dead then
+	if not actor.dead then
 		if is_moving or has_moved then
 			if not is_moving then
 				move_dir = last_turn
 			end
 			if love.keyboard.isDown("f") then
-				took_action = engine:attack(player, move_dir.x, move_dir.y)
+				took_action = engine:attack(actor, move_dir.x, move_dir.y)
 			elseif love.keyboard.isDown("e") then
-				took_action = engine:interact(player, move_dir.x, move_dir.y)
+				took_action = engine:interact(actor, move_dir.x, move_dir.y)
 				if not took_action then
-					took_action = engine:interact(player, -1 * move_dir.x, -1 * move_dir.y)
+					took_action = engine:interact(actor, -1 * move_dir.x, -1 * move_dir.y)
 					--TODO should this be in input handler? Also investigate double priting
 				end
 			elseif love.keyboard.isDown("r") then
-				engine:inspect(player, move_dir.x, move_dir.y)
+				engine:inspect(actor, move_dir.x, move_dir.y)
 			elseif is_moving then
 				if love.keyboard.isDown("q") then
 					if not grabbed then
-						grabbed = engine:grab(player, move_dir.x, move_dir.y) or grabbed
+						grabbed = engine:grab(actor, move_dir.x, move_dir.y) or grabbed
 					end
 					if grabbed then
-						if player.x == grabbed.x + move_dir.x and player.y == grabbed.y + move_dir.y then
-							took_action = engine:pull(player, move_dir.x, move_dir.y)
-						elseif player.x + move_dir.x == grabbed.x and player.y + move_dir.y == grabbed.y then
-							took_action = engine:push(player, move_dir.x, move_dir.y)
+						if actor.x == grabbed.x + move_dir.x and actor.y == grabbed.y + move_dir.y then
+							took_action = engine:pull(actor, move_dir.x, move_dir.y)
+						elseif actor.x + move_dir.x == grabbed.x and actor.y + move_dir.y == grabbed.y then
+							took_action = engine:push(actor, move_dir.x, move_dir.y)
 						end
 					end
 				else
 					grabbed = false
-					took_action = engine:move(player, move_dir.x, move_dir.y)
+					took_action = engine:move(actor, move_dir.x, move_dir.y)
 				end
 			end
-			map:update_visibility(player.x, player.y, 30) --TODO, why do you live in input handler? And magic number...
+
 			last_turn = move_dir
 		end
 	end
@@ -102,7 +117,6 @@ function input_handler:update(dt, player_dead)
 		render_handler:switch_offset()
 		--voroni_generator:reload(125)
 	end
-
 
 	if love.keyboard.isDown("x") then
 		ui_handler:switch_status()
@@ -113,10 +127,7 @@ function input_handler:update(dt, player_dead)
 		love.event.quit()
 	end
 
-	if took_action then
-		ai_handler:process_turn()
-		ui_handler:update_status()
-	end
+	return took_action
 end
 
 function love.wheelmoved(_, y)

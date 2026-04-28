@@ -24,7 +24,7 @@ end
 function ui_handler:switch_status()
 	status_position = (status_position % 2) + 1
 	status_panel.mode = status_types[status_position]
-	self:update_status()
+	self:update_status(status_panel.entity)
 end
 
 function ui_handler:get_ui_list()
@@ -93,17 +93,21 @@ function ui_handler:load()
 	status_panel.mode = "inventory"
 end
 
-function ui_handler:update_status()
+function ui_handler:update_status(entity)
 	status_panel.texts = {}
-
+	status_panel.entity = entity
 	if status_panel.mode == "stats" then
-		for stat_name, stat in pairs(player.stats) do
-			local current = stat[stat_name]
-			local max = stat["max_" .. stat_name]
-			self:add_text_to_ui_by_name("status", stat_name .. ": " .. current .. " / " .. max)
+		for stat_name, stat in pairs(entity.stats) do
+			if type(stat) == "table" then
+				local current = stat[stat_name]
+				local max = stat["max_" .. stat_name]
+				self:add_text_to_ui_by_name("status", stat_name .. ": " .. current .. " / " .. max)
+			else
+				self:add_text_to_ui_by_name("status", stat_name .. ": " .. stat)
+			end
 		end
 	elseif status_panel.mode == "inventory" then
-		for item_name, _ in pairs(player.inventory) do
+		for item_name, _ in pairs(entity.inventory) do
 			self:add_text_to_ui_by_name("status", "- " .. item_name)
 		end
 	end

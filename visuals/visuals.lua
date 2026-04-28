@@ -1,4 +1,5 @@
 local visual_types = require("visuals/visual_types")
+local utils = require("utils")
 
 local visuals = {
 	visual_list = {},
@@ -23,24 +24,12 @@ function visuals:add_visual(visual)
 	table.insert(self.visual_list, visual)
 end
 
-local function deep_copy(tbl)
-	local copy = {}
-	for k, v in pairs(tbl) do
-		if type(v) == "table" then
-			copy[k] = deep_copy(v)
-		else
-			copy[k] = v
-		end
-	end
-	return copy
-end
-
 function visuals:add_from_template(name, x, y, z, overrides)
 	local template = visual_types[name]
 	if not template then
 		error("Entity type '" .. tostring(name) .. "' does not exist")
 	end
-	local new_entity = deep_copy(template)
+	local new_entity = utils.deep_copy(template)
 
 	new_entity.x = x or 1
 	new_entity.y = y or 1

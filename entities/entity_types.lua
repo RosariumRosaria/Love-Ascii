@@ -10,9 +10,9 @@ return {
 		default_action = "attackable",
 		stats = {
 			health = { health = 10, max_health = 10 },
+			sight = { sight = 30, max_sight = 30 },
 		},
 		damage = 1,
-		sight = 30,
 		tags = {
 			solid = false,
 			moveable = true,

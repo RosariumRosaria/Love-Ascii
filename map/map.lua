@@ -2,6 +2,7 @@ local fov_handler = require("fov.fov_handler")
 local city_generator = require("map.city_generator")
 local types = require("map.tile_types")
 local voroni_generator = require("voroni.voroni_generator")
+local utils = require("utils")
 
 local map = {
 	width = nil,
@@ -12,8 +13,8 @@ local map = {
 	explored = {},
 }
 
-function map:in_bounds(x, y) --TODO again this should be standard
-	return x >= 1 and x <= self.width and y >= 1 and y <= self.height
+function map:in_bounds(x, y)
+	return utils.in_bounds(x, y, self.width, self.height)
 end
 
 function map:get_tile(x, y, z)

@@ -7,6 +7,8 @@ local input_handler = require("engine.input_handler")
 local visualizer = require("voroni.visualizer")
 local entities = require("entities.entities")
 
+local ai_handler = require("engine.ai_handler")
+
 _G.deep_print = function(tbl, indent, visited) --TODO Gross, for debug
 	indent = indent or 0
 	visited = visited or {}
@@ -44,7 +46,7 @@ function love.load()
 	local map_height = 500
 	local map_depth = 7
 
-	player = { --TODO, why is this global
+	local player = {
 		chars = { "@" },
 		x = 20,
 		y = 20,
@@ -63,6 +65,7 @@ function love.load()
 			health = { health = 20, max_health = 20 },
 			stamina = { stamina = 10, max_stamina = 10 },
 			hunger = { hunger = 10, max_hunger = 10 },
+			sight = { sight = 30, max_sight = 30 },
 		},
 		inventory = {
 			sword = { name = "sword" },
@@ -73,7 +76,8 @@ function love.load()
 		damage = 2,
 	}
 
-	entities:add_entity(player)
+	input_handler:set_actor(player)
+	entities:set_player(player)
 	entities:add_from_template("vampire", 5, 5, 1)
 	entities:add_from_template("vampire", 8, 6, 1)
 	entities:add_from_template("vampire", 9, 11, 1)
@@ -82,19 +86,23 @@ function love.load()
 	entities:add_from_template("barricade", 15, 14, 1)
 
 	map:load(map_width, map_height, map_depth, "town")
-	map:update_visibility(player.x, player.y, 25)
+	map:update_visibility(entities.player.x, entities.player.y, entities.player.stats.sight.sight)
 
 	ui_handler:load()
-	ui_handler:update_status()
+	ui_handler:update_status(entities.player)
 end
 
-function love.update(dt) --Todo: Make movement check key pressed, to avoid the timer
-	input_handler:update(dt, player.dead)
+function love.update(dt) --TODO some of this should maybe live in a turn handler module
+	if input_handler:update(dt) then
+		map:update_visibility(entities.player.x, entities.player.y, entities.player.stats.sight.sight)
+		ai_handler:process_turn()
+		ui_handler:update_status(entities.player)
+	end
 
 	visuals:update(dt)
 end
 
 function love.draw()
-	render_handler:draw(player.x, player.y)
-	--visualizer:draw()
+	render_handler:draw(entities.player.x, entities.player.y)
+	visualizer:draw()
 end

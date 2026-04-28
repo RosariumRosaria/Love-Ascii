@@ -12,9 +12,9 @@ local small_tile_size
 local default_font
 local small_font
 
-local MAX_HEIGHT = 5 --TODO whys is this here. Fine for now.
+local max_height = 5 --TODO whys is this here. Fine for now.
 local offset_type = 1
-local OFFSET_AMOUNT
+local offset_amount
 local show_grid = false
 
 function render_handler:switch_offset()
@@ -100,14 +100,14 @@ function render_handler:draw_entity(entity, center_x, center_y, visible, explore
 	local base = render_utils.distance_scale(entity.x, entity.y, center_x, center_y)
 
 	for i, char_data in ipairs(entity.chars) do
-		local scale = render_utils.height_level_scale(entity.z + i, MAX_HEIGHT, visible, base) + 0.3
+		local scale = render_utils.height_level_scale(entity.z + i, max_height, visible, base) + 0.3
 
 		local scaled_color = render_utils.scale_color(base_color, scale)
 
 		local dx, dy = render_utils.get_offset(
 			entity.z + i - 1,
 			offset_type,
-			OFFSET_AMOUNT,
+			offset_amount,
 			entity.x,
 			entity.y,
 			center_x,
@@ -136,11 +136,11 @@ function render_handler:draw_tile(tile_data, x, y, center_x, center_y, visible, 
 
 	for i, tile in ipairs(tile_data) do
 		local char = tile.chars[1]
-		local alpha = render_utils.height_level_scale(i, MAX_HEIGHT, visible, base)
+		local alpha = render_utils.height_level_scale(i, max_height, visible, base)
 		local base_color = render_utils.get_effective_color(tile.color, visible, explored)
 		if base_color and (not visible or not entities:get_tag_location(x, y, i, "blocks")) then
 			local scaled_color = render_utils.scale_color(base_color, alpha)
-			local dx, dy = render_utils.get_offset(i, offset_type, OFFSET_AMOUNT, x, y, center_x, center_y)
+			local dx, dy = render_utils.get_offset(i, offset_type, offset_amount, x, y, center_x, center_y)
 			render_primitives.draw_char(x_screen + dx, y_screen + dy, char, scaled_color, tile.outline_color)
 		end
 	end
@@ -228,9 +228,9 @@ function render_handler:load()
 	default_font = config.font
 	small_font = config.small_font
 
-	MAX_HEIGHT = 5
+	max_height = 5
 	offset_type = 1
-	OFFSET_AMOUNT = 0.25 * tile_size
+	offset_amount = 0.25 * tile_size
 	render_utils.load()
 	render_primitives.load()
 end
