@@ -1,0 +1,18 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run LÖVE",
+      "type": "shell",
+      "command": "flatpak-spawn --host flatpak run org.love2d.love2d ${workspaceFolder}",
+	        "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    }
+  ]
+}
