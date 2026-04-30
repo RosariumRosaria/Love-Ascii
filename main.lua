@@ -39,6 +39,7 @@ function love.load()
 	config:load()
 
 	render_handler:load()
+
 	love.graphics.setDefaultFilter("nearest", "nearest")
 	love.window.setTitle(game_cfg.window.title)
 	love.window.setMode(0, 0, {

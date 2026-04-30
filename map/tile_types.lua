@@ -3,7 +3,7 @@ return {
 		name = "grass",
 		chars = { "." },
 		walkable = true,
-		color = { 0.22, 0.45, 0.25, 1 },
+		color = { 0.2, 0.45, 0.25, 1 },
 		transparent = true,
 		covers = true,
 	},
