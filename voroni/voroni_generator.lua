@@ -231,11 +231,10 @@ function voroni_generator:prims()
 end
 
 function voroni_generator:pave_circle(cx, cy, radius)
-	local rad_dist = radius * radius
 	for y = -radius, radius do
 		for x = -radius, radius do
 			local px, py = x + cx, y + cy
-			if get_distance({ px, py }, { cx, cy }) < rad_dist then
+			if utils.in_radius(x, y, radius) then
 				if self:in_bounds(px, py) then
 					self.map[py][px][1] = tile_types["white"]
 				end

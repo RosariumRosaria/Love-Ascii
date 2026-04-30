@@ -64,6 +64,10 @@ local function refresh_octant(
 				break
 			end
 
+			if not utils.in_radius(dx, dy, max_distance) then
+				break
+			end
+
 			if full_shadow then
 				if player then
 					visibility_grid[pos_y][pos_x] = false

@@ -4,14 +4,16 @@ local default_font
 local tile_size
 local render_utils = {}
 
-function render_utils.height_level_scale(i, max_height, visible, base)
-	local height_factor = 0.5 + (i / max_height)
+function render_utils.height_level_scale(z, max_height, max_z, min_z, visible, base)
+	local range = max_z - min_z
+	local normalized = (z - min_z) / range
+	local height_factor = 0.25 + normalized * 1.25
 	local alpha = height_factor * base
 	if not visible then
-		alpha = alpha * 0.3
+		alpha = alpha * 0.5
 	end
 
-	return math.max(math.min(alpha, 2), 0.25)
+	return math.max(math.min(alpha, 2), 0.05)
 end
 
 function render_utils.get_max_text_width(texts, font)
@@ -40,7 +42,7 @@ function render_utils.get_effective_color(color, visible, explored)
 			return { 1, 1, 1, 1 }
 		end
 	elseif explored then
-		return { 0.961, 0.871, 0.702, 0.5 } -- fog-of-war color
+		return { 0.961, 0.871, 0.702, 1 } -- fog-of-war color
 	end
 	return nil
 end
@@ -156,10 +158,11 @@ function render_utils.to_grayscale(color)
 end
 
 function render_utils.brighten(color)
+	local g = 1 / render_config.brightness
 	return {
-		math.min(color[1] * render_config.brightness, 1),
-		math.min(color[2] * render_config.brightness, 1),
-		math.min(color[3] * render_config.brightness, 1),
+		color[1] ^ g,
+		color[2] ^ g,
+		color[3] ^ g,
 		color[4],
 	}
 end

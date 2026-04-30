@@ -21,7 +21,7 @@ return {
 		name = "wall",
 		chars = { "|" },
 		walkable = false,
-		color = { 0.75, 0.75, 0.8, 1 },
+		color = { 0.65, 0.65, 0.7, 1 },
 		transparent = false,
 	},
 
@@ -29,7 +29,7 @@ return {
 		name = "wall",
 		chars = { "- -" },
 		walkable = false,
-		color = { 0.75, 0.75, 0.8, 1 },
+		color = { 0.65, 0.65, 0.7, 1 },
 		transparent = false,
 	},
 
@@ -37,7 +37,7 @@ return {
 		name = "wall",
 		chars = { "+" },
 		walkable = false,
-		color = { 0.75, 0.75, 0.8, 1 },
+		color = { 0.65, 0.65, 0.7, 1 },
 		transparent = false,
 	},
 
@@ -45,7 +45,7 @@ return {
 		name = "water",
 		chars = { "~" },
 		walkable = false,
-		color = { 0.2, 0.4, 0.8, 1 },
+		color = { 0.2, 0.45, 0.75, 1 },
 		transparent = true,
 	},
 

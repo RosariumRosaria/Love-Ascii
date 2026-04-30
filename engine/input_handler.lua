@@ -45,6 +45,10 @@ function love.keypressed(key)
 		render_handler:toggle_bw()
 	end
 
+	if key == "l" then
+		render_handler:toggle_brightness_debug()
+	end
+
 	if key == "v" then
 		visualizer:toggle()
 	end
