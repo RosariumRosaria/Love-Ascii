@@ -95,7 +95,7 @@ function map:load(max_x, max_y, max_z, min_z, map_type)
 			for dx = -radius, radius do
 				local tx, ty = 30 + dx, 30 + dy
 				if utils.in_bounds(tx, ty, self.max_x, self.max_y) and utils.in_radius(dx, dy, radius) then
-					self.tiles[ty][tx][-3] = types.water
+					self.tiles[ty][tx][-2] = types.water
 					self.tiles[ty][tx][1] = types.air
 				end
 			end
@@ -126,7 +126,7 @@ function map:update_visibility(center_x, center_y, radius)
 		for x = x1, x2 do
 			if self.visible[y][x] then
 				self.explored[y][x] = true
-				self.prev_visible[#self.prev_visible + 1] = {x, y}
+				self.prev_visible[#self.prev_visible + 1] = { x, y }
 			end
 		end
 	end
