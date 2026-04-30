@@ -13,12 +13,14 @@ local tile_size
 local small_tile_size
 local default_font
 local small_font
+local debug_font
 
 local max_height = render_cfg.max_height
 local offset_type = render_cfg.default_offset_type
 local offset_amount
 local show_grid = render_cfg.show_grid
 local bw_mode = render_cfg.bw_mode
+local show_brightness_debug = render_cfg.show_brightness_debug
 local camera_x = nil
 local camera_y = nil
 local speed = render_cfg.camera_speed
@@ -33,6 +35,10 @@ end
 
 function render_handler:toggle_bw()
 	bw_mode = not bw_mode
+end
+
+function render_handler:toggle_brightness_debug()
+	show_brightness_debug = not show_brightness_debug
 end
 
 function render_handler:draw_visual(visual, center_x, center_y, visible)
@@ -116,7 +122,8 @@ function render_handler:draw_entity(entity, center_x, center_y, visible, explore
 	end
 
 	for i, char_data in ipairs(entity.chars) do
-		local scale = render_utils.height_level_scale(entity.z + i, max_height, visible, base) + 0.3
+		local scale = render_utils.height_level_scale(entity.z + i, max_height, map.max_z, map.min_z, visible, base)
+			+ 0.3
 
 		local scaled_color = render_utils.scale_color(base_color, scale)
 
@@ -156,7 +163,7 @@ function render_handler:draw_tile(tile_data, x, y, center_x, center_y, visible, 
 		local tile = tile_data[z]
 		if tile then
 			local char = tile.chars[1]
-			local alpha = render_utils.height_level_scale(z, max_height, visible, base)
+			local alpha = render_utils.height_level_scale(z, max_height, map.max_z, map.min_z, visible, base)
 			local base_color = render_utils.get_effective_color(tile.color, visible, explored)
 			if base_color and (not visible or not entities:get_tag_location(x, y, z, "blocks")) then
 				local scaled_color = render_utils.scale_color(base_color, alpha)
@@ -182,6 +189,13 @@ function render_handler:draw_tile(tile_data, x, y, center_x, center_y, visible, 
 					nil,
 					size_scale
 				)
+				if show_brightness_debug and tile.name ~= "air" then
+					love.graphics.setFont(debug_font)
+					love.graphics.setColor(1, 1, 0, 1)
+					love.graphics.print(string.format("%.2f", alpha), x_screen + dx, y_screen + dy)
+					love.graphics.setFont(default_font)
+					love.graphics.setColor(1, 1, 1, 1)
+				end
 			end
 		end
 	end
@@ -304,6 +318,7 @@ function render_handler:load(player_x, player_y)
 	small_tile_size = config.small_tile_size
 	default_font = config.font
 	small_font = config.small_font
+	debug_font = love.graphics.newFont(render_cfg.font_base_size / 2)
 
 	max_height = render_cfg.max_height
 	offset_type = render_cfg.default_offset_type

@@ -36,6 +36,10 @@ function utils.shuffle(list)
 	end
 end
 
+function utils.in_radius(dx, dy, r)
+	return dx * dx + dy * dy <= r * r
+end
+
 function utils.overlapping_rectangles(r1, r2)
 	return not (
 		r1.x + r1.width <= r2.x

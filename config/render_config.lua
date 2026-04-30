@@ -4,9 +4,10 @@ return {
 	draw_distance = 50,
 	max_height = 5,
 	default_offset_type = 1,
-	camera_speed = 1,
+	camera_speed = 2,
 	show_grid = false,
-	distance_drama = 1.8,
-	brightness = 2,
+	distance_drama = 0,
+	brightness = 1,
 	bw_mode = false,
+	show_brightness_debug = false,
 }

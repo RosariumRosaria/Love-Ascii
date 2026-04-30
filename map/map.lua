@@ -13,6 +13,7 @@ local map = {
 	tiles = {},
 	visible = {},
 	explored = {},
+	prev_visible = {},
 }
 
 function map:in_bounds(x, y)
@@ -85,14 +86,15 @@ function map:load(max_x, max_y, max_z, min_z, map_type)
 	end
 	if map_type == "town" then
 		--voroni_generator:load(self.max_x, self.max_y, self.tiles, 125)
-		city_generator:make_town(gen_cfg.building_count, self.tiles, self.max_y, self.max_x, self.max_z, self.min_z)
+		-- TODO Hardcoded, should be changed
+		city_generator:make_town(205, self.tiles, self.max_y, self.max_x, self.max_z, self.min_z)
 
 		-- DEBUG: water pool around (30, 30)
 		local radius = 8
 		for dy = -radius, radius do
 			for dx = -radius, radius do
 				local tx, ty = 30 + dx, 30 + dy
-				if utils.in_bounds(tx, ty, self.max_x, self.max_y) and dx * dx + dy * dy <= radius * radius then
+				if utils.in_bounds(tx, ty, self.max_x, self.max_y) and utils.in_radius(dx, dy, radius) then
 					self.tiles[ty][tx][-3] = types.water
 					self.tiles[ty][tx][1] = types.air
 				end
@@ -109,18 +111,22 @@ function map:load(max_x, max_y, max_z, min_z, map_type)
 end
 
 function map:update_visibility(center_x, center_y, radius)
-	for y = 1, self.max_y do -- TODO SO INEFFICIENT, but works for now
-		for x = 1, self.max_x do
-			self.visible[y][x] = false
-		end
+	for _, pos in ipairs(self.prev_visible) do
+		self.visible[pos[2]][pos[1]] = false
 	end
+	self.prev_visible = {}
 
 	fov_handler.refresh_visibility(center_x, center_y, radius, self.max_x, self.max_y, self.tiles, self.visible, true)
 
-	for y = 1, self.max_y do -- TODO SO INEFFICIENT, but works for now
-		for x = 1, self.max_x do
+	local x1 = math.max(1, center_x - radius)
+	local x2 = math.min(self.max_x, center_x + radius)
+	local y1 = math.max(1, center_y - radius)
+	local y2 = math.min(self.max_y, center_y + radius)
+	for y = y1, y2 do
+		for x = x1, x2 do
 			if self.visible[y][x] then
 				self.explored[y][x] = true
+				self.prev_visible[#self.prev_visible + 1] = {x, y}
 			end
 		end
 	end
