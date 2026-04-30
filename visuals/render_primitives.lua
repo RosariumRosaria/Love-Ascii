@@ -21,12 +21,12 @@ function render_primitives.draw_rect(
 		rounded_amount_y = height * rounded_amount
 	end
 
-	love.graphics.setColor(color)
+	love.graphics.setColor(render_utils.brighten(color))
 	love.graphics.rectangle("fill", x_screen, y_screen, width, height, rounded_amount_x, rounded_amount_y)
 
 	if outline_width and outline_color then
 		love.graphics.setLineWidth(outline_width)
-		love.graphics.setColor(outline_color)
+		love.graphics.setColor(render_utils.brighten(outline_color))
 		love.graphics.rectangle(
 			"line",
 			x_screen - outline_width,
@@ -42,7 +42,16 @@ function render_primitives.draw_rect(
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
-function render_primitives.draw_char(x_screen, y_screen, text, color, outline_color, rotation, natural_rotation)
+function render_primitives.draw_char(
+	x_screen,
+	y_screen,
+	text,
+	color,
+	outline_color,
+	rotation,
+	natural_rotation,
+	size_scale
+)
 	if not text or text == "" then
 		return
 	end
@@ -56,17 +65,18 @@ function render_primitives.draw_char(x_screen, y_screen, text, color, outline_co
 	local cy = y_screen + tile_size * 0.5
 
 	local rads = math.rad(((rotation or 0) - (natural_rotation or 0)) % 360)
+	local s = size_scale or 1
 
 	local ox = text_width * 0.5
 	local oy = center_from_top
 
 	if outline_color then
-		love.graphics.setColor(outline_color)
-		love.graphics.print(text, cx + 1, cy + 1, rads, 1, 1, ox, oy)
+		love.graphics.setColor(render_utils.brighten(outline_color))
+		love.graphics.print(text, cx + 1, cy + 1, rads, s, s, ox, oy)
 	end
 
-	love.graphics.setColor(color)
-	love.graphics.print(text, cx, cy, rads, 1, 1, ox, oy)
+	love.graphics.setColor(render_utils.brighten(color))
+	love.graphics.print(text, cx, cy, rads, s, s, ox, oy)
 
 	love.graphics.setColor(1, 1, 1, 1)
 end

@@ -1,4 +1,5 @@
 local config = require("config")
+local game_cfg = require("config.game_config")
 local map = require("map.map")
 local render_handler = require("visuals.render_handler")
 local visuals = require("visuals.visuals")
@@ -39,12 +40,17 @@ function love.load()
 
 	render_handler:load()
 	love.graphics.setDefaultFilter("nearest", "nearest")
-	love.window.setTitle("Hello World")
-	love.window.setMode(0, 0, { resizable = true, vsync = true, fullscreen = true })
+	love.window.setTitle(game_cfg.window.title)
+	love.window.setMode(0, 0, {
+		resizable = game_cfg.window.resizable,
+		vsync = game_cfg.window.vsync,
+		fullscreen = game_cfg.window.fullscreen,
+	})
 
-	local map_width = 500
-	local map_height = 500
-	local map_depth = 7
+	local map_max_x = game_cfg.map.max_x
+	local map_max_y = game_cfg.map.max_y
+	local map_max_z = game_cfg.map.max_z
+	local map_min_z = game_cfg.map.min_z
 
 	local player = {
 		chars = { "@" },
@@ -80,16 +86,15 @@ function love.load()
 	entities:set_player(player)
 	entities:add_from_template("vampire", 5, 5, 1)
 	entities:add_from_template("vampire", 8, 6, 1)
-	entities:add_from_template("vampire", 9, 11, 1)
-	entities:add_from_template("vampire", 9, 6, 1)
 	entities:add_from_template("crate", 10, 10, 1)
 	entities:add_from_template("barricade", 15, 14, 1)
 
-	map:load(map_width, map_height, map_depth, "town")
+	map:load(map_max_x, map_max_y, map_max_z, map_min_z, "town")
 	map:update_visibility(entities.player.x, entities.player.y, entities.player.stats.sight.sight)
 
 	ui_handler:load()
 	ui_handler:update_status(entities.player)
+	render_handler:load(entities.player.x, entities.player.y)
 end
 
 function love.update(dt) --TODO some of this should maybe live in a turn handler module
@@ -98,11 +103,11 @@ function love.update(dt) --TODO some of this should maybe live in a turn handler
 		ai_handler:process_turn()
 		ui_handler:update_status(entities.player)
 	end
-
+	render_handler:update(entities.player.x, entities.player.y, dt)
 	visuals:update(dt)
 end
 
 function love.draw()
-	render_handler:draw(entities.player.x, entities.player.y)
+	render_handler:draw()
 	visualizer:draw()
 end
