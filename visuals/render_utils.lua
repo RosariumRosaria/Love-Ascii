@@ -1,4 +1,5 @@
 local config = require("config")
+local render_config = require("config.render_config")
 local default_font
 local tile_size
 local render_utils = {}
@@ -76,7 +77,8 @@ function render_utils.distance_scale(x1, y1, x2, y2)
 	local max_dist = math.sqrt((tiles_wide / 2) ^ 2 + (tiles_high / 2) ^ 2)
 	local dist = math.sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2)
 
-	return math.min(math.max(1 - (dist / max_dist), 0.05), 1)
+	local linear = math.max(1 - (dist / max_dist), 0)
+	return math.min(math.max(linear ^ render_config.distance_drama, 0.05), 1)
 end
 
 -- Gets a visual offset based on height and offset type
@@ -146,6 +148,20 @@ function render_utils.get_visual_center_from_top(font, ch)
 
 	per_font[ch] = center_from_top
 	return center_from_top
+end
+
+function render_utils.to_grayscale(color)
+	local l = color[1] * 0.299 + color[2] * 0.587 + color[3] * 0.114
+	return { l, l, l, color[4] }
+end
+
+function render_utils.brighten(color)
+	return {
+		math.min(color[1] * render_config.brightness, 1),
+		math.min(color[2] * render_config.brightness, 1),
+		math.min(color[3] * render_config.brightness, 1),
+		color[4],
+	}
 end
 
 function render_utils.load()

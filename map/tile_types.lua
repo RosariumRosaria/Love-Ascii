@@ -5,6 +5,7 @@ return {
 		walkable = true,
 		color = { 0.22, 0.45, 0.25, 1 },
 		transparent = true,
+		covers = true,
 	},
 
 	shrub = {
@@ -13,6 +14,7 @@ return {
 		walkable = true,
 		color = { 0.35, 0.95, 0.35, 1 },
 		transparent = true,
+		covers = true,
 	},
 
 	h_wall = {
@@ -53,12 +55,13 @@ return {
 		walkable = true,
 		color = { 0.6, 0.5, 0.4, 1 },
 		transparent = true,
+		covers = true,
 	},
 
 	air = {
 		name = "air",
 		chars = { " " },
-		walkable = true,
+		walkable = false,
 		color = { 0.9, 0.9, 1.0, 0.0 },
 		transparent = true,
 	},

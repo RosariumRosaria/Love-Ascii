@@ -1,38 +1,30 @@
 local entities = require("entities.entities")
 local types = require("map.tile_types")
 local utils = require("utils")
-local city_generator = { width = nil, height = nil, depth = nil }
+local gen_cfg = require("config.generation_config")
+local city_generator = { max_x = nil, max_y = nil, max_z = nil }
 
-local function overlapping_rectangles(r1, r2) -- Can maybe moved to separate file
-	return not (
-		r1.x + r1.width <= r2.x
-		or r2.x + r2.width <= r1.x
-		or r1.y + r1.height <= r2.y
-		or r2.y + r2.height <= r1.y
-	)
-end
-
-function city_generator:make_building(room_start_x, room_start_y, width, height, depth, tiles)
+function city_generator:make_building(room_start_x, room_start_y, width, height, max_z, tiles)
 	for y = 1, height do
 		for x = 1, width do
 			local tile_x = room_start_x + x - 1
 			local tile_y = room_start_y + y - 1
-			if utils.in_bounds(tile_x, tile_y, self.width, self.height) then
+			if utils.in_bounds(tile_x, tile_y, self.max_x, self.max_y) then
 				if
 					(x == 1 and y == 1)
 					or (x == width and y == height)
 					or (x == 1 and y == height)
 					or (x == width and y == 1)
 				then
-					for z = 1, depth do
+					for z = 1, max_z do
 						tiles[tile_y][tile_x][z] = types.c_wall
 					end
 				elseif x == 1 or x == width then
-					for z = 1, depth do
+					for z = 1, max_z do
 						tiles[tile_y][tile_x][z] = types.h_wall
 					end
 				elseif y == 1 or y == height then
-					for z = 1, depth do
+					for z = 1, max_z do
 						tiles[tile_y][tile_x][z] = types.v_wall
 					end
 				else
@@ -64,7 +56,7 @@ function city_generator:make_building(room_start_x, room_start_y, width, height,
 	local dir2 = math.random(1, 4)
 
 	for i, side in ipairs(sides) do
-		if utils.in_bounds(side.x, side.y, self.width, self.height) then
+		if utils.in_bounds(side.x, side.y, self.max_x, self.max_y) then
 			tiles[side.y][side.x][2] = types.air
 			if dir == i or dir2 == i then
 				tiles[side.y][side.x][1] = types.floor
@@ -84,14 +76,15 @@ function city_generator:make_building(room_start_x, room_start_y, width, height,
 	}
 end
 
-function city_generator:make_town(room_count, tiles, map_height, map_width, map_depth)
-	self.height = map_height
-	self.width = map_width
-	self.depth = map_depth
-	for y = 1, map_height do
-		for x = 1, map_width do
+function city_generator:make_town(room_count, tiles, map_max_y, map_max_x, map_max_z, map_min_z)
+	self.max_y = map_max_y
+	self.max_x = map_max_x
+	self.max_z = map_max_z
+	self.min_z = map_min_z
+	for y = 1, map_max_y do
+		for x = 1, map_max_x do
 			tiles[y][x][1] = types.grass
-			if math.random(1, 15) == 15 then
+			if math.random(1, gen_cfg.shrub_chance) == gen_cfg.shrub_chance then
 				tiles[y][x][1] = types.shrub
 			end
 		end
@@ -106,14 +99,14 @@ function city_generator:make_town(room_count, tiles, map_height, map_width, map_
 		while overlaps do --TODO can techincal break w/ dense maps
 			overlaps = false
 
-			local x = math.random(10, map_width - 20) --TODO make fix magic numbers
-			local y = math.random(10, map_height - 20)
-			local w = math.random(5, 15)
-			local h = math.random(5, 15)
+			local x = math.random(gen_cfg.building_margin, map_max_x - gen_cfg.building_margin * 2)
+			local y = math.random(gen_cfg.building_margin, map_max_y - gen_cfg.building_margin * 2)
+			local w = math.random(gen_cfg.building_min_size, gen_cfg.building_max_size)
+			local h = math.random(gen_cfg.building_min_size, gen_cfg.building_max_size)
 			potential_building = { x = x, y = y, width = w, height = h }
 
 			for _, other in ipairs(buildings) do
-				if overlapping_rectangles(potential_building, other) then
+				if utils.overlapping_rectangles(potential_building, other) then
 					overlaps = true
 					break
 				end
@@ -126,7 +119,7 @@ function city_generator:make_town(room_count, tiles, map_height, map_width, map_
 			potential_building.y,
 			potential_building.width,
 			potential_building.height,
-			math.random(3, map_depth),
+			math.random(3, map_max_z),
 			tiles
 		)
 	end

@@ -10,8 +10,8 @@ function visualizer:toggle()
 end
 
 function visualizer:draw_map()
-	for y = 1, self.map_height do
-		for x = 1, self.map_width do
+	for y = 1, self.map_max_y do
+		for x = 1, self.map_max_x do
 			local tile = map:get_tile(x, y, 1)
 			local tile_color = tile and tile.color
 			if tile_color then
@@ -64,11 +64,11 @@ function visualizer:draw()
 	if not self.visible then return end
 	self.screen_width = love.graphics.getWidth()
 	self.screen_height = love.graphics.getHeight()
-	self.map_width = map:get_width()
-	self.map_height = map:get_height()
-	self.scale = math.min(self.screen_width / self.map_width, self.screen_height / self.map_height)
-	self.start_x = (self.screen_width - self.map_width * self.scale) / 2
-	self.start_y = (self.screen_height - self.map_height * self.scale) / 2
+	self.map_max_x = map:get_max_x()
+	self.map_max_y = map:get_max_y()
+	self.scale = math.min(self.screen_width / self.map_max_x, self.screen_height / self.map_max_y)
+	self.start_x = (self.screen_width - self.map_max_x * self.scale) / 2
+	self.start_y = (self.screen_height - self.map_max_y * self.scale) / 2
 	self:draw_map()
 	self:draw_point_set()
 end

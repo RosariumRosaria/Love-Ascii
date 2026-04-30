@@ -6,6 +6,7 @@ local fov_handler = require("fov.fov_handler")
 local engine = require("engine.engine")
 local engine_utils = require("engine.engine_utils")
 local utils = require("utils")
+local ai_cfg = require("config.ai_config")
 
 local ai_handler = {}
 --[[ TODO, At some point the flow should probably be more like
@@ -29,8 +30,8 @@ local function can_see(entity, target)
 			entity.x,
 			entity.y,
 			entity.stats.sight.sight,
-			map:get_width(),
-			map:get_height(),
+			map:get_max_x(),
+			map:get_max_y(),
 			map:get_tiles(),
 			nil,
 			false,
@@ -43,7 +44,7 @@ local function can_see(entity, target)
 		entity.state = "chasing"
 		entity.target_entity = target
 		entity.target_pos = { target.x, target.y }
-		entity.turns_to_idle = 20
+		entity.turns_to_idle = ai_cfg.turns_to_idle
 		entity.path = nil
 		entity.path_index = nil
 		return true
@@ -57,17 +58,17 @@ local function idle(entity)
 		if can_see(entity, entities.player) then --This is ugly, treats the player as special
 			return
 		end
-		local chance = math.random(1, 5)
+		local chance = math.random(1, ai_cfg.wander_chance)
 		if chance == 1 then
-			local tar_x = entity.x + math.random(-10, 10)
-			local tar_y = entity.y + math.random(-10, 10)
-			local map_width, map_height = map:get_width(), map:get_height()
-			tar_x = utils.clamp(tar_x, 1, map_width)
-			tar_y = utils.clamp(tar_y, 1, map_height)
+			local tar_x = entity.x + math.random(-ai_cfg.wander_range, ai_cfg.wander_range)
+			local tar_y = entity.y + math.random(-ai_cfg.wander_range, ai_cfg.wander_range)
+			local map_max_x, map_max_y = map:get_max_x(), map:get_max_y()
+			tar_x = utils.clamp(tar_x, 1, map_max_x)
+			tar_y = utils.clamp(tar_y, 1, map_max_y)
 			if tar_x ~= entity.x or tar_y ~= entity.y then
 				entity.state = "wandering"
 				entity.target_pos = { tar_x, tar_y }
-				entity.turns_to_idle = 20
+				entity.turns_to_idle = ai_cfg.turns_to_idle
 			end
 		elseif chance == 2 or chance == 3 then
 			local axis = math.random(1, 2)

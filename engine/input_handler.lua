@@ -3,13 +3,14 @@ local render_handler = require("visuals.render_handler")
 local ui_handler = require("visuals.ui_handler")
 local voroni_generator = require("voroni.voroni_generator")
 local visualizer = require("voroni.visualizer")
+local game_cfg = require("config.game_config")
 
 local input_handler = {
 	actor = nil,
 }
 
 local time_since_last_turn = 0
-local time_between_turns = 0.125
+local time_between_turns = game_cfg.timing.turn_delay
 local last_turn = { x = 0, y = 0 }
 local grabbed = nil --TODO would need to be moved if multiple actors was to be supported
 
@@ -38,6 +39,10 @@ function love.keypressed(key)
 
 	if key == "g" then
 		render_handler:toggle_grid()
+	end
+
+	if key == "b" then
+		render_handler:toggle_bw()
 	end
 
 	if key == "v" then

@@ -40,12 +40,12 @@ function voroni_generator:get_seeds()
 end
 
 function voroni_generator:in_bounds(x, y)
-	return utils.in_bounds(x, y, self.width, self.height)
+	return utils.in_bounds(x, y, self.max_x, self.max_y)
 end
 
 function voroni_generator:find_regions()
-	for y = 1, self.height do
-		for x = 1, self.width do
+	for y = 1, self.max_y do
+		for x = 1, self.max_x do
 			local nearest_seed = get_nearest_seed(self.seeds, { x, y })
 			self.region_grid[y][x] = nearest_seed
 		end
@@ -57,8 +57,8 @@ function voroni_generator:find_region_metadata()
 		reg.sum_x, reg.sum_y, reg.count = 0, 0, 0
 	end
 
-	for y = 1, self.height do
-		for x = 1, self.width do
+	for y = 1, self.max_y do
+		for x = 1, self.max_x do
 			local id = self.region_grid[y][x]
 			local reg = self.regions[id]
 			reg.sum_x = reg.sum_x + x
@@ -81,8 +81,8 @@ function voroni_generator:sow_seeds(seed_num)
 		self.regions[i].sum_x = 0
 		self.regions[i].sum_y = 0
 		self.regions[i].count = 0
-		local x = math.random(1, self.width)
-		local y = math.random(1, self.height)
+		local x = math.random(1, self.max_x)
+		local y = math.random(1, self.max_y)
 		table.insert(self.seeds, { x, y })
 	end
 end
@@ -94,8 +94,8 @@ function voroni_generator:lloyd()
 			seed[1] = reg.centroid_x
 			seed[2] = reg.centroid_y
 		else
-			seed[1] = math.random(1, self.width)
-			seed[2] = math.random(1, self.height)
+			seed[1] = math.random(1, self.max_x)
+			seed[2] = math.random(1, self.max_y)
 		end
 	end
 
@@ -109,8 +109,8 @@ end
 
 function voroni_generator:paint_regions(ids, color)
 	local type_keys = tile_types.type_keys
-	for y = 1, self.height do
-		for x = 1, self.width do
+	for y = 1, self.max_y do
+		for x = 1, self.max_x do
 			local id = self.region_grid[y][x]
 			local key = type_keys[(id % #type_keys) + 1]
 			self.map[y][x][1] = tile_types[key]
@@ -127,11 +127,11 @@ function voroni_generator:find_neighbors()
 	for i = 1, #self.regions do
 		neighbors[i] = {}
 	end
-	for y = 1, self.height do
-		for x = 1, self.width do
+	for y = 1, self.max_y do
+		for x = 1, self.max_x do
 			local a = self.region_grid[y][x]
-			local b = (x < self.width) and self.region_grid[y][x + 1] or a
-			local c = (y < self.height) and self.region_grid[y + 1][x] or a
+			local b = (x < self.max_x) and self.region_grid[y][x + 1] or a
+			local c = (y < self.max_y) and self.region_grid[y + 1][x] or a
 			if a ~= b then
 				neighbors[a][b], neighbors[b][a] = true, true
 			end
@@ -163,21 +163,21 @@ end
 
 function voroni_generator:find_city(city_size)
 	self.city = {}
-	local cy = math.floor(self.height / 2)
-	local cx = math.floor(self.width / 2)
+	local cy = math.floor(self.max_y / 2)
+	local cx = math.floor(self.max_x / 2)
 	local center_region = self.region_grid[cy][cx]
 	self:expand_city(city_size, center_region)
 end
 
-function voroni_generator:load(width, height, map, regions)
+function voroni_generator:load(max_x, max_y, map, regions)
 	math.randomseed(os.time())
-	self.width = width or self.width
-	self.height = height or self.height
+	self.max_x = max_x or self.max_x
+	self.max_y = max_y or self.max_y
 	self.map = map or self.map
 	self.region_grid = {}
-	for y = 1, self.height do
+	for y = 1, self.max_y do
 		self.region_grid[y] = {}
-		for x = 1, self.width do
+		for x = 1, self.max_x do
 			self.region_grid[y][x] = nil
 		end
 	end
@@ -192,8 +192,8 @@ function voroni_generator:prims()
 		in_mst[id] = false
 	end
 
-	local cy = math.floor(self.height / 2)
-	local cx = math.floor(self.width / 2)
+	local cy = math.floor(self.max_y / 2)
+	local cx = math.floor(self.max_x / 2)
 	local center_id = self.region_grid[cy][cx]
 
 	in_mst[center_id] = true

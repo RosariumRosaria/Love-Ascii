@@ -2,9 +2,10 @@
 local map = require("map.map")
 local entities = require("entities.entities")
 local utils = require("utils")
+local game_cfg = require("config.game_config")
 
 local pathfinder = {}
-local max_checks = 250
+local max_checks = game_cfg.pathfinding.max_iterations
 
 local function is_tile_free(x, y, z, entity_list, goal)
 	if x == goal[1] and y == goal[2] and z == 1 then
