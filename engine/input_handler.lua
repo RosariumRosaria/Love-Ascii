@@ -1,3 +1,4 @@
+local config = require("config")
 local engine = require("engine.engine")
 local render_handler = require("visuals.render_handler")
 local ui_handler = require("visuals.ui_handler")
@@ -51,6 +52,11 @@ function love.keypressed(key)
 
 	if key == "v" then
 		visualizer:toggle()
+	end
+
+	if key == "p" then
+		config:toggle_font()
+		render_handler:reload_fonts()
 	end
 end
 

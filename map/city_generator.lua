@@ -4,6 +4,8 @@ local utils = require("utils")
 local gen_cfg = require("config.generation_config")
 local city_generator = { max_x = nil, max_y = nil, max_z = nil }
 
+local rotated_wall = setmetatable({ rotation = 90 }, { __index = types.v_wall })
+
 function city_generator:make_building(room_start_x, room_start_y, width, height, max_z, tiles)
 	for y = 1, height do
 		for x = 1, width do
@@ -21,7 +23,7 @@ function city_generator:make_building(room_start_x, room_start_y, width, height,
 					end
 				elseif x == 1 or x == width then
 					for z = 1, max_z do
-						tiles[tile_y][tile_x][z] = types.h_wall
+						tiles[tile_y][tile_x][z] = rotated_wall
 					end
 				elseif y == 1 or y == height then
 					for z = 1, max_z do
