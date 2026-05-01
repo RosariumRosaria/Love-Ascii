@@ -17,20 +17,13 @@ return {
 		covers = true,
 	},
 
-	h_wall = {
-		name = "wall",
-		chars = { "|" },
-		walkable = false,
-		color = { 0.65, 0.65, 0.7, 1 },
-		transparent = false,
-	},
-
 	v_wall = {
 		name = "wall",
 		chars = { "—" },
 		walkable = false,
 		color = { 0.65, 0.65, 0.7, 1 },
 		transparent = false,
+		natural_rotation = 0,
 	},
 
 	c_wall = {

@@ -185,8 +185,8 @@ function render_handler:draw_tile(tile_data, x, y, center_x, center_y, visible, 
 					char,
 					scaled_color,
 					outline_color,
-					nil,
-					nil,
+					tile.rotation,
+					tile.natural_rotation,
 					size_scale
 				)
 				if show_brightness_debug and tile.name ~= "air" then
@@ -311,20 +311,24 @@ function render_handler:draw()
 	love.graphics.setFont(default_font)
 end
 
-function render_handler:load(player_x, player_y)
-	camera_x = player_x
-	camera_y = player_y
+function render_handler:reload_fonts()
 	tile_size = config.tile_size
 	small_tile_size = config.small_tile_size
 	default_font = config.font
 	small_font = config.small_font
 	debug_font = love.graphics.newFont(render_cfg.font_base_size / 2)
-
-	max_height = render_cfg.max_height
-	offset_type = render_cfg.default_offset_type
 	offset_amount = 0.25 * tile_size
 	render_utils.load()
 	render_primitives.load()
+	ui_handler:reload_fonts()
+end
+
+function render_handler:load(player_x, player_y)
+	camera_x = player_x
+	camera_y = player_y
+	max_height = render_cfg.max_height
+	offset_type = render_cfg.default_offset_type
+	self:reload_fonts()
 end
 
 function render_handler:update(target_x, target_y, dt)
