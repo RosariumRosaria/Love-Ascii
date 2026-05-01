@@ -88,7 +88,7 @@ return {
 		natural_rotation = 0,
 		interaction = {
 			natural_rotation = 90,
-			chars = { "-  -", "-  -" },
+			chars = { "- -", "- -" },
 			tags = {
 				solid = false,
 				walkable = true,
@@ -112,7 +112,7 @@ return {
 		},
 		natural_rotation = 90,
 		interaction = {
-			chars = { " ", "'  '", "'  '" },
+			chars = { " ", "' '", "' '" },
 			natural_rotation = 90,
 			tags = {
 				solid = false,
