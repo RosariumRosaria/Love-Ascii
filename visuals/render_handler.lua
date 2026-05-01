@@ -330,7 +330,6 @@ end
 function render_handler:update(target_x, target_y, dt)
 	camera_x = camera_x + (target_x - camera_x) * speed * dt
 	camera_y = camera_y + (target_y - camera_y) * speed * dt
-	print(camera_x, camera_y)
 end
 
 return render_handler

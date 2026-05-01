@@ -27,7 +27,7 @@ return {
 
 	v_wall = {
 		name = "wall",
-		chars = { "- -" },
+		chars = { "—" },
 		walkable = false,
 		color = { 0.65, 0.65, 0.7, 1 },
 		transparent = false,
