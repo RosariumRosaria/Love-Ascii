@@ -328,7 +328,6 @@ function render_handler:load(player_x, player_y)
 	camera_y = player_y
 	max_height = render_cfg.max_height
 	offset_type = render_cfg.default_offset_type
-	self:reload_fonts()
 end
 
 function render_handler:update(target_x, target_y, dt)

@@ -42,7 +42,7 @@ function render_utils.get_effective_color(color, visible, explored)
 			return { 1, 1, 1, 1 }
 		end
 	elseif explored then
-		return { 0.961, 0.871, 0.702, 1 } -- fog-of-war color
+		return { 0.861, 0.771, 0.502, 0.8 } -- fog-of-war color
 	end
 	return nil
 end
@@ -83,7 +83,7 @@ function render_utils.distance_scale(x1, y1, x2, y2)
 	return math.min(math.max(linear ^ render_config.distance_drama, 0.05), 1)
 end
 
--- Gets a visual offset based on height and offset type
+-- Parallax/height-stack offset. Tile-grid-aligned — safe for masking rects.
 function render_utils.get_offset(i, offset_type, offset, x, y, center_x, center_y)
 	if offset_type == 1 then
 		local scale = 0.1
