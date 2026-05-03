@@ -60,9 +60,7 @@ function render_primitives.draw_char(
 	end
 
 	local font = love.graphics.getFont()
-	local text_width = font:getWidth(text)
-
-	local center_from_top = render_utils.get_visual_center_from_top(font, text)
+	local center_from_left, center_from_top = render_utils.get_visual_center(font, text)
 
 	local cx = x_screen + tile_size * 0.5
 	local cy = y_screen + tile_size * 0.5
@@ -78,7 +76,7 @@ function render_primitives.draw_char(
 		end
 	end
 
-	local ox = text_width * 0.5
+	local ox = center_from_left
 	local oy = center_from_top
 
 	if outline_color then
@@ -141,6 +139,13 @@ end
 function render_primitives.draw_grid_cell(x_screen, y_screen)
 	love.graphics.setColor(render_cfg.grid_color)
 	love.graphics.rectangle("line", x_screen, y_screen, tile_size, tile_size)
+
+	local cx = x_screen + tile_size * 0.5
+	local dash = tile_size / 8
+	for i = 0, 7, 2 do
+		love.graphics.line(cx, y_screen + i * dash, cx, y_screen + (i + 1) * dash)
+	end
+
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
