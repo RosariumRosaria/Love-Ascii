@@ -45,7 +45,7 @@ return {
 
 	floor = {
 		name = "floor",
-		chars = { "::" },
+		chars = { ":" },
 		walkable = true,
 		color = { 0.6, 0.5, 0.4, 1 },
 		transparent = true,

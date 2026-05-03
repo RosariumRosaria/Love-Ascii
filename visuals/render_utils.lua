@@ -146,8 +146,8 @@ function render_utils.get_visual_center(font, ch)
 
 	local center_from_top, center_from_left
 	if bottom >= top then
-		center_from_top = (top + bottom) * 0.5 - pad
-		center_from_left = (left + right) * 0.5 - pad
+		center_from_top = (top + bottom + 1) * 0.5 - pad
+		center_from_left = (left + right + 1) * 0.5 - pad
 	else
 		center_from_top = line_height * 0.5
 		center_from_left = advance * 0.5

@@ -13,6 +13,7 @@ local tile_size
 local small_tile_size
 local default_font
 local small_font
+local debug_font
 
 local max_height = render_cfg.max_height
 local offset_type = render_cfg.default_offset_type
@@ -213,7 +214,11 @@ function render_handler:draw_tile(tile_data, x, y, center_x, center_y, visible, 
 					size_scale
 				)
 				if show_brightness_debug and tile.name ~= "air" then
-					render_primitives.draw_debug_value(alpha, x_screen + dx, y_screen + dy)
+					love.graphics.setFont(debug_font)
+					love.graphics.setColor(1, 1, 0, 1)
+					love.graphics.print(string.format("%.2f", alpha), x_screen + dx, y_screen + dy)
+					love.graphics.setFont(default_font)
+					love.graphics.setColor(1, 1, 1, 1)
 				end
 			end
 		end
@@ -322,6 +327,7 @@ function render_handler:reload_fonts()
 	small_tile_size = config.small_tile_size
 	default_font = config.font
 	small_font = config.small_font
+	debug_font = love.graphics.newFont(render_cfg.font_base_size * render_cfg.debug_font_scale)
 	offset_amount = render_cfg.offset_amount_factor * tile_size
 	render_utils.load()
 	render_primitives.load()
