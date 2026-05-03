@@ -67,25 +67,17 @@ function render_primitives.draw_char(
 
 	local rads = math.rad(((rotation or 0) - (natural_rotation or 0)) % 360)
 	local s = size_scale or 1
-	local sx = s
-
-	if text_width > 0 then
-		local fit_scale = tile_size / text_width
-		if fit_scale < sx then
-			sx = fit_scale
-		end
-	end
 
 	local ox = center_from_left
 	local oy = center_from_top
 
 	if outline_color then
 		love.graphics.setColor(render_utils.brighten(outline_color))
-		love.graphics.print(text, cx + 1, cy + 1, rads, sx, s, ox, oy)
+		love.graphics.print(text, cx + 1, cy + 1, rads, s, s, ox, oy)
 	end
 
 	love.graphics.setColor(render_utils.brighten(color))
-	love.graphics.print(text, cx, cy, rads, sx, s, ox, oy)
+	love.graphics.print(text, cx, cy, rads, s, s, ox, oy)
 
 	love.graphics.setColor(1, 1, 1, 1)
 end

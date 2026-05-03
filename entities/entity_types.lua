@@ -85,7 +85,7 @@ return {
 		name = "barricade",
 		description = "A heavy barricade, try pushing it!",
 		type = "prop",
-		chars = { "[ ]", "[ ]" },
+		chars = { "[]", "[]" },
 		color = { 0.47, 0.23, 0.23, 1 },
 		default_action = "moveable",
 		tags = {
@@ -114,7 +114,7 @@ return {
 		natural_rotation = 0,
 		interaction = {
 			natural_rotation = 90,
-			chars = { "- -", "- -" },
+			chars = { "--", "--" },
 			tags = {
 				solid = false,
 				walkable = true,
@@ -138,7 +138,7 @@ return {
 		},
 		natural_rotation = 90,
 		interaction = {
-			chars = { " ", "' '", "' '" },
+			chars = { " ", "''", "''" },
 			natural_rotation = 90,
 			tags = {
 				solid = false,
