@@ -1,3 +1,5 @@
+local ui_handler = require("visuals.ui_handler")
+
 local utils = {}
 
 function utils.clamp(val, min, max)
@@ -38,6 +40,31 @@ end
 
 function utils.in_radius(dx, dy, r)
 	return dx * dx + dy * dy <= r * r
+end
+
+function utils.deep_print(tbl, indent, visited)
+	indent = indent or 0
+	visited = visited or {}
+
+	if visited[tbl] then
+		print(string.rep("  ", indent) .. "*recursive reference*")
+		return
+	end
+	visited[tbl] = true
+
+	for k, v in pairs(tbl) do
+		local key_str = tostring(k)
+		if type(v) == "table" then
+			ui_handler:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. key_str .. " = {"))
+			print(string.rep("  ", indent) .. key_str .. " = {")
+			utils.deep_print(v, indent + 1, visited)
+			ui_handler:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. "}"))
+			print((string.rep("  ", indent) .. "}"))
+		else
+			ui_handler:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. key_str .. " = " .. tostring(v)))
+			print((string.rep("  ", indent) .. key_str .. " = " .. tostring(v)))
+		end
+	end
 end
 
 function utils.overlapping_rectangles(r1, r2)

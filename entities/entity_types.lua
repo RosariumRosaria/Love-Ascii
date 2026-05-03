@@ -1,4 +1,30 @@
 return {
+	player = {
+		chars = { "@" },
+		color = { 0.8, 0.8, 0.9, 1 },
+		effect_color = { 0.45, 0.45, 0.5, 0.5 },
+		name = "Player",
+		tags = { blocks = true, attackable = true },
+		default_action = "attackable",
+		allowed_actions = {
+			attackable = true,
+			moveable = true,
+			interactable = true,
+		},
+		stats = {
+			health = { health = 20, max_health = 20 },
+			stamina = { stamina = 10, max_stamina = 10 },
+			hunger = { hunger = 10, max_hunger = 10 },
+			sight = { sight = 30, max_sight = 30 },
+		},
+		inventory = {
+			sword = { name = "sword" },
+			armor = { name = "armor" },
+			usable_item_dummy = { name = "usable_dummy" },
+			dummy_item = { name = "dummy" },
+		},
+		damage = 2,
+	},
 	vampire = {
 		name = "A vampire",
 		type = "enemy",
@@ -59,7 +85,7 @@ return {
 		name = "barricade",
 		description = "A heavy barricade, try pushing it!",
 		type = "prop",
-		chars = { "[ ]", "[ ]" },
+		chars = { "[]", "[]" },
 		color = { 0.47, 0.23, 0.23, 1 },
 		default_action = "moveable",
 		tags = {
@@ -88,7 +114,7 @@ return {
 		natural_rotation = 0,
 		interaction = {
 			natural_rotation = 90,
-			chars = { "- -", "- -" },
+			chars = { "--", "--" },
 			tags = {
 				solid = false,
 				walkable = true,
@@ -112,7 +138,7 @@ return {
 		},
 		natural_rotation = 90,
 		interaction = {
-			chars = { " ", "' '", "' '" },
+			chars = { " ", "''", "''" },
 			natural_rotation = 90,
 			tags = {
 				solid = false,

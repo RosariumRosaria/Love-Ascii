@@ -42,7 +42,7 @@ function render_utils.get_effective_color(color, visible, explored)
 			return { 1, 1, 1, 1 }
 		end
 	elseif explored then
-		return { 0.961, 0.871, 0.702, 1 } -- fog-of-war color
+		return { 0.861, 0.771, 0.502, 0.8 } -- fog-of-war color
 	end
 	return nil
 end
@@ -83,7 +83,6 @@ function render_utils.distance_scale(x1, y1, x2, y2)
 	return math.min(math.max(linear ^ render_config.distance_drama, 0.05), 1)
 end
 
--- Gets a visual offset based on height and offset type
 function render_utils.get_offset(i, offset_type, offset, x, y, center_x, center_y)
 	if offset_type == 1 then
 		local scale = 0.1
@@ -96,19 +95,21 @@ end
 
 local glyph_center_cache = setmetatable({}, { __mode = "k" })
 
-function render_utils.get_visual_center_from_top(font, ch)
+function render_utils.get_visual_center(font, ch)
 	local per_font = glyph_center_cache[font]
 	if not per_font then
 		per_font = {}
 		glyph_center_cache[font] = per_font
 	end
-	if per_font[ch] then
-		return per_font[ch]
+	local cached = per_font[ch]
+	if cached then
+		return cached[1], cached[2]
 	end
 
 	local pad = 4
 	local line_height = font:getHeight()
-	local w = math.max(8, math.ceil(font:getWidth(ch)) + pad * 2)
+	local advance = math.ceil(font:getWidth(ch))
+	local w = math.max(8, advance + pad * 2)
 	local h = line_height + pad * 2
 
 	local canvas = love.graphics.newCanvas(w, h)
@@ -122,34 +123,38 @@ function render_utils.get_visual_center_from_top(font, ch)
 
 	local img = canvas:newImageData()
 	local top, bottom = h, -1
+	local left, right = w, -1
 	for y = 0, h - 1 do
-		local row_has_ink = false
 		for x = 0, w - 1 do
 			local _, _, _, a = img:getPixel(x, y)
 			if a > 0 then
-				row_has_ink = true
-				break
-			end
-		end
-		if row_has_ink then
-			if y < top then
-				top = y
-			end
-			if y > bottom then
-				bottom = y
+				if y < top then
+					top = y
+				end
+				if y > bottom then
+					bottom = y
+				end
+				if x < left then
+					left = x
+				end
+				if x > right then
+					right = x
+				end
 			end
 		end
 	end
 
-	local center_from_top
+	local center_from_top, center_from_left
 	if bottom >= top then
-		center_from_top = (top + bottom) * 0.5 - pad
+		center_from_top = (top + bottom + 1) * 0.5 - pad
+		center_from_left = (left + right + 1) * 0.5 - pad
 	else
 		center_from_top = line_height * 0.5
+		center_from_left = advance * 0.5
 	end
 
-	per_font[ch] = center_from_top
-	return center_from_top
+	per_font[ch] = { center_from_left, center_from_top }
+	return center_from_left, center_from_top
 end
 
 function render_utils.to_grayscale(color)

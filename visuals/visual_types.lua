@@ -64,7 +64,7 @@ return {
 			{
 				texts = { "!" },
 				colors = { { 0, 0, 0.0, 0.5 } },
-				outline_color = { { 1, 1, 1, 0.5 } },
+				outline_color = { 1, 1, 1, 0.5 },
 				offset_y = 1.5,
 				center_text = true,
 				sizes = { 2 },
