@@ -13,7 +13,6 @@ local tile_size
 local small_tile_size
 local default_font
 local small_font
-local debug_font
 
 local max_height = render_cfg.max_height
 local offset_type = render_cfg.default_offset_type
@@ -45,9 +44,8 @@ function render_handler:draw_visual(visual, center_x, center_y, visible)
 	if visible or not visual.params.needs_to_be_seen then
 		local x_screen, y_screen = render_utils.get_screen_coords(visual.x, visual.y, center_x, center_y)
 
-		local color = { 1, 1, 1, 1 }
-
 		if visual.rects then
+			local color = { 1, 1, 1, 1 }
 			for _, rect in ipairs(visual.rects) do
 				if visual.params.decay_over_time then
 					color = render_utils.scale_color(
@@ -73,13 +71,14 @@ function render_handler:draw_visual(visual, center_x, center_y, visible)
 
 		if visual.panels then
 			for _, panel in ipairs(visual.panels) do
+				local color = { 1, 1, 1, 1 }
 				if panel.colors[visual.params.i] then
 					color = panel.colors[visual.params.i]
 				end
 
 				x_screen, y_screen = render_utils.get_screen_coords(
-					(visual.anchor.x + (1 / 3)) or visual.x,
-					visual.anchor.y - panel.offset_y or visual.y,
+					(visual.anchor and visual.anchor.x) or visual.x,
+					(visual.anchor and visual.anchor.y - panel.offset_y) or visual.y,
 					center_x,
 					center_y
 				)
@@ -90,7 +89,7 @@ function render_handler:draw_visual(visual, center_x, center_y, visible)
 					tile_size,
 					color,
 					panel.outline_width or 1,
-					panel.outline_color[1],
+					panel.outline_color,
 					panel.texts,
 					panel.center_text,
 					{ 1, 1, 1, 1 },
@@ -123,7 +122,7 @@ function render_handler:draw_entity(entity, center_x, center_y, visible, explore
 
 	for i, char_data in ipairs(entity.chars) do
 		local scale = render_utils.height_level_scale(entity.z + i, max_height, map.max_z, map.min_z, visible, base)
-			+ 0.3
+			+ render_cfg.entity_brightness_boost
 
 		local scaled_color = render_utils.scale_color(base_color, scale)
 
@@ -136,7 +135,7 @@ function render_handler:draw_entity(entity, center_x, center_y, visible, explore
 			center_x,
 			center_y
 		)
-		local size_scale = 1 + (entity.z + i - 1) * 0.03
+		local size_scale = 1 + (entity.z + i - 1) * render_cfg.z_size_scale_per_level
 		render_primitives.draw_char(
 			x_screen + dx,
 			y_screen + dy,
@@ -163,7 +162,8 @@ function render_handler:draw_tile(tile_data, x, y, center_x, center_y, visible, 
 		local tile = tile_data[z]
 		if tile then
 			local char = tile.chars[1]
-			local alpha = render_utils.height_level_scale(z, max_height, map.max_z, map.min_z, visible, base)
+			local z_eff = z + (tile.natural_height or 0)
+			local alpha = render_utils.height_level_scale(z_eff, max_height, map.max_z, map.min_z, visible, base)
 			local base_color = render_utils.get_effective_color(tile.color, visible, explored)
 			if base_color and (not visible or not entities:get_tag_location(x, y, z, "blocks")) then
 				local scaled_color = render_utils.scale_color(base_color, alpha)
@@ -174,11 +174,34 @@ function render_handler:draw_tile(tile_data, x, y, center_x, center_y, visible, 
 						outline_color = render_utils.to_grayscale(outline_color)
 					end
 				end
-				local dx, dy = render_utils.get_offset(z, offset_type, offset_amount, x, y, center_x, center_y)
+				local base_dx, base_dy =
+					render_utils.get_offset(z, offset_type, offset_amount, x, y, center_x, center_y)
 				if tile.covers then
-					render_primitives.draw_rect(x_screen + dx, y_screen + dy, tile_size, tile_size, { 0, 0, 0, 1 })
+					render_primitives.draw_rect(
+						x_screen + base_dx,
+						y_screen + base_dy,
+						tile_size,
+						tile_size,
+						{ 0, 0, 0, 1 }
+					)
 				end
-				local size_scale = 1 + (z - 1) * 0.03
+				local dx, dy = base_dx, base_dy
+				if tile.natural_height then
+					dx, dy = render_utils.get_offset(z_eff, offset_type, offset_amount, x, y, center_x, center_y)
+					local shadow_color = render_utils.scale_color(scaled_color, render_cfg.shadow_brightness_scale)
+					shadow_color[4] = (scaled_color[4] or 1) * render_cfg.shadow_alpha_scale
+					render_primitives.draw_char(
+						x_screen + base_dx,
+						y_screen + base_dy,
+						char,
+						shadow_color,
+						nil,
+						tile.rotation,
+						tile.natural_rotation,
+						1 + (z - 1) * render_cfg.z_size_scale_per_level
+					)
+				end
+				local size_scale = 1 + (z_eff - 1) * render_cfg.z_size_scale_per_level
 				render_primitives.draw_char(
 					x_screen + dx,
 					y_screen + dy,
@@ -190,29 +213,14 @@ function render_handler:draw_tile(tile_data, x, y, center_x, center_y, visible, 
 					size_scale
 				)
 				if show_brightness_debug and tile.name ~= "air" then
-					love.graphics.setFont(debug_font)
-					love.graphics.setColor(1, 1, 0, 1)
-					love.graphics.print(string.format("%.2f", alpha), x_screen + dx, y_screen + dy)
-					love.graphics.setFont(default_font)
-					love.graphics.setColor(1, 1, 1, 1)
+					render_primitives.draw_debug_value(alpha, x_screen + dx, y_screen + dy)
 				end
 			end
 		end
 	end
 end
 function render_handler:draw_ui(ui)
-	local max_lines = math.floor(ui.height / small_tile_size)
-	local total_lines = #ui.texts
-
-	ui.scroll_offset = math.max(0, math.min(ui.scroll_offset, math.max(0, total_lines - max_lines)))
-
-	local start_line = math.max(1, total_lines - ui.scroll_offset - max_lines + 1)
-	local end_line = math.min(total_lines, start_line + max_lines - 1)
-
-	local visible_texts = {}
-	for i = start_line, end_line do
-		table.insert(visible_texts, ui.texts[i])
-	end
+	local visible_texts = ui_handler:get_visible_texts(ui)
 
 	render_primitives.draw_panel(
 		ui.x,
@@ -280,9 +288,7 @@ function render_handler:draw()
 		for x = start_x, end_x do
 			local screen_x, screen_y = render_utils.get_screen_coords(x, y, camera_x, camera_y)
 			if show_grid then
-				love.graphics.setColor(0.5, 0.5, 0.5, 0.1)
-				love.graphics.rectangle("line", screen_x, screen_y, tile_size, tile_size)
-				love.graphics.setColor(1, 1, 1, 1)
+				render_primitives.draw_grid_cell(screen_x, screen_y)
 			end
 			self:draw_tile(
 				tiles[y][x],
@@ -316,8 +322,7 @@ function render_handler:reload_fonts()
 	small_tile_size = config.small_tile_size
 	default_font = config.font
 	small_font = config.small_font
-	debug_font = love.graphics.newFont(render_cfg.font_base_size / 2)
-	offset_amount = 0.25 * tile_size
+	offset_amount = render_cfg.offset_amount_factor * tile_size
 	render_utils.load()
 	render_primitives.load()
 	ui_handler:reload_fonts()
