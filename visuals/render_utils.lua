@@ -83,7 +83,6 @@ function render_utils.distance_scale(x1, y1, x2, y2)
 	return math.min(math.max(linear ^ render_config.distance_drama, 0.05), 1)
 end
 
--- Parallax/height-stack offset. Tile-grid-aligned — safe for masking rects.
 function render_utils.get_offset(i, offset_type, offset, x, y, center_x, center_y)
 	if offset_type == 1 then
 		local scale = 0.1
