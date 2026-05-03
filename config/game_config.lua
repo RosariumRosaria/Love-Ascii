@@ -1,6 +1,8 @@
 return {
 	window = {
 		title = "Hello World",
+		fullscreen = false,
+		borderless = true,
 		vsync = true,
 		resizable = true,
 	},

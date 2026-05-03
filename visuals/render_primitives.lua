@@ -1,5 +1,8 @@
 local config = require("config")
+local render_cfg = require("config.render_config")
 local tile_size
+local debug_font
+local default_font
 local render_utils = require("visuals.render_utils")
 local render_primitives = {}
 
@@ -57,34 +60,24 @@ function render_primitives.draw_char(
 	end
 
 	local font = love.graphics.getFont()
-	local text_width = font:getWidth(text)
-
-	local center_from_top = render_utils.get_visual_center_from_top(font, text)
+	local center_from_left, center_from_top = render_utils.get_visual_center(font, text)
 
 	local cx = x_screen + tile_size * 0.5
 	local cy = y_screen + tile_size * 0.5
 
 	local rads = math.rad(((rotation or 0) - (natural_rotation or 0)) % 360)
 	local s = size_scale or 1
-	local sx = s
 
-	if text_width > 0 then
-		local fit_scale = tile_size / text_width
-		if fit_scale < sx then
-			sx = fit_scale
-		end
-	end
-
-	local ox = text_width * 0.5
+	local ox = center_from_left
 	local oy = center_from_top
 
 	if outline_color then
 		love.graphics.setColor(render_utils.brighten(outline_color))
-		love.graphics.print(text, cx + 1, cy + 1, rads, sx, s, ox, oy)
+		love.graphics.print(text, cx + 1, cy + 1, rads, s, s, ox, oy)
 	end
 
 	love.graphics.setColor(render_utils.brighten(color))
-	love.graphics.print(text, cx, cy, rads, sx, s, ox, oy)
+	love.graphics.print(text, cx, cy, rads, s, s, ox, oy)
 
 	love.graphics.setColor(1, 1, 1, 1)
 end
@@ -135,8 +128,31 @@ function render_primitives.draw_panel(
 	)
 end
 
+function render_primitives.draw_grid_cell(x_screen, y_screen)
+	love.graphics.setColor(render_cfg.grid_color)
+	love.graphics.rectangle("line", x_screen, y_screen, tile_size, tile_size)
+
+	local cx = x_screen + tile_size * 0.5
+	local dash = tile_size / 8
+	for i = 0, 7, 2 do
+		love.graphics.line(cx, y_screen + i * dash, cx, y_screen + (i + 1) * dash)
+	end
+
+	love.graphics.setColor(1, 1, 1, 1)
+end
+
+function render_primitives.draw_debug_value(value, x_screen, y_screen)
+	love.graphics.setFont(debug_font)
+	love.graphics.setColor(1, 1, 0, 1)
+	love.graphics.print(string.format("%.2f", value), x_screen, y_screen)
+	love.graphics.setFont(default_font)
+	love.graphics.setColor(1, 1, 1, 1)
+end
+
 function render_primitives.load()
 	tile_size = config.tile_size
+	default_font = config.font
+	debug_font = love.graphics.newFont(render_cfg.font_base_size * render_cfg.debug_font_scale)
 end
 
 return render_primitives

@@ -10,6 +10,11 @@ local entities = {
 
 function entities:set_player(p)
 	self.player = p
+	for _, e in ipairs(self.entity_list) do
+		if e == p then
+			return
+		end
+	end
 	self:add_entity(p)
 end
 

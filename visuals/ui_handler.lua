@@ -31,6 +31,22 @@ function ui_handler:get_ui_list()
 	return self.ui_list
 end
 
+function ui_handler:get_visible_texts(ui)
+	local max_lines = math.floor(ui.height / small_tile_size)
+	local total_lines = #ui.texts
+
+	ui.scroll_offset = math.max(0, math.min(ui.scroll_offset, math.max(0, total_lines - max_lines)))
+
+	local start_line = math.max(1, total_lines - ui.scroll_offset - max_lines + 1)
+	local end_line = math.min(total_lines, start_line + max_lines - 1)
+
+	local visible_texts = {}
+	for i = start_line, end_line do
+		table.insert(visible_texts, ui.texts[i])
+	end
+	return visible_texts
+end
+
 function ui_handler:add_ui(x, y, width, height, name, color, outline_width, outline_color, center_text, tile_grid)
 	local ui = {
 		x = x,
@@ -65,6 +81,10 @@ function ui_handler:add_text_to_ui_by_name(name, text)
 	add_text_to_ui(self:get_ui(name), text)
 end
 
+function ui_handler:reload_fonts()
+	small_tile_size = config.small_tile_size
+end
+
 function ui_handler:load()
 	local screen_height = love.graphics.getHeight()
 	local screen_width = love.graphics.getWidth()
@@ -77,7 +97,7 @@ function ui_handler:load()
 	local black = { 0, 0, 0, 0.5 }
 	local white = { 1, 1, 1, 0.5 }
 
-	small_tile_size = config.small_tile_size
+	self:reload_fonts()
 
 	self:add_ui(start_x, buffer, width, height, "terminal", black, outline_width, white)
 	status_panel = self:add_ui(

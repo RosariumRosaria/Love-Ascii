@@ -15,14 +15,7 @@ return {
 		color = { 0.35, 0.95, 0.35, 1 },
 		transparent = true,
 		covers = true,
-	},
-
-	h_wall = {
-		name = "wall",
-		chars = { "|" },
-		walkable = false,
-		color = { 0.65, 0.65, 0.7, 1 },
-		transparent = false,
+		natural_height = 0.75,
 	},
 
 	v_wall = {
@@ -31,6 +24,7 @@ return {
 		walkable = false,
 		color = { 0.65, 0.65, 0.7, 1 },
 		transparent = false,
+		natural_rotation = 0,
 	},
 
 	c_wall = {
@@ -51,7 +45,7 @@ return {
 
 	floor = {
 		name = "floor",
-		chars = { "::" },
+		chars = { ":" },
 		walkable = true,
 		color = { 0.6, 0.5, 0.4, 1 },
 		transparent = true,
