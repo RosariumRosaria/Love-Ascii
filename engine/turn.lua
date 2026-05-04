@@ -1,8 +1,8 @@
-local input_handler = require("engine.input_handler")
-local ai_handler = require("engine.ai_handler")
+local input_handler = require("engine.input")
+local ai_handler = require("engine.ai")
 local map = require("map.map")
 local entities = require("entities.entities")
-local ui_handler = require("visuals.ui_handler")
+local ui_handler = require("visuals.ui")
 
 local turn_handler = {}
 

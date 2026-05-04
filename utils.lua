@@ -1,4 +1,4 @@
-local ui_handler = require("visuals.ui_handler")
+local ui_handler = require("visuals.ui")
 
 local utils = {}
 

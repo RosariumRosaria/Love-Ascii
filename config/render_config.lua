@@ -1,7 +1,8 @@
 return {
 	use_pixel_font = true,
-	font_scale = 2,
+	font_scale = 2.5,
 	font_base_size = 16,
+	ui_font_scale = 0.875,
 	debug_font_scale = 0.5,
 	draw_distance = 50,
 	max_height = 5,

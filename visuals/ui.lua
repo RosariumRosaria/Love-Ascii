@@ -1,6 +1,7 @@
-local config = require("config")
+local config = require("config.runtime")
 
 local small_tile_size
+local small_font
 
 local ui_handler = {
 	ui_list = {},
@@ -32,8 +33,20 @@ function ui_handler:get_ui_list()
 end
 
 function ui_handler:get_visible_texts(ui)
+	local wrapped = {}
+	for _, text in ipairs(ui.texts) do
+		local _, lines = small_font:getWrap(text, ui.width)
+		if #lines == 0 then
+			table.insert(wrapped, "")
+		else
+			for _, line in ipairs(lines) do
+				table.insert(wrapped, line)
+			end
+		end
+	end
+
 	local max_lines = math.floor(ui.height / small_tile_size)
-	local total_lines = #ui.texts
+	local total_lines = #wrapped
 
 	ui.scroll_offset = math.max(0, math.min(ui.scroll_offset, math.max(0, total_lines - max_lines)))
 
@@ -42,7 +55,7 @@ function ui_handler:get_visible_texts(ui)
 
 	local visible_texts = {}
 	for i = start_line, end_line do
-		table.insert(visible_texts, ui.texts[i])
+		table.insert(visible_texts, wrapped[i])
 	end
 	return visible_texts
 end
@@ -83,6 +96,7 @@ end
 
 function ui_handler:reload_fonts()
 	small_tile_size = config.small_tile_size
+	small_font = config.small_font
 end
 
 function ui_handler:load()
