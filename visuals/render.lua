@@ -7,6 +7,7 @@ local render_primitives = require("visuals.render_primitives")
 local render_cfg = require("config.render_config")
 local camera = require("visuals.camera")
 local scene_drawer = require("visuals.scene_drawer")
+local draw_buffer = require("visuals.draw_buffer")
 
 local render_handler = {}
 
@@ -21,34 +22,30 @@ function render_handler:draw()
 	local end_y = math.min(cy + draw_dist, map:get_max_y())
 	local start_x = math.max(cx - draw_dist, 1)
 	local start_y = math.max(cy - draw_dist, 1)
+	local start_z = map.min_z
+	local end_z = map.max_z
 	local tiles = map:get_tiles()
-	-- Pass 1: underground
-	for y = start_y, end_y do
-		for x = start_x, end_x do
-			scene_drawer:draw_tile(
-				tiles[y][x],
-				x,
-				y,
-				camera_x,
-				camera_y,
-				map:is_visible(x, y),
-				map:is_explored(x, y),
-				map.min_z,
-				0
-			)
+
+	draw_buffer:clear()
+	for z = start_z, end_z do
+		for y = start_y, end_y do
+			for x = start_x, end_x do
+				scene_drawer:emit_tile_at_z(
+					tiles[y][x][z],
+					x,
+					y,
+					z,
+					camera_x,
+					camera_y,
+					map:is_visible(x, y),
+					map:is_explored(x, y)
+				)
+			end
 		end
 	end
 
-	-- Pass 2: ground
-	for y = start_y, end_y do
-		for x = start_x, end_x do
-			scene_drawer:draw_tile(tiles[y][x], x, y, camera_x, camera_y, map:is_visible(x, y), map:is_explored(x, y), 1, 1)
-		end
-	end
-
-	--Draw Entities
 	for _, entity in ipairs(entities:get_entity_list()) do
-		scene_drawer:draw_entity(
+		scene_drawer:emit_entity(
 			entity,
 			camera_x,
 			camera_y,
@@ -56,23 +53,8 @@ function render_handler:draw()
 			map:is_explored(entity.x, entity.y)
 		)
 	end
-
-	-- Pass 3: above ground
-	for y = start_y, end_y do
-		for x = start_x, end_x do
-			scene_drawer:draw_tile(
-				tiles[y][x],
-				x,
-				y,
-				camera_x,
-				camera_y,
-				map:is_visible(x, y),
-				map:is_explored(x, y),
-				2,
-				map.max_z
-			)
-		end
-	end
+	draw_buffer:sort()
+	draw_buffer:walk()
 
 	scene_drawer:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
 

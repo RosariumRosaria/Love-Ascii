@@ -3,7 +3,6 @@ local render_cfg = require("config.render_config")
 local debug_state = {
 	show_grid = render_cfg.show_grid,
 	bw_mode = render_cfg.bw_mode,
-	show_brightness_debug = render_cfg.show_brightness_debug,
 	offset_type = render_cfg.default_offset_type,
 }
 
@@ -13,10 +12,6 @@ end
 
 function debug_state.toggle_bw()
 	debug_state.bw_mode = not debug_state.bw_mode
-end
-
-function debug_state.toggle_brightness_debug()
-	debug_state.show_brightness_debug = not debug_state.show_brightness_debug
 end
 
 function debug_state.switch_offset()

@@ -1,8 +1,6 @@
 local config = require("config.runtime")
 local render_cfg = require("config.render_config")
 local tile_size
-local debug_font
-local default_font
 local render_utils = require("visuals.render_utils")
 local render_primitives = {}
 
@@ -141,18 +139,8 @@ function render_primitives.draw_grid_cell(x_screen, y_screen)
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
-function render_primitives.draw_debug_value(value, x_screen, y_screen)
-	love.graphics.setFont(debug_font)
-	love.graphics.setColor(1, 1, 0, 1)
-	love.graphics.print(string.format("%.2f", value), x_screen, y_screen)
-	love.graphics.setFont(default_font)
-	love.graphics.setColor(1, 1, 1, 1)
-end
-
 function render_primitives.load()
 	tile_size = config.tile_size
-	default_font = config.font
-	debug_font = love.graphics.newFont(render_cfg.font_base_size * render_cfg.debug_font_scale)
 end
 
 return render_primitives
