@@ -1,7 +1,7 @@
-local fov_handler = require("fov.fov_handler")
+local fov_handler = require("fov.visibility")
 local city_generator = require("map.city_generator")
 local types = require("map.tile_types")
-local voroni_generator = require("voroni.voroni_generator")
+local voroni_generator = require("map.voronoi.generator")
 local utils = require("utils")
 local gen_cfg = require("config.generation_config")
 
@@ -89,7 +89,6 @@ function map:load(max_x, max_y, max_z, min_z, map_type)
 		-- TODO Hardcoded, should be changed
 		city_generator:make_town(205, self.tiles, self.max_y, self.max_x, self.max_z, self.min_z)
 
-		-- DEBUG: water pool around (30, 30)
 		local radius = 8
 		for dy = -radius, radius do
 			for dx = -radius, radius do

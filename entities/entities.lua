@@ -1,5 +1,5 @@
-local entity_types = require("entities/entity_types")
-local ui_handler = require("visuals.ui_handler")
+local entity_types = require("entities.entity_types")
+local ui_handler = require("visuals.ui")
 local utils = require("utils")
 
 local entities = {

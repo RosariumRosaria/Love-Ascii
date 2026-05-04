@@ -1,4 +1,4 @@
-local config = require("config")
+local config = require("config.runtime")
 local render_config = require("config.render_config")
 local default_font
 local tile_size

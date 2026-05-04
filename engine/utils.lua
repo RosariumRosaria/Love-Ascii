@@ -1,5 +1,5 @@
 local entities = require("entities.entities")
-local ui_handler = require("visuals.ui_handler")
+local ui_handler = require("visuals.ui")
 local map = require("map.map")
 
 local engine_utils = {}

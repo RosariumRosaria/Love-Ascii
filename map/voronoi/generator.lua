@@ -1,4 +1,4 @@
-local tile_types = require("map.debug_tiles")
+local tile_types = require("map.voronoi.palette")
 local utils = require("utils")
 
 local voroni_generator = {

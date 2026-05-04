@@ -1,4 +1,4 @@
-local visual_types = require("visuals/visual_types")
+local visual_types = require("visuals.visual_types")
 local utils = require("utils")
 
 local visuals = {
