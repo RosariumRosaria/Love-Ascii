@@ -83,6 +83,36 @@ function input_handler:update(dt)
 		return
 	end
 
+	-- debug / instant actions: always processed, not gated by turn delay
+	if self:pressed("toggle_grid") then
+		debug_state.toggle_grid()
+	end
+
+	if self:pressed("toggle_bw") then
+		debug_state.toggle_bw()
+	end
+
+	if self:pressed("toggle_visualizer") then
+		visualizer:toggle()
+	end
+
+	if self:pressed("toggle_font") then
+		config:toggle_font()
+		render_handler:reload_fonts()
+	end
+
+	if self:is_down("switch_offset") then
+		debug_state.switch_offset()
+	end
+
+	if self:is_down("switch_status") then
+		ui_handler:switch_status()
+	end
+
+	if self:is_down("quit") then
+		love.event.quit()
+	end
+
 	self.time_since_last_turn = self.time_since_last_turn + dt
 	if self.time_since_last_turn < self.time_between_turns then
 		self:_clear_frame()
@@ -156,40 +186,6 @@ function input_handler:update(dt)
 		end
 	end
 
-	-- debug / instant actions
-	if self:pressed("toggle_grid") then
-		debug_state.toggle_grid()
-	end
-
-	if self:pressed("toggle_bw") then
-		debug_state.toggle_bw()
-	end
-
-	if self:pressed("toggle_brightness") then
-		debug_state.toggle_brightness_debug()
-	end
-
-	if self:pressed("toggle_visualizer") then
-		visualizer:toggle()
-	end
-
-	if self:pressed("toggle_font") then
-		config:toggle_font()
-		render_handler:reload_fonts()
-	end
-
-	if self:is_down("switch_offset") then
-		debug_state.switch_offset()
-	end
-
-	if self:is_down("switch_status") then
-		ui_handler:switch_status()
-	end
-
-	if self:is_down("quit") then
-		love.event.quit()
-	end
-
 	self:_clear_frame()
 	return took_action
 end
@@ -197,6 +193,13 @@ end
 function input_handler:_clear_frame()
 	self.pressed_keys = {}
 	self.released_keys = {}
+end
+
+function love.wheelmoved(_, y)
+	local term = ui_handler:get_ui("terminal")
+	if term then
+		term.scroll_offset = math.max(0, term.scroll_offset - y)
+	end
 end
 
 return input_handler

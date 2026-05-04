@@ -3,9 +3,8 @@ return {
 	font_scale = 2.5,
 	font_base_size = 16,
 	ui_font_scale = 0.875,
-	debug_font_scale = 0.5,
 	draw_distance = 50,
-	max_height = 5,
+	max_height = 5, --TODO: this should be determined by the map, not hardcoded
 	default_offset_type = 1,
 	offset_amount_factor = 0.25,
 	camera_speed = 2,
@@ -14,7 +13,6 @@ return {
 	distance_drama = 0.66,
 	brightness = 1,
 	bw_mode = false,
-	show_brightness_debug = false,
 	z_size_scale_per_level = 0.03,
 	entity_brightness_boost = 0.3,
 	shadow_brightness_scale = 0.25,

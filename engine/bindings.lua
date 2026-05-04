@@ -11,7 +11,6 @@ return {
 
 	toggle_grid = { "g" },
 	toggle_bw = { "b" },
-	toggle_brightness = { "l" },
 	toggle_visualizer = { "v" },
 	toggle_font = { "p" },
 
