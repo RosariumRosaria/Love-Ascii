@@ -25,22 +25,6 @@ local function is_tile_free(x, y, z, entity_list, goal)
 	return true
 end
 
-local function put(queue, node, priority)
-	for i = 1, #queue do
-		if queue[i][2] > priority then
-			table.insert(queue, i, { node, priority })
-			return
-		end
-	end
-	table.insert(queue, { node, priority })
-end
-
-local function get(queue)
-	local ret = queue[1]
-	table.remove(queue, 1)
-	return ret
-end
-
 local function get_neighbors(x, y, entity_list, goal)
 	local candidates = {
 		{ x + 1, y },
@@ -87,7 +71,7 @@ function pathfinder.a_star(start, goal)
 	local entity_list = entities:get_entity_list()
 
 	local frontier = {}
-	put(frontier, start, 0)
+	utils.priority_queue_put(frontier, start, 0)
 
 	local came_from = {}
 	local cost_so_far = {}
@@ -99,7 +83,7 @@ function pathfinder.a_star(start, goal)
 	while #frontier > 0 and i < max_checks do
 		i = i + 1
 
-		local node = get(frontier)
+		local node = utils.priority_queue_get(frontier)
 		local current = node[1]
 
 		if current[1] == goal[1] and current[2] == goal[2] then
@@ -114,7 +98,7 @@ function pathfinder.a_star(start, goal)
 			if cost_so_far[next_key] == nil or new_cost < cost_so_far[next_key] then
 				cost_so_far[next_key] = new_cost
 				local priority = new_cost + heuristic(goal, next)
-				put(frontier, next, priority)
+				utils.priority_queue_put(frontier, next, priority)
 				came_from[next_key] = current
 			end
 		end

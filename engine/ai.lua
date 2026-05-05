@@ -155,7 +155,7 @@ local function chase(entity)
 	end
 end
 
-local function process_enemy(entity)
+function ai_handler:process_enemy(entity)
 	if entity.state == "idle" then
 		idle(entity)
 	elseif entity.state == "wandering" then
@@ -169,15 +169,6 @@ local function process_enemy(entity)
 	end
 
 	entity.could_see = entity.can_see
-end
-
-function ai_handler.process_turn()
-	local entity_list = entities:get_entity_list()
-	for _, entity in ipairs(entity_list) do
-		if entity.type == "enemy" then
-			process_enemy(entity)
-		end
-	end
 end
 
 return ai_handler
