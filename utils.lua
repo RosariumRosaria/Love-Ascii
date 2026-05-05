@@ -38,6 +38,22 @@ function utils.shuffle(list)
 	end
 end
 
+function utils.priority_queue_put(queue, node, priority)
+	for i = 1, #queue do
+		if queue[i][2] > priority then
+			table.insert(queue, i, { node, priority })
+			return
+		end
+	end
+	table.insert(queue, { node, priority })
+end
+
+function utils.priority_queue_get(queue)
+	local ret = queue[1]
+	table.remove(queue, 1)
+	return ret
+end
+
 function utils.in_radius(dx, dy, r)
 	return dx * dx + dy * dy <= r * r
 end

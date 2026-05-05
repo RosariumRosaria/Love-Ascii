@@ -14,6 +14,7 @@ return {
 	},
 	timing = {
 		turn_delay = 0.125,
+		base_turn_cost = 100,
 	},
 	pathfinding = {
 		max_iterations = 250,

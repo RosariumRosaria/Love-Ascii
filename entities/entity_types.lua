@@ -25,6 +25,7 @@ return {
 			dummy_item = { name = "dummy" },
 		},
 		damage = 2,
+		next_turn = 0,
 	},
 	vampire = {
 		name = "Vampire",
@@ -52,6 +53,7 @@ return {
 		allowed_actions = {
 			attackable = true,
 		},
+		next_turn = 0,
 	},
 	tree = {
 		name = "a tree",
