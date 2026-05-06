@@ -1,10 +1,9 @@
 local config = require("config.runtime")
-local engine = require("engine.actions")
+local engine = require("engine.engine")
 local render_handler = require("visuals.render")
 local debug_state = require("debug.debug_state")
 local ui_handler = require("visuals.ui")
 local visualizer = require("map.voronoi.visualizer")
-local game_cfg = require("config.game_config")
 local bindings = require("engine.bindings")
 
 local input_handler = {
@@ -16,9 +15,6 @@ local input_handler = {
 
 	last_turn = { x = 0, y = 0 },
 	grabbed = nil,
-
-	time_since_last_turn = 0,
-	time_between_turns = game_cfg.timing.turn_delay,
 }
 
 function love.keypressed(key)
@@ -33,6 +29,10 @@ end
 
 function input_handler:set_actor(entity)
 	self.actor = entity
+end
+
+function input_handler:get_actor()
+	return self.actor
 end
 
 -- internal helper
@@ -78,12 +78,11 @@ function input_handler:get_direction()
 end
 
 function input_handler:update(dt)
-	local actor = self.actor
-	if not actor then
+	if not self.actor then
 		return
 	end
 
-	-- debug / instant actions: always processed, not gated by turn delay
+	-- debug / instant actions: always processed, not gated by turn cadence
 	if self:pressed("toggle_grid") then
 		debug_state.toggle_grid()
 	end
@@ -112,85 +111,81 @@ function input_handler:update(dt)
 	if self:is_down("quit") then
 		love.event.quit()
 	end
+end
 
-	self.time_since_last_turn = self.time_since_last_turn + dt
-	if self.time_since_last_turn < self.time_between_turns then
-		self:_clear_frame()
-		return
+function input_handler:try_take_turn()
+	local actor = self.actor
+	if not actor or actor.dead then
+		return false
 	end
-
-	self.time_since_last_turn = 0
-	local took_action = false
 
 	local move_dir = self:get_direction()
 	local is_moving = move_dir.x ~= 0 or move_dir.y ~= 0
 	local has_moved = self.last_turn.x ~= 0 or self.last_turn.y ~= 0
 
-	if not actor.dead then
-		if is_moving or has_moved then
-			if not is_moving then
-				move_dir = self.last_turn
+	if not (is_moving or has_moved) then
+		return false
+	end
+
+	if not is_moving then
+		move_dir = self.last_turn
+	end
+
+	local took_action = false
+
+	if self:is_down("attack") then
+		took_action = engine:handle_action(actor, {
+			type = "attack",
+			dx = move_dir.x,
+			dy = move_dir.y,
+		})
+	elseif self:is_down("interact") then
+		took_action = engine:handle_action(actor, {
+			type = "interact",
+			dx = move_dir.x,
+			dy = move_dir.y,
+		})
+		if not took_action then
+			took_action = engine:handle_action(actor, {
+				type = "interact",
+				dx = -move_dir.x,
+				dy = -move_dir.y,
+			})
+		end
+	elseif self:is_down("inspect") then
+		engine:handle_action(actor, {
+			type = "inspect",
+			dx = move_dir.x,
+			dy = move_dir.y,
+		})
+	elseif is_moving then
+		if self:is_down("grab") then
+			if not self.grabbed then
+				self.grabbed = engine:grab(actor, move_dir.x, move_dir.y)
 			end
-
-			local action = {}
-
-			if self:is_down("attack") then
+			if self.grabbed then
 				took_action = engine:handle_action(actor, {
-					type = "attack",
+					type = "grab_interaction",
 					dx = move_dir.x,
 					dy = move_dir.y,
+					target = self.grabbed,
 				})
-			elseif self:is_down("interact") then
-				took_action = engine:handle_action(actor, {
-					type = "interact",
-					dx = move_dir.x,
-					dy = move_dir.y,
-				})
-				if not took_action then
-					took_action = engine:handle_action(actor, {
-						type = "interact",
-						dx = -move_dir.x,
-						dy = -move_dir.y,
-					})
-				end
-			elseif self:is_down("inspect") then
-				engine:handle_action(actor, {
-					type = "inspect",
-					dx = move_dir.x,
-					dy = move_dir.y,
-				})
-			elseif is_moving then
-				if self:is_down("grab") then
-					if not self.grabbed then
-						self.grabbed = engine:grab(actor, move_dir.x, move_dir.y)
-					end
-					if self.grabbed then
-						took_action = engine:handle_action(actor, {
-							type = "grab_interaction",
-							dx = move_dir.x,
-							dy = move_dir.y,
-							target = self.grabbed,
-						})
-					end
-				else
-					self.grabbed = nil
-					took_action = engine:handle_action(actor, {
-						type = "move",
-						dx = move_dir.x,
-						dy = move_dir.y,
-					})
-				end
 			end
-
-			self.last_turn = { x = move_dir.x, y = move_dir.y }
+		else
+			self.grabbed = nil
+			took_action = engine:handle_action(actor, {
+				type = "move",
+				dx = move_dir.x,
+				dy = move_dir.y,
+			})
 		end
 	end
 
-	self:_clear_frame()
+	self.last_turn = { x = move_dir.x, y = move_dir.y }
 	return took_action
 end
 
-function input_handler:_clear_frame()
+function input_handler:end_frame()
 	self.pressed_keys = {}
 	self.released_keys = {}
 end

@@ -3,12 +3,12 @@ local entities = require("entities.entities")
 local visuals = require("visuals.effects")
 local pathfinder = require("engine.pathfinder")
 local fov_handler = require("fov.visibility")
-local engine = require("engine.actions")
+local engine = require("engine.engine")
 local engine_utils = require("engine.utils")
 local utils = require("utils")
 local ai_cfg = require("config.ai_config")
 
-local ai_handler = {}
+local ai = {}
 --[[ TODO, At some point the flow should probably be more like
   -Entity gets list of entities in area
   -Entity has a list of states it can have, and maybe overrides for what those states can do
@@ -54,8 +54,8 @@ local function can_see(entity, target)
 end
 
 local function idle(entity)
-	if entity.type == "enemy" then
-		if can_see(entity, entities.player) then --This is ugly, treats the player as special
+	if entity.team == "enemy" then
+		if can_see(entity, entities.player) then --TODO This is ugly, treats the player as special
 			return
 		end
 		local chance = math.random(1, ai_cfg.wander_chance)
@@ -81,7 +81,7 @@ local function idle(entity)
 end
 
 local function wander(entity)
-	if entity.type == "enemy" then
+	if entity.team == "enemy" then
 		if entity.turns_to_idle and entity.turns_to_idle > 0 and entity.target_pos then
 			if can_see(entity, entities.player) then
 				entity.path = nil
@@ -155,7 +155,7 @@ local function chase(entity)
 	end
 end
 
-function ai_handler:process_enemy(entity)
+local function enemy_turn(entity)
 	if entity.state == "idle" then
 		idle(entity)
 	elseif entity.state == "wandering" then
@@ -171,4 +171,10 @@ function ai_handler:process_enemy(entity)
 	entity.could_see = entity.can_see
 end
 
-return ai_handler
+function ai:take_turn(entity)
+	if entity.team == "enemy" then
+		enemy_turn(entity)
+	end
+end
+
+return ai
