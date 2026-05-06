@@ -4,6 +4,7 @@ return {
 		color = { 0.8, 0.8, 0.9, 1 },
 		effect_color = { 0.45, 0.45, 0.5, 0.5 },
 		name = "Player",
+		type = "actor",
 		tags = { covers = true, attackable = true },
 		default_action = "attackable",
 		allowed_actions = {
@@ -24,12 +25,43 @@ return {
 			usable_item_dummy = { name = "usable_dummy" },
 			dummy_item = { name = "dummy" },
 		},
+
 		damage = 2,
+		next_turn = 0,
+	},
+	zombie = {
+		name = "Zombie",
+		type = "actor",
+		team = "enemy",
+		state = "idle",
+		chars = { "Z" },
+		color = { 0.3, 0.45, 0.25, 1 },
+		effect_color = { 0.35, 0.6, 0.3, 0.5 },
+		description = "A zombie, try attacking it!",
+		default_action = "attackable",
+		stats = {
+			health = { health = 10, max_health = 10 },
+			sight = { sight = 30, max_sight = 30 },
+			speed = { speed = 4, max_speed = 4 },
+		},
+		damage = 1,
+		tags = {
+			solid = false,
+			moveable = true,
+			tilelike = false,
+			covers = true,
+			attackable = true,
+			walkable = false,
+		},
+		allowed_actions = {
+			attackable = true,
+		},
 		next_turn = 0,
 	},
 	vampire = {
 		name = "Vampire",
-		type = "enemy",
+		type = "actor",
+		team = "enemy",
 		state = "idle",
 		chars = { "V" },
 		color = { 0.7, 0.2, 0.2, 1 },
@@ -39,7 +71,7 @@ return {
 		stats = {
 			health = { health = 10, max_health = 10 },
 			sight = { sight = 30, max_sight = 30 },
-			speed = { speed = 4, max_speed = 4 },
+			speed = { speed = 6, max_speed = 6 },
 		},
 		damage = 1,
 		tags = {

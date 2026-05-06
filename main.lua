@@ -25,7 +25,8 @@ function love.load()
 	input_handler:set_actor(player)
 
 	entities:add_from_template("vampire", 5, 5, 1)
-	entities:add_from_template("vampire", 8, 6, 1)
+	entities:add_from_template("zombie", 8, 6, 1)
+	entities:add_from_template("zombie", 7, 6, 1)
 	entities:add_from_template("crate", 10, 10, 1)
 	entities:add_from_template("barricade", 15, 14, 1)
 

@@ -1,6 +1,7 @@
 local entity_types = require("entities.entity_types")
 local ui_handler = require("visuals.ui")
 local utils = require("utils")
+local scheduler = require("engine.scheduler")
 
 local entities = {
 	entity_list = {},
@@ -136,6 +137,10 @@ function entities:add_entity(entity)
 	end
 
 	table.insert(self.entities_by_z_level[z], entity)
+
+	if entity.type == "actor" then
+		scheduler.schedule_turn(entity)
+	end
 end
 
 function entities:add_from_template(name, x, y, z, overrides)

@@ -38,6 +38,7 @@ function engine:default_interact(entity, dx, dy)
 end
 
 function engine:attack(entity, dx, dy)
+	print("Attack action")
 	local target_entity = entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
 	if not validate_interaction(entity, target_entity, "Attack") then
 		return false
@@ -46,7 +47,7 @@ function engine:attack(entity, dx, dy)
 		ui_handler:add_text_to_ui_by_name("terminal", target_entity.name .. " is not attackable")
 		return false
 	end
-	if entity.type ~= target_entity.type then
+	if entity.team ~= target_entity.team then
 		visuals:add_from_template("attack", entity.x + dx, entity.y + dy, entity.z)
 		entities:damage_entity(target_entity, entity)
 	end
