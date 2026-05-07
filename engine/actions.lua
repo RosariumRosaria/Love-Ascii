@@ -3,7 +3,7 @@ local visuals = require("visuals.effects")
 local ui_handler = require("visuals.ui")
 local engine_utils = require("engine.utils")
 
-local engine = {}
+local actions = {}
 
 local function validate_interaction(actor, target, name)
 	if not actor then
@@ -21,7 +21,7 @@ local function validate_interaction(actor, target, name)
 	return true
 end
 
-function engine:default_interact(entity, dx, dy)
+function actions:default_interact(entity, dx, dy)
 	local target = entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
 	if not target then
 		return false
@@ -37,8 +37,7 @@ function engine:default_interact(entity, dx, dy)
 	return false
 end
 
-function engine:attack(entity, dx, dy)
-	print("Attack action")
+function actions:attack(entity, dx, dy)
 	local target_entity = entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
 	if not validate_interaction(entity, target_entity, "Attack") then
 		return false
@@ -54,7 +53,7 @@ function engine:attack(entity, dx, dy)
 	return true
 end
 
-function engine:interact(entity, dx, dy)
+function actions:interact(entity, dx, dy)
 	local target_entity = entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
 	if not validate_interaction(entity, target_entity, "Interact") then
 		return false
@@ -68,7 +67,7 @@ function engine:interact(entity, dx, dy)
 	return true
 end
 
-function engine:inspect(entity, dx, dy)
+function actions:inspect(entity, dx, dy)
 	local target_entity = entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
 	if not validate_interaction(entity, target_entity, "Inspect") then
 		return false
@@ -77,7 +76,7 @@ function engine:inspect(entity, dx, dy)
 	entities:inspect_entity(target_entity)
 end
 
-function engine:move(entity, dx, dy)
+function actions:move(entity, dx, dy)
 	local tar_x = entity.x + dx
 	local tar_y = entity.y + dy
 
@@ -89,15 +88,15 @@ function engine:move(entity, dx, dy)
 		return true
 	end
 
-	return engine:default_interact(entity, dx, dy)
+	return actions:default_interact(entity, dx, dy)
 end
 
-function engine:grab(entity, dx, dy)
+function actions:grab(entity, dx, dy)
 	return entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
 end
 
 -- Push and pull are the same op: translate (actor, target) by (dx, dy). Caller supplies target; defaults to the tile ahead (push).
-function engine:drag(entity, dx, dy, target)
+function actions:drag(entity, dx, dy, target)
 	target = target or entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
 	if not validate_interaction(entity, target, "Drag") then
 		return false
@@ -130,7 +129,7 @@ function engine:drag(entity, dx, dy, target)
 	return true
 end
 
-function engine:handle_action(entity, action)
+function actions:handle_action(entity, action)
 	if not entity or not action then
 		return false
 	end
@@ -152,4 +151,4 @@ function engine:handle_action(entity, action)
 	return false
 end
 
-return engine
+return actions

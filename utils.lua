@@ -1,4 +1,4 @@
-local ui_handler = require("visuals.ui")
+local ui = require("visuals.ui")
 
 local utils = {}
 
@@ -71,13 +71,13 @@ function utils.deep_print(tbl, indent, visited)
 	for k, v in pairs(tbl) do
 		local key_str = tostring(k)
 		if type(v) == "table" then
-			ui_handler:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. key_str .. " = {"))
+			ui:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. key_str .. " = {"))
 			print(string.rep("  ", indent) .. key_str .. " = {")
 			utils.deep_print(v, indent + 1, visited)
-			ui_handler:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. "}"))
+			ui:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. "}"))
 			print((string.rep("  ", indent) .. "}"))
 		else
-			ui_handler:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. key_str .. " = " .. tostring(v)))
+			ui:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. key_str .. " = " .. tostring(v)))
 			print((string.rep("  ", indent) .. key_str .. " = " .. tostring(v)))
 		end
 	end

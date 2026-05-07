@@ -8,7 +8,7 @@ local render_cfg = require("config.render_config")
 local debug_state = require("debug.debug_state")
 local draw_buffer = require("visuals.draw_buffer")
 
-local scene_drawer = {}
+local drawer = {}
 
 local tile_size
 local small_tile_size
@@ -63,7 +63,7 @@ local function emit_cover_rect(layer, z, y, x_screen, y_screen)
 	})
 end
 
-function scene_drawer:draw_visual(visual, center_x, center_y, visible)
+function drawer:draw_visual(visual, center_x, center_y, visible)
 	love.graphics.setFont(default_font)
 
 	if not (visible or not visual.params.needs_to_be_seen) then
@@ -132,7 +132,7 @@ function scene_drawer:draw_visual(visual, center_x, center_y, visible)
 	end
 end
 
-function scene_drawer:draw_ui(ui)
+function drawer:draw_ui(ui)
 	love.graphics.setFont(small_font)
 
 	local visible_texts = ui_handler:get_visible_texts(ui)
@@ -152,7 +152,7 @@ function scene_drawer:draw_ui(ui)
 	)
 end
 
-function scene_drawer:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, explored)
+function drawer:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, explored)
 	if not tile then
 		return
 	end
@@ -222,7 +222,7 @@ function scene_drawer:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible,
 	})
 end
 
-function scene_drawer:emit_entity(entity, center_x, center_y, visible, explored)
+function drawer:emit_entity(entity, center_x, center_y, visible, explored)
 	local tilelike = entities:get_tag_entity(entity, "tilelike")
 
 	if not visible and not (tilelike and explored) then
@@ -269,7 +269,7 @@ function scene_drawer:emit_entity(entity, center_x, center_y, visible, explored)
 	end
 end
 
-function scene_drawer:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
+function drawer:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
 	if not debug_state.show_grid then
 		return
 	end
@@ -282,7 +282,7 @@ function scene_drawer:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x
 	end
 end
 
-function scene_drawer:reload_fonts()
+function drawer:reload_fonts()
 	tile_size = config.tile_size
 	small_tile_size = config.small_tile_size
 	default_font = config.font
@@ -290,8 +290,8 @@ function scene_drawer:reload_fonts()
 	offset_amount = render_cfg.offset_amount_factor * tile_size
 end
 
-function scene_drawer:reload_settings()
+function drawer:reload_settings()
 	max_height = render_cfg.max_height
 end
 
-return scene_drawer
+return drawer

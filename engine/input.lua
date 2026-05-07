@@ -1,8 +1,8 @@
 local config = require("config.runtime")
-local engine = require("engine.engine")
-local render_handler = require("visuals.render")
+local actions = require("engine.actions")
+local render = require("visuals.render")
 local debug_state = require("debug.debug_state")
-local ui_handler = require("visuals.ui")
+local ui = require("visuals.ui")
 local visualizer = require("map.voronoi.visualizer")
 local bindings = require("engine.bindings")
 
@@ -97,7 +97,7 @@ function input_handler:update(dt)
 
 	if self:pressed("toggle_font") then
 		config:toggle_font()
-		render_handler:reload_fonts()
+		render:reload_fonts()
 	end
 
 	if self:is_down("switch_offset") then
@@ -105,7 +105,7 @@ function input_handler:update(dt)
 	end
 
 	if self:is_down("switch_status") then
-		ui_handler:switch_status()
+		ui:switch_status()
 	end
 
 	if self:is_down("quit") then
@@ -134,26 +134,26 @@ function input_handler:try_take_turn()
 	local took_action = false
 
 	if self:is_down("attack") then
-		took_action = engine:handle_action(actor, {
+		took_action = actions:handle_action(actor, {
 			type = "attack",
 			dx = move_dir.x,
 			dy = move_dir.y,
 		})
 	elseif self:is_down("interact") then
-		took_action = engine:handle_action(actor, {
+		took_action = actions:handle_action(actor, {
 			type = "interact",
 			dx = move_dir.x,
 			dy = move_dir.y,
 		})
 		if not took_action then
-			took_action = engine:handle_action(actor, {
+			took_action = actions:handle_action(actor, {
 				type = "interact",
 				dx = -move_dir.x,
 				dy = -move_dir.y,
 			})
 		end
 	elseif self:is_down("inspect") then
-		engine:handle_action(actor, {
+		actions:handle_action(actor, {
 			type = "inspect",
 			dx = move_dir.x,
 			dy = move_dir.y,
@@ -161,10 +161,10 @@ function input_handler:try_take_turn()
 	elseif is_moving then
 		if self:is_down("grab") then
 			if not self.grabbed then
-				self.grabbed = engine:grab(actor, move_dir.x, move_dir.y)
+				self.grabbed = actions:grab(actor, move_dir.x, move_dir.y)
 			end
 			if self.grabbed then
-				took_action = engine:handle_action(actor, {
+				took_action = actions:handle_action(actor, {
 					type = "grab_interaction",
 					dx = move_dir.x,
 					dy = move_dir.y,
@@ -173,7 +173,7 @@ function input_handler:try_take_turn()
 			end
 		else
 			self.grabbed = nil
-			took_action = engine:handle_action(actor, {
+			took_action = actions:handle_action(actor, {
 				type = "move",
 				dx = move_dir.x,
 				dy = move_dir.y,
@@ -191,7 +191,7 @@ function input_handler:end_frame()
 end
 
 function love.wheelmoved(_, y)
-	local term = ui_handler:get_ui("terminal")
+	local term = ui:get_ui("terminal")
 	if term then
 		term.scroll_offset = math.max(0, term.scroll_offset - y)
 	end

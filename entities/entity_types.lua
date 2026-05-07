@@ -91,7 +91,7 @@ return {
 		name = "a tree",
 		type = "prop",
 		chars = { ".", ".", ".", ".", ".", "*" },
-		color = { 0.6, 0.6, 0.3, 1 },
+		color = { 0.25, 0.65, 0.33, 1 },
 		description = "A Tree",
 		tags = {
 			solid = true,
