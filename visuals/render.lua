@@ -6,7 +6,7 @@ local map = require("map.map")
 local render_primitives = require("visuals.render_primitives")
 local render_cfg = require("config.render_config")
 local camera = require("visuals.camera")
-local scene_drawer = require("visuals.scene_drawer")
+local scene_drawer = require("visuals.drawer")
 local draw_buffer = require("visuals.draw_buffer")
 
 local render_handler = {}

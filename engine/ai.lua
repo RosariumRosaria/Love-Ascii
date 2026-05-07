@@ -3,7 +3,7 @@ local entities = require("entities.entities")
 local visuals = require("visuals.effects")
 local pathfinder = require("engine.pathfinder")
 local fov_handler = require("fov.visibility")
-local engine = require("engine.engine")
+local actions = require("engine.actions")
 local engine_utils = require("engine.utils")
 local utils = require("utils")
 local ai_cfg = require("config.ai_config")
@@ -75,7 +75,7 @@ local function idle(entity)
 			local step = (math.random(0, 1) * 2 - 1)
 			local dx = (axis == 1) and step or 0
 			local dy = (axis == 2) and step or 0
-			engine:move(entity, dx, dy)
+			actions:move(entity, dx, dy)
 		end
 	end
 end
@@ -103,7 +103,7 @@ local function wander(entity)
 				if step and step[1] and step[2] then
 					local dx = step[1] - entity.x
 					local dy = step[2] - entity.y
-					engine:move(entity, dx, dy)
+					actions:move(entity, dx, dy)
 				end
 			end
 
@@ -138,7 +138,7 @@ local function chase(entity)
 			if step and step[1] and step[2] then
 				local dx = step[1] - entity.x
 				local dy = step[2] - entity.y
-				if engine:move(entity, dx, dy) then
+				if actions:move(entity, dx, dy) then
 					entity.path_index = entity.path_index + 1
 				end
 			end
