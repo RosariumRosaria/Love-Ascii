@@ -1,7 +1,7 @@
 local input = require("engine.input")
 local ai = require("engine.ai")
 local map = require("map.map")
-local visuals = require("visuals.ui")
+local ui = require("visuals.ui")
 local entities = require("entities.entities")
 local scheduler = require("engine.scheduler")
 local game_cfg = require("config.game_config")
@@ -13,7 +13,7 @@ local turn = {
 
 local function post_turn_update(player)
 	map:update_visibility(player.x, player.y, player.stats.sight.sight)
-	visuals:update_status(player)
+	ui:update_status(player)
 end
 
 function turn:update(dt)

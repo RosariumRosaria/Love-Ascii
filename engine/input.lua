@@ -1,10 +1,10 @@
 local config = require("config.runtime")
 local actions = require("engine.actions")
-local render = require("visuals.render")
+local render = require("visuals.render.render")
 local debug_state = require("debug.debug_state")
 local ui = require("visuals.ui")
 local visualizer = require("map.voronoi.visualizer")
-local bindings = require("engine.bindings")
+local bindings = require("config.bindings")
 
 local input_handler = {
 	actor = nil,

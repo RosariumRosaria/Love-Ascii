@@ -1,8 +1,8 @@
 local config = require("config.runtime")
 local game_cfg = require("config.game_config")
 local map = require("map.map")
-local render = require("visuals.render")
-local visuals = require("visuals.effects")
+local render = require("visuals.render.render")
+local effects = require("visuals.effects.effects")
 local ui = require("visuals.ui")
 local input_handler = require("engine.input")
 local visualizer = require("map.voronoi.visualizer")
@@ -42,7 +42,7 @@ end
 function love.update(dt)
 	turn:update(dt)
 	render:update(entities.player.x, entities.player.y, dt)
-	visuals:update(dt)
+	effects:update(dt)
 end
 
 function love.draw()

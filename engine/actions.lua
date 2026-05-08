@@ -1,7 +1,8 @@
 local entities = require("entities.entities")
-local visuals = require("visuals.effects")
+local effects = require("visuals.effects.effects")
 local ui_handler = require("visuals.ui")
-local engine_utils = require("engine.utils")
+local map = require("map.map")
+local utils = require("utils")
 
 local actions = {}
 
@@ -14,7 +15,7 @@ local function validate_interaction(actor, target, name)
 		ui_handler:add_text_to_ui_by_name("terminal", name .. " target is nil")
 		return false
 	end
-	if engine_utils.distance_between(actor, target) > 1 then
+	if utils.distance_between(actor, target) > 1 then
 		ui_handler:add_text_to_ui_by_name("terminal", name .. " too far apart")
 		return false
 	end
@@ -47,7 +48,7 @@ function actions:attack(entity, dx, dy)
 		return false
 	end
 	if entity.team ~= target_entity.team then
-		visuals:add_from_template("attack", entity.x + dx, entity.y + dy, entity.z)
+		effects:add_from_template("attack", entity.x + dx, entity.y + dy, entity.z)
 		entities:damage_entity(target_entity, entity)
 	end
 	return true
@@ -80,9 +81,9 @@ function actions:move(entity, dx, dy)
 	local tar_x = entity.x + dx
 	local tar_y = entity.y + dy
 
-	if engine_utils.is_tile_free(tar_x, tar_y, entity.z, { [entity] = true }) then
-		local visual = visuals:add_from_template("trail", entity.x, entity.y, entity.z)
-		visual.rects[1].colors[1] = entity.effect_color or visual.rects[1].colors[1]
+	if map:is_tile_free(tar_x, tar_y, entity.z, { [entity] = true }) then
+		local effect = effects:add_from_template("trail", entity.x, entity.y, entity.z)
+		effect.rects[1].colors[1] = entity.effect_color or effect.rects[1].colors[1]
 		entity.x = tar_x
 		entity.y = tar_y
 		return true
@@ -109,16 +110,16 @@ function actions:drag(entity, dx, dy, target)
 	local actor_dest_x, actor_dest_y = entity.x + dx, entity.y + dy
 	local target_dest_x, target_dest_y = target.x + dx, target.y + dy
 
-	if not engine_utils.is_tile_free(actor_dest_x, actor_dest_y, entity.z, skip) then
+	if not map:is_tile_free(actor_dest_x, actor_dest_y, entity.z, skip) then
 		ui_handler:add_text_to_ui_by_name("terminal", "Actor tile not free")
 		return false
 	end
-	if not engine_utils.is_tile_free(target_dest_x, target_dest_y, target.z, skip) then
+	if not map:is_tile_free(target_dest_x, target_dest_y, target.z, skip) then
 		ui_handler:add_text_to_ui_by_name("terminal", "Target tile not free")
 		return false
 	end
 
-	visuals:add_from_template("trail", entity.x, entity.y, entity.z)
+	effects:add_from_template("trail", entity.x, entity.y, entity.z)
 	entity.x, entity.y = actor_dest_x, actor_dest_y
 	target.x, target.y = target_dest_x, target_dest_y
 	ui_handler:add_text_to_ui_by_name(
