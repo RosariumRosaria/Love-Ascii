@@ -1,10 +1,9 @@
 local map = require("map.map")
 local entities = require("entities.entities")
-local visuals = require("visuals.effects")
+local effects = require("visuals.effects.effects")
 local pathfinder = require("engine.pathfinder")
 local fov_handler = require("fov.visibility")
 local actions = require("engine.actions")
-local engine_utils = require("engine.utils")
 local utils = require("utils")
 local ai_cfg = require("config.ai_config")
 
@@ -25,7 +24,7 @@ local function can_see(entity, target)
 	end
 
 	entity.can_see = false
-	if engine_utils.distance_between(entity, target) < entity.stats.sight.sight then
+	if utils.distance_between(entity, target) < entity.stats.sight.sight then
 		entity.can_see = fov_handler.refresh_visibility(
 			entity.x,
 			entity.y,
@@ -109,7 +108,7 @@ local function wander(entity)
 
 			entity.turns_to_idle = entity.turns_to_idle - 1
 			if entity.turns_to_idle <= 1 then
-				visuals:add_from_template("ping", entity.target_pos[1], entity.target_pos[2], 1)
+				effects:add_from_template("ping", entity.target_pos[1], entity.target_pos[2], 1)
 				entity.state = "idle"
 				entity.target_pos = nil
 				entity.path = nil
@@ -128,7 +127,7 @@ local function chase(entity)
 
 		if entity.path and entity.path_index then
 			if entity.path_index > #entity.path then
-				visuals:add_from_template("ping", entity.target_pos[1], entity.target_pos[2], 1)
+				effects:add_from_template("ping", entity.target_pos[1], entity.target_pos[2], 1)
 				entity.state = "idle"
 				entity.target_pos = nil
 				return
@@ -146,7 +145,7 @@ local function chase(entity)
 
 		entity.turns_to_idle = entity.turns_to_idle - 1
 		if entity.turns_to_idle <= 1 then
-			visuals:add_from_template("ping", entity.target_pos[1], entity.target_pos[2], 1)
+			effects:add_from_template("ping", entity.target_pos[1], entity.target_pos[2], 1)
 			entity.state = "idle"
 			entity.target_pos = nil
 			entity.path = nil
@@ -165,7 +164,7 @@ local function enemy_turn(entity)
 	end
 
 	if entity.can_see and not entity.could_see then
-		visuals:add_from_template("alert", entity.x, entity.y, entity.z, { anchor = entity })
+		effects:add_from_template("alert", entity.x, entity.y, entity.z, { anchor = entity })
 	end
 
 	entity.could_see = entity.can_see

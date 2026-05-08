@@ -58,6 +58,10 @@ function utils.in_radius(dx, dy, r)
 	return dx * dx + dy * dy <= r * r
 end
 
+function utils.distance_between(a, b)
+	return math.sqrt((a.x - b.x) ^ 2 + (a.y - b.y) ^ 2)
+end
+
 function utils.deep_print(tbl, indent, visited)
 	indent = indent or 0
 	visited = visited or {}

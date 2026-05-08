@@ -4,6 +4,7 @@ local types = require("map.tile_types")
 local voroni_generator = require("map.voronoi.generator")
 local utils = require("utils")
 local gen_cfg = require("config.generation_config")
+local entities = require("entities.entities")
 
 local map = {
 	max_x = nil,
@@ -39,6 +40,24 @@ function map:walkable(x, y, z)
 		return false
 	end
 	return self.tiles[y][x][z].walkable
+end
+
+function map:is_tile_free(x, y, z, skip_entities)
+	if not self:walkable(x, y, z) then
+		return false
+	end
+	for _, ent in ipairs(entities:get_entity_list()) do
+		if
+			not skip_entities[ent]
+			and not entities:get_tag_entity(ent, "walkable")
+			and ent.x == x
+			and ent.y == y
+			and ent.z == z
+		then
+			return false
+		end
+	end
+	return true
 end
 
 function map:is_visible(x, y)

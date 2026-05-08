@@ -1,14 +1,14 @@
 local ui_handler = require("visuals.ui")
 local entities = require("entities.entities")
-local render_utils = require("visuals.render_utils")
+local render_utils = require("visuals.render.utils")
 local map = require("map.map")
-local render_primitives = require("visuals.render_primitives")
+local render_primitives = require("visuals.render.primitives")
 local config = require("config.runtime")
 local render_cfg = require("config.render_config")
 local debug_state = require("debug.debug_state")
-local draw_buffer = require("visuals.draw_buffer")
+local draw_buffer = require("visuals.render.draw_buffer")
 
-local drawer = {}
+local painter = {}
 
 local tile_size
 local small_tile_size
@@ -63,34 +63,34 @@ local function emit_cover_rect(layer, z, y, x_screen, y_screen)
 	})
 end
 
-function drawer:draw_visual(visual, center_x, center_y, visible)
+function painter:draw_effect(effect, center_x, center_y, visible)
 	love.graphics.setFont(default_font)
 
-	if not (visible or not visual.params.needs_to_be_seen) then
+	if not (visible or not effect.params.needs_to_be_seen) then
 		return
 	end
 
-	local x_screen, y_screen = render_utils.get_screen_coords(visual.x, visual.y, center_x, center_y)
+	local x_screen, y_screen = render_utils.get_screen_coords(effect.x, effect.y, center_x, center_y)
 
 	-- rects
-	if visual.rects then
+	if effect.rects then
 		local color = { 1, 1, 1, 1 }
 
-		for _, rect in ipairs(visual.rects) do
-			if visual.params.decay_over_time then
+		for _, rect in ipairs(effect.rects) do
+			if effect.params.decay_over_time then
 				color =
-					render_utils.scale_color(rect.colors[1], visual.params.lifespan / visual.params.initial_lifespan)
+					render_utils.scale_color(rect.colors[1], effect.params.lifespan / effect.params.initial_lifespan)
 			else
-				color = rect.colors[visual.params.i]
+				color = rect.colors[effect.params.i]
 			end
 
-			local visual_size = rect.sizes[visual.params.i] * tile_size
+			local effect_size = rect.sizes[effect.params.i] * tile_size
 
 			render_primitives.draw_rect(
-				x_screen + ((tile_size - visual_size) / 2),
-				y_screen + ((tile_size - visual_size) / 2),
-				visual_size,
-				visual_size,
+				x_screen + ((tile_size - effect_size) / 2),
+				y_screen + ((tile_size - effect_size) / 2),
+				effect_size,
+				effect_size,
 				color,
 				rect.outline_width,
 				rect.outline_color,
@@ -100,15 +100,15 @@ function drawer:draw_visual(visual, center_x, center_y, visible)
 	end
 
 	-- panels
-	if visual.panels then
-		for _, panel in ipairs(visual.panels) do
-			local color = panel.colors[visual.params.i] or { 1, 1, 1, 1 }
-			local size_scale = (panel.sizes and panel.sizes[visual.params.i]) or 1
+	if effect.panels then
+		for _, panel in ipairs(effect.panels) do
+			local color = panel.colors[effect.params.i] or { 1, 1, 1, 1 }
+			local size_scale = (panel.sizes and panel.sizes[effect.params.i]) or 1
 			local rect_size = tile_size * size_scale
 
 			local px, py = render_utils.get_screen_coords(
-				(visual.anchor and visual.anchor.x) or visual.x,
-				(visual.anchor and visual.anchor.y - panel.offset_y) or visual.y,
+				(effect.anchor and effect.anchor.x) or effect.x,
+				(effect.anchor and effect.anchor.y - panel.offset_y) or effect.y,
 				center_x,
 				center_y
 			)
@@ -132,7 +132,7 @@ function drawer:draw_visual(visual, center_x, center_y, visible)
 	end
 end
 
-function drawer:draw_ui(ui)
+function painter:draw_ui(ui)
 	love.graphics.setFont(small_font)
 
 	local visible_texts = ui_handler:get_visible_texts(ui)
@@ -152,7 +152,7 @@ function drawer:draw_ui(ui)
 	)
 end
 
-function drawer:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, explored)
+function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, explored)
 	if not tile then
 		return
 	end
@@ -222,7 +222,7 @@ function drawer:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, explo
 	})
 end
 
-function drawer:emit_entity(entity, center_x, center_y, visible, explored)
+function painter:emit_entity(entity, center_x, center_y, visible, explored)
 	local tilelike = entities:get_tag_entity(entity, "tilelike")
 
 	if not visible and not (tilelike and explored) then
@@ -269,7 +269,7 @@ function drawer:emit_entity(entity, center_x, center_y, visible, explored)
 	end
 end
 
-function drawer:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
+function painter:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
 	if not debug_state.show_grid then
 		return
 	end
@@ -282,7 +282,7 @@ function drawer:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, came
 	end
 end
 
-function drawer:reload_fonts()
+function painter:reload_fonts()
 	tile_size = config.tile_size
 	small_tile_size = config.small_tile_size
 	default_font = config.font
@@ -290,8 +290,8 @@ function drawer:reload_fonts()
 	offset_amount = render_cfg.offset_amount_factor * tile_size
 end
 
-function drawer:reload_settings()
+function painter:reload_settings()
 	max_height = render_cfg.max_height
 end
 
-return drawer
+return painter

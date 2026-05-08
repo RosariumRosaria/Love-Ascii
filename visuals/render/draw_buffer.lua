@@ -1,4 +1,4 @@
-local render_primitives = require("visuals.render_primitives")
+local render_primitives = require("visuals.render.primitives")
 local config = require("config.runtime")
 
 local draw_buffer = {

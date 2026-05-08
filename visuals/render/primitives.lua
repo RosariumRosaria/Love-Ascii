@@ -1,7 +1,7 @@
 local config = require("config.runtime")
 local render_cfg = require("config.render_config")
 local tile_size
-local render_utils = require("visuals.render_utils")
+local render_utils = require("visuals.render.utils")
 local render_primitives = {}
 
 function render_primitives.draw_rect(
