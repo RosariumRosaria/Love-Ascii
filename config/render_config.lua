@@ -17,4 +17,5 @@ return {
 	entity_brightness_boost = 0.3,
 	shadow_brightness_scale = 0.25,
 	shadow_alpha_scale = 0.7,
+	ambient = 0.75,
 }

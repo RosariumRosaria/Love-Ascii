@@ -7,7 +7,7 @@ local render_utils = {}
 function render_utils.height_level_scale(z, max_height, max_z, min_z, visible, base)
 	local range = max_z - min_z
 	local normalized = (z - min_z) / range
-	local height_factor = 0.25 + normalized * 1.25
+	local height_factor = 0.25 + normalized * 1.75
 	local alpha = height_factor * base
 	if not visible then
 		alpha = alpha * 0.5
@@ -55,6 +55,20 @@ function render_utils.scale_color(color, scale)
 			(color[1] or 1) * scale,
 			(color[2] or 1) * scale,
 			(color[3] or 1) * scale,
+			(color[4] or 1),
+		}
+	else
+		return { 1, 1, 1, 1 }
+	end
+end
+
+function render_utils.apply_lighting(color, light)
+	local ambient = render_config.ambient
+	if color then
+		return {
+			math.min(1, (color[1] or 1) * ambient + light.r),
+			math.min(1, (color[2] or 1) * ambient + light.g),
+			math.min(1, (color[3] or 1) * ambient + light.b),
 			(color[4] or 1),
 		}
 	else

@@ -1,4 +1,5 @@
 local fov_handler = require("fov.visibility")
+local lighting = require("fov.lighting")
 local city_generator = require("map.city_generator")
 local types = require("map.tile_types")
 local voroni_generator = require("map.voronoi.generator")
@@ -13,6 +14,7 @@ local map = {
 	min_z = nil,
 	tiles = {},
 	visible = {},
+	lighting = {},
 	explored = {},
 	prev_visible = {},
 }
@@ -67,6 +69,10 @@ function map:is_visible(x, y)
 	return self.visible[y][x]
 end
 
+function map:get_lighting_tile(x, y)
+	return self.lighting[y][x]
+end
+
 function map:is_explored(x, y)
 	if not self:in_bounds(x, y) then
 		return false
@@ -96,10 +102,12 @@ function map:load(max_x, max_y, max_z, min_z, map_type)
 		self.tiles[y] = {}
 		self.visible[y] = {}
 		self.explored[y] = {}
+		self.lighting[y] = {}
 		for x = 1, self.max_x do
 			self.tiles[y][x] = {}
 			self.visible[y][x] = false
 			self.explored[y][x] = false
+			self.lighting[y][x] = { r = 0, g = 0, b = 0 }
 			self.tiles[y][x][1] = types.grass
 		end
 	end
@@ -135,7 +143,7 @@ function map:update_visibility(center_x, center_y, radius)
 	self.prev_visible = {}
 
 	fov_handler.refresh_visibility(center_x, center_y, radius, self.max_x, self.max_y, self.tiles, self.visible, true)
-
+	lighting.recompute(self.max_x, self.max_y, self.tiles, self.lighting)
 	local x1 = math.max(1, center_x - radius)
 	local x2 = math.min(self.max_x, center_x + radius)
 	local y1 = math.max(1, center_y - radius)
