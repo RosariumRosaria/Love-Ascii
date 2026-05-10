@@ -17,6 +17,6 @@ return {
 		base_turn_cost = 100,
 	},
 	pathfinding = {
-		max_iterations = 250,
+		max_iterations = 1000,
 	},
 }

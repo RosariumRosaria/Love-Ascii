@@ -90,11 +90,11 @@ return {
 	tree = {
 		name = "a tree",
 		type = "prop",
-		chars = { ".", ".", ".", ".", ".", "*" },
-		color = { 0.25, 0.65, 0.33, 1 },
+		chars = { ".", ".", ".", "#" },
+		color = { 0.95, 0.65, 0.33, 1 },
 		description = "A Tree",
 		tags = {
-			solid = true,
+			solid = false,
 			moveable = true,
 			tilelike = true,
 			covers = true,

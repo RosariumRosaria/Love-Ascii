@@ -49,7 +49,7 @@ local function emit_char(params)
 	})
 end
 
-local function emit_cover_rect(layer, z, y, x_screen, y_screen)
+local function emit_cover_rect(layer, z, y, x_screen, y_screen, color)
 	draw_buffer:emit({
 		z = z,
 		y = y,
@@ -57,7 +57,7 @@ local function emit_cover_rect(layer, z, y, x_screen, y_screen)
 		kind = "rect",
 		x_screen = x_screen,
 		y_screen = y_screen,
-		color = { 0, 0, 0, 1 },
+		color = color,
 		w = tile_size,
 		h = tile_size,
 	})
@@ -172,6 +172,9 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 
 	local base_color = render_utils.get_effective_color(tile.color, visible, explored)
 	local scaled_color = render_utils.scale_color(base_color, alpha)
+	if visible then
+		scaled_color = render_utils.apply_lighting(scaled_color, map:get_lighting_tile(x, y))
+	end
 
 	local outline_color = tile.outline_color
 
@@ -180,7 +183,12 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 	local base_dx, base_dy = get_offset(z, x, y, center_x, center_y)
 
 	if tile.covers then
-		emit_cover_rect(draw_buffer.LAYER.TILE_COVER, z, y, x_screen + base_dx, y_screen + base_dy)
+		local cover_color = { 0, 0, 0, 1 }
+		if visible then
+			local light = map:get_lighting_tile(x, y)
+			cover_color = { light.r * 0.5, light.g * 0.5, light.b * 0.5, 1 }
+		end
+		emit_cover_rect(draw_buffer.LAYER.TILE_COVER, z, y, x_screen + base_dx, y_screen + base_dy, cover_color)
 	end
 
 	local dx, dy = base_dx, base_dy
@@ -236,13 +244,21 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored)
 	end
 
 	local outline_color = entity.outline_color
+	if visible then
+		--1base_color = render_utils.apply_lighting(base_color, map:get_lighting_tile(entity.x, entity.y))
+	end
 	base_color, outline_color = apply_bw_mode(base_color, outline_color)
 
 	local x_screen, y_screen = render_utils.get_screen_coords(entity.x, entity.y, center_x, center_y)
 	local base = render_utils.distance_scale(entity.x, entity.y, center_x, center_y)
 
 	if entities:get_tag_entity(entity, "covers") then
-		emit_cover_rect(draw_buffer.LAYER.ENTITY_COVER, entity.z, entity.y, x_screen, y_screen)
+		local cover_color = { 0, 0, 0, 1 }
+		if visible then
+			local light = map:get_lighting_tile(entity.x, entity.y)
+			cover_color = { light.r * 0.5, light.g * 0.5, light.b * 0.5, 1 }
+		end
+		emit_cover_rect(draw_buffer.LAYER.ENTITY_COVER, entity.z, entity.y, x_screen, y_screen, cover_color)
 	end
 
 	for i, char_data in ipairs(entity.chars) do
