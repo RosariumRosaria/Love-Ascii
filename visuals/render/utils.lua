@@ -42,7 +42,7 @@ function render_utils.get_effective_color(color, visible, explored)
 			return { 1, 1, 1, 1 }
 		end
 	elseif explored then
-		return { 0.861, 0.771, 0.502, 0.8 } -- fog-of-war color
+		return { 0.861, 0.771, 0.502, 0.33 } -- fog-of-war color
 	end
 	return nil
 end
