@@ -10,6 +10,18 @@ function utils.in_bounds(x, y, max_x, max_y)
 	return x >= 1 and x <= max_x and y >= 1 and y <= max_y
 end
 
+function utils.get_neighbors(x, y, max_x, max_y)
+	local neighbors = {}
+	local offsets = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } }
+	for _, o in ipairs(offsets) do
+		local nx, ny = x + o[1], y + o[2]
+		if utils.in_bounds(nx, ny, max_x, max_y) then
+			table.insert(neighbors, { x = nx, y = ny })
+		end
+	end
+	return neighbors
+end
+
 function utils.deep_copy(tbl)
 	local copy = {}
 	for k, v in pairs(tbl) do
