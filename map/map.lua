@@ -5,6 +5,7 @@ local types = require("map.tile_types")
 local voroni_generator = require("map.voronoi.generator")
 local utils = require("utils")
 local gen_cfg = require("config.generation_config")
+local render_config = require("config.render_config")
 local entities = require("entities.entities")
 
 local map = {
@@ -69,7 +70,35 @@ function map:is_visible(x, y)
 	return self.visible[y][x]
 end
 
+function map:is_transparent(x, y)
+	local stack = self.tiles[y][x]
+	if not stack[1].transparent then
+		return false
+	end
+	if #stack > 1 and not stack[2].transparent then
+		return false
+	end
+	if entities:get_tag_location(x, y, 1, "solid") then
+		return false
+	end
+	return true
+end
+
 function map:get_lighting_tile(x, y)
+	--TODO: This is a hack to prevent lighting from showing on the sides of solid tiles.
+	--Should be replaced with somethign more robust (Each Tile stores NSWE for whether it's lit from that direction, and lighting checks those
+	-- This would also require the system to know where the viewer is, to see which light to use
+	if not self:is_transparent(x, y) then
+		for _, n in ipairs(utils.get_neighbors(x, y, self.max_x, self.max_y)) do
+			if self:is_transparent(n.x, n.y) and self:is_visible(n.x, n.y) then
+				local light = self.lighting[n.y][n.x]
+				if (light.r + light.g + light.b) > render_config.ambient then
+					return self.lighting[y][x]
+				end
+			end
+		end
+		return { r = 0, g = 0, b = 0 }
+	end
 	return self.lighting[y][x]
 end
 

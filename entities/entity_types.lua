@@ -1,7 +1,7 @@
 return {
 	player = {
 		chars = { "@" },
-		color = { 0.8, 0.8, 0.9, 1 },
+		color = { { 0.8, 0.8, 0.9, 1 } },
 		effect_color = { 0.45, 0.45, 0.5, 0.5 },
 		name = "Player",
 		type = "actor",
@@ -13,7 +13,7 @@ return {
 			interactable = true,
 		},
 		stats = {
-			health = { health = 20, max_health = 20 },
+			health = { health = 25, max_health = 25 },
 			stamina = { stamina = 10, max_stamina = 10 },
 			hunger = { hunger = 10, max_hunger = 10 },
 			sight = { sight = 30, max_sight = 30 },
@@ -26,7 +26,7 @@ return {
 			dummy_item = { name = "dummy" },
 		},
 
-		damage = 2,
+		damage = 3,
 		next_turn = 0,
 	},
 	zombie = {
@@ -35,7 +35,7 @@ return {
 		team = "enemy",
 		state = "idle",
 		chars = { "Z" },
-		color = { 0.3, 0.45, 0.25, 1 },
+		color = { { 0.3, 0.45, 0.25, 1 } },
 		effect_color = { 0.35, 0.6, 0.3, 0.5 },
 		description = "A zombie, try attacking it!",
 		default_action = "attackable",
@@ -64,7 +64,7 @@ return {
 		team = "enemy",
 		state = "idle",
 		chars = { "V" },
-		color = { 0.7, 0.2, 0.2, 1 },
+		color = { { 0.7, 0.2, 0.2, 1 } },
 		effect_color = { 0.35, 0.1, 0.1, 0.5 },
 		description = "A vampire, try attacking it!",
 		default_action = "attackable",
@@ -90,8 +90,8 @@ return {
 	tree = {
 		name = "Tree",
 		type = "prop",
-		chars = { ".", ".", ".", "#" },
-		color = { 0.95, 0.65, 0.33, 1 },
+		chars = { ".", ".", ".", "*" },
+		color = { { 0.75, 0.35, 0.1, 1 }, { 0.75, 0.35, 0.1, 1 }, { 0.75, 0.35, 0.1, 1 }, { 0.3, 0.75, 0.25, 1 } },
 		description = "A Tree",
 		tags = {
 			solid = true,
@@ -106,7 +106,7 @@ return {
 		name = "Torch",
 		type = "prop",
 		chars = { ".", "%" },
-		color = { 0.95, 0.45, 0.33, 1 },
+		color = { { 0.95, 0.45, 0.33, 1 } },
 		description = "A Torch",
 		default_action = "moveable",
 		tags = {
@@ -123,12 +123,33 @@ return {
 			radius = 7,
 		},
 	},
+	crystal = {
+		name = "Crystal",
+		type = "prop",
+		chars = { "<>", "<>" },
+		color = { { 0.35, 0.65, 0.83, 1 } },
+		description = "A Crystal",
+		default_action = "moveable",
+		tags = {
+			solid = false,
+			moveable = true,
+			tilelike = true,
+			covers = true,
+			attackable = false,
+			walkable = false,
+		},
+		light = {
+			color = { r = 0.35, g = 0.65, b = 0.83 },
+			intensity = 1,
+			radius = 7,
+		},
+	},
 	crate = {
 		name = "Crate",
 		description = "A heavy crate, try pushing it!",
 		type = "prop",
 		chars = { "#" },
-		color = { 0.38, 0.33, 0.30 },
+		color = { { 0.38, 0.33, 0.30 } },
 		default_action = "moveable",
 		tags = {
 			solid = false,
@@ -143,7 +164,7 @@ return {
 		description = "A heavy barricade, try pushing it!",
 		type = "prop",
 		chars = { "[]", "[]" },
-		color = { 0.47, 0.23, 0.23, 1 },
+		color = { { 0.47, 0.23, 0.23, 1 } },
 		default_action = "moveable",
 		tags = {
 			solid = true,
@@ -158,7 +179,7 @@ return {
 		description = "A door, try opening it!",
 		type = "prop",
 		chars = { "[", "[" },
-		color = { 0.47, 0.23, 0.23, 1 },
+		color = { { 0.47, 0.23, 0.23, 1 } },
 		default_action = "interactable",
 		tags = {
 			moveable = false,
@@ -183,7 +204,7 @@ return {
 		description = "A window, try opening it!",
 		type = "prop",
 		chars = { " ", "--", "--" },
-		color = { 0.47, 0.33, 0.23, 1 },
+		color = { { 0.47, 0.33, 0.23, 1 } },
 		default_action = "interactable",
 		tags = {
 			moveable = false,

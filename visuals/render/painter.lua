@@ -237,31 +237,38 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored)
 		return
 	end
 
-	local base_color = entity.color
-
-	if tilelike then
-		base_color = render_utils.get_effective_color(base_color, visible, explored)
-	end
-
 	local outline_color = entity.outline_color
-	if visible then
-		--1base_color = render_utils.apply_lighting(base_color, map:get_lighting_tile(entity.x, entity.y))
+	if debug_state.bw_mode and outline_color then
+		outline_color = render_utils.to_grayscale(outline_color)
 	end
-	base_color, outline_color = apply_bw_mode(base_color, outline_color)
+
+	local light = visible and map:get_lighting_tile(entity.x, entity.y) or nil
 
 	local x_screen, y_screen = render_utils.get_screen_coords(entity.x, entity.y, center_x, center_y)
 	local base = render_utils.distance_scale(entity.x, entity.y, center_x, center_y)
 
 	if entities:get_tag_entity(entity, "covers") then
 		local cover_color = { 0, 0, 0, 1 }
-		if visible then
-			local light = map:get_lighting_tile(entity.x, entity.y)
-			cover_color = { light.r * 0.5, light.g * 0.5, light.b * 0.5, 1 }
+		if visible and light then
+			local r = light.r or 0
+			local g = light.g or 0
+			local b = light.b or 0
+			cover_color = { r * 0.5, g * 0.5, b * 0.5, 1 }
 		end
 		emit_cover_rect(draw_buffer.LAYER.ENTITY_COVER, entity.z, entity.y, x_screen, y_screen, cover_color)
 	end
 
 	for i, char_data in ipairs(entity.chars) do
+		local base_color = entity.color[i] or entity.color[#entity.color]
+
+		if tilelike then
+			base_color = render_utils.get_effective_color(base_color, visible, explored)
+		end
+		if light then
+			base_color = render_utils.apply_lighting(base_color, light)
+		end
+		base_color = apply_bw_mode(base_color, nil)
+
 		local scale = render_utils.height_level_scale(entity.z + i, max_height, map.max_z, map.min_z, visible, base)
 			+ render_cfg.entity_brightness_boost
 
