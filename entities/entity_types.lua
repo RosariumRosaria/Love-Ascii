@@ -118,7 +118,7 @@ return {
 			walkable = false,
 		},
 		light = {
-			color = { r = 1, g = 0.6, b = 0.2 },
+			color = { r = 0.9, g = 0.6, b = 0.3 },
 			intensity = 1,
 			radius = 7,
 		},
@@ -139,7 +139,7 @@ return {
 			walkable = false,
 		},
 		light = {
-			color = { r = 0.35, g = 0.65, b = 0.83 },
+			color = { r = 0.35, g = 0.75, b = 0.93 },
 			intensity = 1,
 			radius = 7,
 		},
