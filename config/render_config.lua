@@ -18,5 +18,6 @@ return {
 	shadow_brightness_scale = 0.25,
 	shadow_alpha_scale = 0.7,
 	ambient = 0.25,
-	light_emissive = 0.75,
+	light_emissive = 0.7,
+	cover_emissive = 0.5,
 }
