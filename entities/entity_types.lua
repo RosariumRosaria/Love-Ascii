@@ -106,7 +106,7 @@ return {
 		name = "Torch",
 		type = "prop",
 		chars = { ".", "%" },
-		color = { { 0.95, 0.45, 0.33, 1 } },
+		color = { { 0.95, 0.25, 0.13, 1 } },
 		description = "A Torch",
 		default_action = "moveable",
 		tags = {
@@ -118,8 +118,8 @@ return {
 			walkable = false,
 		},
 		light = {
-			color = { r = 0.9, g = 0.6, b = 0.3 },
-			intensity = 1,
+			color = { r = 1, g = 0.65, b = 0.3 },
+			intensity = 0.8,
 			radius = 7,
 		},
 	},
@@ -139,8 +139,8 @@ return {
 			walkable = false,
 		},
 		light = {
-			color = { r = 0.35, g = 0.75, b = 0.93 },
-			intensity = 1,
+			color = { r = 0.8, g = 0.8, b = 0.8 },
+			intensity = 0.8,
 			radius = 7,
 		},
 	},
