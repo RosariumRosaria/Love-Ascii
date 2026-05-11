@@ -1,5 +1,6 @@
 local config = require("config.runtime")
 local render_config = require("config.render_config")
+local debug_state = require("debug.debug_state")
 local default_font
 local tile_size
 local render_utils = {}
@@ -92,12 +93,22 @@ function render_utils.apply_lighting(color, light, emissive_scale)
 
 	local lr, lg, lb = render_utils.normalize_light(light)
 
-	return {
-		math.min(1, (color[1] or 1) * fr + lr * emissive),
-		math.min(1, (color[2] or 1) * fg + lg * emissive),
-		math.min(1, (color[3] or 1) * fb + lb * emissive),
-		(color[4] or 1),
-	}
+	local r = (color[1] or 1) * fr + lr * emissive
+	local g = (color[2] or 1) * fg + lg * emissive
+	local b = (color[3] or 1) * fb + lb * emissive
+
+	if debug_state.normalize_lighting then
+		local m = math.max(r, g, b)
+		if m > 1 then
+			r, g, b = r / m, g / m, b / m
+		end
+	else
+		r = math.min(1, r)
+		g = math.min(1, g)
+		b = math.min(1, b)
+	end
+
+	return { r, g, b, (color[4] or 1) }
 end
 
 -- Converts XY map to XY screen coordinates based on camera center

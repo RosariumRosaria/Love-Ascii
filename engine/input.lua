@@ -91,6 +91,10 @@ function input_handler:update(dt)
 		debug_state.toggle_bw()
 	end
 
+	if self:pressed("toggle_normalize_lighting") then
+		debug_state.toggle_normalize_lighting()
+	end
+
 	if self:pressed("toggle_visualizer") then
 		visualizer:toggle()
 	end
