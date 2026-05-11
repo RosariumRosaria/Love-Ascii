@@ -106,7 +106,7 @@ return {
 		name = "Torch",
 		type = "prop",
 		chars = { ".", "%" },
-		color = { { 0.95, 0.25, 0.13, 1 } },
+		color = { { 1, 0.35, 0.1, 1 } },
 		description = "A Torch",
 		default_action = "moveable",
 		tags = {
@@ -118,7 +118,7 @@ return {
 			walkable = false,
 		},
 		light = {
-			color = { r = 1.0, g = 0.5, b = 0.15 },
+			color = { r = 1.0, g = 0.6, b = 0.25 },
 			intensity = 1,
 			radius = 7,
 		},
@@ -127,7 +127,7 @@ return {
 		name = "Crystal",
 		type = "prop",
 		chars = { "<>", "<>" },
-		color = { { 0.35, 0.65, 0.83, 1 } },
+		color = { { 0.7, 0.9, 0.95, 1 } },
 		description = "A Crystal",
 		default_action = "moveable",
 		tags = {
@@ -139,7 +139,7 @@ return {
 			walkable = false,
 		},
 		light = {
-			color = { r = 1, g = 1, b = 1 },
+			color = { r = 0.7, g = 0.9, b = 1 },
 			intensity = 0.8,
 			radius = 7,
 		},
