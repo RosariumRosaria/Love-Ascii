@@ -186,7 +186,8 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 		local cover_color = { 0, 0, 0, 1 }
 		if visible then
 			local r, g, b = render_utils.normalize_light(map:get_lighting_tile(x, y))
-			cover_color = { r * 0.5, g * 0.5, b * 0.5, 1 }
+			local k = render_cfg.cover_emissive
+			cover_color = { r * k, g * k, b * k, 1 }
 		end
 		emit_cover_rect(draw_buffer.LAYER.TILE_COVER, z, y, x_screen + base_dx, y_screen + base_dy, cover_color)
 	end
@@ -251,7 +252,8 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored)
 		local cover_color = { 0, 0, 0, 1 }
 		if visible and light then
 			local r, g, b = render_utils.normalize_light(light)
-			cover_color = { r * 0.5, g * 0.5, b * 0.5, 1 }
+			local k = render_cfg.cover_emissive
+			cover_color = { r * k, g * k, b * k, 1 }
 		end
 		emit_cover_rect(draw_buffer.LAYER.ENTITY_COVER, entity.z, entity.y, x_screen, y_screen, cover_color)
 	end
