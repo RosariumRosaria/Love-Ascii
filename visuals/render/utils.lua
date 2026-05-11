@@ -62,18 +62,42 @@ function render_utils.scale_color(color, scale)
 	end
 end
 
-function render_utils.apply_lighting(color, light)
-	local ambient = render_config.ambient
-	if color then
-		return {
-			math.min(1, (color[1] or 1) * ambient + light.r),
-			math.min(1, (color[2] or 1) * ambient + light.g),
-			math.min(1, (color[3] or 1) * ambient + light.b),
-			(color[4] or 1),
-		}
-	else
+-- Caps a light triple so no channel exceeds 1, preserving hue by scaling all
+-- channels uniformly. Returns r,g,b as three values.
+function render_utils.normalize_light(light)
+	local r = light.r or 0
+	local g = light.g or 0
+	local b = light.b or 0
+	local m = math.max(r, g, b)
+	if m > 1 then
+		return r / m, g / m, b / m
+	end
+	return r, g, b
+end
+
+function render_utils.apply_lighting(color, light, emissive_scale)
+	if not color then
 		return { 1, 1, 1, 1 }
 	end
+	local ambient = render_config.ambient
+	local emissive = render_config.light_emissive * (emissive_scale or 1)
+
+	local fr = ambient + (light.r or 0)
+	local fg = ambient + (light.g or 0)
+	local fb = ambient + (light.b or 0)
+	local m = math.max(fr, fg, fb)
+	if m > 1 then
+		fr, fg, fb = fr / m, fg / m, fb / m
+	end
+
+	local lr, lg, lb = render_utils.normalize_light(light)
+
+	return {
+		math.min(1, (color[1] or 1) * fr + lr * emissive),
+		math.min(1, (color[2] or 1) * fg + lg * emissive),
+		math.min(1, (color[3] or 1) * fb + lb * emissive),
+		(color[4] or 1),
+	}
 end
 
 -- Converts XY map to XY screen coordinates based on camera center

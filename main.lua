@@ -31,7 +31,7 @@ function love.load()
 	entities:add_from_template("crate", 10, 10, 1)
 	entities:add_from_template("barricade", 15, 14, 1)
 	entities:add_from_template("torch", 12, 14, 1)
-	entities:add_from_template("crystal", 17, 17, 1)
+	entities:add_from_template("crystal", 26, 17, 1)
 
 	map:load(map_max_x, map_max_y, map_max_z, map_min_z, "town")
 	map:update_visibility(entities.player.x, entities.player.y, entities.player.stats.sight.sight)
