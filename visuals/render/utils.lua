@@ -29,7 +29,6 @@ function render_utils.get_max_text_width(texts, font)
 	return max_width
 end
 
--- Returns the final color to be used based on visibility and exploration
 function render_utils.get_effective_color(color, visible, explored)
 	if visible then
 		if color then
@@ -43,13 +42,11 @@ function render_utils.get_effective_color(color, visible, explored)
 			return { 1, 1, 1, 1 }
 		end
 	elseif explored then
-		return { 0.861, 0.771, 0.502, 0.33 } -- fog-of-war color
+		return { 0.861, 0.771, 0.502, 0.33 } --TODO: extract to config
 	end
 	return nil
 end
 
--- Takes a color and scales it by a set amount.
--- If no color is provided, defaults to white.
 function render_utils.scale_color(color, scale)
 	if color then
 		return {
@@ -63,8 +60,21 @@ function render_utils.scale_color(color, scale)
 	end
 end
 
--- Caps a light triple so no channel exceeds 1, preserving hue by scaling all
--- channels uniformly. Returns r,g,b as three values.
+function render_utils.tint_color(color, tint)
+	if not color then
+		return { 1, 1, 1, 1 }
+	end
+	if not tint then
+		return color
+	end
+	return {
+		(color[1] or 1) * (tint[1] or 1),
+		(color[2] or 1) * (tint[2] or 1),
+		(color[3] or 1) * (tint[3] or 1),
+		(color[4] or 1),
+	}
+end
+
 function render_utils.normalize_light(light)
 	local r = light.r or 0
 	local g = light.g or 0
@@ -111,7 +121,6 @@ function render_utils.apply_lighting(color, light, emissive_scale)
 	return { r, g, b, (color[4] or 1) }
 end
 
--- Converts XY map to XY screen coordinates based on camera center
 function render_utils.get_screen_coords(x, y, center_x, center_y)
 	local screen_x = (x - center_x + love.graphics.getWidth() / tile_size / 2) * tile_size
 	local screen_y = (y - center_y + love.graphics.getHeight() / tile_size / 2) * tile_size
