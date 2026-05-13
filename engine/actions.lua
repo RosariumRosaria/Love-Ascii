@@ -3,6 +3,7 @@ local effects = require("visuals.effects.effects")
 local ui_handler = require("visuals.ui")
 local map = require("map.map")
 local utils = require("utils")
+local statuses = require("entities.statuses")
 
 local actions = {}
 
@@ -50,6 +51,7 @@ function actions:attack(entity, dx, dy)
 	if entity.team ~= target_entity.team then
 		effects:add_from_template("attack", entity.x + dx, entity.y + dy, entity.z)
 		entities:damage_entity(target_entity, entity)
+		statuses.apply_on_hit_statuses(entity, target_entity)
 	end
 	return true
 end

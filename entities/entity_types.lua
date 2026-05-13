@@ -56,6 +56,7 @@ return {
 		allowed_actions = {
 			attackable = true,
 		},
+		applies_on_hit = { { name = "poison", chance = 50 } },
 		next_turn = 0,
 	},
 	vampire = {
