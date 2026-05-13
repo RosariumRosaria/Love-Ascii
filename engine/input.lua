@@ -116,12 +116,12 @@ function input_handler:update(dt)
 		love.event.quit()
 	end
 
-	if self:pressed("poison") then
-		require("entities.statuses").add_status(self.actor, "poison")
+	if self:pressed("debug") then
+		require("entities.statuses").add_status(self.actor, "regen")
 	end
 
-	if self:pressed("big_poison") then
-		require("entities.statuses").add_status(self.actor, "poison", { name = "Nightshade", duration = 10 })
+	if self:pressed("debug_2") then
+		require("entities.statuses").add_status(self.actor, "stun")
 	end
 
 	ui:update_status(self.actor)
