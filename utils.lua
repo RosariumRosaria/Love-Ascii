@@ -108,4 +108,8 @@ function utils.overlapping_rectangles(r1, r2)
 	)
 end
 
+function utils.chance(percent)
+	return math.random() < percent / 100
+end
+
 return utils

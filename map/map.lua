@@ -21,18 +21,16 @@ local map = {
 	prev_visible = {},
 }
 
-function map:apply_tile_effects(entity)
-	local tile_stack = self.tiles[entity.y][entity.x]
-	if not tile_stack then
-		return
+function map:apply_on_step(entity)
+	local tile_stack = map:get_tile_stack(entity.x, entity.y)
+	statuses.apply_from_tile(entities.player, tile_stack)
+end
+
+function map:get_tile_stack(x, y)
+	if not map:in_bounds(x, y) then
+		return nil
 	end
-	for _, tile in ipairs(tile_stack) do
-		if tile.applies_status then
-			for _, status in ipairs(tile.applies_status) do
-				statuses.add_status(entity, status, nil, tile)
-			end
-		end
-	end
+	return self.tiles[y][x]
 end
 
 function map:in_bounds(x, y)

@@ -19,7 +19,7 @@ end
 
 local function commit_turn(actor)
 	statuses.tick_entity(actor)
-	map:apply_tile_effects(actor)
+	map:apply_on_step(actor)
 	local popped = scheduler.pop()
 	if not actor.dead then
 		scheduler.schedule_turn(popped)

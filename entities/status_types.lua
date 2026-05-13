@@ -24,6 +24,7 @@ return {
 				stats = { heal = { base = 1 } },
 			})
 		end,
+		visual = { tint = { 0.5, 1, 0.5 } },
 	},
 	strength = {
 		name = "Strength",
@@ -47,7 +48,7 @@ return {
 		color = { 0.5, 1, 0.5 },
 		duration = 1,
 		modifiers = {
-			{ stat = "sight", op = "mul", value = 0.5 },
+			{ stat = "sight", op = "mul", value = 0.5 }, --TODO: at some point I want this to also add stealth or something, but for now just reduce sight range
 		},
 		visual = { alpha = 0.5 },
 	},

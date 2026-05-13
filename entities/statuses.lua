@@ -143,4 +143,28 @@ function statuses.get_visual_state(entity)
 	return { alpha = alpha, tint = tint }
 end
 
+function statuses.apply_from_tile(entity, tile_stack)
+	if not tile_stack then
+		return
+	end
+	for _, tile in ipairs(tile_stack) do
+		if tile.applies_status then
+			for _, status in ipairs(tile.applies_status) do
+				statuses.add_status(entity, status, nil, tile)
+			end
+		end
+	end
+end
+
+function statuses.apply_on_hit_statuses(attacker, target)
+	if not attacker.applies_on_hit then
+		return
+	end
+	for _, status in ipairs(attacker.applies_on_hit) do
+		if utils.chance(status.chance or 100) then
+			statuses.add_status(target, status.name, nil, attacker)
+		end
+	end
+end
+
 return statuses
