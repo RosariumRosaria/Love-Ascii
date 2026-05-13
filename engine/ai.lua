@@ -19,16 +19,17 @@ local ai = {}
 ]]
 
 local function can_see(entity, target)
-	if not entity.stats.sight or entity.stats.sight.sight <= 0 then
+	local sight = entities:get_stat(entity, "sight")
+	if sight <= 0 then
 		return false
 	end
 
 	entity.can_see = false
-	if utils.distance_between(entity, target) < entity.stats.sight.sight then
+	if utils.distance_between(entity, target) < sight then
 		entity.can_see = fov_handler.refresh_visibility(
 			entity.x,
 			entity.y,
-			entity.stats.sight.sight,
+			sight,
 			map:get_max_x(),
 			map:get_max_y(),
 			map:get_tiles(),

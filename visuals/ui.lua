@@ -131,13 +131,14 @@ function ui_handler:update_status(entity)
 	status_panel.texts = {}
 	status_panel.entity = entity
 	if status_panel.mode == "stats" then
+		local entities = require("entities.entities")
 		for stat_name, stat in pairs(entity.stats) do
-			if type(stat) == "table" then
-				local current = stat[stat_name]
-				local max = stat["max_" .. stat_name]
+			local max = entities:get_stat(entity, stat_name)
+			if stat.current ~= nil then
+				local current = entities:get_current(entity, stat_name)
 				self:add_text_to_ui_by_name("status", stat_name .. ": " .. current .. " / " .. max)
 			else
-				self:add_text_to_ui_by_name("status", stat_name .. ": " .. stat)
+				self:add_text_to_ui_by_name("status", stat_name .. ": " .. max)
 			end
 		end
 	elseif status_panel.mode == "inventory" then
