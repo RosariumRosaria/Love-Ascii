@@ -23,7 +23,7 @@ local map = {
 
 function map:apply_on_step(entity)
 	local tile_stack = map:get_tile_stack(entity.x, entity.y)
-	statuses.apply_from_tile(entities.player, tile_stack)
+	statuses.apply_from_tile(entity, tile_stack)
 end
 
 function map:get_tile_stack(x, y)

@@ -1,6 +1,7 @@
 local config = require("config.runtime")
 local stats = require("entities.stats")
 local inventory = require("entities.inventory")
+local event_log = require("engine.event_log")
 local small_tile_size
 local small_font
 
@@ -128,8 +129,8 @@ function ui_handler:load()
 	status_panel.mode = "inventory"
 end
 
-function ui_handler:log_events(events)
-	for _, ev in ipairs(events) do
+function ui_handler:log_events()
+	for _, ev in ipairs(event_log:drain()) do
 		if ev.type == "damage" then
 			self:add_text_to_ui_by_name("terminal", ev.source .. " hit " .. ev.entity .. " for " .. ev.amount)
 		elseif ev.type == "heal" then
@@ -147,6 +148,8 @@ function ui_handler:log_events(events)
 			)
 		elseif ev.type == "action_failed" then
 			self:add_text_to_ui_by_name("terminal", ev.entity .. ": " .. ev.reason)
+		elseif ev.type == "debug" then
+			self:add_text_to_ui_by_name("terminal", "[DEBUG] " .. ev.message)
 		end
 	end
 end
@@ -169,7 +172,9 @@ function ui_handler:update_status(entity)
 			local label = item.name or item.key or "?"
 
 			local equipped = inventory.is_equipped(entity, item.key) and " (equipped)" or ""
-			self:add_text_to_ui_by_name("status", "- " .. label .. equipped)
+			local selected = inventory.get_selected(entity) and inventory.get_selected(entity).key == item.key and " <"
+				or ""
+			self:add_text_to_ui_by_name("status", "- " .. label .. equipped .. selected)
 		end
 	elseif status_panel.mode == "statuses" and entity.statuses then
 		for _, status in ipairs(entity.statuses) do
