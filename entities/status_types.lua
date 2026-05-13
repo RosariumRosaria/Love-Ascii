@@ -49,5 +49,6 @@ return {
 		modifiers = {
 			{ stat = "sight", op = "mul", value = 0.5 },
 		},
+		visual = { alpha = 0.5 },
 	},
 }

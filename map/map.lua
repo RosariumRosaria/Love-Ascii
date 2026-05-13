@@ -29,17 +29,6 @@ function map:apply_tile_effects(entity)
 	for _, tile in ipairs(tile_stack) do
 		if tile.applies_status then
 			for _, status in ipairs(tile.applies_status) do
-				print(
-					"Applying status "
-						.. status
-						.. " from tile at ("
-						.. entity.x
-						.. ", "
-						.. entity.y
-						.. ", "
-						.. entity.z
-						.. ")"
-				)
 				statuses.add_status(entity, status, nil, tile)
 			end
 		end

@@ -14,6 +14,22 @@ function statuses.find_status(entity, key)
 	return nil
 end
 
+function statuses.remove_status(entity, key)
+	if not entity.statuses then
+		return
+	end
+	for i, status in ipairs(entity.statuses) do
+		if status.key == key then
+			table.remove(entity.statuses, i)
+			return
+		end
+	end
+end
+
+function statuses.clear_statuses(entity)
+	entity.statuses = nil
+end
+
 function statuses.add_status(entity, name, overrides, source)
 	local template = status_types[name]
 	if not template then
@@ -103,6 +119,28 @@ function statuses.can_act(entity)
 		end
 	end
 	return true
+end
+
+function statuses.get_visual_state(entity)
+	local alpha = 1
+	local tint = { 1, 1, 1 }
+	if not entity.statuses then
+		return { alpha = alpha, tint = tint }
+	end
+	for _, status in ipairs(entity.statuses) do
+		local v = status.visual
+		if v then
+			if v.alpha then
+				alpha = alpha * v.alpha
+			end
+			if v.tint then
+				tint[1] = tint[1] * (v.tint[1] or 1)
+				tint[2] = tint[2] * (v.tint[2] or 1)
+				tint[3] = tint[3] * (v.tint[3] or 1)
+			end
+		end
+	end
+	return { alpha = alpha, tint = tint }
 end
 
 return statuses

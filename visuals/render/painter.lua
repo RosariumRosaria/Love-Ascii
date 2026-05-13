@@ -7,6 +7,7 @@ local config = require("config.runtime")
 local render_cfg = require("config.render_config")
 local debug_state = require("debug.debug_state")
 local draw_buffer = require("visuals.render.draw_buffer")
+local statuses = require("entities.statuses")
 
 local painter = {}
 
@@ -271,6 +272,13 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored)
 		local scaled_color = render_utils.scale_color(base_color, scale)
 		if light then
 			scaled_color = render_utils.apply_lighting(scaled_color, light, base)
+		end
+		local visuals = statuses.get_visual_state(entity)
+		if visuals.tint then
+			scaled_color = render_utils.tint_color(scaled_color, visuals.tint)
+		end
+		if visuals.alpha then
+			scaled_color = render_utils.scale_color(scaled_color, visuals.alpha)
 		end
 		scaled_color = apply_bw_mode(scaled_color, nil)
 
