@@ -2,7 +2,19 @@ local status_types = require("entities.status_types")
 local utils = require("utils")
 local statuses = {}
 
-function statuses.add_status(entity, name, overrides)
+local function find_status(entity, key)
+	if not entity.statuses then
+		return nil
+	end
+	for _, status in ipairs(entity.statuses) do
+		if status.key == key then
+			return status
+		end
+	end
+	return nil
+end
+
+function statuses.add_status(entity, name, overrides, source)
 	local template = status_types[name]
 	if not template then
 		error("Status '" .. tostring(name) .. "' does not exist")
@@ -10,14 +22,27 @@ function statuses.add_status(entity, name, overrides)
 
 	local new_status = utils.deep_copy(template)
 
+	new_status.source = source
+
 	if overrides then
 		for k, v in pairs(overrides) do
 			new_status[k] = v
 		end
 	end
 
+	if not new_status.key then
+		new_status.key = name or new_status.name
+	end
+
 	if not entity.statuses then
 		entity.statuses = {}
+	end
+
+	local existing_status = find_status(entity, new_status.key)
+
+	if existing_status then --TODO Could maybe be more robust, like checking if the damage is higher or something instead of just refreshing the duration
+		existing_status.duration = math.max(existing_status.duration, new_status.duration)
+		return
 	end
 
 	table.insert(entity.statuses, new_status)
