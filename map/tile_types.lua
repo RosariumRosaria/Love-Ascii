@@ -40,7 +40,7 @@ return {
 		name = "Water",
 		chars = { "~" },
 		walkable = false,
-		color = { 0.2, 0.45, 0.75, 1 },
+		color = { 0.3, 0.55, 0.95, 1 },
 		transparent = true,
 	},
 

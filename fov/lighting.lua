@@ -54,6 +54,24 @@ function lighting.recompute(max_x, max_y, map_grid, lighting_grid)
 				lighting_grid
 			)
 		end
+
+		if entity.inventory and entity.inventory.equipped then
+			for _, item in pairs(entity.inventory.equipped) do
+				if item.light then
+					lighting.cast_light(
+						entity.x,
+						entity.y,
+						item.light.radius,
+						item.light.color,
+						item.light.intensity,
+						max_x,
+						max_y,
+						map_grid,
+						lighting_grid
+					)
+				end
+			end
+		end
 	end
 end
 

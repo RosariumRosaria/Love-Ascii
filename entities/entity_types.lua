@@ -18,7 +18,7 @@ return {
 			hunger = { base = 10, current = 10 },
 			sight = { base = 30 },
 			speed = { base = 5 },
-			damage = { base = 3 },
+			damage = { base = 1 },
 		},
 
 		next_turn = 0,

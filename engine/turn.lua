@@ -26,7 +26,7 @@ local function commit_turn(actor)
 	if not actor.dead then
 		scheduler.schedule_turn(popped)
 	end
-	ui:log_events(event_log:drain())
+	ui:log_events()
 	post_turn_update(entities.player)
 end
 

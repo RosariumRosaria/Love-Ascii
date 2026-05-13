@@ -6,6 +6,7 @@ local ui = require("visuals.ui")
 local visualizer = require("map.voronoi.visualizer")
 local bindings = require("config.bindings")
 local statuses = require("entities.statuses")
+local inventory = require("entities.inventory")
 local input_handler = {
 	actor = nil,
 
@@ -116,6 +117,14 @@ function input_handler:update(dt)
 		love.event.quit()
 	end
 
+	if self:pressed("increment_selected_index") then
+		inventory.increment_selected_index(self.actor)
+	end
+
+	if self:pressed("use_selected") then
+		inventory.equip_or_use(self.actor)
+	end
+
 	if self:pressed("debug") then
 		statuses.add_status(self.actor, "regen")
 	end
@@ -124,6 +133,7 @@ function input_handler:update(dt)
 		statuses.add_status(self.actor, "strength")
 	end
 
+	ui:log_events()
 	ui:update_status(self.actor)
 end
 

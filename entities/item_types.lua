@@ -6,7 +6,7 @@ return {
 		slot = "mainhand",
 		chars = { "/" },
 		modifiers = {
-			modifiers = { stat = "damage", op = "add", value = 3 },
+			{ stat = "damage", op = "add", value = 3 },
 		},
 	},
 	health_potion = {
@@ -34,7 +34,7 @@ return {
 		chars = { "Y" },
 		slot = "offhand",
 		light = {
-			color = { r = 1.0, g = 0.6, b = 0.25 },
+			color = { r = 1.0, g = 0.85, b = 0.55 },
 			intensity = 1,
 			radius = 6,
 		},
