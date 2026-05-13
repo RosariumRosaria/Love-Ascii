@@ -1,10 +1,9 @@
 local utils = require("utils")
-
+local stats = require("entities.stats")
 local scheduler = {}
 
 local function get_speed(entity)
-	local entities = require("entities.entities")
-	return entities:get_stat(entity, "speed")
+	return stats.get_stat(entity, "speed")
 end
 
 local queue = {}

@@ -1,23 +1,24 @@
 local entities = require("entities.entities")
 local effects = require("visuals.effects.effects")
-local ui_handler = require("visuals.ui")
+
+local event_log = require("engine.event_log")
 local map = require("map.map")
 local utils = require("utils")
 local statuses = require("entities.statuses")
-
+local stats = require("entities.stats")
 local actions = {}
 
 local function validate_interaction(actor, target, name)
 	if not actor then
-		ui_handler:add_text_to_ui_by_name("terminal", name .. " actor is nil")
+		event_log:add({ type = "action_failed", entity = "Unknown", reason = name .. " actor is nil" })
 		return false
 	end
 	if not target then
-		ui_handler:add_text_to_ui_by_name("terminal", name .. " target is nil")
+		event_log:add({ type = "action_failed", entity = "Unknown", reason = name .. " target is nil" })
 		return false
 	end
 	if utils.distance_between(actor, target) > 1 then
-		ui_handler:add_text_to_ui_by_name("terminal", name .. " too far apart")
+		event_log:add({ type = "action_failed", entity = target.name, reason = "Too far apart" })
 		return false
 	end
 	return true
@@ -45,12 +46,12 @@ function actions:attack(entity, dx, dy)
 		return false
 	end
 	if not entities:get_tag_entity(target_entity, "attackable") then
-		ui_handler:add_text_to_ui_by_name("terminal", target_entity.name .. " is not attackable")
+		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not attackable" })
 		return false
 	end
 	if entity.team ~= target_entity.team then
 		effects:add_from_template("attack", entity.x + dx, entity.y + dy, entity.z)
-		entities:damage_entity(target_entity, entity)
+		entities:apply_damage(target_entity, stats.get_stat(entity, "damage"), entity.name)
 		statuses.apply_on_hit_statuses(entity, target_entity)
 	end
 	return true
@@ -63,7 +64,7 @@ function actions:interact(entity, dx, dy)
 	end
 
 	if not target_entity.tags.interactable then
-		ui_handler:add_text_to_ui_by_name("terminal", "Nothing to do here")
+		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not interactable" })
 		return false
 	end
 	entities:interact_with_entity(target_entity)
@@ -98,13 +99,13 @@ function actions:grab(entity, dx, dy)
 	return entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
 end
 
--- Push and pull are the same op: translate (actor, target) by (dx, dy). Caller supplies target; defaults to the tile ahead (push).
 function actions:drag(entity, dx, dy, target)
 	target = target or entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
 	if not validate_interaction(entity, target, "Drag") then
 		return false
 	end
 	if not target.tags.moveable then
+		event_log:add({ type = "action_failed", entity = target.name, reason = "Target is not moveable" })
 		return false
 	end
 
@@ -113,21 +114,25 @@ function actions:drag(entity, dx, dy, target)
 	local target_dest_x, target_dest_y = target.x + dx, target.y + dy
 
 	if not map:is_tile_free(actor_dest_x, actor_dest_y, entity.z, skip) then
-		ui_handler:add_text_to_ui_by_name("terminal", "Actor tile not free")
+		event_log:add({ type = "action_failed", entity = entity.name, reason = "Actor tile not free" })
 		return false
 	end
 	if not map:is_tile_free(target_dest_x, target_dest_y, target.z, skip) then
-		ui_handler:add_text_to_ui_by_name("terminal", "Target tile not free")
+		event_log:add({ type = "action_failed", entity = target.name, reason = "Target tile not free" })
 		return false
 	end
 
 	effects:add_from_template("trail", entity.x, entity.y, entity.z)
 	entity.x, entity.y = actor_dest_x, actor_dest_y
 	target.x, target.y = target_dest_x, target_dest_y
-	ui_handler:add_text_to_ui_by_name(
-		"terminal",
-		"Moved " .. target.name .. " to " .. target_dest_x .. ", " .. target_dest_y
-	)
+
+	event_log:add({
+		type = "entity_dragged",
+		entity = target.name,
+		source = entity.name,
+		dest_x = target_dest_x,
+		dest_y = target_dest_y,
+	})
 
 	return true
 end

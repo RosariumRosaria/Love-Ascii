@@ -20,12 +20,6 @@ return {
 			speed = { base = 5 },
 			damage = { base = 3 },
 		},
-		inventory = {
-			sword = { name = "sword" },
-			armor = { name = "armor" },
-			usable_item_dummy = { name = "usable_dummy" },
-			dummy_item = { name = "dummy" },
-		},
 
 		next_turn = 0,
 	},
@@ -103,16 +97,15 @@ return {
 			walkable = false,
 		},
 	},
-	torch = {
-		name = "Torch",
+	campfire = {
+		name = "Campfire",
 		type = "prop",
-		chars = { ".", "%" },
+		chars = { "%" },
 		color = { { 1, 0.35, 0.1, 1 } },
-		description = "A Torch",
-		default_action = "moveable",
+		description = "A Campfire",
 		tags = {
 			solid = false,
-			moveable = true,
+			moveable = false,
 			tilelike = true,
 			covers = true,
 			attackable = false,
@@ -121,7 +114,7 @@ return {
 		light = {
 			color = { r = 1.0, g = 0.6, b = 0.25 },
 			intensity = 1,
-			radius = 7,
+			radius = 10,
 		},
 	},
 	crystal = {
