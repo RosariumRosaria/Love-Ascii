@@ -1,5 +1,6 @@
 local config = require("config.runtime")
-
+local stats = require("entities.stats")
+local inventory = require("entities.inventory")
 local small_tile_size
 local small_font
 
@@ -127,31 +128,55 @@ function ui_handler:load()
 	status_panel.mode = "inventory"
 end
 
+function ui_handler:log_events(events)
+	for _, ev in ipairs(events) do
+		if ev.type == "damage" then
+			self:add_text_to_ui_by_name("terminal", ev.source .. " hit " .. ev.entity .. " for " .. ev.amount)
+		elseif ev.type == "heal" then
+			self:add_text_to_ui_by_name("terminal", ev.source .. " healed " .. ev.entity .. " for " .. ev.amount)
+		elseif ev.type == "status_expired" then
+			self:add_text_to_ui_by_name("terminal", ev.status .. " wore off " .. ev.entity)
+		elseif ev.type == "status_applied" then
+			self:add_text_to_ui_by_name("terminal", ev.source .. " applied " .. ev.status .. " to " .. ev.entity)
+		elseif ev.type == "entity_died" then
+			self:add_text_to_ui_by_name("terminal", ev.entity .. " was killed by " .. ev.source)
+		elseif ev.type == "entity_dragged" then
+			self:add_text_to_ui_by_name(
+				"terminal",
+				ev.source .. " dragged " .. ev.entity .. " to " .. ev.dest_x .. ", " .. ev.dest_y
+			)
+		elseif ev.type == "action_failed" then
+			self:add_text_to_ui_by_name("terminal", ev.entity .. ": " .. ev.reason)
+		end
+	end
+end
+
 function ui_handler:update_status(entity)
 	status_panel.texts = {}
 	status_panel.entity = entity
-	if status_panel.mode == "stats" then
-		local entities = require("entities.entities")
+	if status_panel.mode == "stats" and entity.stats then
 		for stat_name, stat in pairs(entity.stats) do
-			local max = entities:get_stat(entity, stat_name)
+			local max = stats.get_stat(entity, stat_name)
 			if stat.current ~= nil then
-				local current = entities:get_current(entity, stat_name)
+				local current = stats.get_current(entity, stat_name)
 				self:add_text_to_ui_by_name("status", stat_name .. ": " .. current .. " / " .. max)
 			else
 				self:add_text_to_ui_by_name("status", stat_name .. ": " .. max)
 			end
 		end
-	elseif status_panel.mode == "inventory" then
-		for item_name, _ in pairs(entity.inventory) do
-			self:add_text_to_ui_by_name("status", "- " .. item_name)
+	elseif status_panel.mode == "inventory" and entity.inventory then
+		for _, item in ipairs(entity.inventory.items) do
+			local label = item.name or item.key or "?"
+
+			local equipped = inventory.is_equipped(entity, item.key) and " (equipped)" or ""
+			self:add_text_to_ui_by_name("status", "- " .. label .. equipped)
 		end
-	elseif status_panel.mode == "statuses" then
-		if entity.statuses then
-			for _, status in ipairs(entity.statuses) do
-				local label = status.name or status.key or "?"
-				self:add_text_to_ui_by_name("status", "- " .. label .. " (" .. status.duration .. ")")
-			end
+	elseif status_panel.mode == "statuses" and entity.statuses then
+		for _, status in ipairs(entity.statuses) do
+			local label = status.name or status.key or "?"
+			self:add_text_to_ui_by_name("status", "- " .. label .. " (" .. status.duration .. ")")
 		end
+
 		if not entity.statuses or #entity.statuses == 0 then
 			self:add_text_to_ui_by_name("status", "No statuses")
 		end

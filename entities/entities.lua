@@ -1,7 +1,9 @@
 local entity_types = require("entities.entity_types")
-local ui_handler = require("visuals.ui")
+local event_log = require("engine.event_log")
+
 local utils = require("utils")
 local scheduler = require("engine.scheduler")
+local stats = require("entities.stats")
 
 local entities = {
 	entity_list = {},
@@ -36,86 +38,32 @@ function entities:get_tag_entity(entity, tag)
 	return entity.tags[tag]
 end
 
-function entities:get_stat(entity, name)
-	local stat = entity.stats and entity.stats[name]
-	if not stat then
-		return 0
+function entities:apply_damage(target, amount, source_name)
+	if not target.stats or not target.stats.health then
+		return nil
 	end
-	local statuses = require("entities.statuses")
-	local add, mul = statuses.get_modifier_sum(entity, name)
-	return (stat.base + add) * mul
-end
+	local before = stats.get_current(target, "health")
+	stats.set_current(target, "health", before - amount)
+	local after = stats.get_current(target, "health")
+	event_log:add({ type = "damage", entity = target.name, source = source_name, amount = amount })
 
-function entities:get_current(entity, name)
-	local stat = entity.stats and entity.stats[name]
-	if not stat then
-		return 0
-	end
-	if stat.current == nil then
-		return self:get_stat(entity, name)
-	end
-	return stat.current
-end
+	local killed = after <= 0
 
-function entities:set_current(entity, name, value)
-	local stat = entity.stats and entity.stats[name]
-	if not stat or stat.current == nil then
-		return
-	end
-	local max = self:get_stat(entity, name)
-	if value < 0 then
-		value = 0
-	elseif value > max then
-		value = max
-	end
-	stat.current = value
-end
-
-function entities:damage_entity(target_entity, entity)
-	if not entity or not target_entity or not target_entity.stats or not target_entity.stats.health then
-		return false
-	end
-
-	local damage = self:get_stat(entity, "damage")
-	if damage <= 0 then
-		return false
-	end
-
-	local remaining = self:get_current(target_entity, "health") - damage
-	self:set_current(target_entity, "health", remaining)
-
-	local target_name = target_entity.name or "Unnamed"
-	local name = entity.name or "Unnamed"
-	ui_handler:add_text_to_ui_by_name(
-		"terminal",
-		name .. " hit " .. target_name .. ": " .. self:get_current(target_entity, "health") .. " HP remaining!"
-	)
-
-	if self:get_current(target_entity, "health") <= 0 then
-		target_entity.dead = true
-		self:remove_entity(target_entity)
+	if killed then
+		target.dead = true
+		event_log:add({ type = "entity_died", entity = target.name, source = source_name })
+		entities:remove_entity(target)
 	end
 end
 
-function entities:heal_entity(target_entity, entity)
-	if not entity or not target_entity or not target_entity.stats or not target_entity.stats.health then
-		return false
+function entities:apply_heal(target, amount, source_name)
+	if not target.stats or not target.stats.health then
+		return nil
 	end
+	local before = stats.get_current(target, "health")
+	stats.set_current(target, "health", before + amount)
 
-	local heal = self:get_stat(entity, "heal")
-	if heal <= 0 then
-		return false
-	end
-
-	local remaining = self:get_current(target_entity, "health") + heal
-	self:set_current(target_entity, "health", remaining)
-
-	local target_name = target_entity.name or "Unnamed"
-	local name = entity.name or "Unnamed"
-	ui_handler:add_text_to_ui_by_name(
-		"terminal",
-		name .. " healed " .. target_name .. ": " .. self:get_current(target_entity, "health") .. " HP remaining!"
-	)
+	event_log:add({ type = "heal", entity = target.name, source = source_name, amount = amount })
 end
 
 function entities:interact_with_entity(entity)
@@ -139,7 +87,7 @@ end
 
 function entities:inspect_entity(entity)
 	if entity.description then
-		ui_handler:add_text_to_ui_by_name("terminal", entity.description)
+		event_log:add({ type = "describe", entity = entity.name, description = entity.description })
 	end
 end
 
@@ -219,16 +167,6 @@ function entities:add_from_template(name, x, y, z, overrides)
 
 	self:add_entity(new_entity)
 	return new_entity
-end
-
-function entities:describe(entity)
-	if not entity then
-		ui_handler:add_text_to_ui_by_name("terminal", "Entity is nil!")
-		return false
-	end
-	for k, v in pairs(entity) do
-		ui_handler:add_text_to_ui_by_name("terminal", "key: " .. tostring(k) .. "value: " .. tostring(v))
-	end
 end
 
 return entities

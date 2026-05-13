@@ -1,6 +1,6 @@
 return {
 	grass = {
-		name = "grass",
+		name = "Grass",
 		chars = { "." },
 		walkable = true,
 		color = { 0.33, 0.85, 0.33, 1 },
@@ -9,7 +9,7 @@ return {
 	},
 
 	shrub = {
-		name = "shrub",
+		name = "Shrub",
 		chars = { "*" },
 		walkable = true,
 		color = { 0.35, 0.95, 0.35, 1 },
@@ -20,7 +20,7 @@ return {
 	},
 
 	v_wall = {
-		name = "wall",
+		name = "Wall",
 		chars = { "|" },
 		walkable = false,
 		color = { 0.65, 0.65, 0.7, 1 },
@@ -29,7 +29,7 @@ return {
 	},
 
 	c_wall = {
-		name = "wall",
+		name = "Pillar",
 		chars = { "+" },
 		walkable = false,
 		color = { 0.65, 0.65, 0.7, 1 },
@@ -37,7 +37,7 @@ return {
 	},
 
 	water = {
-		name = "water",
+		name = "Water",
 		chars = { "~" },
 		walkable = false,
 		color = { 0.2, 0.45, 0.75, 1 },
@@ -45,7 +45,7 @@ return {
 	},
 
 	floor = {
-		name = "floor",
+		name = "Floor",
 		chars = { ":" },
 		walkable = true,
 		color = { 0.6, 0.5, 0.4, 1 },
@@ -54,7 +54,7 @@ return {
 	},
 
 	air = {
-		name = "air",
+		name = "Air",
 		chars = { " " },
 		walkable = false,
 		color = { 0.9, 0.9, 1.0, 0.0 },

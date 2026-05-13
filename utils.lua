@@ -1,5 +1,3 @@
-local ui = require("visuals.ui")
-
 local utils = {}
 
 function utils.clamp(val, min, max)
@@ -83,7 +81,7 @@ function utils.deep_print(tbl, indent, visited)
 		return
 	end
 	visited[tbl] = true
-
+	local ui = require("visuals.ui")
 	for k, v in pairs(tbl) do
 		local key_str = tostring(k)
 		if type(v) == "table" then

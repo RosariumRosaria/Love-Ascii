@@ -6,6 +6,8 @@ local entities = require("entities.entities")
 local scheduler = require("engine.scheduler")
 local game_cfg = require("config.game_config")
 local statuses = require("entities.statuses")
+local stats = require("entities.stats")
+local event_log = require("engine.event_log")
 
 local turn = {
 	time_since_last_tick = 0,
@@ -13,7 +15,7 @@ local turn = {
 }
 
 local function post_turn_update(player)
-	map:update_visibility(player.x, player.y, entities:get_stat(player, "sight"))
+	map:update_visibility(player.x, player.y, stats.get_stat(player, "sight"))
 	ui:update_status(player)
 end
 
@@ -24,6 +26,7 @@ local function commit_turn(actor)
 	if not actor.dead then
 		scheduler.schedule_turn(popped)
 	end
+	ui:log_events(event_log:drain())
 	post_turn_update(entities.player)
 end
 

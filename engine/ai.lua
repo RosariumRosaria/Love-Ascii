@@ -6,6 +6,7 @@ local fov_handler = require("fov.visibility")
 local actions = require("engine.actions")
 local utils = require("utils")
 local ai_cfg = require("config.ai_config")
+local stats = require("entities.stats")
 
 local ai = {}
 --[[ TODO, At some point the flow should probably be more like
@@ -19,7 +20,7 @@ local ai = {}
 ]]
 
 local function can_see(entity, target)
-	local sight = entities:get_stat(entity, "sight")
+	local sight = stats.get_stat(entity, "sight")
 	if sight <= 0 then
 		return false
 	end

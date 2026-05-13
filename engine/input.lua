@@ -5,7 +5,7 @@ local debug_state = require("debug.debug_state")
 local ui = require("visuals.ui")
 local visualizer = require("map.voronoi.visualizer")
 local bindings = require("config.bindings")
-
+local statuses = require("entities.statuses")
 local input_handler = {
 	actor = nil,
 
@@ -117,11 +117,11 @@ function input_handler:update(dt)
 	end
 
 	if self:pressed("debug") then
-		require("entities.statuses").add_status(self.actor, "regen")
+		statuses.add_status(self.actor, "regen")
 	end
 
 	if self:pressed("debug_2") then
-		require("entities.statuses").add_status(self.actor, "strength")
+		statuses.add_status(self.actor, "strength")
 	end
 
 	ui:update_status(self.actor)

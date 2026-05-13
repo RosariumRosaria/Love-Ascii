@@ -1,5 +1,7 @@
 local status_types = require("entities.status_types")
+local entities = require("entities.entities")
 local utils = require("utils")
+local event_log = require("engine.event_log")
 local statuses = {}
 
 function statuses.find_status(entity, key)
@@ -21,13 +23,21 @@ function statuses.remove_status(entity, key)
 	for i, status in ipairs(entity.statuses) do
 		if status.key == key then
 			table.remove(entity.statuses, i)
+			event_log:add({ type = "status_expired", entity = entity.name, status = status.name })
 			return
 		end
 	end
 end
 
 function statuses.clear_statuses(entity)
-	entity.statuses = nil
+	if not entity.statuses then
+		return
+	end
+	for i, status in ipairs(entity.statuses) do
+		table.remove(entity.statuses, i)
+		event_log:add({ type = "status_expired", entity = entity.name, status = status.name })
+		return
+	end
 end
 
 function statuses.add_status(entity, name, overrides, source)
@@ -38,7 +48,7 @@ function statuses.add_status(entity, name, overrides, source)
 
 	local new_status = utils.deep_copy(template)
 
-	new_status.source = source
+	new_status.source = source or { name = "Unknown" }
 
 	if overrides then
 		for k, v in pairs(overrides) do
@@ -62,29 +72,31 @@ function statuses.add_status(entity, name, overrides, source)
 		existing_status.duration = math.max(existing_status.duration, new_status.duration)
 		return
 	end
-
+	event_log:add({
+		type = "status_applied",
+		entity = entity.name,
+		status = new_status.name,
+		source = new_status.source.name,
+	})
 	table.insert(entity.statuses, new_status)
 end
 
-function statuses.get_modifier_sum(entity, stat_name)
-	local add, mul = 0, 1
-	if not entity.statuses then
-		return add, mul
-	end
-	for _, status in ipairs(entity.statuses) do
-		if status.modifiers then
-			for _, mod in ipairs(status.modifiers) do
-				if mod.stat == stat_name then
-					if mod.op == "add" then
-						add = add + mod.value
-					elseif mod.op == "mul" then
-						mul = mul * mod.value
-					end
-				end
+local function tick_status(entity, status)
+	if status.on_tick then
+		if status.on_tick then
+			if status.on_tick.damage then
+				entities:apply_damage(entity, status.on_tick.damage, status.name)
+			end
+			if status.on_tick.heal then
+				entities:apply_heal(entity, status.on_tick.heal, status.name)
 			end
 		end
 	end
-	return add, mul
+
+	status.duration = status.duration - 1
+	if status.duration <= 0 then
+		statuses.remove_status(entity, status.key)
+	end
 end
 
 function statuses.tick_entity(entity)
@@ -93,15 +105,7 @@ function statuses.tick_entity(entity)
 	end
 
 	for i = #entity.statuses, 1, -1 do
-		local status = entity.statuses[i]
-		if status.on_tick then
-			status.on_tick(entity)
-		end
-
-		status.duration = status.duration - 1
-		if status.duration <= 0 then
-			table.remove(entity.statuses, i)
-		end
+		tick_status(entity, entity.statuses[i])
 
 		if entity.dead then
 			break
