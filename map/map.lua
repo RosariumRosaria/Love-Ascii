@@ -7,6 +7,7 @@ local utils = require("utils")
 local gen_cfg = require("config.generation_config")
 local render_config = require("config.render_config")
 local entities = require("entities.entities")
+local statuses = require("entities.statuses")
 
 local map = {
 	max_x = nil,
@@ -19,6 +20,31 @@ local map = {
 	explored = {},
 	prev_visible = {},
 }
+
+function map:apply_tile_effects(entity)
+	local tile_stack = self.tiles[entity.y][entity.x]
+	if not tile_stack then
+		return
+	end
+	for _, tile in ipairs(tile_stack) do
+		if tile.applies_status then
+			for _, status in ipairs(tile.applies_status) do
+				print(
+					"Applying status "
+						.. status
+						.. " from tile at ("
+						.. entity.x
+						.. ", "
+						.. entity.y
+						.. ", "
+						.. entity.z
+						.. ")"
+				)
+				statuses.add_status(entity, status, nil, tile)
+			end
+		end
+	end
+end
 
 function map:in_bounds(x, y)
 	return utils.in_bounds(x, y, self.max_x, self.max_y)

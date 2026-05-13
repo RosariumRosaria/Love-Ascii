@@ -19,6 +19,7 @@ end
 
 local function commit_turn(actor)
 	statuses.tick_entity(actor)
+	map:apply_tile_effects(actor)
 	local popped = scheduler.pop()
 	if not actor.dead then
 		scheduler.schedule_turn(popped)
@@ -37,7 +38,7 @@ function turn:update(dt)
 	end
 
 	if actor ~= input:get_actor() then
-		if not statuses.find_status(actor, "stun") then
+		if statuses.can_act(actor) then
 			ai:take_turn(actor)
 		end
 		commit_turn(actor)
@@ -52,7 +53,7 @@ function turn:update(dt)
 
 	self.time_since_last_tick = 0
 
-	if statuses.find_status(actor, "stun") then
+	if not statuses.can_act(actor) then
 		commit_turn(actor)
 	elseif input:try_take_turn() then
 		commit_turn(actor)

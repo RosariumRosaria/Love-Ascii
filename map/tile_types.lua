@@ -15,6 +15,7 @@ return {
 		color = { 0.35, 0.95, 0.35, 1 },
 		transparent = true,
 		covers = true,
+		applies_status = { "obscured" },
 		natural_height = 0.75,
 	},
 
