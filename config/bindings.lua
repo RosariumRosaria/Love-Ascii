@@ -3,7 +3,8 @@ return {
 	interact = { "e" },
 	inspect = { "r" },
 	grab = { "q" },
-
+	poison = { "t" },
+	big_poison = { "y" },
 	move_up = { "up", "w" },
 	move_down = { "down", "s" },
 	move_left = { "left", "a" },

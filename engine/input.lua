@@ -104,17 +104,27 @@ function input_handler:update(dt)
 		render:reload_fonts()
 	end
 
-	if self:is_down("switch_offset") then
+	if self:pressed("switch_offset") then
 		debug_state.switch_offset()
 	end
 
-	if self:is_down("switch_status") then
+	if self:pressed("switch_status") then
 		ui:switch_status()
 	end
 
 	if self:is_down("quit") then
 		love.event.quit()
 	end
+
+	if self:pressed("poison") then
+		require("entities.statuses").add_status(self.actor, "poison")
+	end
+
+	if self:pressed("big_poison") then
+		require("entities.statuses").add_status(self.actor, "poison", { name = "Nightshade", duration = 10 })
+	end
+
+	ui:update_status(self.actor)
 end
 
 function input_handler:try_take_turn()
