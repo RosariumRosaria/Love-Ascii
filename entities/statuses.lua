@@ -2,7 +2,7 @@ local status_types = require("entities.status_types")
 local utils = require("utils")
 local statuses = {}
 
-local function find_status(entity, key)
+function statuses.find_status(entity, key)
 	if not entity.statuses then
 		return nil
 	end
@@ -38,9 +38,11 @@ function statuses.add_status(entity, name, overrides, source)
 		entity.statuses = {}
 	end
 
-	local existing_status = find_status(entity, new_status.key)
+	local existing_status = statuses.find_status(entity, new_status.key)
 
-	if existing_status then --TODO Could maybe be more robust, like checking if the damage is higher or something instead of just refreshing the duration
+	if existing_status then
+		-- [[TODO Could maybe be more robust, like checking if the damage is higher instead of just refreshing the duration
+		-- Or should it care about the source? Maybe only refresh if it's the same source? ]]
 		existing_status.duration = math.max(existing_status.duration, new_status.duration)
 		return
 	end

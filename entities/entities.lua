@@ -97,6 +97,27 @@ function entities:damage_entity(target_entity, entity)
 	end
 end
 
+function entities:heal_entity(target_entity, entity)
+	if not entity or not target_entity or not target_entity.stats or not target_entity.stats.health then
+		return false
+	end
+
+	local heal = self:get_stat(entity, "heal")
+	if heal <= 0 then
+		return false
+	end
+
+	local remaining = self:get_current(target_entity, "health") + heal
+	self:set_current(target_entity, "health", remaining)
+
+	local target_name = target_entity.name or "Unnamed"
+	local name = entity.name or "Unnamed"
+	ui_handler:add_text_to_ui_by_name(
+		"terminal",
+		name .. " healed " .. target_name .. ": " .. self:get_current(target_entity, "health") .. " HP remaining!"
+	)
+end
+
 function entities:interact_with_entity(entity)
 	local interaction = entity.interaction
 	if not interaction then
