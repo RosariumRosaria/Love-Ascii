@@ -2,6 +2,11 @@ local utils = require("utils")
 
 local scheduler = {}
 
+local function get_speed(entity)
+	local entities = require("entities.entities")
+	return entities:get_stat(entity, "speed")
+end
+
 local queue = {}
 local current_time = 0
 
@@ -31,7 +36,7 @@ function scheduler.schedule_turn(entity)
 	if entity.dead then
 		return
 	end
-	local turns = convert_speed_to_turns(entity.stats.speed.speed)
+	local turns = convert_speed_to_turns(get_speed(entity))
 	entity.next_turn = current_time + turns
 	utils.priority_queue_put(queue, entity, entity.next_turn)
 end

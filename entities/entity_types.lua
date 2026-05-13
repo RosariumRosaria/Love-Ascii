@@ -13,11 +13,12 @@ return {
 			interactable = true,
 		},
 		stats = {
-			health = { health = 25, max_health = 25 },
-			stamina = { stamina = 10, max_stamina = 10 },
-			hunger = { hunger = 10, max_hunger = 10 },
-			sight = { sight = 30, max_sight = 30 },
-			speed = { speed = 5, max_speed = 5 },
+			health = { base = 25, current = 25 },
+			stamina = { base = 10, current = 10 },
+			hunger = { base = 10, current = 10 },
+			sight = { base = 30 },
+			speed = { base = 5 },
+			damage = { base = 3 },
 		},
 		inventory = {
 			sword = { name = "sword" },
@@ -26,7 +27,6 @@ return {
 			dummy_item = { name = "dummy" },
 		},
 
-		damage = 3,
 		next_turn = 0,
 	},
 	zombie = {
@@ -40,11 +40,11 @@ return {
 		description = "A zombie, try attacking it!",
 		default_action = "attackable",
 		stats = {
-			health = { health = 10, max_health = 10 },
-			sight = { sight = 30, max_sight = 30 },
-			speed = { speed = 4, max_speed = 4 },
+			health = { base = 10, current = 10 },
+			sight = { base = 30 },
+			speed = { base = 4 },
+			damage = { base = 1 },
 		},
-		damage = 1,
 		tags = {
 			solid = false,
 			moveable = true,
@@ -69,11 +69,11 @@ return {
 		description = "A vampire, try attacking it!",
 		default_action = "attackable",
 		stats = {
-			health = { health = 10, max_health = 10 },
-			sight = { sight = 30, max_sight = 30 },
-			speed = { speed = 6, max_speed = 6 },
+			health = { base = 10, current = 10 },
+			sight = { base = 30 },
+			speed = { base = 6 },
+			damage = { base = 1 },
 		},
-		damage = 1,
 		tags = {
 			solid = false,
 			moveable = true,

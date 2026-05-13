@@ -36,26 +36,62 @@ function entities:get_tag_entity(entity, tag)
 	return entity.tags[tag]
 end
 
+function entities:get_stat(entity, name)
+	local stat = entity.stats and entity.stats[name]
+	if not stat then
+		return 0
+	end
+	local statuses = require("entities.statuses")
+	local add, mul = statuses.get_modifier_sum(entity, name)
+	return (stat.base + add) * mul
+end
+
+function entities:get_current(entity, name)
+	local stat = entity.stats and entity.stats[name]
+	if not stat then
+		return 0
+	end
+	if stat.current == nil then
+		return self:get_stat(entity, name)
+	end
+	return stat.current
+end
+
+function entities:set_current(entity, name, value)
+	local stat = entity.stats and entity.stats[name]
+	if not stat or stat.current == nil then
+		return
+	end
+	local max = self:get_stat(entity, name)
+	if value < 0 then
+		value = 0
+	elseif value > max then
+		value = max
+	end
+	stat.current = value
+end
+
 function entities:damage_entity(target_entity, entity)
-	if
-		not entity
-		or not target_entity
-		or not target_entity.stats
-		or not target_entity.stats.health
-		or not entity.damage
-	then
+	if not entity or not target_entity or not target_entity.stats or not target_entity.stats.health then
 		return false
 	end
 
-	target_entity.stats.health.health = target_entity.stats.health.health - entity.damage
+	local damage = self:get_stat(entity, "damage")
+	if damage <= 0 then
+		return false
+	end
+
+	local remaining = self:get_current(target_entity, "health") - damage
+	self:set_current(target_entity, "health", remaining)
+
 	local target_name = target_entity.name or "Unnamed"
 	local name = entity.name or "Unnamed"
 	ui_handler:add_text_to_ui_by_name(
 		"terminal",
-		name .. " hit " .. target_name .. ": " .. target_entity.stats.health.health .. " HP remaining!"
+		name .. " hit " .. target_name .. ": " .. self:get_current(target_entity, "health") .. " HP remaining!"
 	)
 
-	if target_entity.stats.health.health <= 0 then
+	if self:get_current(target_entity, "health") <= 0 then
 		target_entity.dead = true
 		self:remove_entity(target_entity)
 	end
