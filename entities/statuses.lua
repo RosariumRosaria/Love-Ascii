@@ -93,4 +93,16 @@ function statuses.tick_entity(entity)
 	end
 end
 
+function statuses.can_act(entity)
+	if not entity.statuses then
+		return true
+	end
+	for _, status in ipairs(entity.statuses) do
+		if status.disables_action then
+			return false
+		end
+	end
+	return true
+end
+
 return statuses

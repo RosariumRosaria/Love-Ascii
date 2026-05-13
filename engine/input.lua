@@ -121,7 +121,7 @@ function input_handler:update(dt)
 	end
 
 	if self:pressed("debug_2") then
-		require("entities.statuses").add_status(self.actor, "stun")
+		require("entities.statuses").add_status(self.actor, "strength")
 	end
 
 	ui:update_status(self.actor)

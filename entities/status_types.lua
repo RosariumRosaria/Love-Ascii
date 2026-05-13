@@ -37,7 +37,17 @@ return {
 	stun = {
 		name = "Stun",
 		description = "Unable to move or act.",
+		disables_action = true,
 		color = { 0.5, 0.5, 1 },
 		duration = 2,
+	},
+	obscured = {
+		name = "Obscured",
+		description = "Reduced sight range.",
+		color = { 0.5, 1, 0.5 },
+		duration = 1,
+		modifiers = {
+			{ stat = "sight", op = "mul", value = 0.5 },
+		},
 	},
 }
