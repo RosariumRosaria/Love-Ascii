@@ -11,6 +11,7 @@ return {
 			attackable = true,
 			moveable = true,
 			interactable = true,
+			pickupable = true,
 		},
 		stats = {
 			health = { base = 25, current = 25 },
@@ -115,6 +116,7 @@ return {
 			color = { r = 1.0, g = 0.6, b = 0.25 },
 			intensity = 1,
 			radius = 10,
+			flicker = { amp = 0.15, freq = 8, phase = 1 },
 		},
 	},
 	crystal = {
@@ -136,6 +138,7 @@ return {
 			color = { r = 0.7, g = 0.9, b = 1 },
 			intensity = 0.8,
 			radius = 7,
+			flicker = { amp = 0.15, freq = 8, phase = 0 },
 		},
 	},
 	crate = {
@@ -151,6 +154,62 @@ return {
 			tilelike = true,
 			covers = true,
 			walkable = false,
+		},
+	},
+	item = {
+		name = "Item",
+		description = "An item, try picking it up!",
+		type = "prop",
+		chars = { "*" },
+		color = { { 1, 1, 0, 1 } },
+		default_action = "pickupable",
+		item = {
+			key = "item",
+			overrides = {
+				name = "item",
+				key = "item",
+			},
+		},
+		tags = {
+			solid = false,
+			tilelike = true,
+			covers = true,
+			walkable = false,
+			pickupable = true,
+		},
+	},
+	lantern = {
+		name = "Lantern",
+		description = "A lantern, try picking it up!",
+		type = "prop",
+		chars = { "8" },
+		color = { { 1, 1, 0, 1 } },
+		default_action = "pickupable",
+		light = {
+			color = { r = 1.0, g = 0.85, b = 0.55 },
+			flicker = { amp = 0.15, freq = 8, phase = 4 },
+			intensity = 1,
+			radius = 6,
+		},
+		item = {
+			key = "torch",
+			overrides = {
+				name = "Lantern",
+				key = "Lantern",
+				light = {
+					color = { r = 1.0, g = 0.9, b = 0.6 },
+					flicker = { amp = 0.15, freq = 8, phase = 4 },
+					intensity = 1,
+					radius = 8,
+				},
+			},
+		},
+		tags = {
+			solid = false,
+			tilelike = true,
+			covers = true,
+			walkable = false,
+			pickupable = true,
 		},
 	},
 	barricade = {
@@ -185,11 +244,13 @@ return {
 		},
 		natural_rotation = 0,
 		interaction = {
-			natural_rotation = 0,
-			chars = { ":", ":" },
-			tags = {
-				solid = false,
-				walkable = true,
+			toggle = {
+				natural_rotation = 0,
+				chars = { ":", ":" },
+				tags = {
+					solid = false,
+					walkable = true,
+				},
 			},
 		},
 	},
@@ -210,11 +271,13 @@ return {
 		},
 		natural_rotation = 90,
 		interaction = {
-			chars = { " ", "''", "''" },
-			natural_rotation = 90,
-			tags = {
-				solid = false,
-				walkable = false,
+			toggle = {
+				chars = { " ", "''", "''" },
+				natural_rotation = 90,
+				tags = {
+					solid = false,
+					walkable = false,
+				},
 			},
 		},
 	},

@@ -23,24 +23,11 @@ function inventory.increment_selected_index(entity)
 	end
 end
 
-function inventory.get_item(entity, key)
-	if not entity.inventory then
-		return nil
-	end
-
-	for _, item in ipairs(entity.inventory.items) do
-		if item.key == key then
-			return item
-		end
-	end
-	return nil
-end
-
 function inventory.add_item(entity, name, overrides)
 	if not entity.inventory then
 		entity.inventory = utils.deep_copy(inventory_template)
 	end
-	local new_item = item_types[name]
+	local new_item = utils.deep_copy(item_types[name])
 	if not new_item then
 		error("Item '" .. tostring(name) .. "' does not exist")
 	end
@@ -70,18 +57,14 @@ function inventory.remove_item(entity, key)
 	end
 end
 
-function inventory.equip(entity, key)
+function inventory.equip(entity, item)
 	if not entity.inventory then
 		return
-	end
-	local item = inventory.get_item(entity, key)
-	if not item then
-		error("Item '" .. tostring(key) .. "' not found in inventory")
 	end
 
 	local slot = item.slot
 	if not slot then
-		error("Item '" .. tostring(key) .. "' cannot be equipped")
+		error("Item '" .. tostring(item.key) .. "' cannot be equipped")
 	end
 	if entity.inventory.equipped[slot] then
 		inventory.unequip(entity, slot)
@@ -100,12 +83,12 @@ function inventory.unequip(entity, slot)
 	entity.inventory.equipped[slot] = nil
 end
 
-function inventory.is_equipped(entity, key)
+function inventory.is_equipped(entity, item)
 	if not entity.inventory then
 		return false
 	end
 	for _, equipped_item in pairs(entity.inventory.equipped) do
-		if equipped_item and equipped_item.key == key then
+		if equipped_item and equipped_item == item then
 			return true
 		end
 	end
@@ -127,7 +110,6 @@ function inventory.use(entity, item)
 	if item.charges then
 		item.charges = item.charges - 1
 		if item.charges <= 0 then
-			print("Item '" .. item.name .. "' has been used up and will be removed from inventory")
 			inventory.remove_item(entity, item.key)
 		end
 	end
@@ -144,10 +126,10 @@ function inventory.equip_or_use(entity)
 		return
 	end
 	if item.slot then
-		if inventory.is_equipped(entity, item.key) then
+		if inventory.is_equipped(entity, item) then
 			inventory.unequip(entity, item.slot)
 		else
-			inventory.equip(entity, item.key)
+			inventory.equip(entity, item)
 		end
 		return
 	elseif item.on_use then

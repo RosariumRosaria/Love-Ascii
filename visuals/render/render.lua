@@ -25,7 +25,7 @@ function render_handler:draw()
 	local start_z = map.min_z
 	local end_z = map.max_z
 	local tiles = map:get_tiles()
-
+	local time = love.timer.getTime()
 	draw_buffer:clear()
 	for z = start_z, end_z do
 		for y = start_y, end_y do
@@ -38,7 +38,8 @@ function render_handler:draw()
 					camera_x,
 					camera_y,
 					map:is_visible(x, y),
-					map:is_explored(x, y)
+					map:is_explored(x, y),
+					time
 				)
 			end
 		end

@@ -6,6 +6,7 @@ local map = require("map.map")
 local utils = require("utils")
 local statuses = require("entities.statuses")
 local stats = require("entities.stats")
+local inventory = require("entities.inventory")
 local actions = {}
 
 local function validate_interaction(actor, target, name)
@@ -36,8 +37,27 @@ function actions:default_interact(entity, dx, dy)
 		return self:attack(entity, dx, dy)
 	elseif action == "moveable" and entity.allowed_actions[action] then
 		return self:drag(entity, dx, dy)
+	elseif action == "pickupable" and entity.allowed_actions[action] then
+		return self:pickup(entity, dx, dy)
 	end
 	return false
+end
+
+function actions:pickup(entity, dx, dy)
+	local target = entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
+	if not validate_interaction(entity, target, "Pickup") then
+		return false
+	end
+	if not target.tags.pickupable then
+		event_log:add({ type = "action_failed", entity = target.name, reason = "Not pickupable" })
+		return false
+	end
+
+	inventory.add_item(entity, target.item.key, target.item.overrides)
+
+	entities:remove_entity(target)
+	event_log:add({ type = "entity_picked_up", entity = target.name, source = entity.name })
+	return true
 end
 
 function actions:attack(entity, dx, dy)

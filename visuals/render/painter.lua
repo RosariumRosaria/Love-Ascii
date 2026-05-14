@@ -153,7 +153,7 @@ function painter:draw_ui(ui)
 	)
 end
 
-function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, explored)
+function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, explored, time)
 	if not tile then
 		return
 	end
@@ -173,8 +173,10 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 
 	local base_color = render_utils.get_effective_color(tile.color, visible, explored)
 	local scaled_color = render_utils.scale_color(base_color, alpha)
+	local light_data = map:get_lighting_tile(x, y)
+
 	if visible then
-		scaled_color = render_utils.apply_lighting(scaled_color, map:get_lighting_tile(x, y), base)
+		scaled_color = render_utils.apply_lighting(scaled_color, light_data, base, time)
 	end
 
 	local outline_color = tile.outline_color
@@ -186,7 +188,7 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 	if tile.covers then
 		local cover_color = { 0, 0, 0, 1 }
 		if visible then
-			local r, g, b = render_utils.normalize_light(map:get_lighting_tile(x, y))
+			local r, g, b = render_utils.normalize_light(light_data)
 			local k = render_cfg.cover_emissive
 			cover_color = { r * k, g * k, b * k, 1 }
 		end
