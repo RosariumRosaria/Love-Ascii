@@ -171,9 +171,8 @@ function ui_handler:update_status(entity)
 		for _, item in ipairs(entity.inventory.items) do
 			local label = item.name or item.key or "?"
 
-			local equipped = inventory.is_equipped(entity, item.key) and " (equipped)" or ""
-			local selected = inventory.get_selected(entity) and inventory.get_selected(entity).key == item.key and " <"
-				or ""
+			local equipped = inventory.is_equipped(entity, item) and " (equipped)" or ""
+			local selected = inventory.get_selected(entity) and inventory.get_selected(entity) == item and " <" or ""
 			self:add_text_to_ui_by_name("status", "- " .. label .. equipped .. selected)
 		end
 	elseif status_panel.mode == "statuses" and entity.statuses then

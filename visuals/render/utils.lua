@@ -86,7 +86,15 @@ function render_utils.normalize_light(light)
 	return r, g, b
 end
 
-function render_utils.apply_lighting(color, light, emissive_scale)
+function render_utils.apply_flicker(color, flicker, t)
+	if not flicker then
+		return color
+	end
+	local mod = 1 + flicker.amp * math.sin(t * flicker.freq + flicker.phase)
+	return render_utils.scale_color(color, mod)
+end
+
+function render_utils.apply_lighting(color, light, emissive_scale, flicker, time)
 	if not color then
 		return { 1, 1, 1, 1 }
 	end

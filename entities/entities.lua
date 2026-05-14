@@ -72,15 +72,18 @@ function entities:interact_with_entity(entity)
 		return
 	end
 
-	for k, v in pairs(interaction) do
-		if k == "tags" and type(v) == "table" and type(entity[k]) == "table" then
-			for tag_key, tag_val in pairs(v) do
-				local old_val = entity[k][tag_key]
-				entity[k][tag_key] = tag_val
-				interaction[k][tag_key] = old_val
+	local toggle = interaction.toggle
+	if toggle then
+		for k, v in pairs(toggle) do
+			if k == "tags" and type(v) == "table" and type(entity[k]) == "table" then
+				for tag_key, tag_val in pairs(v) do
+					local old_val = entity[k][tag_key]
+					entity[k][tag_key] = tag_val
+					toggle[k][tag_key] = old_val
+				end
+			else
+				entity[k], toggle[k] = v, entity[k]
 			end
-		else
-			entity[k], interaction[k] = v, entity[k]
 		end
 	end
 end
