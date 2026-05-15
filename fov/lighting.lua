@@ -6,20 +6,16 @@ local function deposit(cell, color, contribution, flicker)
 	cell.r = cell.r + color.r * contribution
 	cell.g = cell.g + color.g * contribution
 	cell.b = cell.b + color.b * contribution
-
-	if contribution > (cell.dominant or 0) then
-		cell.dominant = contribution
-		cell.flicker = flicker
-	end
+	cell.sources[#cell.sources + 1] = { contribution = contribution, flicker = flicker }
 end
 
-function lighting.cast_light(source_x, source_y, radius, color, intensity, max_x, max_y, tiles, flicker, lighting_grid)
-	deposit(lighting_grid[source_y][source_x], color, intensity)
+function lighting.cast_light(source_x, source_y, light, max_x, max_y, tiles, lighting_grid)
+	deposit(lighting_grid[source_y][source_x], light.color, light.intensity, light.flicker)
 
 	shadowcaster.cast(
 		source_x,
 		source_y,
-		radius,
+		light.radius,
 		max_x,
 		max_y,
 		tiles,
@@ -28,10 +24,10 @@ function lighting.cast_light(source_x, source_y, radius, color, intensity, max_x
 				return
 			end
 			local dist = math.sqrt(dx * dx + dy * dy)
-			local falloff = math.max(0, 1 - dist / radius)
+			local falloff = math.max(0, 1 - dist / light.radius)
 			local edge_factor = (col == 0 or col == row) and 0.5 or 1
-			local contribution = falloff * intensity * edge_factor
-			deposit(lighting_grid[pos_y][pos_x], color, contribution, flicker)
+			local contribution = falloff * light.intensity * edge_factor
+			deposit(lighting_grid[pos_y][pos_x], light.color, contribution, light.flicker)
 		end
 	)
 end
@@ -39,43 +35,30 @@ end
 function lighting.recompute(max_x, max_y, map_grid, lighting_grid)
 	for y = 1, max_y do
 		for x = 1, max_x do
-			lighting_grid[y][x].r = 0
-			lighting_grid[y][x].g = 0
-			lighting_grid[y][x].b = 0
+			local cell = lighting_grid[y][x]
+			cell.r = 0
+			cell.g = 0
+			cell.b = 0
+			local sources = cell.sources
+			for i = #sources, 1, -1 do
+				sources[i] = nil
+			end
 		end
 	end
 
 	for _, entity in ipairs(entities.entity_list) do
 		if entity.light then
-			lighting.cast_light(
-				entity.x,
-				entity.y,
-				entity.light.radius,
-				entity.light.color,
-				entity.light.intensity,
-				max_x,
-				max_y,
-				map_grid,
-				entity.light.flicker,
-				lighting_grid
-			)
+			lighting.cast_light(entity.x, entity.y, entity.light, max_x, max_y, map_grid, lighting_grid)
+		end
+
+		if entity.item and entity.item.light then
+			lighting.cast_light(entity.x, entity.y, entity.item.light, max_x, max_y, map_grid, lighting_grid)
 		end
 
 		if entity.inventory and entity.inventory.equipped then
 			for _, item in pairs(entity.inventory.equipped) do
 				if item.light then
-					lighting.cast_light(
-						entity.x,
-						entity.y,
-						item.light.radius, --TODO Refactor to use lighting table
-						item.light.color,
-						item.light.intensity,
-						max_x,
-						max_y,
-						map_grid,
-						item.light.flicker,
-						lighting_grid
-					)
+					lighting.cast_light(entity.x, entity.y, item.light, max_x, max_y, map_grid, lighting_grid)
 				end
 			end
 		end

@@ -116,7 +116,7 @@ return {
 			color = { r = 1.0, g = 0.6, b = 0.25 },
 			intensity = 1,
 			radius = 10,
-			flicker = { amp = 0.15, freq = 8, phase = 1 },
+			flicker = { amp = 0.1, freq = 2, phase = 3 },
 		},
 	},
 	crystal = {
@@ -138,7 +138,7 @@ return {
 			color = { r = 0.7, g = 0.9, b = 1 },
 			intensity = 0.8,
 			radius = 7,
-			flicker = { amp = 0.15, freq = 8, phase = 0 },
+			flicker = { amp = 0.1, freq = 4, phase = 0 },
 		},
 	},
 	crate = {
@@ -185,25 +185,7 @@ return {
 		chars = { "8" },
 		color = { { 1, 1, 0, 1 } },
 		default_action = "pickupable",
-		light = {
-			color = { r = 1.0, g = 0.85, b = 0.55 },
-			flicker = { amp = 0.15, freq = 8, phase = 4 },
-			intensity = 1,
-			radius = 6,
-		},
-		item = {
-			key = "torch",
-			overrides = {
-				name = "Lantern",
-				key = "Lantern",
-				light = {
-					color = { r = 1.0, g = 0.9, b = 0.6 },
-					flicker = { amp = 0.15, freq = 8, phase = 4 },
-					intensity = 1,
-					radius = 8,
-				},
-			},
-		},
+		item = nil,
 		tags = {
 			solid = false,
 			tilelike = true,

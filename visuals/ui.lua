@@ -148,6 +148,18 @@ function ui_handler:log_events()
 			)
 		elseif ev.type == "action_failed" then
 			self:add_text_to_ui_by_name("terminal", ev.entity .. ": " .. ev.reason)
+		elseif ev.type == "item_equipped" then
+			self:add_text_to_ui_by_name("terminal", ev.entity .. " equipped " .. ev.item .. " (" .. ev.slot .. ")")
+		elseif ev.type == "item_unequipped" then
+			self:add_text_to_ui_by_name("terminal", ev.entity .. " unequipped " .. ev.item .. " (" .. ev.slot .. ")")
+		elseif ev.type == "item_used" then
+			self:add_text_to_ui_by_name("terminal", ev.entity .. " used " .. ev.item)
+		elseif ev.type == "item_consumed" then
+			self:add_text_to_ui_by_name("terminal", ev.item .. " was consumed")
+		elseif ev.type == "entity_picked_up" then
+			self:add_text_to_ui_by_name("terminal", ev.source .. " picked up " .. ev.entity)
+		elseif ev.type == "entity_placed" then
+			self:add_text_to_ui_by_name("terminal", ev.source .. " placed " .. ev.entity)
 		elseif ev.type == "debug" then
 			self:add_text_to_ui_by_name("terminal", "[DEBUG] " .. ev.message)
 		end

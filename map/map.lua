@@ -149,7 +149,7 @@ function map:load(max_x, max_y, max_z, min_z, map_type)
 			self.tiles[y][x] = {}
 			self.visible[y][x] = false
 			self.explored[y][x] = false
-			self.lighting[y][x] = { r = 0, g = 0, b = 0 }
+			self.lighting[y][x] = { r = 0, g = 0, b = 0, sources = {} }
 			self.tiles[y][x][1] = types.grass
 		end
 	end

@@ -51,7 +51,8 @@ function render_handler:draw()
 			camera_x,
 			camera_y,
 			map:is_visible(entity.x, entity.y),
-			map:is_explored(entity.x, entity.y)
+			map:is_explored(entity.x, entity.y),
+			time
 		)
 	end
 	draw_buffer:sort()

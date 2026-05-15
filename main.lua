@@ -25,10 +25,9 @@ function love.load()
 	local player = entities:add_from_template("player", 20, 20, 1)
 	entities:set_player(player)
 	input_handler:set_actor(player)
-	inventory.add_item(player, "sword")
-	inventory.add_item(player, "leather_armor")
-	inventory.add_item(player, "health_potion")
-	inventory.add_item(player, "sword")
+	inventory.add_from_template(player, "sword")
+	inventory.add_from_template(player, "leather_armor")
+	inventory.add_from_template(player, "health_potion")
 	inventory.equip(player, player.inventory.items[1])
 	inventory.equip(player, player.inventory.items[2])
 	entities:add_from_template("vampire", 5, 5, 1)
@@ -38,8 +37,19 @@ function love.load()
 	entities:add_from_template("crate", 10, 10, 1)
 	entities:add_from_template("barricade", 15, 14, 1)
 	entities:add_from_template("campfire", 12, 14, 1)
-	entities:add_from_template("crystal", 26, 17, 1)
-	entities:add_from_template("lantern", 21, 21, 1)
+	entities:add_from_template("crystal", 46, 17, 1)
+	entities:add_from_template("lantern", 24, 24, 1, { chars = { "8" } })
+	entities:get_entity(24, 24, 1).item = inventory.create_item_from_template("torch", {
+		name = "Lantern",
+		key = "Lantern",
+		chars = { "8" },
+		light = {
+			color = { r = 1.0, g = 0.85, b = 0.55 },
+			flicker = { amp = 0.2, freq = 1, phase = 6 },
+			intensity = 1,
+			radius = 8,
+		},
+	})
 
 	map:load(map_max_x, map_max_y, map_max_z, map_min_z, "town")
 	map:update_visibility(entities.player.x, entities.player.y, stats.get_stat(entities.player, "sight"))

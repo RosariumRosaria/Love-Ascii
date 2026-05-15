@@ -158,6 +158,13 @@ function entities:add_from_template(name, x, y, z, overrides)
 	end
 	local new_entity = utils.deep_copy(template)
 
+	if new_entity.light and new_entity.light.flicker then
+		new_entity.light.flicker.phase = math.random() * 2 * math.pi
+	end
+	if new_entity.item and new_entity.item.light and new_entity.item.light.flicker then
+		new_entity.item.light.flicker.phase = math.random() * 2 * math.pi
+	end
+
 	new_entity.x = x or 1
 	new_entity.y = y or 1
 	new_entity.z = z or 1

@@ -121,10 +121,6 @@ function input_handler:update(dt)
 		inventory.increment_selected_index(self.actor)
 	end
 
-	if self:pressed("use_selected") then
-		inventory.equip_or_use(self.actor)
-	end
-
 	if self:pressed("debug") then
 		statuses.add_status(self.actor, "regen")
 	end
@@ -141,6 +137,10 @@ function input_handler:try_take_turn()
 	local actor = self.actor
 	if not actor or actor.dead then
 		return false
+	end
+
+	if self:is_down("use_selected") then
+		return actions:handle_action(actor, { type = "use_selected" })
 	end
 
 	local move_dir = self:get_direction()
@@ -179,6 +179,12 @@ function input_handler:try_take_turn()
 	elseif self:is_down("inspect") then
 		actions:handle_action(actor, {
 			type = "inspect",
+			dx = move_dir.x,
+			dy = move_dir.y,
+		})
+	elseif self:is_down("place_selected") then
+		took_action = actions:handle_action(actor, {
+			type = "place_selected",
 			dx = move_dir.x,
 			dy = move_dir.y,
 		})
