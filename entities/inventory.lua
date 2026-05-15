@@ -1,7 +1,5 @@
 local item_types = require("entities.item_types")
-local statuses = require("entities.statuses")
 local utils = require("utils")
-local event_log = require("engine.event_log")
 
 local inventory = {}
 local inventory_template = {
@@ -23,17 +21,27 @@ function inventory.increment_selected_index(entity)
 	end
 end
 
-function inventory.add_item(entity, name, overrides)
+function inventory.add_item(entity, item)
 	if not entity.inventory then
 		entity.inventory = utils.deep_copy(inventory_template)
 	end
+	table.insert(entity.inventory.items, item)
+end
+
+function inventory.create_item_from_template(name, overrides)
 	local new_item = utils.deep_copy(item_types[name])
 	if not new_item then
 		error("Item '" .. tostring(name) .. "' does not exist")
 	end
 
+	if new_item.light and new_item.light.flicker then
+		new_item.light.flicker.phase = math.random() * 2 * math.pi
+	end
+
 	if overrides then
+		print("Applying overrides for item:", name)
 		for k, v in pairs(overrides) do
+			print("  ", k, "=", v)
 			new_item[k] = v
 		end
 	end
@@ -41,16 +49,20 @@ function inventory.add_item(entity, name, overrides)
 	if not new_item.key then
 		new_item.key = name or new_item.name
 	end
-
-	table.insert(entity.inventory.items, new_item)
+	return new_item
 end
 
-function inventory.remove_item(entity, key)
+function inventory.add_from_template(entity, name, overrides)
+	local new_item = inventory.create_item_from_template(name, overrides)
+	inventory.add_item(entity, new_item)
+end
+
+function inventory.remove_item(entity, item)
 	if not entity.inventory then
 		return
 	end
-	for i, item in ipairs(entity.inventory.items) do
-		if item.key == key then
+	for i, i_item in ipairs(entity.inventory.items) do
+		if i_item == item then
 			table.remove(entity.inventory.items, i)
 			return
 		end
@@ -58,29 +70,21 @@ function inventory.remove_item(entity, key)
 end
 
 function inventory.equip(entity, item)
-	if not entity.inventory then
-		return
+	if not entity.inventory or not item.slot then
+		return nil
 	end
-
-	local slot = item.slot
-	if not slot then
-		error("Item '" .. tostring(item.key) .. "' cannot be equipped")
-	end
-	if entity.inventory.equipped[slot] then
-		inventory.unequip(entity, slot)
-	end
-	entity.inventory.equipped[slot] = item
+	local prev = entity.inventory.equipped[item.slot]
+	entity.inventory.equipped[item.slot] = item
+	return prev
 end
 
 function inventory.unequip(entity, slot)
 	if not entity.inventory then
-		return
+		return nil
 	end
-	if not entity.inventory.equipped[slot] then
-		error("Slot '" .. tostring(slot) .. "' is not equipped")
-	end
-
+	local prev = entity.inventory.equipped[slot]
 	entity.inventory.equipped[slot] = nil
+	return prev
 end
 
 function inventory.is_equipped(entity, item)
@@ -102,46 +106,12 @@ function inventory.get_selected(entity)
 	return entity.inventory.items[entity.inventory.selected_index]
 end
 
-function inventory.use(entity, item)
-	if item.on_use.apply_status then
-		statuses.add_status(entity, item.on_use.apply_status, nil, item)
+function inventory.use_charge(item)
+	if not item.charges then
+		return false
 	end
-
-	if item.charges then
-		item.charges = item.charges - 1
-		if item.charges <= 0 then
-			inventory.remove_item(entity, item.key)
-		end
-	end
-end
-
-function inventory.equip_or_use(entity)
-	local item = inventory.get_selected(entity)
-	if not item then
-		event_log:add({
-			type = "action_failed",
-			entity = entity.name,
-			reason = "No item selected",
-		})
-		return
-	end
-	if item.slot then
-		if inventory.is_equipped(entity, item) then
-			inventory.unequip(entity, item.slot)
-		else
-			inventory.equip(entity, item)
-		end
-		return
-	elseif item.on_use then
-		inventory.use(entity, item)
-		return
-	else
-		event_log:add({
-			type = "action_failed",
-			entity = entity.name,
-			reason = "Item '" .. item.name .. "' cannot be used",
-		})
-	end
+	item.charges = item.charges - 1
+	return item.charges <= 0
 end
 
 return inventory

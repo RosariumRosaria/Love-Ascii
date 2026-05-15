@@ -176,7 +176,8 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 	local light_data = map:get_lighting_tile(x, y)
 
 	if visible then
-		scaled_color = render_utils.apply_lighting(scaled_color, light_data, base, time)
+		scaled_color = render_utils.apply_lighting(scaled_color, light_data, base)
+		scaled_color = render_utils.apply_flicker(scaled_color, light_data.sources, time)
 	end
 
 	local outline_color = tile.outline_color
@@ -191,6 +192,7 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 			local r, g, b = render_utils.normalize_light(light_data)
 			local k = render_cfg.cover_emissive
 			cover_color = { r * k, g * k, b * k, 1 }
+			cover_color = render_utils.apply_flicker(cover_color, light_data.sources, time)
 		end
 		emit_cover_rect(draw_buffer.LAYER.TILE_COVER, z, y, x_screen + base_dx, y_screen + base_dy, cover_color)
 	end
@@ -234,7 +236,7 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 	})
 end
 
-function painter:emit_entity(entity, center_x, center_y, visible, explored)
+function painter:emit_entity(entity, center_x, center_y, visible, explored, time)
 	local tilelike = entities:get_tag_entity(entity, "tilelike")
 
 	if not visible and not (tilelike and explored) then
@@ -246,15 +248,15 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored)
 		outline_color = render_utils.to_grayscale(outline_color)
 	end
 
-	local light = visible and map:get_lighting_tile(entity.x, entity.y) or nil
+	local light_data = visible and map:get_lighting_tile(entity.x, entity.y) or nil
 
 	local x_screen, y_screen = render_utils.get_screen_coords(entity.x, entity.y, center_x, center_y)
 	local base = render_utils.distance_scale(entity.x, entity.y, center_x, center_y)
 
 	if entities:get_tag_entity(entity, "covers") then
 		local cover_color = { 0, 0, 0, 1 }
-		if visible and light then
-			local r, g, b = render_utils.normalize_light(light)
+		if visible and light_data then
+			local r, g, b = render_utils.normalize_light(light_data)
 			local k = render_cfg.cover_emissive
 			cover_color = { r * k, g * k, b * k, 1 }
 		end
@@ -272,8 +274,10 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored)
 			+ render_cfg.entity_brightness_boost
 
 		local scaled_color = render_utils.scale_color(base_color, scale)
-		if light then
-			scaled_color = render_utils.apply_lighting(scaled_color, light, base)
+		if light_data then
+			scaled_color = render_utils.apply_lighting(scaled_color, light_data, base)
+			-- TODO: Determine if this should apply to entity colors
+			-- scaled_color = render_utils.apply_flicker(scaled_color, light_data.flicker, time)
 		end
 		local visuals = statuses.get_visual_state(entity)
 		if visuals.tint then

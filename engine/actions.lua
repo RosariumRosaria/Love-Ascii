@@ -43,6 +43,94 @@ function actions:default_interact(entity, dx, dy)
 	return false
 end
 
+function actions:place(entity, dx, dy, item)
+	local target_x = entity.x + dx
+	local target_y = entity.y + dy
+
+	if not map:is_tile_free(target_x, target_y, entity.z, { [entity] = true }) then
+		event_log:add({ type = "action_failed", entity = entity.name, reason = "Tile not free" })
+		return false
+	end
+
+	entities:add_from_template(
+		"item",
+		target_x,
+		target_y,
+		entity.z,
+		{ chars = item.chars, colors = item.color, item = item }
+	)
+	inventory.remove_item(entity, item)
+	event_log:add({ type = "entity_placed", entity = item.name, source = entity.name })
+	return true
+end
+
+function actions:use_selected(entity)
+	local item = inventory.get_selected(entity)
+	if not item then
+		event_log:add({ type = "action_failed", entity = entity.name, reason = "No item selected" })
+		return false
+	end
+
+	if item.slot then
+		if inventory.is_equipped(entity, item) then
+			return self:unequip_item(entity, item)
+		end
+		return self:equip_item(entity, item)
+	end
+
+	if item.on_use then
+		return self:use_item(entity, item)
+	end
+
+	event_log:add({
+		type = "action_failed",
+		entity = entity.name,
+		reason = "Item '" .. item.name .. "' cannot be used",
+	})
+	return false
+end
+
+function actions:equip_item(entity, item)
+	local displaced = inventory.equip(entity, item)
+	if displaced then
+		event_log:add({
+			type = "item_unequipped",
+			entity = entity.name,
+			item = displaced.name,
+			slot = item.slot,
+		})
+	end
+	event_log:add({ type = "item_equipped", entity = entity.name, item = item.name, slot = item.slot })
+	return true
+end
+
+function actions:unequip_item(entity, item)
+	inventory.unequip(entity, item.slot)
+	event_log:add({ type = "item_unequipped", entity = entity.name, item = item.name, slot = item.slot })
+	return true
+end
+
+function actions:use_item(entity, item)
+	if item.on_use.apply_status then
+		statuses.add_status(entity, item.on_use.apply_status, nil, item)
+	end
+	event_log:add({ type = "item_used", entity = entity.name, item = item.name })
+	if inventory.use_charge(item) then
+		inventory.remove_item(entity, item)
+		event_log:add({ type = "item_consumed", entity = entity.name, item = item.name })
+	end
+	return true
+end
+
+function actions:place_selected(entity, dx, dy)
+	local item = inventory.get_selected(entity)
+	if not item then
+		event_log:add({ type = "action_failed", entity = entity.name, reason = "No item selected" })
+		return false
+	end
+	return actions:place(entity, dx, dy, item)
+end
+
 function actions:pickup(entity, dx, dy)
 	local target = entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
 	if not validate_interaction(entity, target, "Pickup") then
@@ -53,7 +141,7 @@ function actions:pickup(entity, dx, dy)
 		return false
 	end
 
-	inventory.add_item(entity, target.item.key, target.item.overrides)
+	inventory.add_item(entity, target.item)
 
 	entities:remove_entity(target)
 	event_log:add({ type = "entity_picked_up", entity = target.name, source = entity.name })
@@ -174,6 +262,10 @@ function actions:handle_action(entity, action)
 		return self:inspect(entity, action.dx, action.dy)
 	elseif t == "grab_interaction" then
 		return self:drag(entity, action.dx, action.dy, action.target)
+	elseif t == "use_selected" then
+		return self:use_selected(entity)
+	elseif t == "place_selected" then
+		return self:place_selected(entity, action.dx, action.dy)
 	end
 
 	return false

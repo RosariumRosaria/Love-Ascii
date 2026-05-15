@@ -13,7 +13,7 @@ return {
 		name = "Health Potion",
 		description = "Restores health when consumed.",
 		color = { { 1, 0.5, 0.5, 1 } },
-		chars = { "!" },
+		chars = { "&" },
 		on_use = { apply_status = "regen" },
 		charges = 1,
 	},
