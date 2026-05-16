@@ -138,9 +138,9 @@ function input_handler:try_take_turn()
 	local took_action = false
 
 	if self:is_down("use_selected") then
-		took_action = actions:handle_action(actor, { type = "use_selected" })
+		return actions:handle_action(actor, { type = "use_selected" })
 	elseif self:is_down("wait") then
-		took_action = actions:handle_action(actor, { type = "wait" })
+		return actions:handle_action(actor, { type = "wait" })
 	end
 
 	local move_dir = self:get_direction()

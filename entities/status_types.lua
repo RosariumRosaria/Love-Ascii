@@ -32,11 +32,12 @@ return {
 	},
 	obscured = {
 		name = "Obscured",
-		description = "Reduced sight range.",
+		description = "Reduced sight range and increased stealth.",
 		color = { 0.5, 1, 0.5 },
 		duration = 1,
 		modifiers = {
-			{ stat = "sight", op = "mul", value = 0.5 }, --TODO: at some point I want this to also add stealth or something, but for now just reduce sight range
+			{ stat = "sight", op = "mul", value = 0.5 },
+			{ stat = "stealth", op = "mul", value = 2 },
 		},
 		visual = { alpha = 0.5 },
 	},
