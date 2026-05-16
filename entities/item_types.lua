@@ -9,6 +9,16 @@ return {
 			{ stat = "damage", op = "add", value = 3 },
 		},
 	},
+	bow = {
+		name = "Bow",
+		description = "A keen bow for combat.",
+		color = { { 0.8, 0.8, 0.8, 1 } },
+		slot = "mainhand",
+		chars = { "D" },
+		modifiers = {
+			{ stat = "damage", op = "add", value = 3 },
+		},
+	},
 	health_potion = {
 		name = "Health Potion",
 		description = "Restores health when consumed.",

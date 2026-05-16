@@ -62,7 +62,7 @@ local function idle(entity)
 			return
 		end
 		local chance = math.random(1, ai_cfg.wander_chance)
-		print(chance)
+
 		if chance == 1 then
 			local tar_x = entity.x + math.random(-ai_cfg.wander_range, ai_cfg.wander_range)
 			local tar_y = entity.y + math.random(-ai_cfg.wander_range, ai_cfg.wander_range)
@@ -169,7 +169,6 @@ local function enemy_turn(entity)
 	end
 
 	if entity.can_see and not entity.could_see then
-		event_log:add({ type = "debug", message = entity.name .. " spotted" })
 		effects:add_from_template("alert", entity.x, entity.y, entity.z, { anchor = entity })
 	end
 
