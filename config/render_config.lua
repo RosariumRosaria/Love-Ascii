@@ -3,6 +3,7 @@ return {
 	font_scale = 2.5,
 	font_base_size = 16,
 	ui_font_scale = 0.875,
+	terminal_font_scale = 0.75,
 	draw_distance = 50,
 	max_height = 5, --TODO: this should be determined by the map, not hardcoded
 	default_offset_type = 1,

@@ -1,13 +1,13 @@
-  local event_log = { current = {} }
+local event_log = { current = {} }
 
-  function event_log:add(ev)
-    table.insert(event_log.current, ev)
-  end
+function event_log:add(ev)
+	table.insert(event_log.current, ev)
+end
 
-  function event_log.drain()
-    local out = event_log.current
-    event_log.current = {}
-    return out
-  end
+function event_log:drain()
+	local out = event_log.current
+	event_log.current = {}
+	return out
+end
 
-  return event_log
+return event_log

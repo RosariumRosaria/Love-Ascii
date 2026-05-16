@@ -23,7 +23,12 @@ function statuses.remove_status(entity, key)
 	for i, status in ipairs(entity.statuses) do
 		if status.key == key then
 			table.remove(entity.statuses, i)
-			event_log:add({ type = "status_expired", entity = entity.name, status = status.name })
+			event_log:add({
+				type = "status_expired",
+				entity = entity.name,
+				status = status.name,
+				silent = status.silent,
+			})
 			return
 		end
 	end
@@ -36,7 +41,6 @@ function statuses.clear_statuses(entity)
 	for i, status in ipairs(entity.statuses) do
 		table.remove(entity.statuses, i)
 		event_log:add({ type = "status_expired", entity = entity.name, status = status.name })
-		return
 	end
 end
 
@@ -77,6 +81,7 @@ function statuses.add_status(entity, name, overrides, source)
 		entity = entity.name,
 		status = new_status.name,
 		source = new_status.source.name,
+		silent = new_status.silent,
 	})
 	table.insert(entity.statuses, new_status)
 end
@@ -153,8 +158,9 @@ function statuses.apply_from_tile(entity, tile_stack)
 	end
 	for _, tile in ipairs(tile_stack) do
 		if tile.applies_status then
+			local overrides = tile.applies_status.silent and { silent = true } or nil
 			for _, status in ipairs(tile.applies_status) do
-				statuses.add_status(entity, status, nil, tile)
+				statuses.add_status(entity, status, overrides, tile)
 			end
 		end
 	end

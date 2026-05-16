@@ -4,6 +4,8 @@ local inventory = require("entities.inventory")
 local event_log = require("engine.event_log")
 local small_tile_size
 local small_font
+local terminal_tile_size
+local terminal_font
 
 local ui_handler = {
 	ui_list = {},
@@ -35,9 +37,11 @@ function ui_handler:get_ui_list()
 end
 
 function ui_handler:get_visible_texts(ui)
+	local font = ui.font or small_font
+	local tile_size = ui.tile_size or small_tile_size
 	local wrapped = {}
 	for _, text in ipairs(ui.texts) do
-		local _, lines = small_font:getWrap(text, ui.width)
+		local _, lines = font:getWrap(text, ui.width)
 		if #lines == 0 then
 			table.insert(wrapped, "")
 		else
@@ -47,7 +51,7 @@ function ui_handler:get_visible_texts(ui)
 		end
 	end
 
-	local max_lines = math.floor(ui.height / small_tile_size)
+	local max_lines = math.floor(ui.height / tile_size)
 	local total_lines = #wrapped
 
 	ui.scroll_offset = math.max(0, math.min(ui.scroll_offset, math.max(0, total_lines - max_lines)))
@@ -62,7 +66,9 @@ function ui_handler:get_visible_texts(ui)
 	return visible_texts
 end
 
-function ui_handler:add_ui(x, y, width, height, name, color, outline_width, outline_color, center_text, tile_grid)
+function ui_handler:add_ui(x, y, width, height, name, color, outline_width, outline_color, center_text, tile_grid, font, tile_size)
+	font = font or small_font
+	tile_size = tile_size or small_tile_size
 	local ui = {
 		x = x,
 		y = y,
@@ -76,7 +82,9 @@ function ui_handler:add_ui(x, y, width, height, name, color, outline_width, outl
 		center_text = center_text,
 		tile_grid = tile_grid,
 		scroll_offset = 0,
-		capacity = math.floor(height / small_tile_size) * 10,
+		font = font,
+		tile_size = tile_size,
+		capacity = math.floor(height / tile_size) * 10,
 	}
 
 	table.insert(self.ui_list, ui)
@@ -99,6 +107,8 @@ end
 function ui_handler:reload_fonts()
 	small_tile_size = config.small_tile_size
 	small_font = config.small_font
+	terminal_tile_size = config.terminal_tile_size
+	terminal_font = config.terminal_font
 end
 
 function ui_handler:load()
@@ -115,7 +125,7 @@ function ui_handler:load()
 
 	self:reload_fonts()
 
-	self:add_ui(start_x, buffer, width, height, "terminal", black, outline_width, white)
+	self:add_ui(start_x, buffer, width, height, "terminal", black, outline_width, white, nil, nil, terminal_font, terminal_tile_size)
 	status_panel = self:add_ui(
 		start_x,
 		start_y,
@@ -131,6 +141,9 @@ end
 
 function ui_handler:log_events()
 	for _, ev in ipairs(event_log:drain()) do
+		if ev.silent then
+			goto continue
+		end
 		if ev.type == "damage" then
 			self:add_text_to_ui_by_name("terminal", ev.source .. " hit " .. ev.entity .. " for " .. ev.amount)
 		elseif ev.type == "heal" then
@@ -163,6 +176,7 @@ function ui_handler:log_events()
 		elseif ev.type == "debug" then
 			self:add_text_to_ui_by_name("terminal", "[DEBUG] " .. ev.message)
 		end
+		::continue::
 	end
 end
 

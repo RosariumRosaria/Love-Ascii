@@ -63,6 +63,10 @@ function inventory.remove_item(entity, item)
 	end
 	for i, i_item in ipairs(entity.inventory.items) do
 		if i_item == item then
+			inventory.unequip(entity, item.slot)
+			if inventory.get_selected(entity) == item then
+				inventory.increment_selected_index(entity)
+			end
 			table.remove(entity.inventory.items, i)
 			return
 		end
@@ -79,7 +83,7 @@ function inventory.equip(entity, item)
 end
 
 function inventory.unequip(entity, slot)
-	if not entity.inventory then
+	if not entity.inventory or not slot then
 		return nil
 	end
 	local prev = entity.inventory.equipped[slot]
