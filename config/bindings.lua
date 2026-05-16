@@ -8,6 +8,7 @@ return {
 	move_down = { "down", "s" },
 	move_left = { "left", "a" },
 	move_right = { "right", "d" },
+	wait = { "space" },
 
 	increment_selected_index = { "tab" },
 	use_selected = { "u" },

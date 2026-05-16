@@ -135,8 +135,12 @@ function input_handler:try_take_turn()
 		return false
 	end
 
+	local took_action = false
+
 	if self:is_down("use_selected") then
-		return actions:handle_action(actor, { type = "use_selected" })
+		took_action = actions:handle_action(actor, { type = "use_selected" })
+	elseif self:is_down("wait") then
+		took_action = actions:handle_action(actor, { type = "wait" })
 	end
 
 	local move_dir = self:get_direction()
@@ -150,8 +154,6 @@ function input_handler:try_take_turn()
 	if not is_moving then
 		move_dir = self.last_turn
 	end
-
-	local took_action = false
 
 	if self:is_down("attack") then
 		took_action = actions:handle_action(actor, {

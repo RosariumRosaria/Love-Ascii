@@ -240,6 +240,11 @@ function actions:drag(entity, dx, dy, target)
 	return true
 end
 
+function actions:wait(entity)
+	event_log:add({ type = "entity_waited", entity = entity.name })
+	return true
+end
+
 function actions:handle_action(entity, action)
 	if not entity or not action then
 		return false
@@ -261,6 +266,8 @@ function actions:handle_action(entity, action)
 		return self:use_selected(entity)
 	elseif t == "place_selected" then
 		return self:place_selected(entity, action.dx, action.dy)
+	elseif t == "wait" then
+		return self:wait(entity)
 	end
 
 	return false
