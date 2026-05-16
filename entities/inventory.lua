@@ -101,15 +101,16 @@ function inventory.use_charge(item)
 end
 
 function inventory.add_charge(item)
-	if not item.charges then
+	if not item or not item.charges then
 		return false
 	end
 
-	if item.charges >= item.max_charges then
+	if item.max_charges and item.charges >= item.max_charges then
 		return false
 	end
 
 	item.charges = item.charges + 1
+	return true
 end
 
 return inventory

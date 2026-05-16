@@ -18,6 +18,14 @@ return {
 		charges = 3,
 		max_charges = 3,
 	},
+	strength_potion = {
+		name = "Strength Potion",
+		description = "Improves strength when consumed.",
+		color = { { 1, 0.5, 0.5, 1 } },
+		chars = { "&" },
+		on_use = { apply_status = "strength" },
+		charges = 1,
+	},
 	leather_armor = {
 		name = "Leather Armor",
 		description = "Provides protection against attacks.",
