@@ -1,6 +1,6 @@
 return {
 	window = {
-		title = "Hello World",
+		title = "Love Ascii",
 		fullscreen = false,
 		borderless = true,
 		vsync = true,

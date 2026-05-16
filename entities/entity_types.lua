@@ -18,6 +18,7 @@ return {
 			stamina = { base = 10, current = 10 },
 			hunger = { base = 10, current = 10 },
 			sight = { base = 30 },
+			stealth = { base = 10 },
 			speed = { base = 5 },
 			damage = { base = 1 },
 		},

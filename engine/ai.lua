@@ -6,6 +6,7 @@ local fov_handler = require("fov.visibility")
 local actions = require("engine.actions")
 local utils = require("utils")
 local ai_cfg = require("config.ai_config")
+local event_log = require("engine.event_log")
 local stats = require("entities.stats")
 
 local ai = {}
@@ -20,7 +21,8 @@ local ai = {}
 ]]
 
 local function can_see(entity, target)
-	local sight = stats.get_stat(entity, "sight")
+	local sight = stats.get_stat(entity, "sight") - stats.get_stat(target, "stealth") --TODO stealth probably shouldn't work this way.
+
 	if sight <= 0 then
 		return false
 	end
@@ -60,6 +62,7 @@ local function idle(entity)
 			return
 		end
 		local chance = math.random(1, ai_cfg.wander_chance)
+		print(chance)
 		if chance == 1 then
 			local tar_x = entity.x + math.random(-ai_cfg.wander_range, ai_cfg.wander_range)
 			local tar_y = entity.y + math.random(-ai_cfg.wander_range, ai_cfg.wander_range)
@@ -166,6 +169,7 @@ local function enemy_turn(entity)
 	end
 
 	if entity.can_see and not entity.could_see then
+		event_log:add({ type = "debug", message = entity.name .. " spotted" })
 		effects:add_from_template("alert", entity.x, entity.y, entity.z, { anchor = entity })
 	end
 
