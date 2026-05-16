@@ -28,6 +28,7 @@ function love.load()
 	inventory.add_from_template(player, "sword")
 	inventory.add_from_template(player, "leather_armor")
 	inventory.add_from_template(player, "health_potion")
+	inventory.add_from_template(player, "strength_potion")
 	inventory.equip(player, player.inventory.items[1])
 	inventory.equip(player, player.inventory.items[2])
 	entities.add_from_template("vampire", 5, 5, 1)
@@ -40,7 +41,6 @@ function love.load()
 	entities.add_from_template("crystal", 46, 17, 1)
 
 	entities.add_pickup_from_template("torch", 24, 24, 1, {
-		name = "Lantern",
 		key = "Lantern",
 		chars = { "8" },
 		color = { { 1, 0.8, 0.6, 1 } },
