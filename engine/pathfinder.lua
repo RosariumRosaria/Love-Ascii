@@ -17,7 +17,7 @@ local function is_tile_free(x, y, z, entity_list, goal)
 	end
 
 	for _, ent in ipairs(entity_list) do
-		if not entities:get_tag_entity(ent, "walkable") and ent.x == x and ent.y == y and ent.z == z then
+		if not entities.get_tag_entity(ent, "walkable") and ent.x == x and ent.y == y and ent.z == z then
 			return false
 		end
 	end
@@ -68,7 +68,7 @@ local function reconstruct_path(came_from, start, goal)
 end
 
 function pathfinder.a_star(start, goal)
-	local entity_list = entities:get_entity_list()
+	local entity_list = entities.get_entity_list()
 
 	local frontier = {}
 	utils.priority_queue_put(frontier, start, 0)

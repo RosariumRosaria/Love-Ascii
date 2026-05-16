@@ -163,29 +163,6 @@ return {
 		chars = { "*" },
 		color = { { 1, 1, 0, 1 } },
 		default_action = "pickupable",
-		item = {
-			key = "item",
-			overrides = {
-				name = "item",
-				key = "item",
-			},
-		},
-		tags = {
-			solid = false,
-			tilelike = true,
-			covers = true,
-			walkable = false,
-			pickupable = true,
-		},
-	},
-	lantern = {
-		name = "Lantern",
-		description = "A lantern, try picking it up!",
-		type = "prop",
-		chars = { "8" },
-		color = { { 1, 1, 0, 1 } },
-		default_action = "pickupable",
-		item = nil,
 		tags = {
 			solid = false,
 			tilelike = true,

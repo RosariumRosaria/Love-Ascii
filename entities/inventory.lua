@@ -29,26 +29,8 @@ function inventory.add_item(entity, item)
 end
 
 function inventory.create_item_from_template(name, overrides)
-	local new_item = utils.deep_copy(item_types[name])
-	if not new_item then
-		error("Item '" .. tostring(name) .. "' does not exist")
-	end
-
-	if new_item.light and new_item.light.flicker then
-		new_item.light.flicker.phase = math.random() * 2 * math.pi
-	end
-
-	if overrides then
-		print("Applying overrides for item:", name)
-		for k, v in pairs(overrides) do
-			print("  ", k, "=", v)
-			new_item[k] = v
-		end
-	end
-
-	if not new_item.key then
-		new_item.key = name or new_item.name
-	end
+	local new_item = utils.create_instance_from_template(item_types, name, overrides)
+	utils.randomize_flicker(new_item.light)
 	return new_item
 end
 

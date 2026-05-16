@@ -62,10 +62,10 @@ function map:is_tile_free(x, y, z, skip_entities)
 	if not self:walkable(x, y, z) then
 		return false
 	end
-	for _, ent in ipairs(entities:get_entity_list()) do
+	for _, ent in ipairs(entities.get_entity_list()) do
 		if
 			not skip_entities[ent]
-			and not entities:get_tag_entity(ent, "walkable")
+			and not entities.get_tag_entity(ent, "walkable")
 			and ent.x == x
 			and ent.y == y
 			and ent.z == z
@@ -91,7 +91,7 @@ function map:is_transparent(x, y)
 	if #stack > 1 and not stack[2].transparent then
 		return false
 	end
-	if entities:get_tag_location(x, y, 1, "solid") then
+	if entities.get_tag_location(x, y, 1, "solid") then
 		return false
 	end
 	return true

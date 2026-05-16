@@ -122,11 +122,7 @@ function input_handler:update(dt)
 	end
 
 	if self:pressed("debug") then
-		statuses.add_status(self.actor, "regen")
-	end
-
-	if self:pressed("debug_2") then
-		statuses.add_status(self.actor, "strength")
+		statuses.add_status_from_template(self.actor, "regen")
 	end
 
 	ui:log_events()

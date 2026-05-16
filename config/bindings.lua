@@ -22,7 +22,6 @@ return {
 	switch_status = { "x" },
 	toggle_normalize_lighting = { "n" },
 	debug = { "t" },
-	debug_2 = { "y" },
 
 	quit = { "escape" },
 }

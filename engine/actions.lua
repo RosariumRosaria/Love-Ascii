@@ -26,7 +26,7 @@ local function validate_interaction(actor, target, name)
 end
 
 function actions:default_interact(entity, dx, dy)
-	local target = entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
+	local target = entities.get_entity(entity.x + dx, entity.y + dy, entity.z)
 	if not target then
 		return false
 	end
@@ -52,13 +52,8 @@ function actions:place(entity, dx, dy, item)
 		return false
 	end
 
-	entities:add_from_template(
-		"item",
-		target_x,
-		target_y,
-		entity.z,
-		{ chars = item.chars, colors = item.color, item = item }
-	)
+	entities.convert_item_to_pickup(target_x, target_y, entity.z, item)
+
 	inventory.remove_item(entity, item)
 	event_log:add({ type = "entity_placed", entity = item.name, source = entity.name })
 	return true
@@ -112,7 +107,7 @@ end
 
 function actions:use_item(entity, item)
 	if item.on_use.apply_status then
-		statuses.add_status(entity, item.on_use.apply_status, nil, item)
+		statuses.add_status_from_template(entity, item.on_use.apply_status, nil, item)
 	end
 	event_log:add({ type = "item_used", entity = entity.name, item = item.name })
 	if inventory.use_charge(item) then
@@ -132,7 +127,7 @@ function actions:place_selected(entity, dx, dy)
 end
 
 function actions:pickup(entity, dx, dy)
-	local target = entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
+	local target = entities.get_entity(entity.x + dx, entity.y + dy, entity.z)
 	if not validate_interaction(entity, target, "Pickup") then
 		return false
 	end
@@ -143,30 +138,30 @@ function actions:pickup(entity, dx, dy)
 
 	inventory.add_item(entity, target.item)
 
-	entities:remove_entity(target)
+	entities.remove_entity(target)
 	event_log:add({ type = "entity_picked_up", entity = target.name, source = entity.name })
 	return true
 end
 
 function actions:attack(entity, dx, dy)
-	local target_entity = entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
+	local target_entity = entities.get_entity(entity.x + dx, entity.y + dy, entity.z)
 	if not validate_interaction(entity, target_entity, "Attack") then
 		return false
 	end
-	if not entities:get_tag_entity(target_entity, "attackable") then
+	if not entities.get_tag_entity(target_entity, "attackable") then
 		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not attackable" })
 		return false
 	end
 	if entity.team ~= target_entity.team then
 		effects:add_from_template("attack", entity.x + dx, entity.y + dy, entity.z)
-		entities:apply_damage(target_entity, stats.get_stat(entity, "damage"), entity.name)
+		entities.apply_damage(target_entity, stats.get_stat(entity, "damage"), entity.name)
 		statuses.apply_on_hit_statuses(entity, target_entity)
 	end
 	return true
 end
 
 function actions:interact(entity, dx, dy)
-	local target_entity = entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
+	local target_entity = entities.get_entity(entity.x + dx, entity.y + dy, entity.z)
 	if not validate_interaction(entity, target_entity, "Interact") then
 		return false
 	end
@@ -175,17 +170,17 @@ function actions:interact(entity, dx, dy)
 		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not interactable" })
 		return false
 	end
-	entities:interact_with_entity(target_entity)
+	entities.interact_with_entity(target_entity)
 	return true
 end
 
 function actions:inspect(entity, dx, dy)
-	local target_entity = entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
+	local target_entity = entities.get_entity(entity.x + dx, entity.y + dy, entity.z)
 	if not validate_interaction(entity, target_entity, "Inspect") then
 		return false
 	end
 
-	entities:inspect_entity(target_entity)
+	entities.inspect_entity(target_entity)
 end
 
 function actions:move(entity, dx, dy)
@@ -204,11 +199,11 @@ function actions:move(entity, dx, dy)
 end
 
 function actions:grab(entity, dx, dy)
-	return entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
+	return entities.get_entity(entity.x + dx, entity.y + dy, entity.z)
 end
 
 function actions:drag(entity, dx, dy, target)
-	target = target or entities:get_entity(entity.x + dx, entity.y + dy, entity.z)
+	target = target or entities.get_entity(entity.x + dx, entity.y + dy, entity.z)
 	if not validate_interaction(entity, target, "Drag") then
 		return false
 	end

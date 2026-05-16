@@ -237,7 +237,7 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 end
 
 function painter:emit_entity(entity, center_x, center_y, visible, explored, time)
-	local tilelike = entities:get_tag_entity(entity, "tilelike")
+	local tilelike = entities.get_tag_entity(entity, "tilelike")
 
 	if not visible and not (tilelike and explored) then
 		return
@@ -253,7 +253,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 	local x_screen, y_screen = render_utils.get_screen_coords(entity.x, entity.y, center_x, center_y)
 	local base = render_utils.distance_scale(entity.x, entity.y, center_x, center_y)
 
-	if entities:get_tag_entity(entity, "covers") then
+	if entities.get_tag_entity(entity, "covers") then
 		local cover_color = { 0, 0, 0, 1 }
 		if visible and light_data then
 			local r, g, b = render_utils.normalize_light(light_data)

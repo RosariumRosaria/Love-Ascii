@@ -44,25 +44,10 @@ function statuses.clear_statuses(entity)
 	end
 end
 
-function statuses.add_status(entity, name, overrides, source)
-	local template = status_types[name]
-	if not template then
-		error("Status '" .. tostring(name) .. "' does not exist")
-	end
-
-	local new_status = utils.deep_copy(template)
+function statuses.add_status_from_template(entity, name, overrides, source)
+	local new_status = utils.create_instance_from_template(status_types, name, overrides)
 
 	new_status.source = source or { name = "Unknown" }
-
-	if overrides then
-		for k, v in pairs(overrides) do
-			new_status[k] = v
-		end
-	end
-
-	if not new_status.key then
-		new_status.key = name or new_status.name
-	end
 
 	if not entity.statuses then
 		entity.statuses = {}
@@ -90,10 +75,10 @@ local function tick_status(entity, status)
 	if status.on_tick then
 		if status.on_tick then
 			if status.on_tick.damage then
-				entities:apply_damage(entity, status.on_tick.damage, status.name)
+				entities.apply_damage(entity, status.on_tick.damage, status.name)
 			end
 			if status.on_tick.heal then
-				entities:apply_heal(entity, status.on_tick.heal, status.name)
+				entities.apply_heal(entity, status.on_tick.heal, status.name)
 			end
 		end
 	end
@@ -160,7 +145,7 @@ function statuses.apply_from_tile(entity, tile_stack)
 		if tile.applies_status then
 			local overrides = tile.applies_status.silent and { silent = true } or nil
 			for _, status in ipairs(tile.applies_status) do
-				statuses.add_status(entity, status, overrides, tile)
+				statuses.add_status_from_template(entity, status, overrides, tile)
 			end
 		end
 	end
@@ -172,7 +157,7 @@ function statuses.apply_on_hit_statuses(attacker, target)
 	end
 	for _, status in ipairs(attacker.applies_on_hit) do
 		if utils.chance(status.chance or 100) then
-			statuses.add_status(target, status.name, nil, attacker)
+			statuses.add_status_from_template(target, status.name, nil, attacker)
 		end
 	end
 end
