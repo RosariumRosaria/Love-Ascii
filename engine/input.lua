@@ -13,7 +13,7 @@ local input_handler = {
 	down_keys = {},
 	pressed_keys = {},
 	released_keys = {},
-
+	aim = { x = 0, y = 0 },
 	last_turn = { x = 0, y = 0 },
 	grabbed = nil,
 }

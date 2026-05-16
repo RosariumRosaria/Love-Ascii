@@ -20,7 +20,6 @@ local function post_turn_update(player)
 end
 
 local function commit_turn(actor)
-	event_log:add({ type = "debug", message = actor.name or "" })
 	statuses.tick_entity(actor)
 	map:apply_on_step(actor)
 	local popped = scheduler.pop()

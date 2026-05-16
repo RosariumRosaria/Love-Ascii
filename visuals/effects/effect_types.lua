@@ -34,6 +34,23 @@ return {
 			},
 		},
 	},
+	retical = {
+		name = "retical",
+		params = {
+			lifespan = 99,
+			initial_lifespan = 99,
+			decay_over_time = false,
+			i = 1,
+			frames = 2,
+		},
+		rects = {
+			{
+				colors = { { 0.5, 0.1, 0.1, 0.3 } },
+				rounded_amount = 1 / 4,
+				sizes = { 0.8, 0 },
+			},
+		},
+	},
 	ping = {
 		name = "ping",
 		params = {
