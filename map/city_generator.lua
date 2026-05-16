@@ -62,10 +62,10 @@ function city_generator:make_building(room_start_x, room_start_y, width, height,
 			tiles[side.y][side.x][2] = types.air
 			if dir == i or dir2 == i then
 				tiles[side.y][side.x][1] = types.floor
-				entities:add_from_template("door", side.x, side.y, 1, { rotation = side.rotation })
+				entities.add_from_template("door", side.x, side.y, 1, { rotation = side.rotation })
 			else
 				tiles[side.y][side.x][3] = types.air
-				entities:add_from_template("window", side.x, side.y, 1, { rotation = side.rotation })
+				entities.add_from_template("window", side.x, side.y, 1, { rotation = side.rotation })
 			end
 		end
 	end

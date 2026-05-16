@@ -97,6 +97,18 @@ function utils.deep_print(tbl, indent, visited)
 	end
 end
 
+function utils.create_instance_from_template(templates, name, overrides)
+	local t = templates[name] or error("'" .. tostring(name) .. "' does not exist")
+	local instance = utils.deep_copy(t)
+	if overrides then
+		for k, v in pairs(overrides) do
+			instance[k] = v
+		end
+	end
+	instance.key = instance.key or name
+	return instance
+end
+
 function utils.overlapping_rectangles(r1, r2)
 	return not (
 		r1.x + r1.width <= r2.x
@@ -108,6 +120,12 @@ end
 
 function utils.chance(percent)
 	return math.random() < percent / 100
+end
+
+function utils.randomize_flicker(light)
+	if light and light.flicker then
+		light.flicker.phase = math.random() * 2 * math.pi
+	end
 end
 
 return utils

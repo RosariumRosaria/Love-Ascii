@@ -37,7 +37,7 @@ local function is_blocker(tiles, pos_x, pos_y)
 	if #tiles[pos_y][pos_x] > 1 then
 		transparent = tiles[pos_y][pos_x][2].transparent
 	end
-	return not transparent or entities:get_tag_location(pos_x, pos_y, 1, "solid")
+	return not transparent or entities.get_tag_location(pos_x, pos_y, 1, "solid")
 end
 
 local function cast_octant(origin_x, origin_y, octant, max_distance, max_x, max_y, tiles, on_visit)
