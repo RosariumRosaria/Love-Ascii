@@ -16,6 +16,7 @@ return {
 		chars = { "&" },
 		on_use = { apply_status = "regen" },
 		charges = 3,
+		max_charges = 3,
 	},
 	leather_armor = {
 		name = "Leather Armor",

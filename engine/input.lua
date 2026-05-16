@@ -83,7 +83,6 @@ function input_handler:update(dt)
 		return
 	end
 
-	-- debug / instant actions: always processed, not gated by turn cadence
 	if self:pressed("toggle_grid") then
 		debug_state.toggle_grid()
 	end
@@ -122,7 +121,8 @@ function input_handler:update(dt)
 	end
 
 	if self:pressed("debug") then
-		statuses.add_status_from_template(self.actor, "regen")
+		local item = inventory.get_selected(self.actor)
+		inventory.add_charge(item)
 	end
 
 	ui:log_events()

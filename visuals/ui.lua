@@ -66,7 +66,20 @@ function ui_handler:get_visible_texts(ui)
 	return visible_texts
 end
 
-function ui_handler:add_ui(x, y, width, height, name, color, outline_width, outline_color, center_text, tile_grid, font, tile_size)
+function ui_handler:add_ui(
+	x,
+	y,
+	width,
+	height,
+	name,
+	color,
+	outline_width,
+	outline_color,
+	center_text,
+	tile_grid,
+	font,
+	tile_size
+)
 	font = font or small_font
 	tile_size = tile_size or small_tile_size
 	local ui = {
@@ -125,7 +138,20 @@ function ui_handler:load()
 
 	self:reload_fonts()
 
-	self:add_ui(start_x, buffer, width, height, "terminal", black, outline_width, white, nil, nil, terminal_font, terminal_tile_size)
+	self:add_ui(
+		start_x,
+		buffer,
+		width,
+		height,
+		"terminal",
+		black,
+		outline_width,
+		white,
+		nil,
+		nil,
+		terminal_font,
+		terminal_tile_size
+	)
 	status_panel = self:add_ui(
 		start_x,
 		start_y,
@@ -141,42 +167,43 @@ end
 
 function ui_handler:log_events()
 	for _, ev in ipairs(event_log:drain()) do
-		if ev.silent then
-			goto continue
+		if not ev.silent then
+			if ev.type == "damage" then
+				self:add_text_to_ui_by_name("terminal", ev.source .. " hit " .. ev.entity .. " for " .. ev.amount)
+			elseif ev.type == "heal" then
+				self:add_text_to_ui_by_name("terminal", ev.source .. " healed " .. ev.entity .. " for " .. ev.amount)
+			elseif ev.type == "status_expired" then
+				self:add_text_to_ui_by_name("terminal", ev.status .. " wore off " .. ev.entity)
+			elseif ev.type == "status_applied" then
+				self:add_text_to_ui_by_name("terminal", ev.source .. " applied " .. ev.status .. " to " .. ev.entity)
+			elseif ev.type == "entity_died" then
+				self:add_text_to_ui_by_name("terminal", ev.entity .. " was killed by " .. ev.source)
+			elseif ev.type == "entity_dragged" then
+				self:add_text_to_ui_by_name(
+					"terminal",
+					ev.source .. " dragged " .. ev.entity .. " to " .. ev.dest_x .. ", " .. ev.dest_y
+				)
+			elseif ev.type == "action_failed" then
+				self:add_text_to_ui_by_name("terminal", ev.entity .. ": " .. ev.reason)
+			elseif ev.type == "item_equipped" then
+				self:add_text_to_ui_by_name("terminal", ev.entity .. " equipped " .. ev.item .. " (" .. ev.slot .. ")")
+			elseif ev.type == "item_unequipped" then
+				self:add_text_to_ui_by_name(
+					"terminal",
+					ev.entity .. " unequipped " .. ev.item .. " (" .. ev.slot .. ")"
+				)
+			elseif ev.type == "item_used" then
+				self:add_text_to_ui_by_name("terminal", ev.entity .. " used " .. ev.item)
+			elseif ev.type == "item_consumed" then
+				self:add_text_to_ui_by_name("terminal", ev.item .. " was consumed")
+			elseif ev.type == "entity_picked_up" then
+				self:add_text_to_ui_by_name("terminal", ev.source .. " picked up " .. ev.entity)
+			elseif ev.type == "entity_placed" then
+				self:add_text_to_ui_by_name("terminal", ev.source .. " placed " .. ev.entity)
+			elseif ev.type == "debug" then
+				self:add_text_to_ui_by_name("terminal", "[DEBUG] " .. ev.message)
+			end
 		end
-		if ev.type == "damage" then
-			self:add_text_to_ui_by_name("terminal", ev.source .. " hit " .. ev.entity .. " for " .. ev.amount)
-		elseif ev.type == "heal" then
-			self:add_text_to_ui_by_name("terminal", ev.source .. " healed " .. ev.entity .. " for " .. ev.amount)
-		elseif ev.type == "status_expired" then
-			self:add_text_to_ui_by_name("terminal", ev.status .. " wore off " .. ev.entity)
-		elseif ev.type == "status_applied" then
-			self:add_text_to_ui_by_name("terminal", ev.source .. " applied " .. ev.status .. " to " .. ev.entity)
-		elseif ev.type == "entity_died" then
-			self:add_text_to_ui_by_name("terminal", ev.entity .. " was killed by " .. ev.source)
-		elseif ev.type == "entity_dragged" then
-			self:add_text_to_ui_by_name(
-				"terminal",
-				ev.source .. " dragged " .. ev.entity .. " to " .. ev.dest_x .. ", " .. ev.dest_y
-			)
-		elseif ev.type == "action_failed" then
-			self:add_text_to_ui_by_name("terminal", ev.entity .. ": " .. ev.reason)
-		elseif ev.type == "item_equipped" then
-			self:add_text_to_ui_by_name("terminal", ev.entity .. " equipped " .. ev.item .. " (" .. ev.slot .. ")")
-		elseif ev.type == "item_unequipped" then
-			self:add_text_to_ui_by_name("terminal", ev.entity .. " unequipped " .. ev.item .. " (" .. ev.slot .. ")")
-		elseif ev.type == "item_used" then
-			self:add_text_to_ui_by_name("terminal", ev.entity .. " used " .. ev.item)
-		elseif ev.type == "item_consumed" then
-			self:add_text_to_ui_by_name("terminal", ev.item .. " was consumed")
-		elseif ev.type == "entity_picked_up" then
-			self:add_text_to_ui_by_name("terminal", ev.source .. " picked up " .. ev.entity)
-		elseif ev.type == "entity_placed" then
-			self:add_text_to_ui_by_name("terminal", ev.source .. " placed " .. ev.entity)
-		elseif ev.type == "debug" then
-			self:add_text_to_ui_by_name("terminal", "[DEBUG] " .. ev.message)
-		end
-		::continue::
 	end
 end
 
@@ -198,8 +225,18 @@ function ui_handler:update_status(entity)
 			local label = item.name or item.key or "?"
 
 			local equipped = inventory.is_equipped(entity, item) and " (equipped)" or ""
+
+			local charges = ""
+			if item.charges then
+				charges = " [" .. item.charges
+				if item.max_charges then
+					charges = charges .. "/" .. item.max_charges
+				end
+				charges = charges .. "]"
+			end
+
 			local selected = inventory.get_selected(entity) and inventory.get_selected(entity) == item and " <" or ""
-			self:add_text_to_ui_by_name("status", "- " .. label .. equipped .. selected)
+			self:add_text_to_ui_by_name("status", "- " .. label .. equipped .. charges .. selected)
 		end
 	elseif status_panel.mode == "statuses" and entity.statuses then
 		for _, status in ipairs(entity.statuses) do
