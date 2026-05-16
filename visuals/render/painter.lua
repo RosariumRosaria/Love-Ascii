@@ -134,7 +134,7 @@ function painter:draw_effect(effect, center_x, center_y, visible)
 end
 
 function painter:draw_ui(ui)
-	love.graphics.setFont(small_font)
+	love.graphics.setFont(ui.font or small_font)
 
 	local visible_texts = ui_handler:get_visible_texts(ui)
 
@@ -149,7 +149,7 @@ function painter:draw_ui(ui)
 		visible_texts,
 		ui.center_text,
 		{ 1, 1, 1, 1 },
-		small_tile_size
+		ui.tile_size or small_tile_size
 	)
 end
 

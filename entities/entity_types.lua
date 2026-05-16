@@ -116,7 +116,7 @@ return {
 			color = { r = 1.0, g = 0.6, b = 0.25 },
 			intensity = 1,
 			radius = 10,
-			flicker = { amp = 0.1, freq = 2, phase = 3 },
+			flicker = { amp = 0.05, freq = 2, phase = 3 },
 		},
 	},
 	crystal = {

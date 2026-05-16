@@ -1,6 +1,0 @@
-
-
-## Step 5 — Polish (skip on first pass)
-
-- Animated/flicker lights: easiest as a per-frame jitter in `render`, not in the per-turn light grid.
-

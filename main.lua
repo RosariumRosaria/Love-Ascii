@@ -45,7 +45,7 @@ function love.load()
 		chars = { "8" },
 		light = {
 			color = { r = 1.0, g = 0.85, b = 0.55 },
-			flicker = { amp = 0.2, freq = 1, phase = 6 },
+			flicker = { amp = 0.1, freq = 2, phase = 6 },
 			intensity = 1,
 			radius = 8,
 		},
