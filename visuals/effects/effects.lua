@@ -24,25 +24,16 @@ function effects:add_effect(effect)
 	table.insert(self.effect_list, effect)
 end
 
+function effects:remove_effect(effect)
+	utils.remove_from_list(self.effect_list, effect)
+end
 function effects:add_from_template(name, x, y, z, overrides)
-	local template = effect_types[name]
-	if not template then
-		error("Entity type '" .. tostring(name) .. "' does not exist")
-	end
-	local new_entity = utils.deep_copy(template)
-
-	new_entity.x = x or 1
-	new_entity.y = y or 1
-	new_entity.z = z or 1
-
-	if overrides then
-		for k, v in pairs(overrides) do
-			new_entity[k] = v
-		end
-	end
-
-	self:add_effect(new_entity)
-	return new_entity
+	local new_effect = utils.create_instance_from_template(effect_types, name, overrides)
+	new_effect.x = x or 1
+	new_effect.y = y or 1
+	new_effect.z = z or 1
+	self:add_effect(new_effect)
+	return new_effect
 end
 
 local function update_effect_parts(parts, next_frame)
@@ -68,18 +59,24 @@ function effects:update(dt)
 		params.lifespan = params.lifespan - dt
 
 		if params.lifespan <= 0 then
-			local i_next = params.i + 1
-			local total_remaining = 0
-
-			if effect.rects then
-				total_remaining = total_remaining + update_effect_parts(effect.rects, i_next)
-			end
-
-			if total_remaining > 0 then
-				params.i = i_next
+			if params.repeats then
+				local cycle = params.frames or 1
+				params.i = (params.i % cycle) + 1
 				params.lifespan = params.initial_lifespan
 			else
-				table.remove(self.effect_list, i)
+				local i_next = params.i + 1
+				local total_remaining = 0
+
+				if effect.rects then
+					total_remaining = total_remaining + update_effect_parts(effect.rects, i_next)
+				end
+
+				if total_remaining > 0 then
+					params.i = i_next
+					params.lifespan = params.initial_lifespan
+				else
+					table.remove(self.effect_list, i)
+				end
 			end
 		end
 	end

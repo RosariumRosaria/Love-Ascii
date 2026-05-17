@@ -8,6 +8,7 @@ local game_cfg = require("config.game_config")
 local statuses = require("entities.statuses")
 local stats = require("entities.stats")
 local event_log = require("engine.event_log")
+local aim = require("engine.aim")
 
 local turn = {
 	time_since_last_tick = 0,
@@ -16,6 +17,9 @@ local turn = {
 
 local function post_turn_update(player)
 	map:update_visibility(player.x, player.y, stats.get_stat(player, "sight"))
+	if aim.active then
+		aim.refresh()
+	end
 	ui:update_status(player)
 end
 

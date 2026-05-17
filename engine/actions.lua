@@ -1,6 +1,6 @@
 local entities = require("entities.entities")
 local effects = require("visuals.effects.effects")
-
+local aim = require("engine.aim")
 local event_log = require("engine.event_log")
 local map = require("map.map")
 local utils = require("utils")
@@ -9,7 +9,8 @@ local stats = require("entities.stats")
 local inventory = require("entities.inventory")
 local actions = {}
 
-local function validate_interaction(actor, target, name)
+local function validate_interaction(actor, target, name, range)
+	range = range or 1
 	if not actor then
 		event_log:add({ type = "action_failed", entity = "Unknown", reason = name .. " actor is nil" })
 		return false
@@ -18,7 +19,7 @@ local function validate_interaction(actor, target, name)
 		event_log:add({ type = "action_failed", entity = "Unknown", reason = name .. " target is nil" })
 		return false
 	end
-	if utils.distance_between(actor, target) > 1 then
+	if utils.distance_between(actor, target) > range then
 		event_log:add({ type = "action_failed", entity = target.name, reason = "Too far apart" })
 		return false
 	end
@@ -160,6 +161,32 @@ function actions:attack(entity, dx, dy)
 	return true
 end
 
+function actions:ranged_attack(entity, target_x, target_y)
+	local weapon = aim.weapon
+	if not weapon then
+		return false
+	end
+
+	local target_entity = entities.get_entity(target_x, target_y, entity.z)
+	if not validate_interaction(entity, target_entity, "Ranged_Attack", weapon.range) then
+		return false
+	end
+	if (weapon.charges or 0) <= 0 then
+		event_log:add({ type = "action_failed", entity = entity.name, reason = "Out of ammo" })
+		return false
+	end
+	if entity.team == target_entity.team then
+		return true
+	end
+
+	inventory.use_charge(weapon)
+	effects:add_from_template("attack", target_x, target_y, entity.z)
+	entities.apply_damage(target_entity, stats.get_stat(entity, "damage"), entity.name)
+	statuses.apply_on_hit_statuses(entity, target_entity) --TODO should on hit apply from ranged
+
+	return true
+end
+
 function actions:interact(entity, dx, dy)
 	local target_entity = entities.get_entity(entity.x + dx, entity.y + dy, entity.z)
 	if not validate_interaction(entity, target_entity, "Interact") then
@@ -256,6 +283,8 @@ function actions:handle_action(entity, action)
 		return self:move(entity, action.dx, action.dy)
 	elseif t == "attack" then
 		return self:attack(entity, action.dx, action.dy)
+	elseif t == "ranged_attack" then
+		return self:ranged_attack(entity, action.target_x, action.target_y)
 	elseif t == "interact" then
 		return self:interact(entity, action.dx, action.dy)
 	elseif t == "inspect" then

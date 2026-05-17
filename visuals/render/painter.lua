@@ -82,10 +82,10 @@ function painter:draw_effect(effect, center_x, center_y, visible)
 				color =
 					render_utils.scale_color(rect.colors[1], effect.params.lifespan / effect.params.initial_lifespan)
 			else
-				color = rect.colors[effect.params.i]
+				color = rect.colors[((effect.params.i - 1) % #rect.colors) + 1]
 			end
 
-			local effect_size = rect.sizes[effect.params.i] * tile_size
+			local effect_size = rect.sizes[((effect.params.i - 1) % #rect.sizes) + 1] * tile_size
 
 			render_primitives.draw_rect(
 				x_screen + ((tile_size - effect_size) / 2),
