@@ -19,4 +19,9 @@ return {
 	pathfinding = {
 		max_iterations = 1000,
 	},
+	perf = {
+		lag_warn_threshold = 0.5,
+		warmup_frames = 30,
+		warn_cooldown = 0.05,
+	},
 }

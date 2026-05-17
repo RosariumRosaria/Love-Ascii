@@ -236,6 +236,38 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 	})
 end
 
+function painter:emit_weather_particle(p, center_x, center_y, time)
+	local tx, ty = math.floor(p.x), math.floor(p.y)
+	if ty < 1 or ty > map:get_max_y() or tx < 1 or tx > map:get_max_x() then
+		return
+	end
+	if not map:is_visible(tx, ty) then
+		return
+	end
+
+	local x_screen, y_screen = render_utils.get_screen_coords(p.x, p.y, center_x, center_y)
+	local dx, dy = get_offset(p.z, p.x, p.y, center_x, center_y)
+	local base = render_utils.distance_scale(p.x, p.y, center_x, center_y)
+
+	local alpha = render_utils.height_level_scale(p.z, max_height, map.max_z, map.min_z, true, base)
+	local scaled_color = render_utils.scale_color(p.color, alpha)
+	local light_data = map:get_lighting_tile(tx, ty)
+	if light_data then
+		scaled_color = render_utils.apply_lighting(scaled_color, light_data, base)
+	end
+	scaled_color = apply_bw_mode(scaled_color)
+	emit_char({
+		z = p.z,
+		y = p.y,
+		layer = draw_buffer.LAYER.WEATHER,
+		x_screen = x_screen + dx,
+		y_screen = y_screen + dy,
+		char = p.char,
+		color = scaled_color,
+		size_scale = (1 + (p.z - 1) * render_cfg.z_size_scale_per_level) * render_cfg.weather_size_scale,
+	})
+end
+
 function painter:emit_entity(entity, center_x, center_y, visible, explored, time)
 	local tilelike = entities.get_tag_entity(entity, "tilelike")
 
@@ -250,7 +282,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 
 	local light_data = visible and map:get_lighting_tile(entity.x, entity.y) or nil
 
-	local x_screen, y_screen = render_utils.get_screen_coords(entity.x, entity.y, center_x, center_y)
+	local x_screen, y_screen = render_utils.get_screen_coords(entity.render_x, entity.render_y, center_x, center_y)
 	local base = render_utils.distance_scale(entity.x, entity.y, center_x, center_y)
 
 	if entities.get_tag_entity(entity, "covers") then

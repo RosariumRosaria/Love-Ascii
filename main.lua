@@ -10,6 +10,7 @@ local entities = require("entities.entities")
 local turn = require("engine.turn")
 local inventory = require("items.inventory")
 local stats = require("stats.stats")
+local perf = require("engine.perf")
 
 function love.load()
 	config:load()
@@ -62,6 +63,7 @@ function love.load()
 end
 
 function love.update(dt)
+	perf:begin_frame()
 	turn:update(dt)
 	render:update(entities.player.x, entities.player.y, dt)
 	effects:update(dt)
@@ -70,4 +72,5 @@ end
 function love.draw()
 	render:draw()
 	visualizer:draw()
+	perf:end_frame(ui)
 end
