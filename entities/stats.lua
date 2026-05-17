@@ -2,12 +2,12 @@ local event_log = require("engine.event_log")
 
 local stats = {}
 
-function stats.get_stat(entity, name)
+function stats.get_stat(entity, name, context)
 	local stat = entity.stats and entity.stats[name]
 	if not stat then
 		return 0
 	end
-	local add, mul = stats.sum_modifiers(entity, name)
+	local add, mul = stats.sum_modifiers(entity, name, context)
 	return (stat.base + add) * mul
 end
 
@@ -36,7 +36,7 @@ function stats.set_current(entity, name, value)
 	stat.current = value
 end
 
-function stats.sum_modifiers(entity, stat_name)
+function stats.sum_modifiers(entity, stat_name, context)
 	local add, mul = 0, 1
 
 	if entity.statuses then
@@ -57,7 +57,8 @@ function stats.sum_modifiers(entity, stat_name)
 
 	if entity.inventory and entity.inventory.equipped then
 		for _, item in pairs(entity.inventory.equipped) do
-			if item.modifiers then
+			local skip = context == "melee" and item.ranged
+			if not skip and item.modifiers then
 				for _, mod in ipairs(item.modifiers) do
 					if mod.stat == stat_name then
 						if mod.op == "add" then
