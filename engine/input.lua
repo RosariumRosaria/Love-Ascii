@@ -153,6 +153,7 @@ function input:update(dt)
 		if self.mode == modes.aiming then
 			self.mode = modes.normal
 			aim.exit()
+			self.last_turn = { x = 0, y = 0 }
 		else
 			local weapon = inventory.get_equipped(self.actor, "mainhand")
 			if not weapon or not weapon.ranged then
@@ -160,6 +161,7 @@ function input:update(dt)
 			else
 				self.mode = modes.aiming
 				aim.enter(self.actor, self.actor.x, self.actor.y)
+				self.last_turn = { x = 0, y = 0 }
 			end
 		end
 	end
