@@ -155,7 +155,7 @@ function actions:attack(entity, dx, dy)
 	end
 	if entity.team ~= target_entity.team then
 		effects:add_from_template("attack", entity.x + dx, entity.y + dy, entity.z)
-		entities.apply_damage(target_entity, stats.get_stat(entity, "damage"), entity.name)
+		entities.apply_damage(target_entity, stats.get_stat(entity, "damage", "melee"), entity.name)
 		statuses.apply_on_hit_statuses(entity, target_entity)
 	end
 	return true
