@@ -8,6 +8,7 @@ local draw_buffer = {
 		TILE_CHAR = 3, -- main tile char
 		ENTITY_COVER = 4, -- black bg rect for entities with `covers` tag
 		ENTITY_CHAR = 5, -- main entity char
+		WEATHER = 6,
 	},
 }
 

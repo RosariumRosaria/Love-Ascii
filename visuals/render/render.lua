@@ -8,10 +8,10 @@ local render_cfg = require("config.render_config")
 local camera = require("visuals.camera")
 local painter = require("visuals.render.painter")
 local draw_buffer = require("visuals.render.draw_buffer")
+local weather = require("visuals.effects.weather")
+local render = {}
 
-local render_handler = {}
-
-function render_handler:draw()
+function render:draw()
 	local draw_dist = render_cfg.draw_distance
 	local camera_x, camera_y = camera:get_position()
 
@@ -55,6 +55,10 @@ function render_handler:draw()
 			time
 		)
 	end
+
+	for _, p in ipairs(weather:get_particles()) do
+		painter:emit_weather_particle(p, camera_x, camera_y, time)
+	end
 	draw_buffer:sort()
 	draw_buffer:walk()
 
@@ -70,20 +74,33 @@ function render_handler:draw()
 	end
 end
 
-function render_handler:reload_fonts()
+function render:reload_fonts()
 	render_utils.load()
 	render_primitives.load()
 	ui_handler:reload_fonts()
 	painter:reload_fonts()
 end
 
-function render_handler:load(player_x, player_y)
+function render:load(player_x, player_y)
 	camera:load(player_x, player_y)
 	painter:reload_settings()
+	local cx, cy = camera:get_position()
+	weather:load(cx, cy)
 end
 
-function render_handler:update(target_x, target_y, dt)
+function render:update(target_x, target_y, dt)
+	for _, entity in ipairs(entities.get_entity_list()) do
+		if not entity.render_x or not entity.render_y then
+			entity.render_x = entity.x
+			entity.render_y = entity.y
+		else
+			entity.render_x = entity.render_x + (entity.x - entity.render_x) * render_cfg.entity_anim_speed * dt
+			entity.render_y = entity.render_y + (entity.y - entity.render_y) * render_cfg.entity_anim_speed * dt
+		end
+	end
 	camera:update(target_x, target_y, dt)
+	local cx, cy = camera:get_position()
+	weather:update(dt, cx, cy)
 end
 
-return render_handler
+return render

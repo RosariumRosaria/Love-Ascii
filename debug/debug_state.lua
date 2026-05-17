@@ -21,7 +21,6 @@ end
 
 function debug_state.toggle_normalize_lighting()
 	debug_state.normalize_lighting = not debug_state.normalize_lighting
-	print("normalize_lighting: " .. tostring(debug_state.normalize_lighting))
 end
 
 return debug_state
