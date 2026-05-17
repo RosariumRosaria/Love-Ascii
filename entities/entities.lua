@@ -1,10 +1,10 @@
 local entity_types = require("entities.entity_types")
 local event_log = require("engine.event_log")
-local inventory = require("entities.inventory")
+local inventory = require("items.inventory")
 
 local utils = require("utils")
 local scheduler = require("engine.scheduler")
-local stats = require("entities.stats")
+local stats = require("stats.stats")
 
 local entities = {
 	entity_list = {},

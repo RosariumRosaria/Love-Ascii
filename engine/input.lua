@@ -6,7 +6,7 @@ local ui = require("visuals.ui")
 local visualizer = require("map.voronoi.visualizer")
 local bindings = require("config.bindings")
 local event_log = require("engine.event_log")
-local inventory = require("entities.inventory")
+local inventory = require("items.inventory")
 local aim = require("engine.aim")
 
 local input = {

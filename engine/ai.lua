@@ -7,7 +7,7 @@ local actions = require("engine.actions")
 local utils = require("utils")
 local ai_cfg = require("config.ai_config")
 local event_log = require("engine.event_log")
-local stats = require("entities.stats")
+local stats = require("stats.stats")
 
 local ai = {}
 --[[ TODO, At some point the flow should probably be more like

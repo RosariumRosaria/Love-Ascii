@@ -1,6 +1,6 @@
 local config = require("config.runtime")
-local stats = require("entities.stats")
-local inventory = require("entities.inventory")
+local stats = require("stats.stats")
+local inventory = require("items.inventory")
 local event_log = require("engine.event_log")
 local small_tile_size
 local small_font

@@ -1,5 +1,5 @@
 local utils = require("utils")
-local stats = require("entities.stats")
+local stats = require("stats.stats")
 local scheduler = {}
 
 local function get_speed(entity)

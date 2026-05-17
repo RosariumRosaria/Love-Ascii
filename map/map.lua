@@ -7,7 +7,7 @@ local utils = require("utils")
 local gen_cfg = require("config.generation_config")
 local render_config = require("config.render_config")
 local entities = require("entities.entities")
-local statuses = require("entities.statuses")
+local statuses = require("statuses.statuses")
 
 local map = {
 	max_x = nil,
