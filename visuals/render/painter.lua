@@ -7,7 +7,7 @@ local config = require("config.runtime")
 local render_cfg = require("config.render_config")
 local debug_state = require("debug.debug_state")
 local draw_buffer = require("visuals.render.draw_buffer")
-local statuses = require("entities.statuses")
+local statuses = require("statuses.statuses")
 
 local painter = {}
 

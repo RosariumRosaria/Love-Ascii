@@ -4,9 +4,9 @@ local aim = require("engine.aim")
 local event_log = require("engine.event_log")
 local map = require("map.map")
 local utils = require("utils")
-local statuses = require("entities.statuses")
-local stats = require("entities.stats")
-local inventory = require("entities.inventory")
+local statuses = require("statuses.statuses")
+local stats = require("stats.stats")
+local inventory = require("items.inventory")
 local actions = {}
 
 local function validate_interaction(actor, target, name, range)

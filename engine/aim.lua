@@ -1,6 +1,6 @@
 local effects = require("visuals.effects.effects")
 local map = require("map.map")
-local inventory = require("entities.inventory")
+local inventory = require("items.inventory")
 local utils = require("utils")
 local entities = require("entities.entities")
 

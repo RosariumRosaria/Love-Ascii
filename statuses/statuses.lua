@@ -1,4 +1,4 @@
-local status_types = require("entities.status_types")
+local status_types = require("statuses.status_types")
 local entities = require("entities.entities")
 local utils = require("utils")
 local event_log = require("engine.event_log")

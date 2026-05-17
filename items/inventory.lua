@@ -1,4 +1,4 @@
-local item_types = require("entities.item_types")
+local item_types = require("items.item_types")
 local utils = require("utils")
 
 local inventory = {}
