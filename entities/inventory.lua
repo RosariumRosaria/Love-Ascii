@@ -7,6 +7,19 @@ local inventory_template = {
 	equipped = { armor = nil, offhand = nil, accessory = nil, mainhand = nil },
 	selected_index = nil,
 }
+
+function inventory.get_equipped(entity, slot)
+	if not entity or not entity.inventory then
+		return nil
+	end
+
+	if not slot then
+		return entity.inventory[slot]
+	end
+
+	return entity.inventory.equipped[slot]
+end
+
 function inventory.increment_selected_index(entity)
 	if not entity.inventory or #entity.inventory.items == 0 then
 		return

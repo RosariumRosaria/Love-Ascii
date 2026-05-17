@@ -34,16 +34,6 @@ function statuses.remove_status(entity, key)
 	end
 end
 
-function statuses.clear_statuses(entity)
-	if not entity.statuses then
-		return
-	end
-	for i, status in ipairs(entity.statuses) do
-		table.remove(entity.statuses, i)
-		event_log:add({ type = "status_expired", entity = entity.name, status = status.name })
-	end
-end
-
 function statuses.add_status_from_template(entity, name, overrides, source)
 	local new_status = utils.create_instance_from_template(status_types, name, overrides)
 

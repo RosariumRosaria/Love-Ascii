@@ -69,9 +69,12 @@ function utils.in_radius(dx, dy, r)
 end
 
 function utils.distance_between(a, b)
-	return math.sqrt((a.x - b.x) ^ 2 + (a.y - b.y) ^ 2)
+	return utils.distance_between_coords(a.x, a.y, b.x, b.y)
 end
 
+function utils.distance_between_coords(x1, y1, x2, y2)
+	return math.sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2)
+end
 function utils.deep_print(tbl, indent, visited)
 	indent = indent or 0
 	visited = visited or {}
@@ -126,6 +129,16 @@ function utils.randomize_flicker(light)
 	if light and light.flicker then
 		light.flicker.phase = math.random() * 2 * math.pi
 	end
+end
+
+function utils.remove_from_list(list, target)
+	for i, item in ipairs(list) do
+		if item == target then
+			table.remove(list, i)
+			return true
+		end
+	end
+	return false
 end
 
 return utils

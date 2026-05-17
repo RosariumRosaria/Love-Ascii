@@ -5,39 +5,43 @@ local debug_state = require("debug.debug_state")
 local ui = require("visuals.ui")
 local visualizer = require("map.voronoi.visualizer")
 local bindings = require("config.bindings")
-local statuses = require("entities.statuses")
+local event_log = require("engine.event_log")
 local inventory = require("entities.inventory")
-local input_handler = {
+local aim = require("engine.aim")
+
+local input = {
 	actor = nil,
 
 	down_keys = {},
 	pressed_keys = {},
 	released_keys = {},
-	aim = { x = 0, y = 0 },
+	mode = "normal",
 	last_turn = { x = 0, y = 0 },
 	grabbed = nil,
 }
 
+local modes = { normal = "normal", aiming = "aiming" }
+
 function love.keypressed(key)
-	input_handler.down_keys[key] = true
-	input_handler.pressed_keys[key] = true
+	input.down_keys[key] = true
+	input.pressed_keys[key] = true
 end
 
 function love.keyreleased(key)
-	input_handler.down_keys[key] = nil
-	input_handler.released_keys[key] = true
+	input.down_keys[key] = nil
+	input.released_keys[key] = true
 end
 
-function input_handler:set_actor(entity)
+function input:set_actor(entity)
 	self.actor = entity
 end
 
-function input_handler:get_actor()
+function input:get_actor()
 	return self.actor
 end
 
 -- internal helper
-function input_handler:_has(action, state_table)
+function input:_has(action, state_table)
 	local keys = bindings[action]
 	if not keys then
 		return false
@@ -51,15 +55,15 @@ function input_handler:_has(action, state_table)
 	return false
 end
 
-function input_handler:is_down(action)
+function input:is_down(action)
 	return self:_has(action, self.down_keys)
 end
 
-function input_handler:pressed(action)
+function input:pressed(action)
 	return self:_has(action, self.pressed_keys)
 end
 
-function input_handler:get_direction()
+function input:get_direction()
 	local x, y = 0, 0
 
 	if self:is_down("move_left") then
@@ -78,7 +82,24 @@ function input_handler:get_direction()
 	return { x = x, y = y }
 end
 
-function input_handler:update(dt)
+function input:handle_aim()
+	local took_action = false
+	local move_dir = self:get_direction()
+	local is_moving = move_dir.x ~= 0 or move_dir.y ~= 0
+
+	if is_moving then
+		aim.move(move_dir.x, move_dir.y)
+	elseif self:is_down("attack") then
+		took_action = actions:handle_action(self.actor, {
+			type = "ranged_attack",
+			target_x = aim.x,
+			target_y = aim.y,
+		})
+	end
+	return took_action
+end
+
+function input:update(dt)
 	if not self.actor then
 		return
 	end
@@ -116,20 +137,38 @@ function input_handler:update(dt)
 		love.event.quit()
 	end
 
-	if self:pressed("increment_selected_index") then
-		inventory.increment_selected_index(self.actor)
+	if self:pressed("cycle_next") then
+		if self.mode == modes.aiming then
+			aim.cycle_target()
+		else
+			inventory.increment_selected_index(self.actor)
+		end
 	end
-
 	if self:pressed("debug") then
 		local item = inventory.get_selected(self.actor)
 		inventory.add_charge(item)
+	end
+
+	if self:pressed("aim") then
+		if self.mode == modes.aiming then
+			self.mode = modes.normal
+			aim.exit()
+		else
+			local weapon = inventory.get_equipped(self.actor, "mainhand")
+			if not weapon or not weapon.ranged then
+				event_log:add({ type = "action_failed", entity = self.actor.name, reason = "no ranged weapon" })
+			else
+				self.mode = modes.aiming
+				aim.enter(self.actor, self.actor.x, self.actor.y)
+			end
+		end
 	end
 
 	ui:log_events()
 	ui:update_status(self.actor)
 end
 
-function input_handler:try_take_turn()
+function input:try_take_turn()
 	local actor = self.actor
 	if not actor or actor.dead then
 		return false
@@ -137,83 +176,87 @@ function input_handler:try_take_turn()
 
 	local took_action = false
 
-	if self:is_down("use_selected") then
-		return actions:handle_action(actor, { type = "use_selected" })
-	elseif self:is_down("wait") then
-		return actions:handle_action(actor, { type = "wait" })
-	end
-
-	local move_dir = self:get_direction()
-	local is_moving = move_dir.x ~= 0 or move_dir.y ~= 0
-	local has_moved = self.last_turn.x ~= 0 or self.last_turn.y ~= 0
-
-	if not (is_moving or has_moved) then
-		return false
-	end
-
-	if not is_moving then
-		move_dir = self.last_turn
-	end
-
-	if self:is_down("attack") then
-		took_action = actions:handle_action(actor, {
-			type = "attack",
-			dx = move_dir.x,
-			dy = move_dir.y,
-		})
-	elseif self:is_down("interact") then
-		took_action = actions:handle_action(actor, {
-			type = "interact",
-			dx = move_dir.x,
-			dy = move_dir.y,
-		})
-		if not took_action then
-			took_action = actions:handle_action(actor, {
-				type = "interact",
-				dx = -move_dir.x,
-				dy = -move_dir.y,
-			})
+	if self.mode == modes.aiming then
+		return self:handle_aim()
+	else
+		if self:is_down("use_selected") then
+			return actions:handle_action(actor, { type = "use_selected" })
+		elseif self:is_down("wait") then
+			return actions:handle_action(actor, { type = "wait" })
 		end
-	elseif self:is_down("inspect") then
-		actions:handle_action(actor, {
-			type = "inspect",
-			dx = move_dir.x,
-			dy = move_dir.y,
-		})
-	elseif self:is_down("place_selected") then
-		took_action = actions:handle_action(actor, {
-			type = "place_selected",
-			dx = move_dir.x,
-			dy = move_dir.y,
-		})
-	elseif is_moving then
-		if self:is_down("grab") then
-			if not self.grabbed then
-				self.grabbed = actions:grab(actor, move_dir.x, move_dir.y)
-			end
-			if self.grabbed then
-				took_action = actions:handle_action(actor, {
-					type = "grab_interaction",
-					dx = move_dir.x,
-					dy = move_dir.y,
-					target = self.grabbed,
-				})
-			end
-		else
-			self.grabbed = nil
+
+		local move_dir = self:get_direction()
+		local is_moving = move_dir.x ~= 0 or move_dir.y ~= 0
+		local has_moved = self.last_turn.x ~= 0 or self.last_turn.y ~= 0
+
+		if not (is_moving or has_moved) then
+			return false
+		end
+
+		if not is_moving then
+			move_dir = self.last_turn
+		end
+
+		if self:is_down("attack") then
 			took_action = actions:handle_action(actor, {
-				type = "move",
+				type = "attack",
 				dx = move_dir.x,
 				dy = move_dir.y,
 			})
+		elseif self:is_down("interact") then
+			took_action = actions:handle_action(actor, {
+				type = "interact",
+				dx = move_dir.x,
+				dy = move_dir.y,
+			})
+			if not took_action then
+				took_action = actions:handle_action(actor, {
+					type = "interact",
+					dx = -move_dir.x,
+					dy = -move_dir.y,
+				})
+			end
+		elseif self:is_down("inspect") then
+			actions:handle_action(actor, {
+				type = "inspect",
+				dx = move_dir.x,
+				dy = move_dir.y,
+			})
+		elseif self:is_down("place_selected") then
+			took_action = actions:handle_action(actor, {
+				type = "place_selected",
+				dx = move_dir.x,
+				dy = move_dir.y,
+			})
+		elseif is_moving then
+			if self:is_down("grab") then
+				if not self.grabbed then
+					self.grabbed = actions:grab(actor, move_dir.x, move_dir.y)
+				end
+				if self.grabbed then
+					took_action = actions:handle_action(actor, {
+						type = "grab_interaction",
+						dx = move_dir.x,
+						dy = move_dir.y,
+						target = self.grabbed,
+					})
+				end
+			else
+				self.grabbed = nil
+				took_action = actions:handle_action(actor, {
+					type = "move",
+					dx = move_dir.x,
+					dy = move_dir.y,
+				})
+			end
 		end
-	end
 
-	self.last_turn = { x = move_dir.x, y = move_dir.y }
+		self.last_turn = { x = move_dir.x, y = move_dir.y }
+	end
 	return took_action
 end
 
-function input_handler:end_frame()
+function input:end_frame()
 	self.pressed_keys = {}
 	self.released_keys = {}
 end
@@ -225,4 +268,4 @@ function love.wheelmoved(_, y)
 	end
 end
 
-return input_handler
+return input

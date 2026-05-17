@@ -1,8 +1,9 @@
 return {
 	attack = { "f" },
 	interact = { "e" },
-	inspect = { "r" },
+	inspect = { "t" },
 	grab = { "q" },
+	aim = { "r" },
 
 	move_up = { "up", "w" },
 	move_down = { "down", "s" },
@@ -10,7 +11,7 @@ return {
 	move_right = { "right", "d" },
 	wait = { "space" },
 
-	increment_selected_index = { "tab" },
+	cycle_next = { "tab" },
 	use_selected = { "u" },
 	place_selected = { "p" },
 
@@ -22,7 +23,7 @@ return {
 	switch_offset = { "z" },
 	switch_status = { "x" },
 	toggle_normalize_lighting = { "n" },
-	debug = { "t" },
+	debug = { "c" },
 
 	quit = { "escape" },
 }

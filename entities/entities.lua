@@ -104,28 +104,14 @@ function entities.get_entity(x, y, z)
 end
 
 function entities.remove_entity(target)
-	for i, entity in ipairs(entities.entity_list) do
-		if entity == target then
-			table.remove(entities.entity_list, i)
-			break
-		end
-	end
-
+	utils.remove_from_list(entities.entity_list, target)
 	local z_list = entities.entities_by_z_level[target.z]
 	if z_list then
-		for i, entity in ipairs(z_list) do
-			if entity == target then
-				table.remove(z_list, i)
-				break
-			end
-		end
-
+		utils.remove_from_list(z_list, target)
 		if #z_list == 0 then
 			entities.entities_by_z_level[target.z] = nil
 		end
 	end
-
-	return true
 end
 
 function entities.get_entity_list_by_z_level(z)

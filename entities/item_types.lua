@@ -18,6 +18,10 @@ return {
 		modifiers = {
 			{ stat = "damage", op = "add", value = 3 },
 		},
+		ranged = true,
+		charges = 10,
+		max_charges = 10, --TODO: Some kind of quiver
+		range = 15,
 	},
 	health_potion = {
 		name = "Health Potion",

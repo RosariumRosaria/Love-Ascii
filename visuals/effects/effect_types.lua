@@ -34,18 +34,19 @@ return {
 			},
 		},
 	},
-	retical = {
-		name = "retical",
+	reticle = {
+		name = "reticle",
 		params = {
-			lifespan = 99,
-			initial_lifespan = 99,
+			lifespan = 0.4,
+			initial_lifespan = 0.4,
 			decay_over_time = false,
+			repeats = true,
 			i = 1,
 			frames = 2,
 		},
 		rects = {
 			{
-				colors = { { 0.5, 0.1, 0.1, 0.3 } },
+				colors = { { 0.7, 0.3, 0.3, 0.6 } },
 				rounded_amount = 1 / 4,
 				sizes = { 0.8, 0 },
 			},
