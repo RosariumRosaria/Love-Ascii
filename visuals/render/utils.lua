@@ -5,11 +5,11 @@ local default_font
 local tile_size
 local render_utils = {}
 
-function render_utils.height_level_scale(z, max_height, max_z, min_z, visible, base)
+function render_utils.height_level_scale(z, max_height, max_z, min_z, visible)
 	local range = max_z - min_z
 	local normalized = (z - min_z) / range
 	local height_factor = 0.25 + normalized * 1.75
-	local alpha = height_factor * base
+	local alpha = height_factor
 	if not visible then
 		alpha = alpha * 0.5
 	end
@@ -108,17 +108,16 @@ function render_utils.apply_flicker(color, sources, t)
 	return render_utils.scale_color(color, mod_sum / total)
 end
 
-function render_utils.apply_lighting(color, light, emissive_scale)
+function render_utils.apply_lighting(color, light)
 	if not color then
 		return { 1, 1, 1, 1 }
 	end
 	local ambient = render_config.ambient
-	local scale = emissive_scale or 1
-	local emissive = render_config.light_emissive * scale
+	local emissive = render_config.light_emissive
 
-	local fr = ambient + (light.r or 0) * scale
-	local fg = ambient + (light.g or 0) * scale
-	local fb = ambient + (light.b or 0) * scale
+	local fr = ambient + (light.r or 0)
+	local fg = ambient + (light.g or 0)
+	local fb = ambient + (light.b or 0)
 	local m = math.max(fr, fg, fb)
 	if m > 1 then
 		fr, fg, fb = fr / m, fg / m, fb / m

@@ -18,7 +18,7 @@ return {
 	entity_brightness_boost = 0.3,
 	shadow_brightness_scale = 0.25,
 	shadow_alpha_scale = 0.7,
-	ambient = 0.26,
+	ambient = 0.25,
 	light_emissive = 0.8,
 	cover_emissive = 0.5,
 	particle_count = 800,
