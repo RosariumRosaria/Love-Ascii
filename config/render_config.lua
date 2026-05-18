@@ -22,6 +22,7 @@ return {
 	light_emissive = 0.8,
 	cover_emissive = 0.5,
 	particle_count = 800,
+	weather_ease_in_duration = 2.0,
 	weather_size_scale = 0.5,
 	entity_anim_speed = 20,
 }
