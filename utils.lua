@@ -100,6 +100,10 @@ function utils.deep_print(tbl, indent, visited)
 	end
 end
 
+function utils.sign(n)
+	return n > 0 and 1 or (n < 0 and -1 or 0)
+end
+
 function utils.create_instance_from_template(templates, name, overrides)
 	local t = templates[name] or error("'" .. tostring(name) .. "' does not exist")
 	local instance = utils.deep_copy(t)

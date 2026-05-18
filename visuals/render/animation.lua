@@ -17,11 +17,9 @@ function animation.add_bump(entity, target_x, target_y)
 		return false
 	end
 	local bump = animation.add_from_template("bump")
-	bump.dx = (target_x - entity.x) * bump.amount
-	bump.dy = (target_y - entity.y) * bump.amount
 
-	bump.dx = bump.dx / math.abs(bump.dx)
-	bump.dy = bump.dy / math.abs(bump.dy)
+	bump.dx = utils.sign(target_x - entity.x) * bump.amount
+	bump.dy = utils.sign(target_y - entity.y) * bump.amount
 
 	entity.bump = bump
 end

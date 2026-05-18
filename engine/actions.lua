@@ -156,7 +156,7 @@ function actions:attack(entity, dx, dy)
 	end
 	if entity.team ~= target_entity.team then
 		effects:add_from_template("attack", entity.x + dx, entity.y + dy, entity.z)
-		animations.add_bump_anim(entity, target_entity.x, target_entity.y)
+		animation.add_bump(entity, target_entity.x, target_entity.y)
 		entities.apply_damage(target_entity, stats.get_stat(entity, "damage", "melee"), entity.name)
 		statuses.apply_on_hit_statuses(entity, target_entity)
 	end
