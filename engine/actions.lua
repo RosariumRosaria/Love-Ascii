@@ -215,8 +215,7 @@ function actions:move(entity, dx, dy)
 	local tar_y = entity.y + dy
 
 	if map:is_tile_free(tar_x, tar_y, entity.z, { [entity] = true }) then
-		local effect = effects:add_from_template("trail", entity.x, entity.y, entity.z)
-		effect.rects[1].colors[1] = entity.effect_color or effect.rects[1].colors[1]
+		entity.pending_trail = { x = entity.x, y = entity.y, z = entity.z, color = entity.effect_color }
 		entity.x = tar_x
 		entity.y = tar_y
 		return true
@@ -252,7 +251,7 @@ function actions:drag(entity, dx, dy, target)
 		return false
 	end
 
-	effects:add_from_template("trail", entity.x, entity.y, entity.z)
+	entity.pending_trail = { x = entity.x, y = entity.y, z = entity.z, color = entity.effect_color }
 	entity.x, entity.y = actor_dest_x, actor_dest_y
 	target.x, target.y = target_dest_x, target_dest_y
 
