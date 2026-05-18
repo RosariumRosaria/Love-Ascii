@@ -7,7 +7,7 @@ return {
 	draw_distance = 50,
 	max_height = 5, --TODO: this should be determined by the map, not hardcoded
 	default_offset_type = 1,
-	offset_amount_factor = 0.25,
+	offset_amount_factor = 0.3,
 	camera_speed = 2,
 	show_grid = false,
 	grid_color = { 0.5, 0.5, 0.5, 0.3 },

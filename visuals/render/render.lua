@@ -125,9 +125,9 @@ function render:update(target_x, target_y, dt)
 
 		local pt = entity.pending_trail
 		if pt and math.floor(entity.render_x + 0.5) == entity.x and math.floor(entity.render_y + 0.5) == entity.y then
-			local effect = effects:add_from_template("trail", pt.x, pt.y, pt.z)
+			--local effect = effects:add_from_template("trail", pt.x, pt.y, pt.z)
 			if pt.color then
-				effect.rects[1].colors[1] = pt.color
+				--	effect.rects[1].colors[1] = pt.color
 			end
 			entity.pending_trail = nil
 		end

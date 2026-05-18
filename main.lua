@@ -23,7 +23,7 @@ function love.load()
 	local map_max_z = game_cfg.map.max_z
 	local map_min_z = game_cfg.map.min_z
 
-	local player = entities.add_from_template("player", 20, 20, 1)
+	local player = entities.add_from_template("player", 200, 200, 1)
 	entities.set_player(player)
 	input_handler:set_actor(player)
 	inventory.add_from_template(player, "sword")
