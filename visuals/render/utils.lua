@@ -113,11 +113,12 @@ function render_utils.apply_lighting(color, light, emissive_scale)
 		return { 1, 1, 1, 1 }
 	end
 	local ambient = render_config.ambient
-	local emissive = render_config.light_emissive * (emissive_scale or 1)
+	local scale = emissive_scale or 1
+	local emissive = render_config.light_emissive * scale
 
-	local fr = ambient + (light.r or 0)
-	local fg = ambient + (light.g or 0)
-	local fb = ambient + (light.b or 0)
+	local fr = ambient + (light.r or 0) * scale
+	local fg = ambient + (light.g or 0) * scale
+	local fb = ambient + (light.b or 0) * scale
 	local m = math.max(fr, fg, fb)
 	if m > 1 then
 		fr, fg, fb = fr / m, fg / m, fb / m

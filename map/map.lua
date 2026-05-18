@@ -156,7 +156,7 @@ function map:load(max_x, max_y, max_z, min_z, map_type)
 	if map_type == "town" then
 		--voroni_generator:load(self.max_x, self.max_y, self.tiles, 125)
 		-- TODO Hardcoded, should be changed
-		city_generator:make_town(205, self.tiles, self.max_y, self.max_x, self.max_z, self.min_z)
+		city_generator:make_town(gen_cfg.building_count, self.tiles, self.max_y, self.max_x, self.max_z, self.min_z)
 
 		local radius = 8
 		for dy = -radius, radius do

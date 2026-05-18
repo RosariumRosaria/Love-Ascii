@@ -58,7 +58,7 @@ return {
 		slot = "offhand",
 		light = {
 			color = { r = 1.0, g = 0.85, b = 0.55 },
-			flicker = { amp = 0.15, freq = 8, phase = 4 },
+			flicker = { amp = 0.05, freq = 8, phase = 4 },
 			intensity = 1,
 			radius = 6,
 		},
