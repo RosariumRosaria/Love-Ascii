@@ -104,7 +104,7 @@ end
 function render:update(target_x, target_y, dt)
 	camera:update(target_x, target_y, dt)
 	local cx, cy = camera:get_position()
-	animation:update(dt)
+	animation.update(dt)
 	weather:update(dt, cx, cy)
 end
 

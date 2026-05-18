@@ -199,27 +199,28 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 	end
 
 	local x_screen, y_screen = render_utils.get_screen_coords(x, y, center_x, center_y)
-
 	local base = render_utils.distance_scale(x, y, center_x, center_y)
 
 	local char = tile.chars[1]
 	local natural_height = tile.natural_height or 0
 	local z_eff = z + natural_height
 
-	local alpha = render_utils.height_level_scale(z_eff, max_height, map.max_z, map.min_z, visible, base)
+	local alpha = render_utils.height_level_scale(z_eff, max_height, map.max_z, map.min_z, visible)
 
 	local base_color = render_utils.get_effective_color(tile.color, visible, explored)
 	local scaled_color = render_utils.scale_color(base_color, alpha)
 	local light_data = map:get_lighting_tile(x, y)
 
 	if visible then
-		scaled_color = render_utils.apply_lighting(scaled_color, light_data, base)
+		scaled_color = render_utils.apply_lighting(scaled_color, light_data)
 		scaled_color = render_utils.apply_flicker(scaled_color, light_data.sources, time)
 	end
 
 	local outline_color = tile.outline_color
 
 	scaled_color, outline_color = apply_bw_mode(scaled_color, outline_color)
+
+	scaled_color = render_utils.scale_color(scaled_color, base)
 
 	local base_dx, base_dy = get_offset(z, x, y, center_x, center_y)
 
@@ -231,6 +232,7 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 			cover_color = { r * k, g * k, b * k, 1 }
 			cover_color = render_utils.apply_flicker(cover_color, light_data.sources, time)
 		end
+		cover_color = render_utils.scale_color(cover_color, base)
 		emit_cover_rect(draw_buffer.LAYER.TILE_COVER, z, y, x_screen + base_dx, y_screen + base_dy, cover_color)
 	end
 
@@ -284,15 +286,16 @@ function painter:emit_weather_particle(p, center_x, center_y, time)
 
 	local x_screen, y_screen = render_utils.get_screen_coords(p.x, p.y, center_x, center_y)
 	local dx, dy = get_offset(p.z, p.x, p.y, center_x, center_y)
-	local base = render_utils.distance_scale(p.x, p.y, center_x, center_y)
 
-	local alpha = render_utils.height_level_scale(p.z, max_height, map.max_z, map.min_z, true, base)
+	local alpha = render_utils.height_level_scale(p.z, max_height, map.max_z, map.min_z, true)
 	local scaled_color = render_utils.scale_color(p.color, alpha)
 	local light_data = map:get_lighting_tile(tx, ty)
 	if light_data then
-		scaled_color = render_utils.apply_lighting(scaled_color, light_data, base)
+		scaled_color = render_utils.apply_lighting(scaled_color, light_data)
 	end
 	scaled_color = apply_bw_mode(scaled_color)
+
+	scaled_color = render_utils.scale_color(scaled_color, render_utils.distance_scale(p.x, p.y, center_x, center_y))
 	emit_char({
 		z = p.z,
 		y = p.y,
@@ -329,6 +332,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 			local k = render_cfg.cover_emissive
 			cover_color = { r * k, g * k, b * k, 1 }
 		end
+		cover_color = render_utils.scale_color(cover_color, base)
 		emit_cover_rect(draw_buffer.LAYER.ENTITY_COVER, entity.z, entity.y, x_screen, y_screen, cover_color)
 	end
 
@@ -339,12 +343,12 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 			base_color = render_utils.get_effective_color(base_color, visible, explored)
 		end
 
-		local scale = render_utils.height_level_scale(entity.z + i, max_height, map.max_z, map.min_z, visible, base)
+		local scale = render_utils.height_level_scale(entity.z + i, max_height, map.max_z, map.min_z, visible)
 			+ render_cfg.entity_brightness_boost
 
 		local scaled_color = render_utils.scale_color(base_color, scale)
 		if light_data then
-			scaled_color = render_utils.apply_lighting(scaled_color, light_data, base)
+			scaled_color = render_utils.apply_lighting(scaled_color, light_data)
 			-- TODO: Determine if this should apply to entity colors
 			-- scaled_color = render_utils.apply_flicker(scaled_color, light_data.flicker, time)
 		end
@@ -356,6 +360,8 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 			scaled_color = render_utils.scale_color(scaled_color, visuals.alpha)
 		end
 		scaled_color = apply_bw_mode(scaled_color, nil)
+
+		scaled_color = render_utils.scale_color(scaled_color, base)
 
 		local dx, dy = get_offset(entity.z + i - 1, entity.x, entity.y, center_x, center_y)
 
