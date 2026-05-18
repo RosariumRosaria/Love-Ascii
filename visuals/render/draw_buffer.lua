@@ -6,9 +6,10 @@ local draw_buffer = {
 		TILE_COVER = 1, -- opaque background rect (tile.covers)
 		TILE_SHADOW = 2, -- shadow char under a natural_height tile
 		TILE_CHAR = 3, -- main tile char
+		EFFECT_BELOW_ENTITY = 5, -- buffered effects (e.g. trails) above tiles but under entities
 		ENTITY_COVER = 4, -- black bg rect for entities with `covers` tag
-		ENTITY_CHAR = 5, -- main entity char
-		WEATHER = 6,
+		ENTITY_CHAR = 6, -- main entity char
+		WEATHER = 7,
 	},
 }
 
@@ -18,12 +19,13 @@ local function compare(a, b)
 	if a.z ~= b.z then
 		return a.z < b.z
 	end
+	if a.layer ~= b.layer then --TODO was reordingt these the rpoper fix
+		return a.layer < b.layer
+	end
 	if a.y ~= b.y then
 		return a.y < b.y
 	end
-	if a.layer ~= b.layer then
-		return a.layer < b.layer
-	end
+
 	return a.insertion_order < b.insertion_order
 end
 

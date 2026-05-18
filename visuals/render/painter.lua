@@ -64,6 +64,43 @@ local function emit_cover_rect(layer, z, y, x_screen, y_screen, color)
 	})
 end
 
+function painter:emit_effect(effect, center_x, center_y, visible)
+	if not (visible or not effect.params.needs_to_be_seen) then
+		return
+	end
+	if not effect.rects then
+		return
+	end
+
+	local x_screen, y_screen = render_utils.get_screen_coords(effect.x, effect.y, center_x, center_y)
+
+	for _, rect in ipairs(effect.rects) do
+		local color
+		if effect.params.decay_over_time then
+			color = render_utils.scale_color(rect.colors[1], effect.params.lifespan / effect.params.initial_lifespan)
+		else
+			color = rect.colors[((effect.params.i - 1) % #rect.colors) + 1]
+		end
+
+		local effect_size = rect.sizes[((effect.params.i - 1) % #rect.sizes) + 1] * tile_size
+
+		draw_buffer:emit({
+			z = effect.z,
+			y = effect.y,
+			layer = draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
+			kind = "rect",
+			x_screen = x_screen + ((tile_size - effect_size) / 2),
+			y_screen = y_screen + ((tile_size - effect_size) / 2),
+			w = effect_size,
+			h = effect_size,
+			color = color,
+			outline_width = rect.outline_width,
+			outline_color = rect.outline_color,
+			rounded_amount = rect.rounded_amount,
+		})
+	end
+end
+
 function painter:draw_effect(effect, center_x, center_y, visible)
 	love.graphics.setFont(default_font)
 

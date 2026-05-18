@@ -8,6 +8,7 @@ return {
 			i = 1,
 			frames = 1,
 			needs_to_be_seen = true,
+			buffered = true,
 		},
 		rects = {
 			{

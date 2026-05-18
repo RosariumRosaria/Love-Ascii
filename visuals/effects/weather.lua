@@ -3,13 +3,13 @@ local render_cfg = require("config.render_config")
 local types = require("map.tile_types")
 local utils = require("utils")
 local weather = {
-	mode = "snow",
+	mode = "rain",
 	particles = {},
 	screen_w = 0,
-	screen_h = 0,
+	screen_h = 0, --TODO GENERALIZE INTO PARTICLES, FOR EXAMPLE SMOKE
 }
 local mode_params = {
-	rain = { char = ".", vz_min = -8, vz_max = -10, drift = 0, color = { 0.2, 0.25, 0.36, 0.5 } },
+	rain = { char = ".", vz_min = -8, vz_max = -10, drift = 0, color = { 0.2, 0.25, 0.66, 0.7 } },
 	pipe = { char = "|", vz_min = -8, vz_max = -10, drift = 0, color = { 0.2, 0.25, 0.36, 0.5 } },
 	snow = { char = "*", vz_min = -1, vz_max = -2, drift = 0.5, color = { 1, 1, 1, 0.5 } },
 	normal = nil,
