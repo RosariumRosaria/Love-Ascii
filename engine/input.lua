@@ -15,6 +15,7 @@ local input = {
 	down_keys = {},
 	pressed_keys = {},
 	released_keys = {},
+	move_recency = {},
 	mode = "normal",
 	last_turn = { x = 0, y = 0 },
 	grabbed = nil,
@@ -22,14 +23,50 @@ local input = {
 
 local modes = { normal = "normal", aiming = "aiming" }
 
+local move_axis_of_key
+local function get_move_axis(key)
+	if not move_axis_of_key then
+		move_axis_of_key = {}
+		for _, k in ipairs(bindings.move_left or {}) do
+			move_axis_of_key[k] = "x"
+		end
+		for _, k in ipairs(bindings.move_right or {}) do
+			move_axis_of_key[k] = "x"
+		end
+		for _, k in ipairs(bindings.move_up or {}) do
+			move_axis_of_key[k] = "y"
+		end
+		for _, k in ipairs(bindings.move_down or {}) do
+			move_axis_of_key[k] = "y"
+		end
+	end
+	return move_axis_of_key[key]
+end
+
+local function remove_from_recency(list, key)
+	for i, k in ipairs(list) do
+		if k == key then
+			table.remove(list, i)
+			return
+		end
+	end
+end
+
 function love.keypressed(key)
 	input.down_keys[key] = true
 	input.pressed_keys[key] = true
+	if get_move_axis(key) then
+		remove_from_recency(input.move_recency, key)
+		table.insert(input.move_recency, key)
+	end
 end
 
 function love.keyreleased(key)
 	input.down_keys[key] = nil
 	input.released_keys[key] = true
+	if get_move_axis(key) then
+		remove_from_recency(input.move_recency, key)
+	end
 end
 
 function input:set_actor(entity)
@@ -63,7 +100,7 @@ function input:pressed(action)
 	return self:_has(action, self.pressed_keys)
 end
 
-function input:get_direction()
+function input:get_direction(cardinal_only)
 	local x, y = 0, 0
 
 	if self:is_down("move_left") then
@@ -77,6 +114,20 @@ function input:get_direction()
 	end
 	if self:is_down("move_down") then
 		y = 1
+	end
+
+	if cardinal_only and x ~= 0 and y ~= 0 then
+		for i = #self.move_recency, 1, -1 do
+			local k = self.move_recency[i]
+			if self.down_keys[k] then
+				if get_move_axis(k) == "x" then
+					y = 0
+				else
+					x = 0
+				end
+				break
+			end
+		end
 	end
 
 	return { x = x, y = y }
@@ -187,7 +238,7 @@ function input:try_take_turn()
 			return actions:handle_action(actor, { type = "wait" })
 		end
 
-		local move_dir = self:get_direction()
+		local move_dir = self:get_direction(true)
 		local is_moving = move_dir.x ~= 0 or move_dir.y ~= 0
 		local has_moved = self.last_turn.x ~= 0 or self.last_turn.y ~= 0
 

@@ -16,7 +16,7 @@ return {
 		transparent = true,
 		covers = true,
 		applies_status = { "obscured", silent = true },
-		natural_height = 0.75,
+		natural_height = 0.5,
 	},
 
 	v_wall = {

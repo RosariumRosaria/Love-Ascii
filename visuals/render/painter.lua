@@ -145,8 +145,8 @@ function painter:draw_effect(effect, center_x, center_y, visible)
 			local rect_size = tile_size * size_scale
 
 			local px, py = render_utils.get_screen_coords(
-				(effect.anchor and effect.anchor.x) or effect.x,
-				(effect.anchor and effect.anchor.y - panel.offset_y) or effect.y,
+				(effect.anchor and effect.anchor.render_x) or effect.x,
+				(effect.anchor and effect.anchor.render_y - panel.offset_y) or effect.y,
 				center_x,
 				center_y
 			)
