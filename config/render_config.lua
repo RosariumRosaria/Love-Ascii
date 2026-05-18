@@ -20,7 +20,7 @@ return {
 	shadow_alpha_scale = 0.7,
 	ambient = 0.26,
 	light_emissive = 0.8,
-	cover_emissive = 0.35,
+	cover_emissive = 0.5,
 	particle_count = 800,
 	weather_size_scale = 0.5,
 	entity_anim_speed = 20,
