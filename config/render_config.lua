@@ -1,6 +1,6 @@
 return {
 	use_pixel_font = true,
-	font_scale = 2.5,
+	font_scale = 3,
 	font_base_size = 16,
 	ui_font_scale = 0.875,
 	terminal_font_scale = 0.75,
@@ -18,7 +18,7 @@ return {
 	entity_brightness_boost = 0.3,
 	shadow_brightness_scale = 0.25,
 	shadow_alpha_scale = 0.7,
-	ambient = 0.25,
+	ambient = 1,
 	light_emissive = 0.8,
 	cover_emissive = 0.5,
 	particle_count = 800,

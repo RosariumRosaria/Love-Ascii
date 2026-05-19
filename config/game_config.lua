@@ -7,13 +7,13 @@ return {
 		resizable = true,
 	},
 	map = {
-		max_x = 300,
-		max_y = 300,
+		max_x = 200,
+		max_y = 200,
 		max_z = 6,
 		min_z = -4,
 	},
 	timing = {
-		turn_delay = 0.15,
+		turn_delay = 0.175,
 		base_turn_cost = 100,
 	},
 	pathfinding = {
