@@ -217,6 +217,7 @@ function actions:move(entity, dx, dy)
 	local tar_y = entity.y + dy
 
 	if map:is_tile_free(tar_x, tar_y, entity.z, { [entity] = true }) then
+		animation.spawn_pending_trail(entity)
 		entity.pending_trail = { x = entity.x, y = entity.y, z = entity.z, color = entity.effect_color }
 		entity.x = tar_x
 		entity.y = tar_y
@@ -253,6 +254,7 @@ function actions:drag(entity, dx, dy, target)
 		return false
 	end
 
+	animation.spawn_pending_trail(entity)
 	entity.pending_trail = { x = entity.x, y = entity.y, z = entity.z, color = entity.effect_color }
 	entity.x, entity.y = actor_dest_x, actor_dest_y
 	target.x, target.y = target_dest_x, target_dest_y
