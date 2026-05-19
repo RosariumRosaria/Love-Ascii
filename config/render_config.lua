@@ -18,11 +18,12 @@ return {
 	entity_brightness_boost = 0.3,
 	shadow_brightness_scale = 0.25,
 	shadow_alpha_scale = 0.7,
-	ambient = 1,
+	ambient = 0.25,
 	light_emissive = 0.8,
 	cover_emissive = 0.5,
 	particle_count = 800,
 	weather_ease_in_duration = 2.0,
 	weather_size_scale = 0.5,
 	entity_anim_speed = 20,
+	tween_slack = 0.02,
 }

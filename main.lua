@@ -65,7 +65,7 @@ end
 function love.update(dt)
 	perf:begin_frame()
 	turn:update(dt)
-	render:update(entities.player.x, entities.player.y, dt)
+	render:update(dt)
 	effects:update(dt)
 end
 

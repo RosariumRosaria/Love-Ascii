@@ -66,7 +66,7 @@ function render:draw()
 
 	for _, effect in ipairs(effects:get_effect_list()) do
 		if effect.params.buffered then
-			--	painter:emit_effect(effect, camera_x, camera_y, map:is_visible(effect.x, effect.y))
+			painter:emit_effect(effect, camera_x, camera_y, map:is_visible(effect.x, effect.y))
 		end
 	end
 
@@ -101,10 +101,13 @@ function render:load(player_x, player_y)
 	weather:load(cx, cy)
 end
 
-function render:update(target_x, target_y, dt)
-	camera:update(target_x, target_y, dt)
-	local cx, cy = camera:get_position()
+function render:update(dt)
 	animation.update(dt)
+	local player = entities.player
+	local tx = player.tween_x or player.x
+	local ty = player.tween_y or player.y
+	camera:update(tx, ty, dt)
+	local cx, cy = camera:get_position()
 	weather:update(dt, cx, cy)
 end
 
