@@ -13,6 +13,18 @@ function animation.add_from_template(name, overrides)
 	return new_anim
 end
 
+function animation.spawn_pending_trail(entity)
+	local pt = entity.pending_trail
+	if not pt then
+		return
+	end
+	local effect = effects:add_from_template("trail", pt.x, pt.y, pt.z)
+	if pt.color then
+		effect.rects[1].colors[1] = pt.color
+	end
+	entity.pending_trail = nil
+end
+
 function animation.add_bump(entity, target_x, target_y)
 	if not entity then
 		return false
@@ -53,13 +65,8 @@ function animation.update(dt)
 		entity.render_x = entity.tween_x
 		entity.render_y = entity.tween_y
 
-		local pt = entity.pending_trail
-		if pt and math.floor(entity.tween_x + 0.5) == entity.x and math.floor(entity.tween_y + 0.5) == entity.y then
-			local effect = effects:add_from_template("trail", pt.x, pt.y, pt.z)
-			if pt.color then
-				effect.rects[1].colors[1] = pt.color
-			end
-			entity.pending_trail = nil
+		if entity.pending_trail and entity.tween_elapsed >= 0.8 * tween_duration then
+			animation.spawn_pending_trail(entity)
 		end
 
 		if entity.bump then
