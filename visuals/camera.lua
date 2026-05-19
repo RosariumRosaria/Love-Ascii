@@ -11,10 +11,7 @@ function camera:load(player_x, player_y)
 	y = player_y
 end
 
-function camera:update(target_x, target_y, dt)
-	x = x + (target_x - x) * speed * dt
-	y = y + (target_y - y) * speed * dt
-end
+function camera:update(target_x, target_y, dt) end
 
 function camera:get_position()
 	return x, y

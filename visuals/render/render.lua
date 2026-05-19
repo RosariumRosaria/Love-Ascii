@@ -66,7 +66,7 @@ function render:draw()
 
 	for _, effect in ipairs(effects:get_effect_list()) do
 		if effect.params.buffered then
-			painter:emit_effect(effect, camera_x, camera_y, map:is_visible(effect.x, effect.y))
+			--	painter:emit_effect(effect, camera_x, camera_y, map:is_visible(effect.x, effect.y))
 		end
 	end
 
