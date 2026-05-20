@@ -224,7 +224,7 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 
 	local base_dx, base_dy = get_offset(z, x, y, center_x, center_y)
 
-	if tile.covers then
+	if tile.covers or z == 1 then
 		local cover_color = { 0, 0, 0, 1 }
 		if visible then
 			local r, g, b = render_utils.normalize_light(light_data)
