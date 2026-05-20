@@ -9,7 +9,7 @@ local weather = {
 	screen_h = 0, --TODO GENERALIZE INTO PARTICLES, FOR EXAMPLE SMOKE
 }
 local mode_params = {
-	rain = { char = ".", vz_min = -9, vz_max = -10, drift = 0, color = { 0.2, 0.25, 0.66, 0.7 } },
+	rain = { char = ".", vz_min = -22, vz_max = -27, drift = 0, color = { 0.2, 0.25, 0.66, 0.7 } },
 	pipe = { char = "|", vz_min = -8, vz_max = -10, drift = 0, color = { 0.2, 0.25, 0.36, 0.5 } },
 	snow = { char = "*", vz_min = -1, vz_max = -2, drift = 0.5, color = { 1, 1, 1, 0.5 } },
 	normal = nil,
@@ -25,7 +25,7 @@ local function spawn_particle(cx, cy, draw_dist, ease_in)
 	return {
 		x = cx + (math.random() * 2 - 1) * draw_dist,
 		y = cy + (math.random() * 2 - 1) * draw_dist,
-		z = map.max_z + 5 + math.random() * 4,
+		z = map.max_z + 10 + math.random(1, 5),
 		vz = params.vz_min + math.random() * (params.vz_max - params.vz_min),
 		vx = (math.random() * 2 - 1) * params.drift,
 		vy = (math.random() * 2 - 1) * params.drift,

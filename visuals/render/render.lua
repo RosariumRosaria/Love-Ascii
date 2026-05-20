@@ -75,7 +75,6 @@ function render:draw()
 
 	painter:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
 
-	--Draw Effects
 	for _, effect in ipairs(effects:get_effect_list()) do
 		if not effect.params.buffered then
 			painter:draw_effect(effect, camera_x, camera_y, map:is_visible(effect.x, effect.y))
