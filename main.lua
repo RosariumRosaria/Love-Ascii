@@ -12,6 +12,20 @@ local inventory = require("items.inventory")
 local stats = require("stats.stats")
 local perf = require("engine.perf")
 
+local TREE_TRUNK_COLOR = { 0.45, 0.32, 0.22, 1 }
+local TREE_LEAF_COLOR = { 0.32, 0.5, 0.28, 1 }
+
+local function make_tree_chars(height)
+	local chars, colors = {}, {}
+	for i = 1, height - 1 do
+		chars[i] = "."
+		colors[i] = TREE_TRUNK_COLOR
+	end
+	chars[height] = "*"
+	colors[height] = TREE_LEAF_COLOR
+	return chars, colors
+end
+
 function love.load()
 	config:load()
 	config:setup_window()
@@ -36,7 +50,16 @@ function love.load()
 	entities.add_from_template("vampire", 85, 95, 1)
 	entities.add_from_template("zombie", 98, 86, 1)
 	entities.add_from_template("zombie", 80, 96, 1)
-	entities.add_from_template("tree", 110, 100, 1)
+	local copse_cx, copse_cy, copse_radius = 110, 100, 3
+	for dy = -copse_radius, copse_radius do
+		for dx = -copse_radius, copse_radius do
+			if dx * dx + dy * dy <= copse_radius * copse_radius and math.random() < 0.6 then
+				local height = math.random(4, 10)
+				local chars, colors = make_tree_chars(height)
+				entities.add_from_template("tree", copse_cx + dx, copse_cy + dy, 1, { chars = chars, color = colors })
+			end
+		end
+	end
 	entities.add_from_template("crate", 105, 100, 1)
 	entities.add_from_template("barricade", 15, 14, 1)
 	entities.add_from_template("campfire", 105, 105, 1)

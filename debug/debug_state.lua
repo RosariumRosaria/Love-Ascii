@@ -13,7 +13,7 @@ function debug_state.toggle_grid()
 end
 
 function debug_state.toggle_bw()
-	debug_state.bw_mode = not debug_state.bw_mode
+	debug_state.bw_mode = (debug_state.bw_mode + 1) % 3
 end
 
 function debug_state.switch_offset()

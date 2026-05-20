@@ -158,10 +158,10 @@ function map:load(max_x, max_y, max_z, min_z, map_type)
 		-- TODO Hardcoded, should be changed
 		city_generator:make_town(gen_cfg.building_count, self.tiles, self.max_y, self.max_x, self.max_z, self.min_z)
 
-		local radius = 8
+		local radius = 5
 		for dy = -radius, radius do
 			for dx = -radius, radius do
-				local tx, ty = 30 + dx, 30 + dy
+				local tx, ty = 115 + dx, 110 + dy
 				if utils.in_bounds(tx, ty, self.max_x, self.max_y) and utils.in_radius(dx, dy, radius) then
 					self.tiles[ty][tx][-1] = types.water
 					self.tiles[ty][tx][1] = types.air
@@ -169,10 +169,10 @@ function map:load(max_x, max_y, max_z, min_z, map_type)
 			end
 		end
 
-		-- DEBUG: bridge across the pool (east-west at y=30)
-		for bx = 30 - radius, 30 + radius do
-			if utils.in_bounds(bx, 30, self.max_x, self.max_y) then
-				self.tiles[30][bx][1] = types.floor
+		-- DEBUG: bridge across the pool (east-west at y=110)
+		for bx = 115 - radius - 2, 115 + radius + 2 do
+			if utils.in_bounds(bx, 110, self.max_x, self.max_y) then
+				self.tiles[110][bx][1] = types.floor
 			end
 		end
 	end
