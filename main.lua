@@ -23,7 +23,7 @@ function love.load()
 	local map_max_z = game_cfg.map.max_z
 	local map_min_z = game_cfg.map.min_z
 
-	local player = entities.add_from_template("player", 100, 100, 1)
+	local player = entities.add_from_template("player", 250, 250, 1)
 	entities.set_player(player)
 	input_handler:set_actor(player)
 	inventory.add_from_template(player, "sword")
@@ -33,15 +33,15 @@ function love.load()
 	inventory.add_from_template(player, "strength_potion")
 	inventory.equip(player, player.inventory.items[1])
 	inventory.equip(player, player.inventory.items[3])
-	entities.add_from_template("vampire", 85, 95, 1)
-	entities.add_from_template("zombie", 98, 86, 1)
-	entities.add_from_template("zombie", 80, 96, 1)
-	entities.add_from_template("crate", 105, 100, 1)
-	entities.add_from_template("barricade", 15, 14, 1)
-	entities.add_from_template("campfire", 105, 105, 1)
-	entities.add_from_template("crystal", 76, 77, 1)
+	entities.add_from_template("vampire", 254, 255, 1)
+	entities.add_from_template("zombie", 252, 255, 1)
+	entities.add_from_template("zombie", 255, 260, 1)
+	entities.add_from_template("crate", 250, 260, 1)
+	entities.add_from_template("barricade", 250, 255, 1)
+	entities.add_from_template("campfire", 255, 260, 1)
+	entities.add_from_template("crystal", 260, 255, 1)
 
-	entities.add_pickup_from_template("torch", 111, 91, 1, {
+	entities.add_pickup_from_template("torch", 245, 260, 1, {
 		name = "Lantern",
 		key = "Lantern",
 		chars = { "8" },

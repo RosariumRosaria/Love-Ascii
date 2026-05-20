@@ -9,10 +9,11 @@ local voroni_generator = {
 	regions = nil,
 	region_grid = nil,
 	city = nil,
+	borders = nil,
 }
 
-local main_road_size = 3
-local off_road_size = 2
+local main_road_size = 2
+local off_road_size = 1
 
 local function get_distance(pos1, pos2)
 	return (pos1[1] - pos2[1]) ^ 2 + (pos1[2] - pos2[2]) ^ 2
@@ -101,10 +102,6 @@ function voroni_generator:lloyd()
 
 	self:find_regions()
 	self:find_region_metadata()
-	self:find_city(5)
-	self:paint_regions(self.city, "dark_gray")
-	local roads = self:prims()
-	self:pave_main_roads(roads)
 end
 
 function voroni_generator:paint_regions(ids, color)
@@ -123,6 +120,7 @@ function voroni_generator:paint_regions(ids, color)
 end
 
 function voroni_generator:find_neighbors()
+	self.borders = {}
 	local neighbors = {}
 	for i = 1, #self.regions do
 		neighbors[i] = {}
@@ -134,9 +132,25 @@ function voroni_generator:find_neighbors()
 			local c = (y < self.max_y) and self.region_grid[y + 1][x] or a
 			if a ~= b then
 				neighbors[a][b], neighbors[b][a] = true, true
+				table.insert(self.borders, {
+					ax = x,
+					ay = y,
+					bx = x + 1,
+					by = y,
+					region_a = a,
+					region_b = b,
+				})
 			end
 			if a ~= c then
 				neighbors[a][c], neighbors[c][a] = true, true
+				table.insert(self.borders, {
+					ax = x,
+					ay = y,
+					bx = x,
+					by = y + 1,
+					region_a = a,
+					region_b = c,
+				})
 			end
 		end
 	end
@@ -289,17 +303,32 @@ function voroni_generator:pave_main_roads(roads)
 	end
 end
 
+function voroni_generator:pave_borders(radius)
+	local in_city = {}
+	for _, id in ipairs(self.city) do
+		in_city[id] = true
+	end
+	for _, b in ipairs(self.borders) do
+		if in_city[b.region_a] and in_city[b.region_b] then
+			self:pave_circle(b.ax, b.ay, radius)
+		end
+	end
+end
+
 function voroni_generator:reload(regions)
 	self.seeds = {}
 	self.regions = {}
+	self.borders = {}
 	self:sow_seeds(regions)
 	self:find_regions()
 	self:find_region_metadata()
+	for i = 1, 2, 1 do
+		self:lloyd()
+	end
 	self:find_neighbors()
-	self:find_city(5)
+	self:find_city(3)
 	self:paint_regions(self.city, "dark_gray")
-	local roads = self:prims()
-	self:pave_main_roads(roads)
+	self:pave_borders(off_road_size)
 end
 
 return voroni_generator

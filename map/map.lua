@@ -154,11 +154,11 @@ function map:load(max_x, max_y, max_z, min_z, map_type)
 		end
 	end
 	if map_type == "town" then
-		--voroni_generator:load(self.max_x, self.max_y, self.tiles, 125)
-		-- TODO Hardcoded, should be changed
 		city_generator:make_town(gen_cfg.building_count, self.tiles, self.max_y, self.max_x, self.max_z, self.min_z)
 		city_generator:make_lake(115, 110, 5, self.tiles)
 		city_generator:make_copse(110, 100, 3, 0.4)
+	elseif map_type == "voronoi" then
+		voroni_generator:load(self.max_x, self.max_y, self.tiles, 50)
 	end
 end
 
