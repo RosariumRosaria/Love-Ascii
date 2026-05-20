@@ -13,7 +13,7 @@ return {
 	grid_color = { 0.5, 0.5, 0.5, 0.3 },
 	distance_drama = 0.75,
 	brightness = 1,
-	bw_mode = false,
+	bw_mode = 0,
 	z_size_scale_per_level = 0.05,
 	entity_brightness_boost = 0.3,
 	shadow_brightness_scale = 0.25,

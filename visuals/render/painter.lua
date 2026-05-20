@@ -19,8 +19,8 @@ local small_font
 local max_height = render_cfg.max_height
 local offset_amount
 
-local function apply_bw_mode(color, outline_color)
-	if not debug_state.bw_mode then
+local function apply_bw_mode(color, outline_color, tier)
+	if debug_state.bw_mode < tier then
 		return color, outline_color
 	end
 
@@ -218,13 +218,13 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 
 	local outline_color = tile.outline_color
 
-	scaled_color, outline_color = apply_bw_mode(scaled_color, outline_color)
+	scaled_color, outline_color = apply_bw_mode(scaled_color, outline_color, 1)
 
 	scaled_color = render_utils.scale_color(scaled_color, base)
 
 	local base_dx, base_dy = get_offset(z, x, y, center_x, center_y)
 
-	if tile.covers or z == 1 then
+	if tile.covers or (z == 1 and not tile.transparent) then
 		local cover_color = { 0, 0, 0, 1 }
 		if visible then
 			local r, g, b = render_utils.normalize_light(light_data)
@@ -293,7 +293,7 @@ function painter:emit_weather_particle(p, center_x, center_y, time)
 	if light_data then
 		scaled_color = render_utils.apply_lighting(scaled_color, light_data)
 	end
-	scaled_color = apply_bw_mode(scaled_color)
+	scaled_color = apply_bw_mode(scaled_color, nil, 2)
 
 	scaled_color = render_utils.scale_color(scaled_color, render_utils.distance_scale(p.x, p.y, center_x, center_y))
 	emit_char({
@@ -316,7 +316,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 	end
 
 	local outline_color = entity.outline_color
-	if debug_state.bw_mode and outline_color then
+	if debug_state.bw_mode >= 2 and outline_color then
 		outline_color = render_utils.to_grayscale(outline_color)
 	end
 
@@ -326,7 +326,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 	local base = render_utils.distance_scale(entity.x, entity.y, center_x, center_y)
 
 	if entities.get_tag_entity(entity, "covers") then
-		local cover_color = { 1, 1, 1, 1 }
+		local cover_color = { 0, 0, 0, 1 }
 		if visible then
 			local rx = math.floor(entity.render_x)
 			local ry = math.floor(entity.render_y)
@@ -362,7 +362,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 		if visuals.alpha then
 			scaled_color = render_utils.scale_color(scaled_color, visuals.alpha)
 		end
-		scaled_color = apply_bw_mode(scaled_color, nil)
+		scaled_color = apply_bw_mode(scaled_color, nil, 2)
 
 		scaled_color = render_utils.scale_color(scaled_color, base)
 
