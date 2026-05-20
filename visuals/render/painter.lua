@@ -347,7 +347,9 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 		end
 
 		local scale = render_utils.height_level_scale(entity.z + i, max_height, map.max_z, map.min_z, visible)
-			+ render_cfg.entity_brightness_boost
+		if not tilelike then
+			scale = scale + render_cfg.entity_brightness_boost
+		end
 
 		local scaled_color = render_utils.scale_color(base_color, scale)
 		if light_data then

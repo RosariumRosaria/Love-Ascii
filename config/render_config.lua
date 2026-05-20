@@ -14,7 +14,7 @@ return {
 	distance_drama = 0.75,
 	brightness = 1,
 	bw_mode = 0,
-	z_size_scale_per_level = 0.05,
+	z_size_scale_per_level = 0.03,
 	entity_brightness_boost = 0.3,
 	shadow_brightness_scale = 0.25,
 	shadow_alpha_scale = 0.7,
