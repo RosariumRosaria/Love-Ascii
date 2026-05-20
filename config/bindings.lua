@@ -23,6 +23,7 @@ return {
 	switch_offset = { "z" },
 	switch_status = { "x" },
 	toggle_normalize_lighting = { "n" },
+	toggle_perf = { "f3" },
 	debug = { "c" },
 
 	quit = { "escape" },

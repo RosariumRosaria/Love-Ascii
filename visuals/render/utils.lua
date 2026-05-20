@@ -8,13 +8,13 @@ local render_utils = {}
 function render_utils.height_level_scale(z, max_height, max_z, min_z, visible)
 	local range = max_z - min_z
 	local normalized = (z - min_z) / range
-	local height_factor = 0.25 + normalized * 1.75
+	local height_factor = 0.1 + (normalized ^ 2) * 2.9
 	local alpha = height_factor
 	if not visible then
 		alpha = alpha * 0.5
 	end
 
-	return math.max(math.min(alpha, 2), 0.05)
+	return math.max(math.min(alpha, z), 0.25)
 end
 
 function render_utils.get_max_text_width(texts, font)

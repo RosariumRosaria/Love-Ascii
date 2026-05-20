@@ -72,5 +72,6 @@ end
 function love.draw()
 	render:draw()
 	visualizer:draw()
+	perf:draw()
 	perf:end_frame(ui)
 end

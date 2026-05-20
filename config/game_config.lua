@@ -13,7 +13,7 @@ return {
 		min_z = -4,
 	},
 	timing = {
-		turn_delay = 0.175,
+		turn_delay = 0.2,
 		base_turn_cost = 100,
 	},
 	pathfinding = {

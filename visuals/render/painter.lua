@@ -326,9 +326,12 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 	local base = render_utils.distance_scale(entity.x, entity.y, center_x, center_y)
 
 	if entities.get_tag_entity(entity, "covers") then
-		local cover_color = { 0, 0, 0, 1 }
-		if visible and light_data then
-			local r, g, b = render_utils.normalize_light(light_data)
+		local cover_color = { 1, 1, 1, 1 }
+		if visible then
+			local rx = math.floor(entity.render_x)
+			local ry = math.floor(entity.render_y)
+			local cover_light = map:get_lighting_tile(rx, ry)
+			local r, g, b = render_utils.normalize_light(cover_light)
 			local k = render_cfg.cover_emissive
 			cover_color = { r * k, g * k, b * k, 1 }
 		end
