@@ -157,24 +157,8 @@ function map:load(max_x, max_y, max_z, min_z, map_type)
 		--voroni_generator:load(self.max_x, self.max_y, self.tiles, 125)
 		-- TODO Hardcoded, should be changed
 		city_generator:make_town(gen_cfg.building_count, self.tiles, self.max_y, self.max_x, self.max_z, self.min_z)
-
-		local radius = 5
-		for dy = -radius, radius do
-			for dx = -radius, radius do
-				local tx, ty = 115 + dx, 110 + dy
-				if utils.in_bounds(tx, ty, self.max_x, self.max_y) and utils.in_radius(dx, dy, radius) then
-					self.tiles[ty][tx][-1] = types.water
-					self.tiles[ty][tx][1] = types.air
-				end
-			end
-		end
-
-		-- DEBUG: bridge across the pool (east-west at y=110)
-		for bx = 115 - radius - 2, 115 + radius + 2 do
-			if utils.in_bounds(bx, 110, self.max_x, self.max_y) then
-				self.tiles[110][bx][1] = types.floor
-			end
-		end
+		city_generator:make_lake(115, 110, 5, self.tiles)
+		city_generator:make_copse(110, 100, 3, 0.4)
 	end
 end
 

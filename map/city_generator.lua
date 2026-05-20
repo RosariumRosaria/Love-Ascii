@@ -6,6 +6,51 @@ local city_generator = { max_x = nil, max_y = nil, max_z = nil }
 
 local rotated_wall = setmetatable({ rotation = 90 }, { __index = types.v_wall })
 
+local TREE_TRUNK_COLOR = { 0.3, 0.2, 0.1, 1 }
+local TREE_LEAF_COLOR = { 0.2, 0.35, 0.2, 1 }
+
+local function make_tree_chars(height)
+	local chars, colors = {}, {}
+	for i = 1, height - 1 do
+		chars[i] = "."
+		colors[i] = TREE_TRUNK_COLOR
+	end
+	chars[height] = "*"
+	colors[height] = TREE_LEAF_COLOR
+	return chars, colors
+end
+
+function city_generator:make_lake(cx, cy, radius, tiles)
+	for dy = -radius, radius do
+		for dx = -radius, radius do
+			local tx, ty = cx + dx, cy + dy
+			if utils.in_bounds(tx, ty, self.max_x, self.max_y) and utils.in_radius(dx, dy, radius) then
+				tiles[ty][tx][-1] = types.water
+				tiles[ty][tx][1] = types.air
+			end
+		end
+	end
+
+	-- DEBUG: bridge across the lake (east-west through center)
+	for bx = cx - radius - 2, cx + radius + 2 do
+		if utils.in_bounds(bx, cy, self.max_x, self.max_y) then
+			tiles[cy][bx][1] = types.floor
+		end
+	end
+end
+
+function city_generator:make_copse(cx, cy, radius, density)
+	for dy = -radius, radius do
+		for dx = -radius, radius do
+			if dx * dx + dy * dy <= radius * radius and math.random() < density then
+				local height = math.random(5, 9)
+				local chars, colors = make_tree_chars(height)
+				entities.add_from_template("tree", cx + dx, cy + dy, 1, { chars = chars, color = colors })
+			end
+		end
+	end
+end
+
 function city_generator:make_building(room_start_x, room_start_y, width, height, max_z, tiles)
 	for y = 1, height do
 		for x = 1, width do
