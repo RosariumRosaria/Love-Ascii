@@ -38,7 +38,7 @@ function animation.add_bump(entity, target_x, target_y)
 end
 
 function animation.update(dt)
-	local tween_duration = (game_cfg.timing.turn_delay + render_cfg.tween_slack) * 0.5
+	local tween_duration = (game_cfg.timing.turn_delay + render_cfg.tween_slack) * 1 --TODO Is the slack needed if I'm doing this multi
 	for _, entity in ipairs(entities.get_entity_list()) do
 		if not entity.tween_x or not entity.tween_y then
 			entity.tween_x = entity.x
