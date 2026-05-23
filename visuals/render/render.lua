@@ -9,12 +9,12 @@ local render_cfg = require("config.render_config")
 local camera = require("visuals.camera")
 local painter = require("visuals.render.painter")
 local draw_buffer = require("visuals.render.draw_buffer")
-local weather = require("visuals.effects.weather")
+local weather = require("visuals.particles.particles")
 
 local render = {}
 
 function render:draw()
-	local draw_dist = render_cfg.draw_distance
+	local draw_dist = render_cfg.camera.draw_distance
 	local camera_x, camera_y = camera:get_position()
 
 	--Draw Map
@@ -60,7 +60,7 @@ function render:draw()
 
 	for _, p in ipairs(weather:get_particles()) do
 		if p.delay <= 0 then
-			painter:emit_weather_particle(p, camera_x, camera_y, time)
+			painter:emit_particle(p, camera_x, camera_y, time)
 		end
 	end
 

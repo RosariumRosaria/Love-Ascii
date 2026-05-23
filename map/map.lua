@@ -105,7 +105,7 @@ function map:get_lighting_tile(x, y)
 		for _, n in ipairs(utils.get_neighbors(x, y, self.max_x, self.max_y)) do
 			if self:is_transparent(n.x, n.y) and self:is_visible(n.x, n.y) then
 				local light = self.lighting[n.y][n.x]
-				if (light.r + light.g + light.b) > render_config.ambient then
+				if (light.r + light.g + light.b) > render_config.lighting.ambient then
 					return self.lighting[y][x]
 				end
 			end

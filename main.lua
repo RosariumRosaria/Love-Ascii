@@ -34,14 +34,14 @@ function love.load()
 	inventory.equip(player, player.inventory.items[1])
 	inventory.equip(player, player.inventory.items[3])
 	entities.add_from_template("vampire", 254, 255, 1)
-	entities.add_from_template("zombie", 252, 255, 1)
-	entities.add_from_template("zombie", 255, 260, 1)
+	entities.add_from_template("zombie", 253, 255, 1)
+	entities.add_from_template("zombie", 256, 266, 1)
 	entities.add_from_template("crate", 250, 260, 1)
 	entities.add_from_template("barricade", 250, 255, 1)
 	entities.add_from_template("campfire", 255, 260, 1)
 	entities.add_from_template("crystal", 260, 255, 1)
 
-	entities.add_pickup_from_template("torch", 245, 260, 1, {
+	entities.add_pickup_from_template("torch", 246, 261, 1, {
 		name = "Lantern",
 		key = "Lantern",
 		chars = { "8" },

@@ -1,0 +1,198 @@
+local map = require("map.map")
+local render_cfg = require("config.render_config")
+local types = require("map.tile_types")
+local utils = require("utils")
+local entities = require("entities.entities")
+
+local particles = {
+	mode = "rain",
+	particles = {},
+	screen_w = 0,
+	screen_h = 0,
+	ceiling = 0,
+}
+
+local weather_modes = {
+	rain = { char = ".", vz_min = -22, vz_max = -27, drift = 0, color = { 0.2, 0.25, 0.55, 0.7 }, linger = 1 },
+	pipe = { char = "|", vz_min = -8, vz_max = -10, drift = 0, color = { 0.2, 0.25, 0.36, 0.5 }, linger = 1 },
+	snow = { char = "*", vz_min = -1, vz_max = -2, drift = 0.5, color = { 1, 1, 1, 0.5 }, linger = 1 },
+	normal = nil,
+}
+
+local particle_types = {
+	smoke = { char = "*", vz_min = 4, vz_max = 5, drift = 0.2, color = { 0.5, 0.6, 0.6, 0.5 }, linger = 4 },
+	ember = {
+		char = "`",
+		vz_min = 1,
+		vz_max = 2,
+		drift = 0.35,
+		color = { 0.9, 0.6, 0.2, 0.7 },
+		linger = 1,
+		lifespan = 4,
+	},
+}
+
+local modes = { rain = "rain", snow = "snow", normal = "normal" }
+
+local function spawn_weather_particle(cx, cy, draw_dist, ease_in, params)
+	if not params then
+		return
+	end
+	return {
+		x = cx + (math.random() * 2 - 1) * draw_dist,
+		y = cy + (math.random() * 2 - 1) * draw_dist,
+		z = particles.ceiling - math.random(0, 3),
+		vz = params.vz_min + math.random() * (params.vz_max - params.vz_min),
+		vx = (math.random() * 2 - 1) * params.drift,
+		vy = (math.random() * 2 - 1) * params.drift,
+		linger = params.linger,
+		linger_initial = params.linger,
+		lifespan = params.lifespan,
+		lifespan_initial = params.lifespan,
+		alpha_mult = 1,
+		char = params.char,
+		color = params.color,
+		delay = ease_in and math.random() * render_cfg.particles.weather_ease_in_duration or 0,
+		source = "weather",
+	}
+end
+
+local function spawn_particle(x, y, z, ease_in, params)
+	if not params then
+		return
+	end
+	return {
+		x = x,
+		y = y,
+		z = z,
+		vz = params.vz_min + math.random() * (params.vz_max - params.vz_min),
+		vx = (math.random() * 2 - 1) * params.drift,
+		vy = (math.random() * 2 - 1) * params.drift,
+		linger = params.linger,
+		linger_initial = params.linger,
+		lifespan = params.lifespan,
+		lifespan_initial = params.lifespan,
+		alpha_mult = 1,
+		char = params.char,
+		color = params.color,
+		delay = ease_in and math.random() * render_cfg.particles.weather_ease_in_duration or 0,
+		source = "emitter",
+	}
+end
+
+function particles:load(cx, cy)
+	self.ceiling = map.max_z * 3
+	for _ = 1, render_cfg.particles.count do
+		local p = spawn_weather_particle(cx, cy, render_cfg.camera.draw_distance, true)
+		table.insert(self.particles, p)
+	end
+end
+
+function particles:update(dt, cx, cy)
+	local draw_dist = render_cfg.camera.draw_distance
+	local weather_params = weather_modes[self.mode]
+
+	if
+		self.mode ~= modes.normal
+		and #self.particles < render_cfg.particles.count * render_cfg.particles.weather_proportion
+	then
+		local p = spawn_weather_particle(cx, cy, draw_dist, true, weather_params)
+		if p then
+			table.insert(self.particles, p)
+		end
+	end
+
+	local emitter_count = 0
+	for _, p in ipairs(self.particles) do
+		if p.source == "emitter" then
+			emitter_count = emitter_count + 1
+		end
+	end
+	local emitter_cap = render_cfg.particles.count * (1 - render_cfg.particles.weather_proportion)
+
+	for _, entity in ipairs(entities.get_entity_list()) do
+		if entity.emitters and emitter_count < emitter_cap then
+			for _, emitter in ipairs(entity.emitters) do
+				if math.random() < emitter.rate * dt then
+					local params = particle_types[emitter.particle]
+					local ex = entity.render_x or entity.x
+					local ey = entity.render_y or entity.y
+					local ez = entity.z + (entity.chars and #entity.chars or 1)
+					local p = spawn_particle(ex, ey, ez, false, params)
+					if p then
+						table.insert(self.particles, p)
+						emitter_count = emitter_count + 1
+					end
+				end
+			end
+		end
+	end
+
+	for i, p in ipairs(self.particles) do
+		if p.delay > 0 then
+			p.delay = p.delay - dt
+		else
+			p.x = p.x + p.vx * dt
+			p.y = p.y + p.vy * dt
+			p.z = p.z + p.vz * dt
+			local tx, ty = math.floor(p.x), math.floor(p.y)
+			local hit = false
+			if map:in_bounds(tx, ty) then
+				local tile = map:get_tile(tx, ty, math.floor(p.z))
+				if tile and tile ~= types.air then
+					hit = true
+				end
+			end
+			local out_x = math.abs(p.x - cx) > draw_dist
+			local out_y = math.abs(p.y - cy) > draw_dist
+
+			if p.lifespan then
+				p.lifespan = p.lifespan - dt
+			end
+
+			local kill = hit
+				or p.z < map.min_z
+				or out_x
+				or out_y
+				or (p.vz > 0 and p.z > self.ceiling)
+				or (p.lifespan and p.lifespan <= 0)
+			if kill then
+				if hit then
+					p.vz, p.vx, p.vy = 0, 0, 0
+				end
+				p.linger = p.linger - dt
+			end
+
+			local life_ratio = (p.lifespan_initial and p.lifespan_initial > 0)
+					and math.max(0, p.lifespan / p.lifespan_initial)
+				or 1
+			local linger_ratio = (p.linger_initial > 0) and math.max(0, p.linger / p.linger_initial) or 1
+			p.alpha_mult = math.min(life_ratio, linger_ratio)
+
+			if kill and (p.linger <= 0 or (p.lifespan and p.lifespan <= 0)) then
+				local new_p = nil
+				if p.source == "weather" then
+					new_p = spawn_weather_particle(cx, cy, draw_dist, false, weather_params)
+				end
+				if new_p then
+					self.particles[i] = new_p
+				else
+					local last = #self.particles
+					self.particles[i] = self.particles[last]
+					self.particles[last] = nil
+				end
+			end
+		end
+	end
+end
+
+function particles:set_mode(weather_mode)
+	self.particles = {}
+	self.mode = modes[weather_mode]
+end
+
+function particles:get_particles()
+	return self.particles
+end
+
+return particles
