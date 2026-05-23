@@ -39,9 +39,9 @@ function love.load()
 	entities.add_from_template("crate", 250, 260, 1)
 	entities.add_from_template("barricade", 250, 255, 1)
 	entities.add_from_template("campfire", 255, 260, 1)
-	entities.add_from_template("crystal", 260, 255, 1)
+	entities.add_from_template("crystal", 267, 255, 1)
 
-	entities.add_pickup_from_template("torch", 246, 261, 1, {
+	entities.add_pickup_from_template("torch", 246, 272, 1, {
 		name = "Lantern",
 		key = "Lantern",
 		chars = { "8" },
