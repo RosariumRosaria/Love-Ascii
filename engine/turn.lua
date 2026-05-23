@@ -36,37 +36,38 @@ end
 
 function turn:update(dt)
 	input:update(dt)
-	self.time_since_last_tick = self.time_since_last_tick + dt
+	if not entities.player.dead then
+		self.time_since_last_tick = self.time_since_last_tick + dt
 
-	local actor = scheduler.peek()
+		local actor = scheduler.peek()
 
-	if not actor then
-		input:end_frame()
-		return
-	end
-
-	if actor ~= input:get_actor() then
-		if statuses.can_act(actor) then
-			ai:take_turn(actor)
+		if not actor then
+			input:end_frame()
+			return
 		end
-		commit_turn(actor)
-		input:end_frame()
-		return
+
+		if actor ~= input:get_actor() then
+			if statuses.can_act(actor) then
+				ai:take_turn(actor)
+			end
+			commit_turn(actor)
+			input:end_frame()
+			return
+		end
+
+		if self.time_since_last_tick < self.time_between_ticks then
+			input:end_frame()
+			return
+		end
+
+		self.time_since_last_tick = 0
+
+		if not statuses.can_act(actor) then
+			commit_turn(actor)
+		elseif input:try_take_turn() then
+			commit_turn(actor)
+		end
 	end
-
-	if self.time_since_last_tick < self.time_between_ticks then
-		input:end_frame()
-		return
-	end
-
-	self.time_since_last_tick = 0
-
-	if not statuses.can_act(actor) then
-		commit_turn(actor)
-	elseif input:try_take_turn() then
-		commit_turn(actor)
-	end
-
 	input:end_frame()
 end
 
