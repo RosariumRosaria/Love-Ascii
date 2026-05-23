@@ -112,8 +112,8 @@ function render_utils.apply_lighting(color, light)
 	if not color then
 		return { 1, 1, 1, 1 }
 	end
-	local ambient = render_config.ambient
-	local emissive = render_config.light_emissive
+	local ambient = render_config.lighting.ambient
+	local emissive = render_config.lighting.light_emissive
 
 	local fr = ambient + (light.r or 0)
 	local fg = ambient + (light.g or 0)
@@ -160,7 +160,7 @@ function render_utils.distance_scale(x1, y1, x2, y2)
 	local dist = math.sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2)
 
 	local linear = math.max(1 - (dist / max_dist), 0)
-	return math.min(math.max(linear ^ render_config.distance_drama, 0.05), 1)
+	return math.min(math.max(linear ^ render_config.lighting.distance_drama, 0.05), 1)
 end
 
 function render_utils.get_offset(i, offset_type, offset, x, y, center_x, center_y)
@@ -243,7 +243,7 @@ function render_utils.to_grayscale(color)
 end
 
 function render_utils.brighten(color)
-	local g = 1 / render_config.brightness
+	local g = 1 / render_config.lighting.brightness
 	return {
 		color[1] ^ g,
 		color[2] ^ g,

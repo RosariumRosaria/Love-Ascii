@@ -4,7 +4,7 @@ local camera = {}
 
 local x = nil
 local y = nil
-local speed = render_cfg.camera_speed
+local speed = render_cfg.camera.speed
 
 function camera:load(player_x, player_y)
 	x = player_x

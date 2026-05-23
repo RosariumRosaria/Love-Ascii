@@ -127,7 +127,7 @@ function render_primitives.draw_panel(
 end
 
 function render_primitives.draw_grid_cell(x_screen, y_screen)
-	love.graphics.setColor(render_cfg.grid_color)
+	love.graphics.setColor(render_cfg.debug.grid_color)
 	love.graphics.rectangle("line", x_screen, y_screen, tile_size, tile_size)
 
 	local cx = x_screen + tile_size * 0.5

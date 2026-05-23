@@ -1,9 +1,9 @@
 local render_cfg = require("config.render_config")
 
 local debug_state = {
-	show_grid = render_cfg.show_grid,
-	bw_mode = render_cfg.bw_mode,
-	offset_type = render_cfg.default_offset_type,
+	show_grid = render_cfg.debug.show_grid,
+	bw_mode = render_cfg.debug.bw_mode,
+	offset_type = render_cfg.rendering.default_offset_type,
 	normalize_lighting = true,
 	show_perf = false,
 }

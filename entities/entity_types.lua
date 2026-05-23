@@ -111,6 +111,7 @@ return {
 		chars = { "%" },
 		color = { { 1, 0.35, 0.1, 1 } },
 		description = "A Campfire",
+		emitters = { { particle = "smoke", rate = 1 }, { particle = "ember", rate = 1.2 } },
 		tags = {
 			solid = false,
 			moveable = false,

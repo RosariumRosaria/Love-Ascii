@@ -16,7 +16,7 @@ local small_tile_size
 local default_font
 local small_font
 
-local max_height = render_cfg.max_height
+local max_height = render_cfg.rendering.max_height
 local offset_amount
 
 local function apply_bw_mode(color, outline_color, tier)
@@ -48,6 +48,26 @@ local function emit_char(params)
 		natural_rotation = params.natural_rotation,
 		size_scale = params.size_scale,
 	})
+end
+
+local function emit_name(params, name)
+	for i = 1, #name do
+		local char = name:sub(i, i)
+		draw_buffer:emit({
+			z = params.z,
+			y = params.y,
+			layer = params.layer,
+			kind = "char",
+			x_screen = params.x_screen + ((i - 1) * tile_size),
+			y_screen = params.y_screen,
+			char = char,
+			color = params.color,
+			outline_color = params.outline_color,
+			rotation = params.rotation,
+			natural_rotation = params.natural_rotation,
+			size_scale = params.size_scale,
+		})
+	end
 end
 
 local function emit_cover_rect(layer, z, y, x_screen, y_screen, color)
@@ -228,7 +248,7 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 		local cover_color = { 0, 0, 0, 1 }
 		if visible then
 			local r, g, b = render_utils.normalize_light(light_data)
-			local k = render_cfg.cover_emissive
+			local k = render_cfg.lighting.cover_emissive
 			cover_color = { r * k, g * k, b * k, 1 }
 			cover_color = render_utils.apply_flicker(cover_color, light_data.sources, time)
 		end
@@ -237,14 +257,14 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 	end
 
 	local dx, dy = base_dx, base_dy
-	local size_scale = 1 + (z_eff - 1) * render_cfg.z_size_scale_per_level
+	local size_scale = 1 + (z_eff - 1) * render_cfg.rendering.z_size_scale_per_level
 
 	if tile.natural_height then
 		dx, dy = get_offset(z_eff, x, y, center_x, center_y)
 
-		local shadow_color = render_utils.scale_color(scaled_color, render_cfg.shadow_brightness_scale)
+		local shadow_color = render_utils.scale_color(scaled_color, render_cfg.lighting.shadow_brightness_scale)
 
-		shadow_color[4] = (scaled_color[4] or 1) * render_cfg.shadow_alpha_scale
+		shadow_color[4] = (scaled_color[4] or 1) * render_cfg.lighting.shadow_alpha_scale
 
 		emit_char({
 			z = z,
@@ -256,7 +276,7 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 			color = shadow_color,
 			rotation = tile.rotation,
 			natural_rotation = tile.natural_rotation,
-			size_scale = 1 + (z - 1) * render_cfg.z_size_scale_per_level,
+			size_scale = 1 + (z - 1) * render_cfg.rendering.z_size_scale_per_level,
 		})
 	end
 
@@ -275,7 +295,7 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 	})
 end
 
-function painter:emit_weather_particle(p, center_x, center_y, time)
+function painter:emit_particle(p, center_x, center_y, time)
 	local tx, ty = math.floor(p.x), math.floor(p.y)
 	if ty < 1 or ty > map:get_max_y() or tx < 1 or tx > map:get_max_x() then
 		return
@@ -296,6 +316,7 @@ function painter:emit_weather_particle(p, center_x, center_y, time)
 	scaled_color = apply_bw_mode(scaled_color, nil, 2)
 
 	scaled_color = render_utils.scale_color(scaled_color, render_utils.distance_scale(p.x, p.y, center_x, center_y))
+	scaled_color[4] = scaled_color[4] * (p.alpha_mult or 1)
 	emit_char({
 		z = p.z,
 		y = p.y,
@@ -304,7 +325,7 @@ function painter:emit_weather_particle(p, center_x, center_y, time)
 		y_screen = y_screen + dy,
 		char = p.char,
 		color = scaled_color,
-		size_scale = (1 + (p.z - 1) * render_cfg.z_size_scale_per_level) * render_cfg.weather_size_scale,
+		size_scale = (1 + (p.z - 1) * render_cfg.rendering.z_size_scale_per_level) * render_cfg.particles.size_scale,
 	})
 end
 
@@ -332,7 +353,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 			local ry = math.floor(entity.render_y)
 			local cover_light = map:get_lighting_tile(rx, ry)
 			local r, g, b = render_utils.normalize_light(cover_light)
-			local k = render_cfg.cover_emissive
+			local k = render_cfg.lighting.cover_emissive
 			cover_color = { r * k, g * k, b * k, 1 }
 		end
 		cover_color = render_utils.scale_color(cover_color, base)
@@ -348,7 +369,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 
 		local scale = render_utils.height_level_scale(entity.z + i, max_height, map.max_z, map.min_z, visible)
 		if not tilelike then
-			scale = scale + render_cfg.entity_brightness_boost
+			scale = scale + render_cfg.lighting.entity_brightness_boost
 		end
 
 		local scaled_color = render_utils.scale_color(base_color, scale)
@@ -381,7 +402,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 			outline_color = outline_color,
 			rotation = entity.rotation,
 			natural_rotation = entity.natural_rotation,
-			size_scale = 1 + (entity.z + i - 1) * render_cfg.z_size_scale_per_level,
+			size_scale = 1 + (entity.z + i - 1) * render_cfg.rendering.z_size_scale_per_level,
 		})
 	end
 end
@@ -404,11 +425,11 @@ function painter:reload_fonts()
 	small_tile_size = config.small_tile_size
 	default_font = config.font
 	small_font = config.small_font
-	offset_amount = render_cfg.offset_amount_factor * tile_size
+	offset_amount = render_cfg.rendering.offset_amount_factor * tile_size
 end
 
 function painter:reload_settings()
-	max_height = render_cfg.max_height
+	max_height = render_cfg.rendering.max_height
 end
 
 return painter
