@@ -5,7 +5,7 @@ local default_font
 local tile_size
 local render_utils = {}
 
-function render_utils.height_level_scale(z, max_height, max_z, min_z, visible)
+function render_utils.height_level_scale(z, max_z, min_z, visible)
 	local range = max_z - min_z
 	local normalized = (z - min_z) / range
 	local height_factor = 0.1 + (normalized ^ 2) * 2.9

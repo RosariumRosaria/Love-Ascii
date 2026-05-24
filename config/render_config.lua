@@ -11,7 +11,6 @@ return {
 		draw_distance = 25,
 	},
 	rendering = {
-		max_height = 5, --TODO: this should be determined by the map, not hardcoded
 		default_offset_type = 1,
 		offset_amount_factor = 0.3,
 		z_size_scale_per_level = 0.03,
