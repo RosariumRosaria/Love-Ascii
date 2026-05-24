@@ -95,7 +95,6 @@ end
 
 function render:load(player_x, player_y)
 	camera:load(player_x, player_y)
-	painter:reload_settings()
 	local cx, cy = camera:get_position()
 	weather:load(cx, cy)
 end

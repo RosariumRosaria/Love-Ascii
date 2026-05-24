@@ -16,7 +16,6 @@ local small_tile_size
 local default_font
 local small_font
 
-local max_height = render_cfg.rendering.max_height
 local offset_amount
 
 local function apply_bw_mode(color, outline_color, tier)
@@ -225,7 +224,7 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 	local natural_height = tile.natural_height or 0
 	local z_eff = z + natural_height
 
-	local alpha = render_utils.height_level_scale(z_eff, max_height, map.max_z, map.min_z, visible)
+	local alpha = render_utils.height_level_scale(z_eff, map.max_z, map.min_z, visible)
 
 	local base_color = render_utils.get_effective_color(tile.color, visible, explored)
 	local scaled_color = render_utils.scale_color(base_color, alpha)
@@ -307,7 +306,7 @@ function painter:emit_particle(p, center_x, center_y, time)
 	local x_screen, y_screen = render_utils.get_screen_coords(p.x, p.y, center_x, center_y)
 	local dx, dy = get_offset(p.z, p.x, p.y, center_x, center_y)
 
-	local alpha = render_utils.height_level_scale(p.z, max_height, map.max_z, map.min_z, true)
+	local alpha = render_utils.height_level_scale(p.z, map.max_z, map.min_z, true)
 	local scaled_color = render_utils.scale_color(p.color, alpha)
 	local light_data = map:get_lighting_tile(tx, ty)
 	if light_data then
@@ -367,7 +366,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 			base_color = render_utils.get_effective_color(base_color, visible, explored)
 		end
 
-		local scale = render_utils.height_level_scale(entity.z + i, max_height, map.max_z, map.min_z, visible)
+		local scale = render_utils.height_level_scale(entity.z + i, map.max_z, map.min_z, visible)
 		if not tilelike then
 			scale = scale + render_cfg.lighting.entity_brightness_boost
 		end
@@ -426,10 +425,6 @@ function painter:reload_fonts()
 	default_font = config.font
 	small_font = config.small_font
 	offset_amount = render_cfg.rendering.offset_amount_factor * tile_size
-end
-
-function painter:reload_settings()
-	max_height = render_cfg.rendering.max_height
 end
 
 return painter
