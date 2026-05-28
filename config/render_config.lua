@@ -1,7 +1,7 @@
 return {
 	font = {
 		use_pixel = true,
-		scale = 3,
+		scale = 3.5,
 		base_size = 16,
 		ui_scale = 0.875,
 		terminal_scale = 0.75,
@@ -12,8 +12,8 @@ return {
 	},
 	rendering = {
 		default_offset_type = 1,
-		offset_amount_factor = 0.3,
-		z_size_scale_per_level = 0.03,
+		offset_amount_factor = 0.5,
+		z_size_scale_per_level = 0.04,
 	},
 	lighting = {
 		ambient = 0.3,
