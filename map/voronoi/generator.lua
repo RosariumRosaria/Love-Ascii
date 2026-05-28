@@ -16,7 +16,7 @@ local main_road_size = 2
 local off_road_size = 1
 
 local function get_distance(pos1, pos2)
-	return (pos1[1] - pos2[1]) ^ 2 + (pos1[2] - pos2[2]) ^ 2
+	return math.max(math.abs((pos1[1] - pos2[1])), math.abs((pos1[2] - pos2[2])))
 end
 
 local function get_nearest_seed(seeds, pos)

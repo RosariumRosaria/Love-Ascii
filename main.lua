@@ -54,7 +54,7 @@ function love.load()
 		},
 	})
 
-	map:load(map_max_x, map_max_y, map_max_z, map_min_z, "town")
+	map:load(map_max_x, map_max_y, map_max_z, map_min_z, "voronoi")
 	map:update_visibility(entities.player.x, entities.player.y, stats.get_stat(entities.player, "sight"))
 	ui:load()
 	ui:update_status(entities.player)

@@ -18,6 +18,7 @@ return {
 	toggle_grid = { "g" },
 	toggle_bw = { "b" },
 	toggle_visualizer = { "v" },
+	toggle_road_mode = { "m" },
 	toggle_font = { "`" },
 
 	switch_offset = { "z" },
