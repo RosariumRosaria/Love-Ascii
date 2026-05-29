@@ -110,16 +110,33 @@ function render_utils.apply_flicker(color, sources, t)
 	return render_utils.scale_color(color, mod_sum / total)
 end
 
-function render_utils.apply_lighting(color, light)
+function render_utils.lighting_z_factor(sources, z)
+	if not sources or not z then
+		return 1
+	end
+	local weighted, total = 0, 0
+	for _, src in ipairs(sources) do
+		weighted = weighted + src.contribution * math.max(0, 1 - math.abs(z - src.z) * render_config.lighting.z_falloff)
+		total = total + src.contribution
+	end
+	return total == 0 and 1 or weighted / total
+end
+
+function render_utils.apply_lighting(color, light, z)
 	if not color then
 		return { 1, 1, 1, 1 }
 	end
 	local ambient = render_config.lighting.ambient
 	local emissive = render_config.lighting.light_emissive
 
-	local fr, fg, fb = clamp_to_unit(ambient + (light.r or 0), ambient + (light.g or 0), ambient + (light.b or 0))
+	local z_factor = render_utils.lighting_z_factor(light.sources, z)
+	local zr = (light.r or 0) * z_factor
+	local zg = (light.g or 0) * z_factor
+	local zb = (light.b or 0) * z_factor
 
-	local lr, lg, lb = render_utils.normalize_light(light)
+	local fr, fg, fb = clamp_to_unit(ambient + zr, ambient + zg, ambient + zb)
+
+	local lr, lg, lb = clamp_to_unit(zr, zg, zb)
 
 	local r, g, b = clamp_to_unit(
 		(color[1] or 1) * fr + lr * emissive,
