@@ -8,6 +8,24 @@ return {
 		covers = true,
 	},
 
+	tree_trunk = {
+		name = "Tree",
+		chars = { "." },
+		walkable = false,
+		color = { 0.3, 0.15, 0.1, 1 },
+		transparent = false,
+		covers = false,
+	},
+
+	tree_leaves = {
+		name = "Tree",
+		chars = { "*" },
+		walkable = false,
+		color = { 0.2, 0.35, 0.15, 1 },
+		transparent = false,
+		covers = false,
+	},
+
 	shrub = {
 		name = "Shrub",
 		chars = { "*" },
