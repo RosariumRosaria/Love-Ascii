@@ -2,7 +2,8 @@ local entities = require("entities.entities")
 local types = require("map.tile_types")
 local utils = require("utils")
 local gen_cfg = require("config.generation_config")
-local city_generator = { max_x = nil, max_y = nil, max_z = nil }
+local lots = require("map.lots")
+local city_generator = { max_x = nil, max_y = nil, max_z = nil, lots = {}, roads = {} }
 
 local rotated_wall = setmetatable({ rotation = 90 }, { __index = types.v_wall })
 
@@ -18,6 +19,14 @@ local function make_tree_chars(height)
 	chars[height] = "*"
 	colors[height] = TREE_LEAF_COLOR
 	return chars, colors
+end
+
+function city_generator:get_lots()
+	return self.lots
+end
+
+function city_generator:get_roads()
+	return self.roads
 end
 
 function city_generator:make_lake(cx, cy, radius, tiles)
@@ -121,12 +130,21 @@ function city_generator:make_building(room_start_x, room_start_y, width, height,
 		height = height,
 	}
 end
-
-function city_generator:make_town(room_count, tiles, map_max_y, map_max_x, map_max_z, map_min_z)
+local building_margin = 2
+local min_building = 6
+local building_chance = 0.75
+local copse_chance = 0.15
+local tree_density = 0.5
+function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	self.max_y = map_max_y
 	self.max_x = map_max_x
 	self.max_z = map_max_z
 	self.min_z = map_min_z
+	self.lots = {}
+	self.roads = {}
+	local root = { x = 1, y = 1, w = self.max_x, h = self.max_y }
+	lots.subdivide(root, 10, self.lots, self.roads)
+
 	for y = 1, map_max_y do
 		for x = 1, map_max_x do
 			tiles[y][x][1] = types.grass
@@ -135,39 +153,29 @@ function city_generator:make_town(room_count, tiles, map_max_y, map_max_x, map_m
 			end
 		end
 	end
-
-	local buildings = {}
-
-	for _ = 1, room_count do
-		local potential_building
-		local overlaps = true
-
-		while overlaps do --TODO can techincal break w/ dense maps
-			overlaps = false
-
-			local x = math.random(gen_cfg.building_margin, map_max_x - gen_cfg.building_margin * 2)
-			local y = math.random(gen_cfg.building_margin, map_max_y - gen_cfg.building_margin * 2)
-			local w = math.random(gen_cfg.building_min_size, gen_cfg.building_max_size)
-			local h = math.random(gen_cfg.building_min_size, gen_cfg.building_max_size)
-			potential_building = { x = x, y = y, width = w, height = h }
-
-			for _, other in ipairs(buildings) do
-				if utils.overlapping_rectangles(potential_building, other) then
-					overlaps = true
-					break
-				end
+	for _, road in ipairs(self.roads) do
+		for y = road.y, road.y + road.h - 1 do
+			for x = road.x, road.x + road.w - 1 do
+				tiles[y][x][1] = types.road
 			end
 		end
+	end
 
-		table.insert(buildings, potential_building)
-		self:make_building(
-			potential_building.x,
-			potential_building.y,
-			potential_building.width,
-			potential_building.height,
-			math.random(3, map_max_z),
-			tiles
-		)
+	for _, lot in ipairs(self.lots) do
+		local m = building_margin
+		local bw, bh = lot.w - 2 * m, lot.h - 2 * m
+		if bw >= min_building and bh >= min_building then
+			local roll = math.random()
+			if roll < building_chance then
+				self:make_building(lot.x + m, lot.y + m, bw, bh, math.random(3, self.max_z), tiles)
+			elseif roll < building_chance + copse_chance then
+				local cx = lot.x + m + math.floor(bw / 2)
+				local cy = lot.y + m + math.floor(bh / 2)
+				local radius = math.floor(math.min(bw, bh) / 2)
+				local tree_density_adjusted = tree_density - 0.25 + (0.25 * math.random())
+				self:make_copse(cx, cy, radius, tree_density_adjusted)
+			end
+		end
 	end
 end
 
