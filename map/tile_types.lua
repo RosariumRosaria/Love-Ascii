@@ -18,6 +18,15 @@ return {
 		applies_status = { "obscured", silent = true },
 		natural_height = 0.5,
 	},
+	road = {
+		name = "Road",
+		chars = { "#" },
+		walkable = true,
+
+		color = { 0.42, 0.45, 0.47, 1 },
+		transparent = true,
+		covers = true,
+	},
 
 	v_wall = {
 		name = "Wall",

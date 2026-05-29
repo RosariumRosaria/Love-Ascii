@@ -1,5 +1,6 @@
 local map = require("map.map")
 local entities = require("entities.entities")
+local city_generator = require("map.city_generator")
 
 local visualizer = {
 	visible = false,
@@ -51,6 +52,42 @@ function visualizer:draw_player()
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
+function visualizer:draw_lots()
+	local lots = city_generator:get_lots()
+	if not lots then
+		return
+	end
+	love.graphics.setColor(1, 1, 0, 0.3)
+	for _, r in ipairs(lots) do
+		love.graphics.rectangle(
+			"fill",
+			self.start_x + (r.x - 1) * self.scale,
+			self.start_y + (r.y - 1) * self.scale,
+			r.w * self.scale,
+			r.h * self.scale
+		)
+	end
+	love.graphics.setColor(1, 1, 1, 1)
+end
+
+function visualizer:draw_roads()
+	local roads = city_generator:get_roads()
+	if not roads then
+		return
+	end
+	love.graphics.setColor(0, 1, 1, 1)
+	for _, r in ipairs(roads) do
+		love.graphics.rectangle(
+			"line",
+			self.start_x + (r.x - 1) * self.scale,
+			self.start_y + (r.y - 1) * self.scale,
+			r.w * self.scale,
+			r.h * self.scale
+		)
+	end
+	love.graphics.setColor(1, 1, 1, 1)
+end
+
 function visualizer:draw()
 	if not self.visible then
 		return
@@ -63,6 +100,8 @@ function visualizer:draw()
 	self.start_x = (self.screen_width - self.map_max_x * self.scale) / 2
 	self.start_y = (self.screen_height - self.map_max_y * self.scale) / 2
 	self:draw_map()
+	self:draw_lots()
+	self:draw_roads()
 	self:draw_player()
 end
 
