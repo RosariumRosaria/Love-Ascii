@@ -2,15 +2,15 @@ local shadowcaster = require("fov.shadowcaster")
 local entities = require("entities.entities")
 local lighting = {}
 
-local function deposit(cell, color, contribution, flicker)
+local function deposit(cell, color, contribution, flicker, source_z)
 	cell.r = cell.r + color.r * contribution
 	cell.g = cell.g + color.g * contribution
 	cell.b = cell.b + color.b * contribution
-	cell.sources[#cell.sources + 1] = { contribution = contribution, flicker = flicker }
+	cell.sources[#cell.sources + 1] = { contribution = contribution, flicker = flicker, z = source_z }
 end
 
-function lighting.cast_light(source_x, source_y, light, max_x, max_y, tiles, lighting_grid)
-	deposit(lighting_grid[source_y][source_x], light.color, light.intensity, light.flicker)
+function lighting.cast_light(source_x, source_y, source_z, light, max_x, max_y, tiles, lighting_grid)
+	deposit(lighting_grid[source_y][source_x], light.color, light.intensity, light.flicker, source_z)
 
 	shadowcaster.cast(
 		source_x,
@@ -27,7 +27,7 @@ function lighting.cast_light(source_x, source_y, light, max_x, max_y, tiles, lig
 			local falloff = math.max(0, 1 - dist / light.radius)
 			local edge_factor = (col == 0 or col == row) and 0.5 or 1
 			local contribution = falloff * light.intensity * edge_factor
-			deposit(lighting_grid[pos_y][pos_x], light.color, contribution, light.flicker)
+			deposit(lighting_grid[pos_y][pos_x], light.color, contribution, light.flicker, source_z)
 		end
 	)
 end
@@ -48,17 +48,17 @@ function lighting.recompute(max_x, max_y, map_grid, lighting_grid)
 
 	for _, entity in ipairs(entities.entity_list) do
 		if entity.light then
-			lighting.cast_light(entity.x, entity.y, entity.light, max_x, max_y, map_grid, lighting_grid)
+			lighting.cast_light(entity.x, entity.y, entity.z, entity.light, max_x, max_y, map_grid, lighting_grid)
 		end
 
 		if entity.item and entity.item.light then
-			lighting.cast_light(entity.x, entity.y, entity.item.light, max_x, max_y, map_grid, lighting_grid)
+			lighting.cast_light(entity.x, entity.y, entity.z, entity.item.light, max_x, max_y, map_grid, lighting_grid)
 		end
 
 		if entity.inventory and entity.inventory.equipped then
 			for _, item in pairs(entity.inventory.equipped) do
 				if item.light then
-					lighting.cast_light(entity.x, entity.y, item.light, max_x, max_y, map_grid, lighting_grid)
+					lighting.cast_light(entity.x, entity.y, entity.z, item.light, max_x, max_y, map_grid, lighting_grid)
 				end
 			end
 		end

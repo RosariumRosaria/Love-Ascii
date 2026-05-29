@@ -14,7 +14,7 @@ return {
 			pickupable = true,
 		},
 		stats = {
-			health = { base = 25, current = 25 },
+			health = { base = 35, current = 35 },
 			stamina = { base = 10, current = 10 },
 			hunger = { base = 10, current = 10 },
 			sight = { base = 30 },

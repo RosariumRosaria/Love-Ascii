@@ -8,7 +8,7 @@ return {
 	},
 	camera = {
 		speed = 2,
-		draw_distance = 25,
+		draw_distance = 23,
 	},
 	rendering = {
 		default_offset_type = 1,
@@ -19,6 +19,7 @@ return {
 		ambient = 0.5,
 		light_emissive = 0.8,
 		cover_emissive = 0.5,
+		z_falloff = 0.2,
 		entity_brightness_boost = 0.3,
 		distance_drama = 0.5,
 		brightness = 1,

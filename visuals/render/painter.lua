@@ -231,7 +231,7 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 	local light_data = map:get_lighting_tile(x, y)
 
 	if visible then
-		scaled_color = render_utils.apply_lighting(scaled_color, light_data)
+		scaled_color = render_utils.apply_lighting(scaled_color, light_data, z)
 		scaled_color = render_utils.apply_flicker(scaled_color, light_data.sources, time)
 	end
 
