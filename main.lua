@@ -49,7 +49,7 @@ function love.load()
 		light = {
 			color = { r = 1.0, g = 0.85, b = 0.55 },
 			flicker = { amp = 0.1, freq = 2, phase = 6 },
-			intensity = 1,
+			intensity = 0.5,
 			radius = 8,
 		},
 	})

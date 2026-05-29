@@ -1,6 +1,5 @@
 local config = require("config.runtime")
 local render_config = require("config.render_config")
-local debug_state = require("debug.debug_state")
 local default_font
 local tile_size
 local render_utils = {}
@@ -8,7 +7,8 @@ local render_utils = {}
 function render_utils.height_level_scale(z, max_z, min_z, visible)
 	local range = max_z - min_z
 	local normalized = (z - min_z) / range
-	local height_factor = 0.1 + (normalized ^ 2) * 2.9
+
+	local height_factor = 0.1 + (normalized ^ 2) * 0.9
 	local alpha = height_factor
 	if not visible then
 		alpha = alpha * 0.5
@@ -42,7 +42,8 @@ function render_utils.get_effective_color(color, visible, explored)
 			return { 1, 1, 1, 1 }
 		end
 	elseif explored then
-		return { 0.861, 0.771, 0.502, 0.33 } --TODO: extract to config
+		local e = render_config.lighting.explored_color
+		return { e[1], e[2], e[3], e[4] }
 	end
 	return nil
 end
@@ -75,15 +76,16 @@ function render_utils.tint_color(color, tint)
 	}
 end
 
-function render_utils.normalize_light(light)
-	local r = light.r or 0
-	local g = light.g or 0
-	local b = light.b or 0
+local function clamp_to_unit(r, g, b)
 	local m = math.max(r, g, b)
 	if m > 1 then
 		return r / m, g / m, b / m
 	end
 	return r, g, b
+end
+
+function render_utils.normalize_light(light)
+	return clamp_to_unit(light.r or 0, light.g or 0, light.b or 0)
 end
 
 function render_utils.apply_flicker(color, sources, t)
@@ -115,31 +117,24 @@ function render_utils.apply_lighting(color, light)
 	local ambient = render_config.lighting.ambient
 	local emissive = render_config.lighting.light_emissive
 
-	local fr = ambient + (light.r or 0)
-	local fg = ambient + (light.g or 0)
-	local fb = ambient + (light.b or 0)
-	local m = math.max(fr, fg, fb)
-	if m > 1 then
-		fr, fg, fb = fr / m, fg / m, fb / m
-	end
+	local fr, fg, fb = clamp_to_unit(ambient + (light.r or 0), ambient + (light.g or 0), ambient + (light.b or 0))
 
 	local lr, lg, lb = render_utils.normalize_light(light)
 
-	local r = (color[1] or 1) * fr + lr * emissive
-	local g = (color[2] or 1) * fg + lg * emissive
-	local b = (color[3] or 1) * fb + lb * emissive
+	local r, g, b = clamp_to_unit(
+		(color[1] or 1) * fr + lr * emissive,
+		(color[2] or 1) * fg + lg * emissive,
+		(color[3] or 1) * fb + lb * emissive
+	)
 
-	if debug_state.normalize_lighting then
-		local m = math.max(r, g, b)
-		if m > 1 then
-			r, g, b = r / m, g / m, b / m
-		end
-	else
-		r = math.min(1, r)
-		g = math.min(1, g)
-		b = math.min(1, b)
+	return { r, g, b, (color[4] or 1) }
+end
+
+function render_utils.tonemap(color)
+	if not color then
+		return { 1, 1, 1, 1 }
 	end
-
+	local r, g, b = clamp_to_unit(color[1] or 1, color[2] or 1, color[3] or 1)
 	return { r, g, b, (color[4] or 1) }
 end
 

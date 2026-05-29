@@ -154,8 +154,8 @@ function map:load(max_x, max_y, max_z, min_z, map_type)
 	end
 	if map_type == "town" then
 		city_generator:make_town(gen_cfg.building_count, self.tiles, self.max_y, self.max_x, self.max_z, self.min_z)
-		city_generator:make_lake(115, 110, 5, self.tiles)
-		city_generator:make_copse(110, 100, 3, 0.4)
+		city_generator:make_lake(265, 240, 5, self.tiles)
+		city_generator:make_copse(240, 265, 10, 0.4)
 	end
 end
 

@@ -5,7 +5,7 @@ local utils = require("utils")
 local entities = require("entities.entities")
 
 local particles = {
-	mode = "rain",
+	mode = "normal",
 	particles = {},
 	screen_w = 0,
 	screen_h = 0,
