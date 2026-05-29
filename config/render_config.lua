@@ -19,8 +19,8 @@ return {
 		ambient = 0.5,
 		light_emissive = 0.8,
 		cover_emissive = 0.5,
-		z_falloff = 0.2,
-		entity_brightness_boost = 0.3,
+		z_falloff = 0, --todo should maybe be removed instead of set to 0
+		entity_brightness_boost = 0.4,
 		distance_drama = 0.5,
 		brightness = 1,
 		shadow_brightness_scale = 0.25,
