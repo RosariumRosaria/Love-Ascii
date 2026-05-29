@@ -6,8 +6,8 @@ local city_generator = { max_x = nil, max_y = nil, max_z = nil }
 
 local rotated_wall = setmetatable({ rotation = 90 }, { __index = types.v_wall })
 
-local TREE_TRUNK_COLOR = { 0.3, 0.2, 0.1, 1 }
-local TREE_LEAF_COLOR = { 0.2, 0.35, 0.2, 1 }
+local TREE_TRUNK_COLOR = { 0.3, 0.15, 0.1, 1 }
+local TREE_LEAF_COLOR = { 0.2, 0.35, 0.15, 1 }
 
 local function make_tree_chars(height)
 	local chars, colors = {}, {}
@@ -31,7 +31,6 @@ function city_generator:make_lake(cx, cy, radius, tiles)
 		end
 	end
 
-	-- DEBUG: bridge across the lake (east-west through center)
 	for bx = cx - radius - 2, cx + radius + 2 do
 		if utils.in_bounds(bx, cy, self.max_x, self.max_y) then
 			tiles[cy][bx][1] = types.floor

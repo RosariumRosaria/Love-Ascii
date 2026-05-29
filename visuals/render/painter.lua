@@ -240,6 +240,7 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 	scaled_color, outline_color = apply_bw_mode(scaled_color, outline_color, 1)
 
 	scaled_color = render_utils.scale_color(scaled_color, base)
+	scaled_color = render_utils.tonemap(scaled_color)
 
 	local base_dx, base_dy = get_offset(z, x, y, center_x, center_y)
 
@@ -315,6 +316,7 @@ function painter:emit_particle(p, center_x, center_y, time)
 	scaled_color = apply_bw_mode(scaled_color, nil, 2)
 
 	scaled_color = render_utils.scale_color(scaled_color, render_utils.distance_scale(p.x, p.y, center_x, center_y))
+	scaled_color = render_utils.tonemap(scaled_color)
 	scaled_color[4] = scaled_color[4] * (p.alpha_mult or 1)
 	emit_char({
 		z = p.z,
@@ -387,6 +389,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 		scaled_color = apply_bw_mode(scaled_color, nil, 2)
 
 		scaled_color = render_utils.scale_color(scaled_color, base)
+		scaled_color = render_utils.tonemap(scaled_color)
 
 		local dx, dy = get_offset(entity.z + i - 1, entity.x, entity.y, center_x, center_y)
 

@@ -12,18 +12,19 @@ return {
 	},
 	rendering = {
 		default_offset_type = 1,
-		offset_amount_factor = 0.5,
-		z_size_scale_per_level = 0.04,
+		offset_amount_factor = 0.3,
+		z_size_scale_per_level = 0.02,
 	},
 	lighting = {
-		ambient = 0.3,
+		ambient = 0.5,
 		light_emissive = 0.8,
 		cover_emissive = 0.5,
 		entity_brightness_boost = 0.3,
-		distance_drama = 0.75,
+		distance_drama = 0.5,
 		brightness = 1,
 		shadow_brightness_scale = 0.25,
 		shadow_alpha_scale = 0.7,
+		explored_color = { 0.861, 0.771, 0.502, 0.33 },
 	},
 	debug = {
 		show_grid = false,

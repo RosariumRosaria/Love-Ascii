@@ -59,7 +59,7 @@ return {
 		light = {
 			color = { r = 1.0, g = 0.85, b = 0.55 },
 			flicker = { amp = 0.05, freq = 8, phase = 4 },
-			intensity = 1,
+			intensity = 0.5,
 			radius = 6,
 		},
 	},

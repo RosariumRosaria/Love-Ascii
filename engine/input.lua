@@ -163,10 +163,6 @@ function input:update(dt)
 		debug_state.toggle_bw()
 	end
 
-	if self:pressed("toggle_normalize_lighting") then
-		debug_state.toggle_normalize_lighting()
-	end
-
 	if self:pressed("toggle_perf") then
 		debug_state.toggle_perf()
 	end
