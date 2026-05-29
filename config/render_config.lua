@@ -25,7 +25,7 @@ return {
 		brightness = 1,
 		shadow_brightness_scale = 0.25,
 		shadow_alpha_scale = 0.7,
-		explored_color = { 0.861, 0.771, 0.502, 0.33 },
+		explored_color = { 0.861, 0.771, 0.502, 0.2 },
 	},
 	debug = {
 		show_grid = false,
