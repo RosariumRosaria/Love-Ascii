@@ -1,7 +1,11 @@
 return {
-	building_count = 50,
-	building_min_size = 7,
-	building_max_size = 15,
-	shrub_chance = 20, -- 1-in-N tile becomes a shrub
-	building_margin = 20, -- min distance from map edge for building placement
+	shrub_chance = 20,
+
+	subdivide_depth = 10,
+	building_margin = 2,
+	min_building_size = 6,
+	building_chance = 0.75,
+	copse_chance = 0.15,
+	copse_density = 0.5,
+	copse_density_variance = 0.25,
 }

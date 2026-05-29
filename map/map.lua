@@ -61,14 +61,8 @@ function map:is_tile_free(x, y, z, skip_entities)
 	if not self:walkable(x, y, z) then
 		return false
 	end
-	for _, ent in ipairs(entities.get_entity_list()) do
-		if
-			not skip_entities[ent]
-			and not entities.get_tag_entity(ent, "walkable")
-			and ent.x == x
-			and ent.y == y
-			and ent.z == z
-		then
+	for _, ent in ipairs(entities.get_entities_at(x, y, z)) do
+		if not skip_entities[ent] and not entities.get_tag_entity(ent, "walkable") then
 			return false
 		end
 	end

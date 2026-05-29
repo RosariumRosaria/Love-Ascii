@@ -112,11 +112,6 @@ function city_generator:make_building(room_start_x, room_start_y, width, height,
 		height = height,
 	}
 end
-local building_margin = 2
-local min_building = 6
-local building_chance = 0.75
-local copse_chance = 0.15
-local tree_density = 0.5
 function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	self.max_y = map_max_y
 	self.max_x = map_max_x
@@ -125,7 +120,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	self.lots = {}
 	self.roads = {}
 	local root = { x = 1, y = 1, w = self.max_x, h = self.max_y }
-	lots.subdivide(root, 10, self.lots, self.roads)
+	lots.subdivide(root, gen_cfg.subdivide_depth, self.lots, self.roads)
 
 	for y = 1, map_max_y do
 		for x = 1, map_max_x do
@@ -144,17 +139,18 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	end
 
 	for _, lot in ipairs(self.lots) do
-		local m = math.random(1, building_margin)
+		local m = math.random(1, gen_cfg.building_margin)
 		local bw, bh = lot.w - 2 * m, lot.h - 2 * m
-		if bw >= min_building and bh >= min_building then
+		if bw >= gen_cfg.min_building_size and bh >= gen_cfg.min_building_size then
 			local roll = math.random()
-			if roll < building_chance then
-				self:make_building(lot.x + m, lot.y + m, bw, bh, math.random(3, self.max_z), tiles)
-			elseif roll < building_chance + copse_chance then
+			if roll < gen_cfg.building_chance then
+				self:make_building(lot.x + m, lot.y + m, bw, bh, structures.roll_height("wall", self.max_z), tiles)
+			elseif roll < gen_cfg.building_chance + gen_cfg.copse_chance then
 				local cx = lot.x + m + math.floor(bw / 2)
 				local cy = lot.y + m + math.floor(bh / 2)
 				local radius = math.floor(math.min(bw, bh) / 2)
-				local tree_density_adjusted = tree_density - 0.25 + (0.25 * math.random())
+				local variance = gen_cfg.copse_density_variance
+				local tree_density_adjusted = gen_cfg.copse_density - variance + (variance * math.random())
 				self:make_copse(cx, cy, radius, tree_density_adjusted, tiles)
 			end
 		end
