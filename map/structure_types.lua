@@ -6,4 +6,9 @@ return {
 		fill = "tree_trunk",
 		cap = "tree_leaves",
 	},
+
+	wall = {
+		min_height = 4,
+		max_height = 6,
+	},
 }

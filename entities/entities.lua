@@ -9,7 +9,7 @@ local stats = require("stats.stats")
 local entities = {
 	entity_list = {},
 	player = nil,
-	entities_by_z_level = {},
+	by_cell = {},
 }
 
 function entities.set_player(p)
@@ -95,27 +95,69 @@ function entities.inspect_entity(entity)
 	end
 end
 
-function entities.get_entity(x, y, z)
-	for _, entity in ipairs(entities.entity_list) do
-		if entity.x == x and entity.y == y and entity.z == z then
-			return entity
+local EMPTY = {}
+
+local function cell_list(z, y, x, create)
+	local zt = entities.by_cell[z]
+	if not zt then
+		if not create then
+			return nil
 		end
+		zt = {}
+		entities.by_cell[z] = zt
 	end
+	local yt = zt[y]
+	if not yt then
+		if not create then
+			return nil
+		end
+		yt = {}
+		zt[y] = yt
+	end
+	local xt = yt[x]
+	if not xt then
+		if not create then
+			return nil
+		end
+		xt = {}
+		yt[x] = xt
+	end
+	return xt
+end
+
+local function index_add(entity)
+	local list = cell_list(entity.z, entity.y, entity.x, true)
+	list[#list + 1] = entity
+end
+
+local function index_remove(entity)
+	local list = cell_list(entity.z, entity.y, entity.x, false)
+	if list then
+		utils.remove_from_list(list, entity)
+	end
+end
+
+function entities.get_entities_at(x, y, z)
+	return cell_list(z, y, x, false) or EMPTY
+end
+
+function entities.move_to(entity, nx, ny, nz)
+	index_remove(entity)
+	entity.x = nx
+	entity.y = ny
+	entity.z = nz or entity.z
+	index_add(entity)
+end
+
+---@return any entity entity at (x, y, z), or nil if the cell is empty
+function entities.get_entity(x, y, z)
+	local list = cell_list(z, y, x, false)
+	return list and list[1] or nil
 end
 
 function entities.remove_entity(target)
 	utils.remove_from_list(entities.entity_list, target)
-	local z_list = entities.entities_by_z_level[target.z]
-	if z_list then
-		utils.remove_from_list(z_list, target)
-		if #z_list == 0 then
-			entities.entities_by_z_level[target.z] = nil
-		end
-	end
-end
-
-function entities.get_entity_list_by_z_level(z)
-	return entities.entities_by_z_level[z] or {}
+	index_remove(target)
 end
 
 function entities.get_entity_list()
@@ -124,14 +166,7 @@ end
 
 function entities.add_entity(entity)
 	table.insert(entities.entity_list, entity)
-
-	local z = entity.z
-
-	if not entities.entities_by_z_level[z] then
-		entities.entities_by_z_level[z] = {}
-	end
-
-	table.insert(entities.entities_by_z_level[z], entity)
+	index_add(entity)
 
 	if entity.type == "actor" then
 		scheduler.schedule_turn(entity)
