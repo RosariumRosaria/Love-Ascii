@@ -1,5 +1,4 @@
 local map = require("map.map")
-local voroni_generator = require("map.voronoi.generator")
 local entities = require("entities.entities")
 
 local visualizer = {
@@ -27,37 +26,6 @@ function visualizer:draw_map()
 			)
 		end
 	end
-	love.graphics.setColor(1, 1, 1, 1)
-end
-
-function visualizer:draw_point_set()
-	local point_set = voroni_generator:get_regions()
-
-	if point_set then
-		for _, point in ipairs(point_set) do
-			love.graphics.setColor(0, 0, 0, 1)
-			love.graphics.circle(
-				"fill",
-				self.start_x + (point.centroid_x - 1) * self.scale,
-				self.start_y + (point.centroid_y - 1) * self.scale,
-				self.scale * 2
-			)
-		end
-	end
-
-	point_set = voroni_generator:get_seeds()
-	if point_set then
-		for _, point in ipairs(point_set) do
-			love.graphics.setColor(1, 0, 0, 1)
-			love.graphics.circle(
-				"fill",
-				self.start_x + (point[1] - 1) * self.scale,
-				self.start_y + (point[2] - 1) * self.scale,
-				self.scale * 2
-			)
-		end
-	end
-
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
@@ -95,7 +63,6 @@ function visualizer:draw()
 	self.start_x = (self.screen_width - self.map_max_x * self.scale) / 2
 	self.start_y = (self.screen_height - self.map_max_y * self.scale) / 2
 	self:draw_map()
-	self:draw_point_set()
 	self:draw_player()
 end
 

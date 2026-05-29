@@ -3,8 +3,7 @@ local actions = require("engine.actions")
 local render = require("visuals.render.render")
 local debug_state = require("debug.debug_state")
 local ui = require("visuals.ui")
-local visualizer = require("map.voronoi.visualizer")
-local voroni_generator = require("map.voronoi.generator")
+local visualizer = require("debug.visualizer")
 local bindings = require("config.bindings")
 local event_log = require("engine.event_log")
 local inventory = require("items.inventory")
@@ -174,10 +173,6 @@ function input:update(dt)
 
 	if self:pressed("toggle_visualizer") then
 		visualizer:toggle()
-	end
-
-	if self:pressed("toggle_road_mode") then
-		voroni_generator:toggle_road_mode()
 	end
 
 	if self:pressed("toggle_font") then
