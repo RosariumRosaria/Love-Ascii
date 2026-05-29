@@ -84,27 +84,6 @@ return {
 		},
 		next_turn = 0,
 	},
-	tree = {
-		name = "Tree",
-		type = "prop",
-		chars = { ".", ".", ".", ".", "*" },
-		color = {
-			{ 0.36, 0.26, 0.18, 1 },
-			{ 0.36, 0.26, 0.18, 1 },
-			{ 0.36, 0.26, 0.18, 1 },
-			{ 0.36, 0.26, 0.18, 1 },
-			{ 0.16, 0.5, 0.12, 1 },
-		},
-		description = "A Tree",
-		tags = {
-			solid = true,
-			moveable = true,
-			tilelike = true,
-			covers = true,
-			attackable = false,
-			walkable = false,
-		},
-	},
 	campfire = {
 		name = "Campfire",
 		type = "prop",

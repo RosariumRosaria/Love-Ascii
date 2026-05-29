@@ -9,7 +9,7 @@ return {
 	map = {
 		max_x = 300,
 		max_y = 300,
-		max_z = 6,
+		max_z = 10,
 		min_z = -4,
 	},
 	timing = {

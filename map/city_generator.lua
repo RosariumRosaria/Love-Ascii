@@ -3,23 +3,10 @@ local types = require("map.tile_types")
 local utils = require("utils")
 local gen_cfg = require("config.generation_config")
 local lots = require("map.lots")
+local structures = require("map.structures")
 local city_generator = { max_x = nil, max_y = nil, max_z = nil, lots = {}, roads = {} }
 
 local rotated_wall = setmetatable({ rotation = 90 }, { __index = types.v_wall })
-
-local TREE_TRUNK_COLOR = { 0.3, 0.15, 0.1, 1 }
-local TREE_LEAF_COLOR = { 0.2, 0.35, 0.15, 1 }
-
-local function make_tree_chars(height)
-	local chars, colors = {}, {}
-	for i = 1, height - 1 do
-		chars[i] = "."
-		colors[i] = TREE_TRUNK_COLOR
-	end
-	chars[height] = "*"
-	colors[height] = TREE_LEAF_COLOR
-	return chars, colors
-end
 
 function city_generator:get_lots()
 	return self.lots
@@ -47,13 +34,14 @@ function city_generator:make_lake(cx, cy, radius, tiles)
 	end
 end
 
-function city_generator:make_copse(cx, cy, radius, density)
+function city_generator:make_copse(cx, cy, radius, density, tiles)
 	for dy = -radius, radius do
 		for dx = -radius, radius do
 			if dx * dx + dy * dy <= radius * radius and math.random() < density then
-				local height = math.random(5, 9)
-				local chars, colors = make_tree_chars(height)
-				entities.add_from_template("tree", cx + dx, cy + dy, 1, { chars = chars, color = colors })
+				local tile_x, tile_y = cx + dx, cy + dy
+				if utils.in_bounds(tile_x, tile_y, self.max_x, self.max_y) then
+					structures.place("tree", tile_x, tile_y, tiles, self.max_z)
+				end
 			end
 		end
 	end
@@ -71,17 +59,11 @@ function city_generator:make_building(room_start_x, room_start_y, width, height,
 					or (x == 1 and y == height)
 					or (x == width and y == 1)
 				then
-					for z = 1, max_z do
-						tiles[tile_y][tile_x][z] = types.c_wall
-					end
+					structures.fill_column(tiles, tile_x, tile_y, 1, max_z, types.c_wall)
 				elseif x == 1 or x == width then
-					for z = 1, max_z do
-						tiles[tile_y][tile_x][z] = rotated_wall
-					end
+					structures.fill_column(tiles, tile_x, tile_y, 1, max_z, rotated_wall)
 				elseif y == 1 or y == height then
-					for z = 1, max_z do
-						tiles[tile_y][tile_x][z] = types.v_wall
-					end
+					structures.fill_column(tiles, tile_x, tile_y, 1, max_z, types.v_wall)
 				else
 					tiles[tile_y][tile_x][1] = types.floor
 				end
@@ -162,7 +144,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	end
 
 	for _, lot in ipairs(self.lots) do
-		local m = building_margin
+		local m = math.random(1, building_margin)
 		local bw, bh = lot.w - 2 * m, lot.h - 2 * m
 		if bw >= min_building and bh >= min_building then
 			local roll = math.random()
@@ -173,7 +155,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 				local cy = lot.y + m + math.floor(bh / 2)
 				local radius = math.floor(math.min(bw, bh) / 2)
 				local tree_density_adjusted = tree_density - 0.25 + (0.25 * math.random())
-				self:make_copse(cx, cy, radius, tree_density_adjusted)
+				self:make_copse(cx, cy, radius, tree_density_adjusted, tiles)
 			end
 		end
 	end
