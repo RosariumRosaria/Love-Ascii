@@ -1,5 +1,6 @@
 return {
 	shrub_chance = 20,
+	road_skip_chance = 15,
 
 	lot_min_size = 10,
 	lot_max_size = 20,
