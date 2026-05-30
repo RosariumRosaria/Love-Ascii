@@ -1,6 +1,6 @@
 local config = require("config.runtime")
 local actions = require("engine.actions")
-local render = require("visuals.render.render")
+local scene = require("visuals.render.scene")
 local debug_state = require("debug.debug_state")
 local ui = require("visuals.ui")
 local visualizer = require("debug.visualizer")
@@ -77,7 +77,6 @@ function input:get_actor()
 	return self.actor
 end
 
--- internal helper
 function input:_has(action, state_table)
 	local keys = bindings[action]
 	if not keys then
@@ -173,7 +172,7 @@ function input:update(dt)
 
 	if self:pressed("toggle_font") then
 		config:toggle_font()
-		render:reload_fonts()
+		scene:reload_fonts()
 	end
 
 	if self:pressed("switch_offset") then

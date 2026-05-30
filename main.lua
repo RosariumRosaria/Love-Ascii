@@ -1,7 +1,7 @@
 local config = require("config.runtime")
 local game_cfg = require("config.game_config")
 local map = require("map.map")
-local render = require("visuals.render.render")
+local scene = require("visuals.render.scene")
 local effects = require("visuals.effects.effects")
 local ui = require("visuals.ui")
 local input_handler = require("engine.input")
@@ -16,7 +16,7 @@ function love.load()
 	config:load()
 	config:setup_window()
 
-	render:reload_fonts()
+	scene:reload_fonts()
 
 	local map_max_x = game_cfg.map.max_x
 	local map_max_y = game_cfg.map.max_y
@@ -58,18 +58,18 @@ function love.load()
 	map:update_visibility(entities.player.x, entities.player.y, stats.get_stat(entities.player, "sight"))
 	ui:load()
 	ui:update_status(entities.player)
-	render:load(entities.player.x, entities.player.y)
+	scene:load(entities.player.x, entities.player.y)
 end
 
 function love.update(dt)
 	perf:begin_frame()
 	turn:update(dt)
-	render:update(dt)
+	scene:update(dt)
 	effects:update(dt)
 end
 
 function love.draw()
-	render:draw()
+	scene:draw()
 	visualizer:draw()
 	perf:draw()
 	perf:end_frame(ui)

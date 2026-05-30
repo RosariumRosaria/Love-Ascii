@@ -13,7 +13,6 @@ local painter = {}
 
 local tile_size
 local small_tile_size
-local default_font
 local small_font
 
 local offset_amount
@@ -34,6 +33,7 @@ end
 
 local function emit_char(params)
 	draw_buffer:emit({
+		pass = params.pass,
 		z = params.z,
 		y = params.y,
 		layer = params.layer,
@@ -87,53 +87,14 @@ function painter:emit_effect(effect, center_x, center_y, visible)
 	if not (visible or not effect.params.needs_to_be_seen) then
 		return
 	end
-	if not effect.rects then
-		return
-	end
 
-	local x_screen, y_screen = render_utils.get_screen_coords(effect.x, effect.y, center_x, center_y)
+	local pass = effect.params.buffered and draw_buffer.PASS.WORLD or draw_buffer.PASS.OVERLAY
 
-	for _, rect in ipairs(effect.rects) do
-		local color
-		if effect.params.decay_over_time then
-			color = render_utils.scale_color(rect.colors[1], effect.params.lifespan / effect.params.initial_lifespan)
-		else
-			color = rect.colors[((effect.params.i - 1) % #rect.colors) + 1]
-		end
-
-		local effect_size = rect.sizes[((effect.params.i - 1) % #rect.sizes) + 1] * tile_size
-
-		draw_buffer:emit({
-			z = effect.z,
-			y = effect.y,
-			layer = draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
-			kind = "rect",
-			x_screen = x_screen + ((tile_size - effect_size) / 2),
-			y_screen = y_screen + ((tile_size - effect_size) / 2),
-			w = effect_size,
-			h = effect_size,
-			color = color,
-			outline_width = rect.outline_width,
-			outline_color = rect.outline_color,
-			rounded_amount = rect.rounded_amount,
-		})
-	end
-end
-
-function painter:draw_effect(effect, center_x, center_y, visible)
-	love.graphics.setFont(default_font)
-
-	if not (visible or not effect.params.needs_to_be_seen) then
-		return
-	end
-
-	local x_screen, y_screen = render_utils.get_screen_coords(effect.x, effect.y, center_x, center_y)
-
-	-- rects
 	if effect.rects then
-		local color = { 1, 1, 1, 1 }
+		local x_screen, y_screen = render_utils.get_screen_coords(effect.x, effect.y, center_x, center_y)
 
 		for _, rect in ipairs(effect.rects) do
+			local color
 			if effect.params.decay_over_time then
 				color =
 					render_utils.scale_color(rect.colors[1], effect.params.lifespan / effect.params.initial_lifespan)
@@ -143,20 +104,25 @@ function painter:draw_effect(effect, center_x, center_y, visible)
 
 			local effect_size = rect.sizes[((effect.params.i - 1) % #rect.sizes) + 1] * tile_size
 
-			render_primitives.draw_rect(
-				x_screen + ((tile_size - effect_size) / 2),
-				y_screen + ((tile_size - effect_size) / 2),
-				effect_size,
-				effect_size,
-				color,
-				rect.outline_width,
-				rect.outline_color,
-				rect.rounded_amount
-			)
+			draw_buffer:emit({
+				pass = pass,
+				z = effect.z,
+				y = effect.y,
+				layer = draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
+				kind = "rect",
+				x_screen = x_screen + ((tile_size - effect_size) / 2),
+				y_screen = y_screen + ((tile_size - effect_size) / 2),
+				w = effect_size,
+				h = effect_size,
+				color = color,
+				outline_width = rect.outline_width,
+				outline_color = rect.outline_color,
+				rounded_amount = rect.rounded_amount,
+			})
 		end
 	end
 
-	-- panels
+	-- panels (a backing rect plus its chars)
 	if effect.panels then
 		for _, panel in ipairs(effect.panels) do
 			local color = panel.colors[effect.params.i] or { 1, 1, 1, 1 }
@@ -172,23 +138,40 @@ function painter:draw_effect(effect, center_x, center_y, visible)
 
 			local pad = (rect_size - tile_size) / 2
 
-			render_primitives.draw_rect(
-				px - pad,
-				py - pad,
-				rect_size,
-				rect_size,
-				color,
-				panel.outline_width or 1,
-				panel.outline_color
-			)
+			draw_buffer:emit({
+				pass = pass,
+				z = effect.z,
+				y = effect.y,
+				layer = draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
+				kind = "rect",
+				x_screen = px - pad,
+				y_screen = py - pad,
+				w = rect_size,
+				h = rect_size,
+				color = color,
+				outline_width = panel.outline_width or 1,
+				outline_color = panel.outline_color,
+			})
 
 			for _, text in ipairs(panel.texts) do
-				render_primitives.draw_char(px, py, text, { 1, 1, 1, 1 }, nil, 0, 0, size_scale)
+				emit_char({
+					pass = pass,
+					z = effect.z,
+					y = effect.y,
+					layer = draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
+					x_screen = px,
+					y_screen = py,
+					char = text,
+					color = { 1, 1, 1, 1 },
+					size_scale = size_scale,
+				})
 			end
 		end
 	end
 end
 
+-- Screen-space, drawn directly (not through draw_buffer): UI has its own font and is
+-- not z/y-sorted into the world.
 function painter:draw_ui(ui)
 	love.graphics.setFont(ui.font or small_font)
 
@@ -296,6 +279,9 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 end
 
 function painter:emit_particle(p, center_x, center_y, time)
+	if p.delay and p.delay > 0 then
+		return
+	end
 	local tx, ty = math.floor(p.x), math.floor(p.y)
 	if ty < 1 or ty > map:get_max_y() or tx < 1 or tx > map:get_max_x() then
 		return
@@ -409,6 +395,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 	end
 end
 
+-- Debug-only overlay, drawn directly (not through draw_buffer).
 function painter:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
 	if not debug_state.show_grid then
 		return
@@ -425,7 +412,6 @@ end
 function painter:reload_fonts()
 	tile_size = config.tile_size
 	small_tile_size = config.small_tile_size
-	default_font = config.font
 	small_font = config.small_font
 	offset_amount = render_cfg.rendering.offset_amount_factor * tile_size
 end
