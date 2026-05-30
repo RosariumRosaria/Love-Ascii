@@ -7,7 +7,7 @@ local game_cfg = require("config.game_config")
 local pathfinder = {}
 local max_checks = game_cfg.pathfinding.max_iterations
 
-local function is_tile_free(x, y, z, entity_list, goal)
+local function is_tile_free(x, y, z, goal)
 	if x == goal[1] and y == goal[2] and z == 1 then
 		return true
 	end
@@ -16,8 +16,8 @@ local function is_tile_free(x, y, z, entity_list, goal)
 		return false
 	end
 
-	for _, ent in ipairs(entity_list) do
-		if not entities.get_tag_entity(ent, "walkable") and ent.x == x and ent.y == y and ent.z == z then
+	for _, ent in ipairs(entities.get_entities_at(x, y, z)) do
+		if not entities.get_tag_entity(ent, "walkable") then
 			return false
 		end
 	end
@@ -25,7 +25,7 @@ local function is_tile_free(x, y, z, entity_list, goal)
 	return true
 end
 
-local function get_neighbors(x, y, entity_list, goal)
+local function get_neighbors(x, y, goal)
 	local candidates = {
 		{ x + 1, y },
 		{ x - 1, y },
@@ -37,7 +37,7 @@ local function get_neighbors(x, y, entity_list, goal)
 
 	local neighbors = {}
 	for _, pos in ipairs(candidates) do
-		if is_tile_free(pos[1], pos[2], 1, entity_list, goal) then
+		if is_tile_free(pos[1], pos[2], 1, goal) then
 			table.insert(neighbors, pos)
 		end
 	end
@@ -68,8 +68,6 @@ local function reconstruct_path(came_from, start, goal)
 end
 
 function pathfinder.a_star(start, goal)
-	local entity_list = entities.get_entity_list()
-
 	local frontier = {}
 	utils.priority_queue_put(frontier, start, 0)
 
@@ -90,7 +88,7 @@ function pathfinder.a_star(start, goal)
 			break
 		end
 
-		for _, next in ipairs(get_neighbors(current[1], current[2], entity_list, goal)) do
+		for _, next in ipairs(get_neighbors(current[1], current[2], goal)) do
 			local current_key = key(current[1], current[2])
 			local next_key = key(next[1], next[2])
 			local new_cost = cost_so_far[current_key] + 1

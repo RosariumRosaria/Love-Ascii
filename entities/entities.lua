@@ -27,12 +27,18 @@ function entities.is_player(entity)
 end
 
 function entities.get_tag_location(x, y, z, tag)
-	local entity = entities.get_entity(x, y, z or 1)
-	if not entity then
+	local ents = entities.get_entities_at(x, y, z or 1)
+	if not ents then
 		return false
 	end
 
-	return entities.get_tag_entity(entity, tag)
+	for _, ent in ipairs(ents) do
+		if entities.get_tag_entity(ent, tag) then
+			return true
+		end
+	end
+
+	return false
 end
 
 function entities.get_tag_entity(entity, tag)
@@ -149,7 +155,7 @@ function entities.move_to(entity, nx, ny, nz)
 	index_add(entity)
 end
 
----@return any entity entity at (x, y, z), or nil if the cell is empty
+---@return any entity
 function entities.get_entity(x, y, z)
 	local list = cell_list(z, y, x, false)
 	return list and list[1] or nil

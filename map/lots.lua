@@ -1,8 +1,6 @@
-local lots = {}
+local gen_cfg = require("config.generation_config")
 
-local min_size = 10
-local max_size = 20
-local stop_chance = 0.5
+local lots = {}
 
 function lots.subdivide(rect, depth, lots_list, road_list)
 	if depth == 0 then
@@ -16,7 +14,10 @@ function lots.subdivide(rect, depth, lots_list, road_list)
 	local chance = math.random()
 	local road_width = math.max(0, math.floor(depth / 2) - 1)
 
-	if cut < min_size * 2 + road_width or (chance > stop_chance and cut < max_size) then
+	if
+		cut < gen_cfg.lot_min_size * 2 + road_width
+		or (chance > gen_cfg.lot_stop_chance and cut < gen_cfg.lot_max_size)
+	then
 		table.insert(lots_list, rect)
 		return
 	end
