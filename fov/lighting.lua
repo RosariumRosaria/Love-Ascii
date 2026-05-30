@@ -2,11 +2,14 @@ local shadowcaster = require("fov.shadowcaster")
 local entities = require("entities.entities")
 local lighting = {}
 
+local prev_lit = {}
+
 local function deposit(cell, color, contribution, flicker, source_z)
 	cell.r = cell.r + color.r * contribution
 	cell.g = cell.g + color.g * contribution
 	cell.b = cell.b + color.b * contribution
 	cell.sources[#cell.sources + 1] = { contribution = contribution, flicker = flicker, z = source_z }
+	prev_lit[#prev_lit + 1] = cell
 end
 
 function lighting.cast_light(source_x, source_y, source_z, light, max_x, max_y, tiles, lighting_grid)
@@ -33,18 +36,15 @@ function lighting.cast_light(source_x, source_y, source_z, light, max_x, max_y, 
 end
 
 function lighting.recompute(max_x, max_y, map_grid, lighting_grid)
-	for y = 1, max_y do
-		for x = 1, max_x do
-			local cell = lighting_grid[y][x]
-			cell.r = 0
-			cell.g = 0
-			cell.b = 0
-			local sources = cell.sources
-			for i = #sources, 1, -1 do
-				sources[i] = nil
-			end
+	for _, cell in ipairs(prev_lit) do
+		cell.r, cell.g, cell.b = 0, 0, 0
+		local sources = cell.sources
+		for i = #sources, 1, -1 do
+			sources[i] = nil
 		end
 	end
+
+	prev_lit = {}
 
 	for _, entity in ipairs(entities.entity_list) do
 		if entity.light then
