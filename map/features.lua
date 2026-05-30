@@ -1,20 +1,20 @@
-local structure_types = require("map.structure_types")
+local feature_types = require("map.feature_types")
 local tile_types = require("map.tile_types")
 local entities = require("entities.entities")
 local utils = require("utils")
 
-local structures = {}
+local features = {}
 
 local rotated_wall = setmetatable({ rotation = 90 }, { __index = tile_types.v_wall })
 
-function structures.fill_column(tiles, x, y, base_z, top_z, tile)
+function features.fill_column(tiles, x, y, base_z, top_z, tile)
 	for z = base_z, top_z do
 		tiles[y][x][z] = tile
 	end
 end
 
-function structures.roll_height(name, max_z)
-	local template = structure_types[name]
+function features.roll_height(name, max_z)
+	local template = feature_types[name]
 	if not template then
 		return 0
 	end
@@ -23,14 +23,14 @@ function structures.roll_height(name, max_z)
 	return math.max(0, math.min(height, max_z - base_z + 1))
 end
 
-function structures.place(name, x, y, tiles, max_z)
-	local template = structure_types[name]
+function features.place(name, x, y, tiles, max_z)
+	local template = feature_types[name]
 	if not template then
 		return
 	end
 
 	local base_z = template.base_z or 1
-	local height = structures.roll_height(name, max_z)
+	local height = features.roll_height(name, max_z)
 	if height < 1 then
 		return
 	end
@@ -40,14 +40,14 @@ function structures.place(name, x, y, tiles, max_z)
 	local cap = tile_types[template.cap]
 
 	if fill then
-		structures.fill_column(tiles, x, y, base_z, cap and top_z - 1 or top_z, fill)
+		features.fill_column(tiles, x, y, base_z, cap and top_z - 1 or top_z, fill)
 	end
 	if cap then
 		tiles[y][x][top_z] = cap
 	end
 end
 
-function structures.make_lake(tiles, cx, cy, radius, max_x, max_y)
+function features.make_lake(tiles, cx, cy, radius, max_x, max_y)
 	for dy = -radius, radius do
 		for dx = -radius, radius do
 			local tx, ty = cx + dx, cy + dy
@@ -65,20 +65,20 @@ function structures.make_lake(tiles, cx, cy, radius, max_x, max_y)
 	end
 end
 
-function structures.make_copse(tiles, cx, cy, radius, density, max_x, max_y, max_z)
+function features.make_copse(tiles, cx, cy, radius, density, max_x, max_y, max_z)
 	for dy = -radius, radius do
 		for dx = -radius, radius do
 			if dx * dx + dy * dy <= radius * radius and math.random() < density then
 				local tile_x, tile_y = cx + dx, cy + dy
 				if utils.in_bounds(tile_x, tile_y, max_x, max_y) then
-					structures.place("tree", tile_x, tile_y, tiles, max_z)
+					features.place("tree", tile_x, tile_y, tiles, max_z)
 				end
 			end
 		end
 	end
 end
 
-function structures.make_building(tiles, start_x, start_y, width, height, top_z, max_x, max_y)
+function features.make_building(tiles, start_x, start_y, width, height, top_z, max_x, max_y)
 	for y = 1, height do
 		for x = 1, width do
 			local tile_x = start_x + x - 1
@@ -90,11 +90,11 @@ function structures.make_building(tiles, start_x, start_y, width, height, top_z,
 					or (x == 1 and y == height)
 					or (x == width and y == 1)
 				then
-					structures.fill_column(tiles, tile_x, tile_y, 1, top_z, tile_types.c_wall)
+					features.fill_column(tiles, tile_x, tile_y, 1, top_z, tile_types.c_wall)
 				elseif x == 1 or x == width then
-					structures.fill_column(tiles, tile_x, tile_y, 1, top_z, rotated_wall)
+					features.fill_column(tiles, tile_x, tile_y, 1, top_z, rotated_wall)
 				elseif y == 1 or y == height then
-					structures.fill_column(tiles, tile_x, tile_y, 1, top_z, tile_types.v_wall)
+					features.fill_column(tiles, tile_x, tile_y, 1, top_z, tile_types.v_wall)
 				else
 					tiles[tile_y][tile_x][1] = tile_types.floor
 				end
@@ -144,4 +144,4 @@ function structures.make_building(tiles, start_x, start_y, width, height, top_z,
 	}
 end
 
-return structures
+return features

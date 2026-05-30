@@ -38,10 +38,10 @@ return {
 	},
 	road = {
 		name = "Road",
-		chars = { "#" },
+		chars = { "%" },
 		walkable = true,
 
-		color = { 0.42, 0.45, 0.47, 1 },
+		color = { 0.32, 0.35, 0.47, 1 },
 		transparent = true,
 		covers = true,
 	},
