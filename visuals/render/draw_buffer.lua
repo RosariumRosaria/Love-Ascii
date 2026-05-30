@@ -2,13 +2,17 @@ local render_primitives = require("visuals.render.primitives")
 local config = require("config.runtime")
 
 local draw_buffer = {
+	PASS = {
+		WORLD = 0,
+		OVERLAY = 1,
+	},
 	LAYER = {
-		TILE_COVER = 1, -- opaque background rect (tile.covers)
-		TILE_SHADOW = 2, -- shadow char under a natural_height tile
-		TILE_CHAR = 3, -- main tile char
-		EFFECT_BELOW_ENTITY = 5, -- buffered effects (e.g. trails) above tiles but under entities
-		ENTITY_COVER = 4, -- black bg rect for entities with `covers` tag
-		ENTITY_CHAR = 6, -- main entity char
+		TILE_COVER = 1,
+		TILE_SHADOW = 2,
+		TILE_CHAR = 3,
+		EFFECT_BELOW_ENTITY = 5,
+		ENTITY_COVER = 4,
+		ENTITY_CHAR = 6,
 		WEATHER = 7,
 	},
 }
@@ -16,10 +20,15 @@ local draw_buffer = {
 local buf = {}
 
 local function compare(a, b)
+	local pa = a.pass or 0
+	local pb = b.pass or 0
+	if pa ~= pb then
+		return pa < pb
+	end
 	if a.z ~= b.z then
 		return a.z < b.z
 	end
-	if a.layer ~= b.layer then --TODO was reordingt these the rpoper fix
+	if a.layer ~= b.layer then
 		return a.layer < b.layer
 	end
 	if a.y ~= b.y then

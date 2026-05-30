@@ -12,9 +12,9 @@ local painter = require("visuals.render.painter")
 local draw_buffer = require("visuals.render.draw_buffer")
 local weather = require("visuals.particles.particles")
 
-local render = {}
+local scene = {}
 
-function render:draw()
+function scene:draw()
 	local draw_dist = render_cfg.camera.draw_distance
 	local camera_x, camera_y = camera:get_position()
 
@@ -60,15 +60,11 @@ function render:draw()
 	end
 
 	for _, p in ipairs(weather:get_particles()) do
-		if p.delay <= 0 then
-			painter:emit_particle(p, camera_x, camera_y, time)
-		end
+		painter:emit_particle(p, camera_x, camera_y, time)
 	end
 
 	for _, effect in ipairs(effects:get_effect_list()) do
-		if effect.params.buffered then
-			painter:emit_effect(effect, camera_x, camera_y, map:is_visible(effect.x, effect.y))
-		end
+		painter:emit_effect(effect, camera_x, camera_y, map:is_visible(effect.x, effect.y))
 	end
 
 	draw_buffer:sort()
@@ -76,31 +72,25 @@ function render:draw()
 
 	painter:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
 
-	for _, effect in ipairs(effects:get_effect_list()) do
-		if not effect.params.buffered then
-			painter:draw_effect(effect, camera_x, camera_y, map:is_visible(effect.x, effect.y))
-		end
-	end
-
 	for _, ui in ipairs(ui_handler:get_ui_list()) do
 		painter:draw_ui(ui)
 	end
 end
 
-function render:reload_fonts()
+function scene:reload_fonts()
 	render_utils.load()
 	render_primitives.load()
 	ui_handler:reload_fonts()
 	painter:reload_fonts()
 end
 
-function render:load(player_x, player_y)
+function scene:load(player_x, player_y)
 	camera:load(player_x, player_y)
 	local cx, cy = camera:get_position()
 	weather:load(cx, cy)
 end
 
-function render:update(dt)
+function scene:update(dt)
 	animation.update(dt)
 	local player = entities.player
 	local tx = player.tween_x or player.x
@@ -110,4 +100,4 @@ function render:update(dt)
 	weather:update(dt, cx, cy)
 end
 
-return render
+return scene
