@@ -1,7 +1,7 @@
 local types = require("map.tile_types")
 local gen_cfg = require("config.generation_config")
 local lots = require("map.lots")
-local structures = require("map.structures")
+local features = require("map.features")
 local city_generator = { max_x = nil, max_y = nil, max_z = nil, lots = {}, roads = {} }
 
 function city_generator:get_lots()
@@ -44,13 +44,13 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 		if bw >= gen_cfg.min_building_size and bh >= gen_cfg.min_building_size then
 			local roll = math.random()
 			if roll < gen_cfg.building_chance then
-				structures.make_building(
+				features.make_building(
 					tiles,
 					lot.x + m,
 					lot.y + m,
 					bw,
 					bh,
-					structures.roll_height("wall", self.max_z),
+					features.roll_height("wall", self.max_z),
 					self.max_x,
 					self.max_y
 				)
@@ -60,7 +60,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 				local radius = math.floor(math.min(bw, bh) / 2)
 				local variance = gen_cfg.copse_density_variance
 				local tree_density_adjusted = gen_cfg.copse_density - variance + (variance * math.random())
-				structures.make_copse(tiles, cx, cy, radius, tree_density_adjusted, self.max_x, self.max_y, self.max_z)
+				features.make_copse(tiles, cx, cy, radius, tree_density_adjusted, self.max_x, self.max_y, self.max_z)
 			end
 		end
 	end
