@@ -33,7 +33,9 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	for _, road in ipairs(self.roads) do
 		for y = road.y, road.y + road.h - 1 do
 			for x = road.x, road.x + road.w - 1 do
-				tiles[y][x][1] = types.road
+				if math.random(1, gen_cfg.road_skip_chance) ~= gen_cfg.road_skip_chance then
+					tiles[y][x][1] = types.road
+				end
 			end
 		end
 	end
