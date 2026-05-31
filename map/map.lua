@@ -128,7 +128,7 @@ function map:get_tiles()
 end
 
 function map:load(max_x, max_y, max_z, min_z, map_type)
-	-- math.randomseed(os.time())
+	math.randomseed(os.time())
 	self.max_x = max_x or 10
 	self.max_y = max_y or 10
 	self.max_z = max_z or 5
@@ -158,7 +158,7 @@ function map:update_visibility(center_x, center_y, radius)
 	self.prev_visible = {}
 
 	fov_handler.refresh_visibility(center_x, center_y, radius, self.max_x, self.max_y, self.tiles, self.visible, true)
-	lighting.recompute(self.max_x, self.max_y, self.tiles, self.lighting)
+	lighting.recompute(self.max_x, self.max_y, self.tiles, self.lighting, center_x, center_y, radius)
 	local x1 = math.max(1, center_x - radius)
 	local x2 = math.min(self.max_x, center_x + radius)
 	local y1 = math.max(1, center_y - radius)

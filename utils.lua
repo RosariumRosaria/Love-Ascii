@@ -145,4 +145,8 @@ function utils.remove_from_list(list, target)
 	return false
 end
 
+function utils.pick(list)
+	return list[math.random(#list)]
+end
+
 return utils
