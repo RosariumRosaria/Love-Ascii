@@ -31,7 +31,9 @@ local function commit_turn(actor)
 		scheduler.schedule_turn(popped)
 	end
 	ui:log_events()
-	post_turn_update(entities.player)
+	if actor == entities.player then
+		post_turn_update(entities.player)
+	end
 end
 
 function turn:update(dt)
@@ -39,18 +41,19 @@ function turn:update(dt)
 	if not entities.player.dead then
 		self.time_since_last_tick = self.time_since_last_tick + dt
 
-		local actor = scheduler.peek()
-
-		if not actor then
-			input:end_frame()
-			return
-		end
-
-		if actor ~= input:get_actor() then
+		local actor
+		while true do
+			actor = scheduler.peek()
+			if not actor or actor == input:get_actor() then
+				break
+			end
 			if statuses.can_act(actor) then
 				ai:take_turn(actor)
 			end
 			commit_turn(actor)
+		end
+
+		if not actor then
 			input:end_frame()
 			return
 		end

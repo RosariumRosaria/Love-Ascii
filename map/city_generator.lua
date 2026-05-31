@@ -2,6 +2,7 @@ local types = require("map.tile_types")
 local gen_cfg = require("config.generation_config")
 local lots = require("map.lots")
 local features = require("map.features")
+local entities = require("entities.entities")
 local city_generator = { max_x = nil, max_y = nil, max_z = nil, lots = {}, roads = {} }
 
 function city_generator:get_lots()
@@ -22,7 +23,6 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	local root = { x = 1, y = 1, w = self.max_x, h = self.max_y }
 	lots.subdivide(root, gen_cfg.subdivide_depth, self.lots, self.roads)
 
-	-- map:load already seeds every ground cell with grass; only paint shrubs on top here.
 	for y = 1, map_max_y do
 		for x = 1, map_max_x do
 			if math.random(1, gen_cfg.shrub_chance) == gen_cfg.shrub_chance then
@@ -41,15 +41,19 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	end
 
 	for _, lot in ipairs(self.lots) do
-		local m = math.random(1, gen_cfg.building_margin)
-		local bw, bh = lot.w - 2 * m, lot.h - 2 * m
+		local ml, mr, mt, mb =
+			math.random(1, gen_cfg.building_margin),
+			math.random(1, gen_cfg.building_margin),
+			math.random(1, gen_cfg.building_margin),
+			math.random(1, gen_cfg.building_margin)
+		local bw, bh = lot.w - ml - mr, lot.h - mt - mb
 		if bw >= gen_cfg.min_building_size and bh >= gen_cfg.min_building_size then
 			local roll = math.random()
 			if roll < gen_cfg.building_chance then
 				features.make_building(
 					tiles,
-					lot.x + m,
-					lot.y + m,
+					lot.x + ml,
+					lot.y + mt,
 					bw,
 					bh,
 					features.roll_height("wall", self.max_z),
@@ -57,12 +61,16 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 					self.max_y
 				)
 			elseif roll < gen_cfg.building_chance + gen_cfg.copse_chance then
-				local cx = lot.x + m + math.floor(bw / 2)
-				local cy = lot.y + m + math.floor(bh / 2)
+				local cx = lot.x + ml + math.floor(bw / 2)
+				local cy = lot.y + mt + math.floor(bh / 2)
 				local radius = math.floor(math.min(bw, bh) / 2)
 				local variance = gen_cfg.copse_density_variance
 				local tree_density_adjusted = gen_cfg.copse_density - variance + (variance * math.random())
 				features.make_copse(tiles, cx, cy, radius, tree_density_adjusted, self.max_x, self.max_y, self.max_z)
+			else
+				features.scatter(tiles, lot, 0.05, function(x, y)
+					entities.add_from_template("zombie", x, y, 1)
+				end, self.max_x, self.max_y)
 			end
 		end
 	end

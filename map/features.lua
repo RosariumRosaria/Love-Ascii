@@ -144,4 +144,14 @@ function features.make_building(tiles, start_x, start_y, width, height, top_z, m
 	}
 end
 
+function features.scatter(tiles, rect, density, place_fn, max_x, max_y)
+	for y = rect.y, rect.y + rect.h - 1 do
+		for x = rect.x, rect.x + rect.w - 1 do
+			if utils.in_bounds(x, y, max_x, max_y) and math.random() < density then
+				place_fn(x, y)
+			end
+		end
+	end
+end
+
 return features
