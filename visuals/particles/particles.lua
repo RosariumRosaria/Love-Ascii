@@ -112,16 +112,18 @@ function particles:update(dt, cx, cy)
 
 	for _, entity in ipairs(entities.get_entity_list()) do
 		if entity.emitters and emitter_count < emitter_cap then
-			for _, emitter in ipairs(entity.emitters) do
-				if math.random() < emitter.rate * dt then
-					local params = particle_types[emitter.particle]
-					local ex = entity.render_x or entity.x
-					local ey = entity.render_y or entity.y
-					local ez = entity.z + (entity.chars and #entity.chars or 1)
-					local p = spawn_particle(ex, ey, ez, false, params)
-					if p then
-						table.insert(self.particles, p)
-						emitter_count = emitter_count + 1
+			local ex = entity.render_x or entity.x
+			local ey = entity.render_y or entity.y
+			if math.abs(ex - cx) <= draw_dist and math.abs(ey - cy) <= draw_dist then
+				local ez = entity.z + (entity.chars and #entity.chars or 1)
+				for _, emitter in ipairs(entity.emitters) do
+					if math.random() < emitter.rate * dt then
+						local params = particle_types[emitter.particle]
+						local p = spawn_particle(ex, ey, ez, false, params)
+						if p then
+							table.insert(self.particles, p)
+							emitter_count = emitter_count + 1
+						end
 					end
 				end
 			end

@@ -26,13 +26,13 @@ end
 function features.place(name, x, y, tiles, max_z)
 	local template = feature_types[name]
 	if not template then
-		return
+		return false
 	end
 
 	local base_z = template.base_z or 1
 	local height = features.roll_height(name, max_z)
 	if height < 1 then
-		return
+		return false
 	end
 
 	local top_z = base_z + height - 1
@@ -45,6 +45,8 @@ function features.place(name, x, y, tiles, max_z)
 	if cap then
 		tiles[y][x][top_z] = cap
 	end
+
+	return true
 end
 
 function features.make_lake(tiles, cx, cy, radius, max_x, max_y)
@@ -61,19 +63,6 @@ function features.make_lake(tiles, cx, cy, radius, max_x, max_y)
 	for bx = cx - radius - 2, cx + radius + 2 do
 		if utils.in_bounds(bx, cy, max_x, max_y) then
 			tiles[cy][bx][1] = tile_types.floor
-		end
-	end
-end
-
-function features.make_copse(tiles, cx, cy, radius, density, max_x, max_y, max_z)
-	for dy = -radius, radius do
-		for dx = -radius, radius do
-			if dx * dx + dy * dy <= radius * radius and math.random() < density then
-				local tile_x, tile_y = cx + dx, cy + dy
-				if utils.in_bounds(tile_x, tile_y, max_x, max_y) then
-					features.place("tree", tile_x, tile_y, tiles, max_z)
-				end
-			end
 		end
 	end
 end
@@ -152,6 +141,21 @@ function features.scatter(tiles, rect, density, place_fn, max_x, max_y)
 			end
 		end
 	end
+end
+
+local MAX_SCATTER_ATTEMPTS = 100
+
+function features.scatter_count(tiles, rect, count, place_fn, max_x, max_y)
+	local placed, attempts = 0, 0
+	while placed < count and attempts < count * MAX_SCATTER_ATTEMPTS do
+		local x = math.random(rect.x, rect.x + rect.w - 1)
+		local y = math.random(rect.y, rect.y + rect.h - 1)
+		if utils.in_bounds(x, y, max_x, max_y) and place_fn(x, y) then
+			placed = placed + 1
+		end
+		attempts = attempts + 1
+	end
+	return placed
 end
 
 return features
