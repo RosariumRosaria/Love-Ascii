@@ -17,9 +17,7 @@ local turn = {
 
 local function post_turn_update(player)
 	map:update_visibility(player.x, player.y, stats.get_stat(player, "sight"))
-	if aim.active then
-		aim.refresh()
-	end
+
 	ui:update_status(player)
 end
 
@@ -31,6 +29,9 @@ local function commit_turn(actor)
 		scheduler.schedule_turn(popped)
 	end
 	ui:log_events()
+	if aim.active then
+		aim.refresh()
+	end
 	if actor == entities.player then
 		post_turn_update(entities.player)
 	end
