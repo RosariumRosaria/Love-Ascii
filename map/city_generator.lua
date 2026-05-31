@@ -49,6 +49,8 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 			math.random(1, gen_cfg.building_margin),
 			math.random(1, gen_cfg.building_margin)
 		local bw, bh = lot.w - ml - mr, lot.h - mt - mb
+
+		local inset = { x = lot.x + ml, y = lot.y + mt, w = bw, h = bh }
 		if bw >= gen_cfg.min_building_size and bh >= gen_cfg.min_building_size then
 			local roll = math.random()
 			if roll < gen_cfg.building_chance then
@@ -67,14 +69,14 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 					if not map:is_tile_free(x, y, 1) then
 						return false
 					end
-					entities.add_from_template(utils.pick({ "crate", "barricade", "campfire" }), x, y, 1)
+					entities.add_from_template(utils.pick({ "crate", "barricade" }), x, y, 1)
 					return true
 				end, self.max_x, self.max_y)
 			elseif roll < gen_cfg.building_chance + gen_cfg.copse_chance then
 				local variance = gen_cfg.copse_density_variance
 				local tree_density_adjusted = gen_cfg.copse_density - variance + (variance * math.random())
 
-				features.scatter(tiles, lot, tree_density_adjusted, function(x, y)
+				features.scatter(tiles, inset, tree_density_adjusted, function(x, y)
 					features.place("tree", x, y, tiles, self.max_z)
 				end, self.max_x, self.max_y)
 			else
