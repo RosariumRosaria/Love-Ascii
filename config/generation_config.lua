@@ -6,8 +6,8 @@ return {
 	lot_max_size = 20,
 	lot_stop_chance = 0.5,
 
-	subdivide_depth = 10,
-	building_margin = 2,
+	subdivide_depth = 11,
+	building_margin = 4,
 	min_building_size = 6,
 	building_chance = 0.75,
 	copse_chance = 0.15,

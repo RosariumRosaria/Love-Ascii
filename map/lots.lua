@@ -23,7 +23,7 @@ function lots.subdivide(rect, depth, lots_list, road_list)
 	end
 
 	local a, b
-	local frac = 0.4 + (0.1 * math.random(2))
+	local frac = 0.3 + (0.1 * math.random(3))
 
 	if vertical then
 		local sx = math.floor(rect.w * frac)

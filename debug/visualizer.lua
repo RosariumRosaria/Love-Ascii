@@ -100,8 +100,6 @@ function visualizer:draw()
 	self.start_x = (self.screen_width - self.map_max_x * self.scale) / 2
 	self.start_y = (self.screen_height - self.map_max_y * self.scale) / 2
 	self:draw_map()
-	self:draw_lots()
-	self:draw_roads()
 	self:draw_player()
 end
 

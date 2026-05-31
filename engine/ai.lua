@@ -160,6 +160,12 @@ local function chase(entity)
 end
 
 local function enemy_turn(entity)
+	if
+		(entity.state == "idle" or entity.state == "wandering")
+		and utils.distance_between(entity, entities.player) > ai_cfg.activation_range
+	then
+		return
+	end
 	if entity.state == "idle" then
 		idle(entity)
 	elseif entity.state == "wandering" then
