@@ -3,6 +3,7 @@ local gen_cfg = require("config.generation_config")
 local lots = require("map.lots")
 local features = require("map.features")
 local entities = require("entities.entities")
+local utils = require("utils")
 local city_generator = { max_x = nil, max_y = nil, max_z = nil, lots = {}, roads = {} }
 
 function city_generator:get_lots()
@@ -62,12 +63,11 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 					self.max_y
 				)
 
-				local spawn_list = { "crate", "barricade" }
 				features.scatter_count(tiles, lot, 1, function(x, y)
 					if not map:is_tile_free(x, y, 1) then
 						return false
 					end
-					entities.add_from_template(spawn_list[math.random(1, 2)], x, y, 1)
+					entities.add_from_template(utils.pick({ "crate", "barricade", "campfire" }), x, y, 1)
 					return true
 				end, self.max_x, self.max_y)
 			elseif roll < gen_cfg.building_chance + gen_cfg.copse_chance then

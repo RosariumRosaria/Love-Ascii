@@ -35,7 +35,12 @@ function lighting.cast_light(source_x, source_y, source_z, light, max_x, max_y, 
 	)
 end
 
-function lighting.recompute(max_x, max_y, map_grid, lighting_grid)
+local function in_range(ex, ey, cx, cy, view_radius, light)
+	local reach = view_radius + light.radius
+	return math.abs(ex - cx) <= reach and math.abs(ey - cy) <= reach
+end
+
+function lighting.recompute(max_x, max_y, map_grid, lighting_grid, center_x, center_y, view_radius)
 	for _, cell in ipairs(prev_lit) do
 		cell.r, cell.g, cell.b = 0, 0, 0
 		local sources = cell.sources
@@ -47,18 +52,24 @@ function lighting.recompute(max_x, max_y, map_grid, lighting_grid)
 	prev_lit = {}
 
 	for _, entity in ipairs(entities.entity_list) do
-		if entity.light then
-			lighting.cast_light(entity.x, entity.y, entity.z, entity.light, max_x, max_y, map_grid, lighting_grid)
+		local ex, ey = entity.x, entity.y
+
+		if entity.light and in_range(ex, ey, center_x, center_y, view_radius, entity.light) then
+			lighting.cast_light(ex, ey, entity.z, entity.light, max_x, max_y, map_grid, lighting_grid)
 		end
 
-		if entity.item and entity.item.light then
-			lighting.cast_light(entity.x, entity.y, entity.z, entity.item.light, max_x, max_y, map_grid, lighting_grid)
+		if
+			entity.item
+			and entity.item.light
+			and in_range(ex, ey, center_x, center_y, view_radius, entity.item.light)
+		then
+			lighting.cast_light(ex, ey, entity.z, entity.item.light, max_x, max_y, map_grid, lighting_grid)
 		end
 
 		if entity.inventory and entity.inventory.equipped then
 			for _, item in pairs(entity.inventory.equipped) do
-				if item.light then
-					lighting.cast_light(entity.x, entity.y, entity.z, item.light, max_x, max_y, map_grid, lighting_grid)
+				if item.light and in_range(ex, ey, center_x, center_y, view_radius, item.light) then
+					lighting.cast_light(ex, ey, entity.z, item.light, max_x, max_y, map_grid, lighting_grid)
 				end
 			end
 		end
