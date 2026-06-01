@@ -20,6 +20,10 @@ local map = {
 	prev_visible = {},
 }
 
+local NEIGHBOR_OFFSETS = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } }
+
+local ZERO_LIGHT = { r = 0, g = 0, b = 0 }
+
 function map:apply_on_step(entity)
 	local tile_stack = map:get_tile_stack(entity.x, entity.y)
 	statuses.apply_from_tile(entity, tile_stack)
@@ -91,21 +95,33 @@ function map:is_transparent(x, y)
 end
 
 function map:get_lighting_tile(x, y)
-	--TODO: This is a hack to prevent lighting from showing on the sides of solid tiles.
-	--Should be replaced with somethign more robust (Each Tile stores NSWE for whether it's lit from that direction, and lighting checks those
-	-- This would also require the system to know where the viewer is, to see which light to use
-	if not self:is_transparent(x, y) then
-		for _, n in ipairs(utils.get_neighbors(x, y, self.max_x, self.max_y)) do
-			if self:is_transparent(n.x, n.y) and self:is_visible(n.x, n.y) then
-				local light = self.lighting[n.y][n.x]
-				if (light.r + light.g + light.b) > render_config.lighting.ambient then
-					return self.lighting[y][x]
-				end
+	local cell = self.lighting[y][x]
+	return cell.effective or cell
+end
+
+-- TODO: still a hack to keep light off the sides of solid tiles. A more robust
+-- version would store per-direction (NSEW) lit flags per tile and pick based on
+-- where the viewer is.
+local function effective_light(self, x, y)
+	local cell = self.lighting[y][x]
+	if self:is_transparent(x, y) then
+		return cell
+	end
+	for i = 1, #NEIGHBOR_OFFSETS do
+		local o = NEIGHBOR_OFFSETS[i]
+		local nx, ny = x + o[1], y + o[2]
+		if
+			utils.in_bounds(nx, ny, self.max_x, self.max_y)
+			and self:is_transparent(nx, ny)
+			and self:is_visible(nx, ny)
+		then
+			local light = self.lighting[ny][nx]
+			if (light.r + light.g + light.b) > render_config.lighting.ambient then
+				return cell
 			end
 		end
-		return { r = 0, g = 0, b = 0 }
 	end
-	return self.lighting[y][x]
+	return ZERO_LIGHT
 end
 
 function map:is_explored(x, y)
@@ -163,12 +179,17 @@ function map:update_visibility(center_x, center_y, radius)
 	local x2 = math.min(self.max_x, center_x + radius)
 	local y1 = math.max(1, center_y - radius)
 	local y2 = math.min(self.max_y, center_y + radius)
+	-- Both visibility and lighting are now final for this turn, so resolve each
+	-- cell's effective render light once here instead of per frame. Visibility of
+	-- neighbors (read by effective_light) is fully populated above, so loop order
+	-- within the window doesn't matter.
 	for y = y1, y2 do
 		for x = x1, x2 do
 			if self.visible[y][x] then
 				self.explored[y][x] = true
 				self.prev_visible[#self.prev_visible + 1] = { x, y }
 			end
+			self.lighting[y][x].effective = effective_light(self, x, y)
 		end
 	end
 end
