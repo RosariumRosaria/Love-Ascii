@@ -40,6 +40,26 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 				end
 			end
 		end
+		local step = gen_cfg.lamp_step
+		if road.w > road.h then
+			for x = road.x + step, road.x + road.w - 1, step do
+				if math.random() >= gen_cfg.lamp_skip_chance then
+					local ly = math.random() < 0.5 and road.y - 1 or road.y + road.h
+					if map:is_tile_free(x, ly, 1) then
+						entities.add_from_template("street_lamp", x, ly, 1)
+					end
+				end
+			end
+		else
+			for y = road.y + step, road.y + road.h - 1, step do
+				if math.random() >= gen_cfg.lamp_skip_chance then
+					local lx = math.random() < 0.5 and road.x - 1 or road.x + road.w
+					if map:is_tile_free(lx, y, 1) then
+						entities.add_from_template("street_lamp", lx, y, 1)
+					end
+				end
+			end
+		end
 	end
 
 	for _, lot in ipairs(self.lots) do
@@ -80,7 +100,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 					features.place("tree", x, y, tiles, self.max_z)
 				end, self.max_x, self.max_y)
 			else
-				features.scatter(tiles, lot, 0.01, function(x, y)
+				features.scatter(tiles, lot, 0.005, function(x, y)
 					entities.add_from_template("zombie", x, y, 1)
 				end, self.max_x, self.max_y)
 			end

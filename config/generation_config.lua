@@ -13,4 +13,7 @@ return {
 	copse_chance = 0.15,
 	copse_density = 0.4,
 	copse_density_variance = 0.25,
+
+	lamp_step = 20,
+	lamp_skip_chance = 0.65,
 }
