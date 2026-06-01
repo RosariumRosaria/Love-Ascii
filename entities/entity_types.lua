@@ -227,4 +227,35 @@ return {
 			},
 		},
 	},
+
+	street_lamp = {
+		name = "Street Lamp",
+		type = "prop",
+		chars = { ".", ".", ".", ".", ".", ".", ".", "#" },
+		color = {
+			{ 0.55, 0.35, 0.1, 1 },
+			{ 0.55, 0.35, 0.1, 1 },
+			{ 0.55, 0.35, 0.1, 1 },
+			{ 0.55, 0.35, 0.1, 1 },
+			{ 0.55, 0.35, 0.1, 1 },
+			{ 0.55, 0.35, 0.1, 1 },
+			{ 0.55, 0.35, 0.1, 1 },
+			{ 0.7, 0.55, 0.25, 1 },
+		},
+		description = "A Street Lamp",
+		tags = {
+			solid = true,
+			moveable = true,
+			tilelike = true,
+			covers = true,
+			attackable = false,
+			walkable = false,
+		},
+		light = {
+			color = { r = 0.8, g = 0.65, b = 0.45 },
+			flicker = { amp = 0.05, freq = 8, phase = 4 },
+			intensity = 0.4,
+			radius = 9,
+		},
+	},
 }
