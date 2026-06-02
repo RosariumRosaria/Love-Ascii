@@ -4,6 +4,7 @@ return {
 		color = { { 0.8, 0.8, 0.9, 1 } },
 		effect_color = { 0.45, 0.45, 0.5, 0.5 },
 		name = "Player",
+		team = "player",
 		type = "actor",
 		tags = { covers = true, attackable = true },
 		default_action = "attackable",
@@ -180,6 +181,9 @@ return {
 		chars = { "[", "[" },
 		color = { { 0.47, 0.23, 0.23, 1 } },
 		default_action = "interactable",
+		stats = {
+			health = { base = 5, current = 5 },
+		},
 		tags = {
 			moveable = false,
 			solid = true,
@@ -187,6 +191,7 @@ return {
 			tilelike = true,
 			interactable = true,
 			covers = false,
+			attackable = true,
 		},
 		natural_rotation = 0,
 		interaction = {
@@ -254,7 +259,7 @@ return {
 		light = {
 			color = { r = 0.8, g = 0.65, b = 0.45 },
 			flicker = { amp = 0.05, freq = 8, phase = 4 },
-			intensity = 0.4,
+			intensity = 0.7,
 			radius = 9,
 		},
 	},

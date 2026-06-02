@@ -20,6 +20,22 @@ local ai = {}
   Then pick based on some waits to be a target
 ]]
 
+local function step_toward(entity, step)
+	if step and step[1] and step[2] then
+		local dx = step[1] - entity.x
+		local dy = step[2] - entity.y
+		local kind = pathfinder.traversal(entity, step[1], step[2], 1, entity.target_pos)
+		if kind == "attackable" then
+			actions:attack(entity, dx, dy)
+			return false
+		elseif actions:move(entity, dx, dy) then
+			return true
+		end
+	end
+
+	return false
+end
+
 local function can_see(entity, target)
 	local sight = stats.get_stat(entity, "sight") - stats.get_stat(target, "stealth") --TODO stealth probably shouldn't work this way.
 
@@ -101,14 +117,9 @@ local function wander(entity)
 				return
 			end
 
-			entity.path = pathfinder.a_star({ entity.x, entity.y }, entity.target_pos)
+			entity.path = pathfinder.a_star({ entity.x, entity.y }, entity.target_pos, entity)
 			if entity.path then
-				local step = entity.path[2]
-				if step and step[1] and step[2] then
-					local dx = step[1] - entity.x
-					local dy = step[2] - entity.y
-					actions:move(entity, dx, dy)
-				end
+				step_toward(entity, entity.path[2])
 			end
 
 			entity.turns_to_idle = entity.turns_to_idle - 1
@@ -126,7 +137,7 @@ end
 local function chase(entity)
 	if entity.turns_to_idle and entity.turns_to_idle > 0 and entity.target_pos then
 		if can_see(entity, entities.player) then
-			entity.path = pathfinder.a_star({ entity.x, entity.y }, entity.target_pos)
+			entity.path = pathfinder.a_star({ entity.x, entity.y }, entity.target_pos, entity)
 			entity.path_index = 2
 		end
 
@@ -138,13 +149,8 @@ local function chase(entity)
 				return
 			end
 
-			local step = entity.path[entity.path_index]
-			if step and step[1] and step[2] then
-				local dx = step[1] - entity.x
-				local dy = step[2] - entity.y
-				if actions:move(entity, dx, dy) then
-					entity.path_index = entity.path_index + 1
-				end
+			if step_toward(entity, entity.path[entity.path_index]) then
+				entity.path_index = entity.path_index + 1
 			end
 		end
 
