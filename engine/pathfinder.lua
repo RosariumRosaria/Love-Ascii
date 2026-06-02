@@ -3,29 +3,38 @@ local map = require("map.map")
 local entities = require("entities.entities")
 local utils = require("utils")
 local game_cfg = require("config.game_config")
+local stats = require("stats.stats")
 
 local pathfinder = {}
 local max_checks = game_cfg.pathfinding.max_iterations
 
-local function is_tile_free(x, y, z, goal)
+function pathfinder.traversal(actor, x, y, z, goal)
 	if x == goal[1] and y == goal[2] and z == 1 then
-		return true
+		return "walk", 1
 	end
 
 	if not map:walkable(x, y, z) then
-		return false
+		return "blocked", nil
 	end
 
 	for _, ent in ipairs(entities.get_entities_at(x, y, z)) do
 		if not entities.get_tag_entity(ent, "walkable") then
-			return false
+			if
+				entities.get_tag_entity(ent, "attackable")
+				and actor.allowed_actions
+				and actor.allowed_actions.attackable
+				and stats.get_current(actor, "damage") > 0
+			then
+				return "attackable", math.ceil(stats.get_current(ent, "health") / stats.get_current(actor, "damage"))
+			end
+			return "blocked", nil
 		end
 	end
 
-	return true
+	return "walk", 1
 end
 
-local function get_neighbors(x, y, goal)
+local function get_neighbors(x, y, goal, actor)
 	local candidates = {
 		{ x + 1, y },
 		{ x - 1, y },
@@ -37,8 +46,9 @@ local function get_neighbors(x, y, goal)
 
 	local neighbors = {}
 	for _, pos in ipairs(candidates) do
-		if is_tile_free(pos[1], pos[2], 1, goal) then
-			table.insert(neighbors, pos)
+		local kind, cost = pathfinder.traversal(actor, pos[1], pos[2], 1, goal)
+		if kind ~= "blocked" then
+			table.insert(neighbors, { pos[1], pos[2], kind, cost })
 		end
 	end
 	return neighbors
@@ -67,7 +77,7 @@ local function reconstruct_path(came_from, start, goal)
 	return path
 end
 
-function pathfinder.a_star(start, goal)
+function pathfinder.a_star(start, goal, actor)
 	local frontier = {}
 	utils.priority_queue_put(frontier, start, 0)
 
@@ -88,15 +98,16 @@ function pathfinder.a_star(start, goal)
 			break
 		end
 
-		for _, next in ipairs(get_neighbors(current[1], current[2], goal)) do
+		for _, ret in ipairs(get_neighbors(current[1], current[2], goal, actor)) do
+			local kind, cost = ret[3], ret[4]
 			local current_key = key(current[1], current[2])
-			local next_key = key(next[1], next[2])
-			local new_cost = cost_so_far[current_key] + 1
+			local next_key = key(ret[1], ret[2])
 
+			local new_cost = cost_so_far[current_key] + cost
 			if cost_so_far[next_key] == nil or new_cost < cost_so_far[next_key] then
 				cost_so_far[next_key] = new_cost
-				local priority = new_cost + heuristic(goal, next)
-				utils.priority_queue_put(frontier, next, priority)
+				local priority = new_cost + heuristic(goal, ret)
+				utils.priority_queue_put(frontier, ret, priority)
 				came_from[next_key] = current
 			end
 		end
