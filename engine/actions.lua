@@ -27,20 +27,44 @@ local function validate_interaction(actor, target, name, range)
 	return true
 end
 
+local action_order = {
+	attackable = 4,
+	moveable = 3,
+	interactable = 2,
+	pickupable = 1,
+}
+
 function actions:default_interact(entity, dx, dy)
-	local target = entities.get_entity(entity.x + dx, entity.y + dy, entity.z)
+	local targets = entities.get_entities_at(entity.x + dx, entity.y + dy, entity.z)
+	if not targets or #targets == 0 then
+		return false
+	end
+
+	local target
+	for _, tar in ipairs(targets) do
+		if
+			tar.default_action
+			and (entity.allowed_actions and entity.allowed_actions[tar.default_action])
+			and (not target or (action_order[tar.default_action] > action_order[target.default_action]))
+		then
+			target = tar
+		end
+	end
+
 	if not target then
 		return false
 	end
+
 	local action = target.default_action
-	if action == "interactable" and entity.allowed_actions[action] then
-		return self:interact(entity, dx, dy)
-	elseif action == "attackable" and entity.allowed_actions[action] then
-		return self:attack(entity, dx, dy)
-	elseif action == "moveable" and entity.allowed_actions[action] then
-		return self:drag(entity, dx, dy)
-	elseif action == "pickupable" and entity.allowed_actions[action] then
-		return self:pickup(entity, dx, dy)
+
+	if action == "interactable" then
+		return self:interact(entity, dx, dy, target)
+	elseif action == "attackable" then
+		return self:attack(entity, dx, dy, target)
+	elseif action == "moveable" then
+		return self:drag(entity, dx, dy, target)
+	elseif action == "pickupable" then
+		return self:pickup(entity, dx, dy, target)
 	end
 	return false
 end
@@ -128,8 +152,8 @@ function actions:place_selected(entity, dx, dy)
 	return actions:place(entity, dx, dy, item)
 end
 
-function actions:pickup(entity, dx, dy)
-	local target = entities.get_entity(entity.x + dx, entity.y + dy, entity.z)
+function actions:pickup(entity, dx, dy, target)
+	target = target or entities.get_entity_with_tag_at(entity.x + dx, entity.y + dy, entity.z, "pickupable")
 	if not validate_interaction(entity, target, "Pickup") then
 		return false
 	end
@@ -145,8 +169,9 @@ function actions:pickup(entity, dx, dy)
 	return true
 end
 
-function actions:attack(entity, dx, dy)
-	local target_entity = entities.get_entity(entity.x + dx, entity.y + dy, entity.z)
+function actions:attack(entity, dx, dy, target_entity)
+	target_entity = target_entity
+		or entities.get_entity_with_tag_at(entity.x + dx, entity.y + dy, entity.z, "attackable")
 	if not validate_interaction(entity, target_entity, "Attack") then
 		return false
 	end
@@ -163,13 +188,13 @@ function actions:attack(entity, dx, dy)
 	return true
 end
 
-function actions:ranged_attack(entity, target_x, target_y)
+function actions:ranged_attack(entity, target_x, target_y, target_entity)
 	local weapon = aim.weapon
 	if not weapon then
 		return false
 	end
 
-	local target_entity = entities.get_entity(target_x, target_y, entity.z)
+	target_entity = target_entity or entities.get_entity_with_tag_at(target_x, target_y, entity.z, "attackable")
 	if not validate_interaction(entity, target_entity, "Ranged_Attack", weapon.range) then
 		return false
 	end
@@ -189,8 +214,9 @@ function actions:ranged_attack(entity, target_x, target_y)
 	return true
 end
 
-function actions:interact(entity, dx, dy)
-	local target_entity = entities.get_entity(entity.x + dx, entity.y + dy, entity.z)
+function actions:interact(entity, dx, dy, target_entity)
+	target_entity = target_entity
+		or entities.get_entity_with_tag_at(entity.x + dx, entity.y + dy, entity.z, "interactable")
 	if not validate_interaction(entity, target_entity, "Interact") then
 		return false
 	end
@@ -231,7 +257,7 @@ function actions:grab(entity, dx, dy)
 end
 
 function actions:drag(entity, dx, dy, target)
-	target = target or entities.get_entity(entity.x + dx, entity.y + dy, entity.z)
+	target = target or entities.get_entity_with_tag_at(entity.x + dx, entity.y + dy, entity.z, "moveable")
 	if not validate_interaction(entity, target, "Drag") then
 		return false
 	end
