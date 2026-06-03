@@ -24,20 +24,20 @@ local input = {
 local modes = { normal = "normal", aiming = "aiming" }
 
 local move_axis_of_key
-local function get_move_axis(key)
+local function get_move_of_key(key)
 	if not move_axis_of_key then
 		move_axis_of_key = {}
 		for _, k in ipairs(bindings.move_left or {}) do
-			move_axis_of_key[k] = "x"
+			move_axis_of_key[k] = { axis = "x", dir = -1 }
 		end
 		for _, k in ipairs(bindings.move_right or {}) do
-			move_axis_of_key[k] = "x"
+			move_axis_of_key[k] = { axis = "x", dir = 1 }
 		end
 		for _, k in ipairs(bindings.move_up or {}) do
-			move_axis_of_key[k] = "y"
+			move_axis_of_key[k] = { axis = "y", dir = -1 }
 		end
 		for _, k in ipairs(bindings.move_down or {}) do
-			move_axis_of_key[k] = "y"
+			move_axis_of_key[k] = { axis = "y", dir = 1 }
 		end
 	end
 	return move_axis_of_key[key]
@@ -55,7 +55,7 @@ end
 function love.keypressed(key)
 	input.down_keys[key] = true
 	input.pressed_keys[key] = true
-	if get_move_axis(key) then
+	if get_move_of_key(key) then
 		remove_from_recency(input.move_recency, key)
 		table.insert(input.move_recency, key)
 	end
@@ -64,7 +64,7 @@ end
 function love.keyreleased(key)
 	input.down_keys[key] = nil
 	input.released_keys[key] = true
-	if get_move_axis(key) then
+	if get_move_of_key(key) then
 		remove_from_recency(input.move_recency, key)
 	end
 end
@@ -102,30 +102,16 @@ end
 function input:get_direction(cardinal_only)
 	local x, y = 0, 0
 
-	if self:is_down("move_left") then
-		x = -1
-	end
-	if self:is_down("move_right") then
-		x = 1
-	end
-	if self:is_down("move_up") then
-		y = -1
-	end
-	if self:is_down("move_down") then
-		y = 1
-	end
-
-	if cardinal_only and x ~= 0 and y ~= 0 then
-		for i = #self.move_recency, 1, -1 do
-			local k = self.move_recency[i]
-			if self.down_keys[k] then
-				if get_move_axis(k) == "x" then
-					y = 0
-				else
-					x = 0
-				end
-				break
-			end
+	for i = #self.move_recency, 1, -1 do
+		local k = self.move_recency[i]
+		local binding = get_move_of_key(k)
+		if binding.axis == "y" and y == 0 then
+			y = binding.dir
+		elseif binding.axis == "x" and x == 0 then
+			x = binding.dir
+		end
+		if cardinal_only then
+			break
 		end
 	end
 
