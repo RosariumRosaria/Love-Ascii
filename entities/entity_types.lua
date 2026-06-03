@@ -167,12 +167,16 @@ return {
 		chars = { "[]", "[]" },
 		color = { { 0.47, 0.23, 0.23, 1 } },
 		default_action = "moveable",
+		stats = {
+			health = { base = 10, current = 10 },
+		},
 		tags = {
 			solid = true,
 			moveable = true,
 			tilelike = true,
 			covers = true,
 			walkable = false,
+			attackable = true,
 		},
 	},
 	door = {

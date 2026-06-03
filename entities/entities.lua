@@ -41,6 +41,21 @@ function entities.get_tag_location(x, y, z, tag)
 	return false
 end
 
+function entities.get_entity_with_tag_at(x, y, z, tag)
+	local ents = entities.get_entities_at(x, y, z or 1)
+	if not ents then
+		return nil
+	end
+
+	for _, ent in ipairs(ents) do
+		if entities.get_tag_entity(ent, tag) then
+			return ent
+		end
+	end
+
+	return nil
+end
+
 function entities.get_tag_entity(entity, tag)
 	return entity.tags[tag]
 end
