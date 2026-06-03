@@ -82,6 +82,7 @@ return {
 		},
 		allowed_actions = {
 			attackable = true,
+			interactable = true,
 		},
 		next_turn = 0,
 	},
@@ -193,6 +194,7 @@ return {
 			covers = false,
 			attackable = true,
 		},
+		passage = { open = 1 },
 		natural_rotation = 0,
 		interaction = {
 			toggle = {

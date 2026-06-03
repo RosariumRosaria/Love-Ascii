@@ -28,6 +28,9 @@ local function step_toward(entity, step)
 		if kind == "attackable" then
 			actions:attack(entity, dx, dy)
 			return false
+		elseif kind == "open" then
+			actions:interact(entity, dx, dy)
+			return false
 		elseif actions:move(entity, dx, dy) then
 			return true
 		end

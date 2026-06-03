@@ -19,18 +19,24 @@ function pathfinder.traversal(actor, x, y, z, goal)
 
 	for _, ent in ipairs(entities.get_entities_at(x, y, z)) do
 		if not entities.get_tag_entity(ent, "walkable") then
+			local cost, kind
+			if ent.passage and ent.passage.open and actor.allowed_actions and actor.allowed_actions.interactable then
+				kind, cost = "open", ent.passage.open
+			end
 			if
 				entities.get_tag_entity(ent, "attackable")
 				and actor.allowed_actions
 				and actor.allowed_actions.attackable
 				and stats.get_current(actor, "damage") > 0
 			then
-				return "attackable", math.ceil(stats.get_current(ent, "health") / stats.get_current(actor, "damage"))
+				local bcost = math.ceil(stats.get_current(ent, "health") / stats.get_current(actor, "damage"))
+				if not cost or bcost < cost then
+					kind, cost = "attackable", bcost
+				end
 			end
-			return "blocked", nil
+			return kind and kind or "blocked", cost
 		end
 	end
-
 	return "walk", 1
 end
 
