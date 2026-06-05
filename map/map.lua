@@ -116,7 +116,7 @@ local function effective_light(self, x, y)
 			and self:is_visible(nx, ny)
 		then
 			local light = self.lighting[ny][nx]
-			if (light.r + light.g + light.b) > render_config.lighting.ambient then
+			if (light.r + light.g + light.b) > render_config.lighting.dynamic_light_threshold then
 				return cell
 			end
 		end

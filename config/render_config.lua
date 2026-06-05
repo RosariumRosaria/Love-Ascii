@@ -16,7 +16,8 @@ return {
 		z_size_scale_per_level = 0.02,
 	},
 	lighting = {
-		ambient = 0.5,
+		ambient = { r = 0.4, g = 0.4, b = 0.5 },
+		dynamic_light_threshold = 0.1,
 		light_emissive = 0.8,
 		cover_emissive = 0.5,
 		z_falloff = 0, --todo should maybe be removed instead of set to 0
