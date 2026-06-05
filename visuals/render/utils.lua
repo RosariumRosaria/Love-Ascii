@@ -8,7 +8,7 @@ function render_utils.height_level_scale(z, max_z, min_z, visible)
 	local range = max_z - min_z
 	local normalized = (z - min_z) / range
 
-	local height_factor = 0.1 + (normalized ^ 2) * 0.9
+	local height_factor = 0.15 + (normalized ^ 2) * 0.9
 	local alpha = height_factor
 	if not visible then
 		alpha = alpha * 0.5
@@ -134,7 +134,7 @@ function render_utils.apply_lighting(color, light, z)
 	local zg = (light.g or 0) * z_factor
 	local zb = (light.b or 0) * z_factor
 
-	local fr, fg, fb = clamp_to_unit(ambient + zr, ambient + zg, ambient + zb)
+	local fr, fg, fb = clamp_to_unit(ambient.r + zr, ambient.g + zg, ambient.b + zb)
 
 	local lr, lg, lb = clamp_to_unit(zr, zg, zb)
 
