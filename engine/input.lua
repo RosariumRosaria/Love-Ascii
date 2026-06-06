@@ -152,6 +152,10 @@ function input:update(dt)
 		debug_state.toggle_perf()
 	end
 
+	if self:pressed("toggle_xray") then
+		debug_state.toggle_xray()
+	end
+
 	if self:pressed("toggle_visualizer") then
 		visualizer:toggle()
 	end

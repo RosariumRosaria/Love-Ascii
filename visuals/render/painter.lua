@@ -319,7 +319,9 @@ end
 function painter:emit_entity(entity, center_x, center_y, visible, explored, time)
 	local tilelike = entities.get_tag_entity(entity, "tilelike")
 
-	if not visible and not (tilelike and explored) then
+	local xray = debug_state.show_xray and not tilelike
+
+	if not visible and not (tilelike and explored) and not xray then
 		return
 	end
 

@@ -9,17 +9,18 @@ local pathfinder = {}
 local max_checks = game_cfg.pathfinding.max_iterations
 
 function pathfinder.traversal(actor, x, y, z, goal)
-	if x == goal.x and y == goal.y and z == 1 then
-		return "walk", 1
-	end
-
 	if not map:walkable(x, y, z) then
 		return "blocked", nil
 	end
 
+	local at_goal = x == goal.x and y == goal.y and z == 1
+
+	local best_kind, best_cost
+	local has_unhandleable = false
+
 	for _, ent in ipairs(entities.get_entities_at(x, y, z)) do
 		if not entities.get_tag_entity(ent, "walkable") then
-			local cost, kind
+			local kind, cost
 			if ent.passage and ent.passage.open and actor.allowed_actions and actor.allowed_actions.interactable then
 				kind, cost = "open", ent.passage.open
 			end
@@ -34,9 +35,29 @@ function pathfinder.traversal(actor, x, y, z, goal)
 					kind, cost = "attackable", bcost
 				end
 			end
-			return kind and kind or "blocked", cost
+
+			if kind then
+				if not best_cost or cost < best_cost then
+					best_kind, best_cost = kind, cost
+				end
+			else
+				has_unhandleable = true
+			end
 		end
 	end
+
+	if at_goal then
+		return best_kind or "walk", 1
+	end
+
+	if has_unhandleable then
+		return "blocked", nil
+	end
+
+	if best_kind then
+		return best_kind, best_cost
+	end
+
 	return "walk", 1
 end
 

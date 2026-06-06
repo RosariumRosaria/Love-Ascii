@@ -20,23 +20,35 @@ local ai = {}
   Then pick based on some weights to be a target
 ]]
 
-local function step_toward(entity, step)
+local function set_state(entity, new)
+	entity.state = new
+	entity.target_pos = nil
+	entity.wander_turns = nil
+	entity.search_turns = nil
+end
+
+local function follow_path(entity)
+	local path = pathfinder.a_star({ x = entity.x, y = entity.y }, entity.target_pos, entity)
+	if not path then
+		return false
+	end
+
+	local step = path[2]
 	if step and step.x and step.y then
 		local dx = step.x - entity.x
 		local dy = step.y - entity.y
 		local kind = pathfinder.traversal(entity, step.x, step.y, 1, entity.target_pos)
+
 		if kind == "attackable" then
 			actions:attack(entity, dx, dy)
-			return false
 		elseif kind == "open" then
 			actions:interact(entity, dx, dy)
-			return false
-		elseif actions:move(entity, dx, dy) then
-			return true
+		else
+			actions:move(entity, dx, dy)
 		end
 	end
 
-	return false
+	return true
 end
 
 local function can_see(entity, target)
@@ -63,8 +75,7 @@ local function can_see(entity, target)
 	end
 
 	if entity.can_see then
-		entity.state = "chasing"
-		entity.target_entity = target
+		set_state(entity, "chasing")
 		if entity.last_seen then
 			entity.last_heading =
 				{ x = utils.sign(target.x - entity.last_seen.x), y = utils.sign(target.y - entity.last_seen.y) }
@@ -72,8 +83,6 @@ local function can_see(entity, target)
 
 		entity.last_seen = { x = target.x, y = target.y }
 		entity.target_pos = { x = target.x, y = target.y }
-		entity.path = nil
-		entity.path_index = nil
 		return true
 	end
 
@@ -81,63 +90,48 @@ local function can_see(entity, target)
 end
 
 local function idle(entity)
-	if entity.team == "enemy" then
-		if can_see(entity, entities.player) then --TODO This is ugly, treats the player as special
-			return
-		end
-		local chance = math.random(1, ai_cfg.wander_chance)
+	if can_see(entity, entities.player) then --TODO This is ugly, treats the player as special
+		return
+	end
+	local chance = math.random(1, ai_cfg.wander_chance)
 
-		if chance == 1 then
-			local tar_x = entity.x + math.random(-ai_cfg.wander_range, ai_cfg.wander_range)
-			local tar_y = entity.y + math.random(-ai_cfg.wander_range, ai_cfg.wander_range)
-			local map_max_x, map_max_y = map:get_max_x(), map:get_max_y()
-			tar_x = utils.clamp(tar_x, 1, map_max_x)
-			tar_y = utils.clamp(tar_y, 1, map_max_y)
-			if tar_x ~= entity.x or tar_y ~= entity.y then
-				entity.state = "wandering"
-				entity.target_pos = { x = tar_x, y = tar_y }
-				entity.wander_turns = ai_cfg.wander_turns
-			end
-		elseif chance == 2 or chance == 3 then
-			local axis = math.random(1, 2)
-			local step = (math.random(0, 1) * 2 - 1)
-			local dx = (axis == 1) and step or 0
-			local dy = (axis == 2) and step or 0
-			actions:move(entity, dx, dy)
+	if chance == 1 then
+		local tar_x = entity.x + math.random(-ai_cfg.wander_range, ai_cfg.wander_range)
+		local tar_y = entity.y + math.random(-ai_cfg.wander_range, ai_cfg.wander_range)
+		local map_max_x, map_max_y = map:get_max_x(), map:get_max_y()
+		tar_x = utils.clamp(tar_x, 1, map_max_x)
+		tar_y = utils.clamp(tar_y, 1, map_max_y)
+		if tar_x ~= entity.x or tar_y ~= entity.y then
+			set_state(entity, "wandering")
+			entity.target_pos = { x = tar_x, y = tar_y }
+			entity.wander_turns = ai_cfg.wander_turns
 		end
+	elseif chance == 2 or chance == 3 then
+		local axis = math.random(1, 2)
+		local step = (math.random(0, 1) * 2 - 1)
+		local dx = (axis == 1) and step or 0
+		local dy = (axis == 2) and step or 0
+		actions:move(entity, dx, dy)
 	end
 end
 
 local function wander(entity)
-	if entity.team == "enemy" then
-		if entity.wander_turns and entity.wander_turns > 0 and entity.target_pos then
-			if can_see(entity, entities.player) then
-				entity.path = nil
-				entity.path_index = nil
-				return
-			end
+	if entity.wander_turns and entity.wander_turns > 0 and entity.target_pos then
+		if can_see(entity, entities.player) then
+			return
+		end
 
-			if entity.x == entity.target_pos.x and entity.y == entity.target_pos.y then
-				entity.state = "idle"
-				entity.target_pos = nil
-				entity.path = nil
-				entity.path_index = nil
-				return
-			end
+		if entity.x == entity.target_pos.x and entity.y == entity.target_pos.y then
+			set_state(entity, "idle")
+			return
+		end
 
-			entity.path = pathfinder.a_star({ x = entity.x, y = entity.y }, entity.target_pos, entity)
-			if entity.path then
-				step_toward(entity, entity.path[2])
-			end
+		follow_path(entity)
 
-			entity.wander_turns = entity.wander_turns - 1
-			if entity.wander_turns <= 1 then
-				effects:add_from_template("ping", entity.target_pos.x, entity.target_pos.y, 1)
-				entity.state = "idle"
-				entity.target_pos = nil
-				entity.path = nil
-				entity.path_index = nil
-			end
+		entity.wander_turns = entity.wander_turns - 1
+		if entity.wander_turns <= 1 then
+			effects:add_from_template("ping", entity.target_pos.x, entity.target_pos.y, 1)
+			set_state(entity, "idle")
 		end
 	end
 end
@@ -171,39 +165,30 @@ end
 
 local function search(entity)
 	if not entity.search_turns or entity.search_turns <= 0 then
-		entity.state = "idle"
+		set_state(entity, "idle")
 		return
 	end
 	entity.search_turns = entity.search_turns - 1
-	entity.path = pathfinder.a_star({ x = entity.x, y = entity.y }, entity.target_pos, entity)
-	entity.path_index = 2
-	if entity.path and step_toward(entity, entity.path[entity.path_index]) then
-		entity.path_index = entity.path_index + 1
-	end
-	if (entity.x == entity.target_pos.x and entity.y == entity.target_pos.y) or not entity.path then
+	local had_path = follow_path(entity)
+
+	if (entity.x == entity.target_pos.x and entity.y == entity.target_pos.y) or not had_path then
 		pick_search_target(entity)
 	end
 end
+
 local function investigate(entity)
 	if entity.target_pos then
-		entity.path = pathfinder.a_star({ x = entity.x, y = entity.y }, entity.target_pos, entity)
-		entity.path_index = 2
-		if entity.x == entity.target_pos.x and entity.y == entity.target_pos.y or not entity.path then
-			entity.state = "searching"
+		local had_path = follow_path(entity)
+		if (entity.x == entity.target_pos.x and entity.y == entity.target_pos.y) or not had_path then
+			set_state(entity, "searching")
 			entity.search_turns = ai_cfg.search_turns
 			entity.target_pos = { x = entity.last_seen.x, y = entity.last_seen.y }
-		elseif step_toward(entity, entity.path[entity.path_index]) then
-			entity.path_index = entity.path_index + 1
 		end
 	end
 end
 
 local function chase(entity)
-	entity.path = pathfinder.a_star({ x = entity.x, y = entity.y }, entity.target_pos, entity)
-	entity.path_index = 2
-	if entity.path and step_toward(entity, entity.path[entity.path_index]) then
-		entity.path_index = entity.path_index + 1
-	end
+	follow_path(entity)
 end
 
 local function enemy_turn(entity)
@@ -216,7 +201,8 @@ local function enemy_turn(entity)
 
 	local saw = can_see(entity, entities.player)
 	if not saw and entity.state == "chasing" then
-		entity.state = "investigating"
+		set_state(entity, "investigating")
+		entity.target_pos = { x = entity.last_seen.x, y = entity.last_seen.y }
 	end
 
 	if entity.state == "idle" then
@@ -238,9 +224,10 @@ local function enemy_turn(entity)
 end
 
 function ai:take_turn(entity)
-	if entity.team == "enemy" then
-		enemy_turn(entity)
+	if entity.team ~= "enemy" then
+		return
 	end
+	enemy_turn(entity)
 end
 
 return ai
