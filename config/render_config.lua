@@ -16,7 +16,7 @@ return {
 		z_size_scale_per_level = 0.02,
 	},
 	lighting = {
-		ambient = { r = 0.4, g = 0.4, b = 0.5 },
+		ambient = { r = 0.36, g = 0.421, b = 0.51 },
 		dynamic_light_threshold = 0.1,
 		light_emissive = 0.8,
 		cover_emissive = 0.5,

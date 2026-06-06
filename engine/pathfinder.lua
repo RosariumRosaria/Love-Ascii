@@ -9,7 +9,7 @@ local pathfinder = {}
 local max_checks = game_cfg.pathfinding.max_iterations
 
 function pathfinder.traversal(actor, x, y, z, goal)
-	if x == goal[1] and y == goal[2] and z == 1 then
+	if x == goal.x and y == goal.y and z == 1 then
 		return "walk", 1
 	end
 
@@ -42,26 +42,26 @@ end
 
 local function get_neighbors(x, y, goal, actor)
 	local candidates = {
-		{ x + 1, y },
-		{ x - 1, y },
-		{ x, y + 1 },
-		{ x, y - 1 },
+		{ x = x + 1, y = y },
+		{ x = x - 1, y = y },
+		{ x = x, y = y + 1 },
+		{ x = x, y = y - 1 },
 	}
 
 	utils.shuffle(candidates)
 
 	local neighbors = {}
 	for _, pos in ipairs(candidates) do
-		local kind, cost = pathfinder.traversal(actor, pos[1], pos[2], 1, goal)
+		local kind, cost = pathfinder.traversal(actor, pos.x, pos.y, 1, goal)
 		if kind ~= "blocked" then
-			table.insert(neighbors, { pos[1], pos[2], kind, cost })
+			table.insert(neighbors, { x = pos.x, y = pos.y, kind = kind, cost = cost })
 		end
 	end
 	return neighbors
 end
 
 local function heuristic(a, b)
-	return math.abs(a[1] - b[1]) + math.abs(a[2] - b[2])
+	return math.abs(a.x - b.x) + math.abs(a.y - b.y)
 end
 
 local function key(x, y)
@@ -72,8 +72,8 @@ local function reconstruct_path(came_from, start, goal)
 	local current = goal
 	local path = { goal }
 
-	while current[1] ~= start[1] or current[2] ~= start[2] do
-		current = came_from[key(current[1], current[2])]
+	while current.x ~= start.x or current.y ~= start.y do
+		current = came_from[key(current.x, current.y)]
 		if not current then
 			return {}
 		end
@@ -90,8 +90,8 @@ function pathfinder.a_star(start, goal, actor)
 	local came_from = {}
 	local cost_so_far = {}
 
-	came_from[key(start[1], start[2])] = nil
-	cost_so_far[key(start[1], start[2])] = 0
+	came_from[key(start.x, start.y)] = nil
+	cost_so_far[key(start.x, start.y)] = 0
 
 	local i = 0
 	while #frontier > 0 and i < max_checks do
@@ -100,14 +100,14 @@ function pathfinder.a_star(start, goal, actor)
 		local node = utils.priority_queue_get(frontier)
 		local current = node[1]
 
-		if current[1] == goal[1] and current[2] == goal[2] then
+		if current.x == goal.x and current.y == goal.y then
 			break
 		end
 
-		for _, ret in ipairs(get_neighbors(current[1], current[2], goal, actor)) do
-			local kind, cost = ret[3], ret[4]
-			local current_key = key(current[1], current[2])
-			local next_key = key(ret[1], ret[2])
+		for _, ret in ipairs(get_neighbors(current.x, current.y, goal, actor)) do
+			local kind, cost = ret.kind, ret.cost
+			local current_key = key(current.x, current.y)
+			local next_key = key(ret.x, ret.y)
 
 			local new_cost = cost_so_far[current_key] + cost
 			if cost_so_far[next_key] == nil or new_cost < cost_so_far[next_key] then
@@ -119,7 +119,7 @@ function pathfinder.a_star(start, goal, actor)
 		end
 	end
 
-	local goal_key = key(goal[1], goal[2])
+	local goal_key = key(goal.x, goal.y)
 	if not came_from[goal_key] then
 		return nil
 	end
