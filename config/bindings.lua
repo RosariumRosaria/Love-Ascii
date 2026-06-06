@@ -23,6 +23,7 @@ return {
 	switch_offset = { "z" },
 	switch_status = { "x" },
 	toggle_perf = { "f3" },
+	toggle_xray = { "f4" },
 	debug = { "c" },
 
 	quit = { "escape" },
