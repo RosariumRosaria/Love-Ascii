@@ -1,6 +1,7 @@
 local game_cfg = require("config.game_config")
 local debug_state = require("debug.debug_state")
 local config = require("config.runtime")
+local time = require("engine.time")
 
 local perf = {
 	frame_start = 0,
@@ -24,14 +25,23 @@ function perf:draw()
 	love.graphics.setFont(font)
 	local r, g, b, a = love.graphics.getColor()
 	local pad = 10
-	local line = string.format("FPS: %d", love.timer.getFPS())
+	local lines = {
+		string.format("FPS: %d", love.timer.getFPS()),
+		string.format("Time: %s (%.2f)", time.part_of_day(), time.time_of_day()),
+	}
 	local line_h = font:getHeight()
-	local width = font:getWidth(line) + pad * 2
-	local height = line_h + pad * 2
+	local width = 0
+	for _, l in ipairs(lines) do
+		width = math.max(width, font:getWidth(l))
+	end
+	width = width + pad * 2
+	local height = line_h * #lines + pad * 2
 	love.graphics.setColor(0, 0, 0, 0.5)
 	love.graphics.rectangle("fill", 0, 0, width, height)
 	love.graphics.setColor(1, 1, 1, 1)
-	love.graphics.print(line, pad, pad)
+	for i, l in ipairs(lines) do
+		love.graphics.print(l, pad, pad + line_h * (i - 1))
+	end
 	love.graphics.setColor(r, g, b, a)
 	love.graphics.setFont(prev_font)
 end
