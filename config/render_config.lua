@@ -18,13 +18,13 @@ return {
 	lighting = {
 
 		ambient_keys = {
-			{ at = 0.00, color = { r = 0.25, g = 0.321, b = 0.41 } }, -- night
-			{ at = 0.22, color = { r = 0.25, g = 0.321, b = 0.41 } }, -- night
-			{ at = 0.27, color = { r = 0.85, g = 0.7, b = 0.6 } }, -- dawn
-			{ at = 0.33, color = { r = 0.95, g = 0.85, b = 0.75 } }, -- day
-			{ at = 0.70, color = { r = 0.95, g = 0.85, b = 0.75 } }, --  day
-			{ at = 0.78, color = { r = 0.8, g = 0.5, b = 0.4 } }, -- dusk
-			{ at = 0.85, color = { r = 0.25, g = 0.321, b = 0.41 } }, --night
+			{ at = 0.00, color = { r = 0.35, g = 0.321, b = 0.41 } }, -- night
+			{ at = 0.22, color = { r = 0.35, g = 0.321, b = 0.41 } }, -- night
+			{ at = 0.27, color = { r = 1, g = 0.8, b = 0.75 } }, -- dawn
+			{ at = 0.33, color = { r = 1, g = 0.95, b = 0.9 } }, -- day
+			{ at = 0.70, color = { r = 1, g = 0.95, b = 0.9 } }, --  day
+			{ at = 0.78, color = { r = 1, g = 0.8, b = 0.75 } }, -- dusk
+			{ at = 0.85, color = { r = 0.35, g = 0.321, b = 0.41 } }, --night
 		},
 
 		dynamic_light_threshold = 0.1,
