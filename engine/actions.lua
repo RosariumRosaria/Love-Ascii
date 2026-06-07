@@ -29,9 +29,9 @@ end
 
 local action_order = {
 	attackable = 4,
-	moveable = 3,
-	interactable = 2,
-	pickupable = 1,
+	pickupable = 3,
+	moveable = 2,
+	interactable = 1,
 }
 
 function actions:default_interact(entity, dx, dy)

@@ -3,7 +3,7 @@ local event_log = require("engine.event_log")
 local inventory = require("items.inventory")
 
 local utils = require("utils")
-local scheduler = require("engine.scheduler")
+local time = require("engine.time")
 local stats = require("stats.stats")
 
 local entities = {
@@ -192,7 +192,7 @@ function entities.add_entity(entity)
 	index_add(entity)
 
 	if entity.type == "actor" then
-		scheduler.schedule_turn(entity)
+		time.schedule_turn(entity)
 	end
 end
 

@@ -15,6 +15,14 @@ return {
 	timing = {
 		turn_delay = 0.175,
 		base_turn_cost = 100,
+		day_length = 5000,
+		time_keyframes = {
+			{ at = 0.00, "night" },
+			{ at = 0.25, "dawn" },
+			{ at = 0.32, "day" },
+			{ at = 0.78, "dusk" },
+			{ at = 0.85, "night" },
+		},
 	},
 	pathfinding = {
 		max_iterations = 1000,
