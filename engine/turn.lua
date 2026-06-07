@@ -3,7 +3,7 @@ local ai = require("engine.ai")
 local map = require("map.map")
 local ui = require("visuals.ui")
 local entities = require("entities.entities")
-local scheduler = require("engine.scheduler")
+local time = require("engine.time")
 local game_cfg = require("config.game_config")
 local statuses = require("statuses.statuses")
 local stats = require("stats.stats")
@@ -24,9 +24,9 @@ end
 local function commit_turn(actor)
 	statuses.tick_entity(actor)
 	map:apply_on_step(actor)
-	local popped = scheduler.pop()
+	local popped = time.pop()
 	if not actor.dead then
-		scheduler.schedule_turn(popped)
+		time.schedule_turn(popped)
 	end
 	ui:log_events()
 	if aim.active then
@@ -44,7 +44,7 @@ function turn:update(dt)
 
 		local actor
 		while true do
-			actor = scheduler.peek()
+			actor = time.peek()
 			if not actor or actor == input:get_actor() then
 				break
 			end
