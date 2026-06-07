@@ -7,6 +7,8 @@ local animation_types = require("visuals.render.animation_types")
 local utils = require("utils")
 
 local animation = {}
+local base_duration = (game_cfg.timing.turn_delay + render_cfg.animation.tween_slack) * render_cfg.animation.tween_time
+local min_step_fraction = 0.25
 
 function animation.add_from_template(name, overrides)
 	local new_anim = utils.create_instance_from_template(animation_types, name, overrides)
@@ -37,35 +39,49 @@ function animation.add_bump(entity, target_x, target_y)
 	entity.bump = bump
 end
 
+local function ensure_init(entity)
+	if not entity.tween_x or not entity.tween_y then
+		entity.tween_x = entity.x
+		entity.tween_y = entity.y
+		entity.tween_from_x = entity.x
+		entity.tween_from_y = entity.y
+		entity.tween_target_x = entity.x
+		entity.tween_target_y = entity.y
+		entity.tween_elapsed = base_duration
+		entity.tween_duration = base_duration
+	end
+end
+
+local function start_tween_to(entity, target)
+	entity.tween_from_x = entity.tween_x
+	entity.tween_from_y = entity.tween_y
+	entity.tween_target_x = target.x
+	entity.tween_target_y = target.y
+	entity.tween_elapsed = 0
+	entity.tween_duration = math.max(min_step_fraction * base_duration, base_duration / (#entity.move_queue + 1))
+end
+
+local function advance_and_write(entity, dt)
+	entity.tween_elapsed = math.min(entity.tween_elapsed + dt, entity.tween_duration)
+	local t = entity.tween_elapsed / entity.tween_duration
+	entity.tween_x = entity.tween_from_x + (entity.tween_target_x - entity.tween_from_x) * t
+	entity.tween_y = entity.tween_from_y + (entity.tween_target_y - entity.tween_from_y) * t
+
+	entity.render_x = entity.tween_x
+	entity.render_y = entity.tween_y
+end
+
 function animation.update(dt)
-	local tween_duration = (game_cfg.timing.turn_delay + render_cfg.animation.tween_slack) * render_cfg.animation.tween_time --TODO Is the slack needed if I'm doing this multi
 	for _, entity in ipairs(entities.get_entity_list()) do
-		if not entity.tween_x or not entity.tween_y then
-			entity.tween_x = entity.x
-			entity.tween_y = entity.y
-			entity.tween_from_x = entity.x
-			entity.tween_from_y = entity.y
-			entity.tween_target_x = entity.x
-			entity.tween_target_y = entity.y
-			entity.tween_elapsed = tween_duration
-		else
-			if entity.tween_target_x ~= entity.x or entity.tween_target_y ~= entity.y then
-				entity.tween_from_x = entity.tween_x
-				entity.tween_from_y = entity.tween_y
-				entity.tween_target_x = entity.x
-				entity.tween_target_y = entity.y
-				entity.tween_elapsed = 0
-			end
-			entity.tween_elapsed = math.min(entity.tween_elapsed + dt, tween_duration)
-			local t = entity.tween_elapsed / tween_duration
-			entity.tween_x = entity.tween_from_x + (entity.tween_target_x - entity.tween_from_x) * t
-			entity.tween_y = entity.tween_from_y + (entity.tween_target_y - entity.tween_from_y) * t
+		ensure_init(entity)
+		local move_queue_length = entity.move_queue and #entity.move_queue or 0
+
+		if entity.tween_elapsed >= entity.tween_duration and move_queue_length > 0 then
+			start_tween_to(entity, table.remove(entity.move_queue, 1))
 		end
+		advance_and_write(entity, dt)
 
-		entity.render_x = entity.tween_x
-		entity.render_y = entity.tween_y
-
-		if entity.pending_trail and entity.tween_elapsed >= 0.8 * tween_duration then
+		if entity.pending_trail and entity.tween_elapsed >= 0.8 * entity.tween_duration then
 			animation.spawn_pending_trail(entity)
 		end
 

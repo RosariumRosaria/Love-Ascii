@@ -167,6 +167,8 @@ function entities.move_to(entity, nx, ny, nz)
 	entity.x = nx
 	entity.y = ny
 	entity.z = nz or entity.z
+	entity.move_queue = entity.move_queue or {}
+	table.insert(entity.move_queue, { x = entity.x, y = entity.y })
 	index_add(entity)
 end
 
