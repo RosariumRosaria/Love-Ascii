@@ -29,17 +29,7 @@ function love.load()
 	inventory.add_from_template(player, "sword")
 	inventory.add_from_template(player, "bow")
 	inventory.add_from_template(player, "leather_armor")
-	inventory.add_from_template(player, "health_potion")
-	inventory.add_from_template(player, "strength_potion")
-	inventory.equip(player, player.inventory.items[1])
-	inventory.equip(player, player.inventory.items[3])
-	entities.add_from_template("zombie", 256, 256, 1)
-	entities.add_from_template("crate", 250, 260, 1)
-	entities.add_from_template("barricade", 250, 255, 1)
-	entities.add_from_template("campfire", 255, 260, 1)
-	entities.add_from_template("crystal", 267, 255, 1)
-
-	entities.add_pickup_from_template("torch", 246, 272, 1, {
+	inventory.add_from_template(player, "torch", {
 		name = "Lantern",
 		key = "Lantern",
 		chars = { "8" },
@@ -51,6 +41,17 @@ function love.load()
 			radius = 8,
 		},
 	})
+	inventory.add_from_template(player, "health_potion")
+	inventory.add_from_template(player, "strength_potion")
+
+	inventory.equip(player, player.inventory.items[1])
+	inventory.equip(player, player.inventory.items[3])
+	inventory.equip(player, player.inventory.items[4])
+	entities.add_from_template("zombie", 256, 256, 1)
+	entities.add_from_template("crate", 250, 260, 1)
+	entities.add_from_template("barricade", 250, 255, 1)
+	entities.add_from_template("campfire", 255, 260, 1)
+	entities.add_from_template("crystal", 280, 255, 1)
 
 	map:load(map_max_x, map_max_y, map_max_z, map_min_z, "town")
 	map:update_visibility(entities.player.x, entities.player.y, stats.get_stat(entities.player, "sight"))

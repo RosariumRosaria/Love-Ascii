@@ -159,31 +159,6 @@ function render_utils.lighting_z_factor(sources, z)
 	return total == 0 and 1 or weighted / total
 end
 
-function render_utils.apply_lighting(color, light, z)
-	if not color then
-		return { 1, 1, 1, 1 }
-	end
-	local ambient = ambient_color()
-	local emissive = render_config.lighting.light_emissive
-
-	local z_factor = render_utils.lighting_z_factor(light.sources, z)
-	local zr = (light.r or 0) * z_factor
-	local zg = (light.g or 0) * z_factor
-	local zb = (light.b or 0) * z_factor
-
-	local fr, fg, fb = clamp_to_unit(ambient.r + zr, ambient.g + zg, ambient.b + zb)
-
-	local lr, lg, lb = clamp_to_unit(zr, zg, zb)
-
-	local r, g, b = clamp_to_unit(
-		(color[1] or 1) * fr + lr * emissive,
-		(color[2] or 1) * fg + lg * emissive,
-		(color[3] or 1) * fb + lb * emissive
-	)
-
-	return { r, g, b, (color[4] or 1) }
-end
-
 function render_utils.tonemap(color)
 	if not color then
 		return { 1, 1, 1, 1 }
@@ -291,14 +266,79 @@ function render_utils.to_grayscale(color)
 	return { l, l, l, color[4] }
 end
 
+local keyframe_cache = setmetatable({}, { __mode = "k" })
+local function sample_keyframes(keys, t)
+	local cached = keyframe_cache[keys]
+	if cached and cached.t == t then
+		return cached.v
+	end
+
+	local A, B
+	for i = 1, #keys do
+		if keys[i].at <= t then
+			A, B = keys[i], keys[i + 1]
+		else
+			break
+		end
+	end
+	local span
+	if B then
+		span = B.at - A.at
+	else
+		B, span = keys[1], (keys[1].at + 1.0) - A.at
+	end
+	local f = span > 0 and (t - A.at) / span or 0
+
+	local v = lerp(A.v, B.v, f)
+	if cached then
+		cached.t, cached.v = t, v
+	else
+		keyframe_cache[keys] = { t = t, v = v }
+	end
+	return v
+end
+
+function render_utils.brighten_by_time()
+	return sample_keyframes(render_config.lighting.brightness_keys, time.time_of_day())
+end
+
+function render_utils.emissive_by_time()
+	return sample_keyframes(render_config.lighting.emissive_keys, time.time_of_day())
+end
+
 function render_utils.brighten(color)
-	local g = 1 / render_config.lighting.brightness
+	local g = 1 / render_utils.brighten_by_time()
 	return {
 		color[1] ^ g,
 		color[2] ^ g,
 		color[3] ^ g,
 		color[4],
 	}
+end
+
+function render_utils.apply_lighting(color, light, z)
+	if not color then
+		return { 1, 1, 1, 1 }
+	end
+	local ambient = ambient_color()
+	local emissive = render_config.lighting.light_emissive * render_utils.emissive_by_time()
+
+	local z_factor = render_utils.lighting_z_factor(light.sources, z)
+	local zr = (light.r or 0) * z_factor
+	local zg = (light.g or 0) * z_factor
+	local zb = (light.b or 0) * z_factor
+
+	local fr, fg, fb = clamp_to_unit(ambient.r + zr, ambient.g + zg, ambient.b + zb)
+
+	local lr, lg, lb = clamp_to_unit(zr, zg, zb)
+
+	local r, g, b = clamp_to_unit(
+		(color[1] or 1) * fr + lr * emissive,
+		(color[2] or 1) * fg + lg * emissive,
+		(color[3] or 1) * fb + lb * emissive
+	)
+
+	return { r, g, b, (color[4] or 1) }
 end
 
 function render_utils.load()
