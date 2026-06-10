@@ -20,8 +20,6 @@ local map = {
 	prev_visible = {},
 }
 
-local NEIGHBOR_OFFSETS = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } }
-
 local ZERO_LIGHT = { r = 0, g = 0, b = 0 }
 
 function map:apply_on_step(entity)
@@ -102,13 +100,27 @@ end
 -- TODO: still a hack to keep light off the sides of solid tiles. A more robust
 -- version would store per-direction (NSEW) lit flags per tile and pick based on
 -- where the viewer is.
-local function effective_light(self, x, y)
+local function effective_light(self, x, y, vx, vy)
 	local cell = self.lighting[y][x]
 	if self:is_transparent(x, y) then
 		return cell
 	end
-	for i = 1, #NEIGHBOR_OFFSETS do
-		local o = NEIGHBOR_OFFSETS[i]
+
+	local sx = (vx > x and 1) or (vx < x and -1) or 0
+	local sy = (vy > y and 1) or (vy < y and -1) or 0
+	local candidates = {}
+	if sx ~= 0 then
+		candidates[#candidates + 1] = { sx, 0 }
+	end
+	if sy ~= 0 then
+		candidates[#candidates + 1] = { 0, sy }
+	end
+	if sx ~= 0 and sy ~= 0 then
+		candidates[#candidates + 1] = { sx, sy }
+	end
+
+	for i = 1, #candidates do
+		local o = candidates[i]
 		local nx, ny = x + o[1], y + o[2]
 		if
 			utils.in_bounds(nx, ny, self.max_x, self.max_y)
@@ -117,7 +129,7 @@ local function effective_light(self, x, y)
 		then
 			local light = self.lighting[ny][nx]
 			if (light.r + light.g + light.b) > render_config.lighting.dynamic_light_threshold then
-				return cell
+				return light
 			end
 		end
 	end
@@ -179,17 +191,14 @@ function map:update_visibility(center_x, center_y, radius)
 	local x2 = math.min(self.max_x, center_x + radius)
 	local y1 = math.max(1, center_y - radius)
 	local y2 = math.min(self.max_y, center_y + radius)
-	-- Both visibility and lighting are now final for this turn, so resolve each
-	-- cell's effective render light once here instead of per frame. Visibility of
-	-- neighbors (read by effective_light) is fully populated above, so loop order
-	-- within the window doesn't matter.
+
 	for y = y1, y2 do
 		for x = x1, x2 do
 			if self.visible[y][x] then
 				self.explored[y][x] = true
 				self.prev_visible[#self.prev_visible + 1] = { x, y }
 			end
-			self.lighting[y][x].effective = effective_light(self, x, y)
+			self.lighting[y][x].effective = effective_light(self, x, y, center_x, center_y)
 		end
 	end
 end

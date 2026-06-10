@@ -18,13 +18,29 @@ return {
 	lighting = {
 
 		ambient_keys = {
-			{ at = 0.00, color = { r = 0.35, g = 0.321, b = 0.41 } }, -- night
-			{ at = 0.22, color = { r = 0.35, g = 0.321, b = 0.41 } }, -- night
-			{ at = 0.27, color = { r = 1, g = 0.8, b = 0.75 } }, -- dawn
+			{ at = 0.00, color = { r = 0.225, g = 0.273, b = 0.41 } }, -- night
+			{ at = 0.22, color = { r = 0.225, g = 0.273, b = 0.41 } }, -- night
+			{ at = 0.27, color = { r = 1, g = 0.7, b = 0.5 } }, -- dawn
 			{ at = 0.33, color = { r = 1, g = 0.95, b = 0.9 } }, -- day
 			{ at = 0.70, color = { r = 1, g = 0.95, b = 0.9 } }, --  day
-			{ at = 0.78, color = { r = 1, g = 0.8, b = 0.75 } }, -- dusk
-			{ at = 0.85, color = { r = 0.35, g = 0.321, b = 0.41 } }, --night
+			{ at = 0.78, color = { r = 1, g = 0.7, b = 0.5 } }, -- dusk
+			{ at = 0.85, color = { r = 0.225, g = 0.273, b = 0.41 } }, --night
+		},
+		brightness_keys = {
+			{ at = 0.00, v = 1.0 },
+			{ at = 0.27, v = 1.0 },
+			{ at = 0.3, v = 1.4 },
+			{ at = 0.70, v = 1.4 },
+			{ at = 0.78, v = 1.0 },
+			{ at = 0.85, v = 1.0 },
+		},
+		emissive_keys = {
+			{ at = 0.00, v = 1.0 },
+			{ at = 0.27, v = 1.0 },
+			{ at = 0.3, v = 0.1 },
+			{ at = 0.70, v = 0.1 },
+			{ at = 0.78, v = 1.0 },
+			{ at = 0.85, v = 1.0 },
 		},
 
 		dynamic_light_threshold = 0.1,
@@ -33,7 +49,6 @@ return {
 		z_falloff = 0, --todo should maybe be removed instead of set to 0
 		entity_brightness_boost = 0.4,
 		distance_drama = 0.5,
-		brightness = 1,
 		shadow_brightness_scale = 0.25,
 		shadow_alpha_scale = 0.7,
 		explored_color = { 0.861, 0.771, 0.502, 0.2 },

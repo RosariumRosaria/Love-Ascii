@@ -26,8 +26,11 @@ function lighting.cast_light(source_x, source_y, source_z, light, max_x, max_y, 
 			if in_shadow then
 				return
 			end
+			--	local dist = math.sqrt(dx * dx + dy * dy)
+			--		local falloff = math.max(0, 1 - dist / light.radius) TODO PICK
 			local dist = math.sqrt(dx * dx + dy * dy)
-			local falloff = math.max(0, 1 - dist / light.radius)
+			local t = math.max(0, 1 - dist / light.radius)
+			local falloff = t * t * (3 - 2 * t)
 			local edge_factor = (col == 0 or col == row) and 0.5 or 1
 			local contribution = falloff * light.intensity * edge_factor
 			deposit(lighting_grid[pos_y][pos_x], light.color, contribution, light.flicker, source_z)
@@ -39,6 +42,8 @@ local function in_range(ex, ey, cx, cy, view_radius, light)
 	local reach = view_radius + light.radius
 	return math.abs(ex - cx) <= reach and math.abs(ey - cy) <= reach
 end
+
+function lighting.blur() end --TODO
 
 function lighting.recompute(max_x, max_y, map_grid, lighting_grid, center_x, center_y, view_radius)
 	for _, cell in ipairs(prev_lit) do

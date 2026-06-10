@@ -231,7 +231,7 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 		local cover_color = { 0, 0, 0, 1 }
 		if visible then
 			local r, g, b = render_utils.normalize_light(light_data)
-			local k = render_cfg.lighting.cover_emissive
+			local k = render_cfg.lighting.cover_emissive * render_utils.emissive_by_time()
 			cover_color = { r * k, g * k, b * k, 1 }
 			cover_color = render_utils.apply_flicker(cover_color, light_data.sources, time)
 		end
@@ -342,7 +342,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 			local ry = math.floor(entity.render_y)
 			local cover_light = map:get_lighting_tile(rx, ry)
 			local r, g, b = render_utils.normalize_light(cover_light)
-			local k = render_cfg.lighting.cover_emissive
+			local k = render_cfg.lighting.cover_emissive * render_utils.emissive_by_time()
 			cover_color = { r * k, g * k, b * k, 1 }
 		end
 		cover_color = render_utils.scale_color(cover_color, base)

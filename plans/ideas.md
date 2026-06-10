@@ -1,1 +1,0 @@
-Maybe something like a day night simulated by the streetlamps being timed?
