@@ -5,7 +5,7 @@ local event_log = require("engine.event_log")
 local time = {}
 
 local function get_speed(entity)
-	return stats.get_stat(entity, "speed")
+	return stats.get(entity, "speed")
 end
 
 local queue = {}

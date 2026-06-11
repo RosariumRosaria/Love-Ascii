@@ -72,7 +72,7 @@ local function advance_and_write(entity, dt)
 end
 
 function animation.update(dt)
-	for _, entity in ipairs(entities.get_entity_list()) do
+	for _, entity in ipairs(entities.get_list()) do
 		ensure_init(entity)
 		local move_queue_length = entity.move_queue and #entity.move_queue or 0
 

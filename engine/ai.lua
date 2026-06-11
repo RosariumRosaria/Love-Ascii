@@ -52,7 +52,7 @@ local function follow_path(entity)
 end
 
 local function can_see(entity, target)
-	local sight = stats.get_stat(entity, "sight") - stats.get_stat(target, "stealth") --TODO stealth probably shouldn't work this way.
+	local sight = stats.get(entity, "sight") - stats.get(target, "stealth") --TODO stealth probably shouldn't work this way.
 
 	if sight <= 0 then
 		return false
@@ -60,7 +60,7 @@ local function can_see(entity, target)
 
 	entity.can_see = false
 	if utils.distance_between(entity, target) < sight then
-		entity.can_see = fov_handler.refresh_visibility(
+		entity.can_see = fov_handler.refresh(
 			entity.x,
 			entity.y,
 			sight,

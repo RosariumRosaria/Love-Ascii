@@ -214,7 +214,7 @@ function ui_handler:update_status(entity)
 	status_panel.entity = entity
 	if status_panel.mode == "stats" and entity.stats then
 		for stat_name, stat in pairs(entity.stats) do
-			local max = stats.get_stat(entity, stat_name)
+			local max = stats.get(entity, stat_name)
 			if stat.current ~= nil then
 				local current = stats.get_current(entity, stat_name)
 				self:add_text_to_ui_by_name("status", stat_name .. ": " .. current .. " / " .. max)

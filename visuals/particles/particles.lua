@@ -110,7 +110,7 @@ function particles:update(dt, cx, cy)
 	end
 	local emitter_cap = render_cfg.particles.count * (1 - render_cfg.particles.weather_proportion)
 
-	for _, entity in ipairs(entities.get_entity_list()) do
+	for _, entity in ipairs(entities.get_list()) do
 		if entity.emitters and emitter_count < emitter_cap then
 			local ex = entity.render_x or entity.x
 			local ey = entity.render_y or entity.y

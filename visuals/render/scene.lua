@@ -48,7 +48,7 @@ function scene:draw()
 		end
 	end
 
-	for _, entity in ipairs(entities.get_entity_list()) do
+	for _, entity in ipairs(entities.get_list()) do
 		painter:emit_entity(
 			entity,
 			camera_x,

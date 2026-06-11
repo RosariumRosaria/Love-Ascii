@@ -26,7 +26,7 @@ end
 
 function aim.find_targets_in_range(actor) -- TODO: Some of this code should definitely live in map, I can see this being useful for enemy ai too.
 	local targets = {}
-	for _, entity in ipairs(entities.get_entity_list()) do
+	for _, entity in ipairs(entities.get_list()) do
 		if
 			entity.team
 			and entity.team ~= actor.team
