@@ -19,7 +19,7 @@ function entities.set_player(p)
 			return
 		end
 	end
-	entities.add_entity(p)
+	entities.add(p)
 end
 
 function entities.is_player(entity)
@@ -27,13 +27,13 @@ function entities.is_player(entity)
 end
 
 function entities.get_tag_location(x, y, z, tag)
-	local ents = entities.get_entities_at(x, y, z or 1)
+	local ents = entities.get_list_at(x, y, z or 1)
 	if not ents then
 		return false
 	end
 
 	for _, ent in ipairs(ents) do
-		if entities.get_tag_entity(ent, tag) then
+		if entities.get_tag(ent, tag) then
 			return true
 		end
 	end
@@ -41,14 +41,14 @@ function entities.get_tag_location(x, y, z, tag)
 	return false
 end
 
-function entities.get_entity_with_tag_at(x, y, z, tag)
-	local ents = entities.get_entities_at(x, y, z or 1)
+function entities.get_with_tag(x, y, z, tag)
+	local ents = entities.get_list_at(x, y, z or 1)
 	if not ents then
 		return nil
 	end
 
 	for _, ent in ipairs(ents) do
-		if entities.get_tag_entity(ent, tag) then
+		if entities.get_tag(ent, tag) then
 			return ent
 		end
 	end
@@ -56,7 +56,7 @@ function entities.get_entity_with_tag_at(x, y, z, tag)
 	return nil
 end
 
-function entities.get_tag_entity(entity, tag)
+function entities.get_tag(entity, tag)
 	return entity.tags[tag]
 end
 
@@ -74,7 +74,7 @@ function entities.apply_damage(target, amount, source_name)
 	if killed then
 		target.dead = true
 		event_log:add({ type = "entity_died", entity = target.name, source = source_name })
-		entities.remove_entity(target)
+		entities.remove(target)
 	end
 end
 
@@ -88,7 +88,7 @@ function entities.apply_heal(target, amount, source_name)
 	event_log:add({ type = "heal", entity = target.name, source = source_name, amount = amount })
 end
 
-function entities.interact_with_entity(entity)
+function entities.interact(entity)
 	local interaction = entity.interaction
 	if not interaction then
 		return
@@ -110,7 +110,7 @@ function entities.interact_with_entity(entity)
 	end
 end
 
-function entities.inspect_entity(entity)
+function entities.inspect(entity)
 	if entity.description then
 		event_log:add({ type = "describe", entity = entity.name, description = entity.description })
 	end
@@ -158,7 +158,7 @@ local function index_remove(entity)
 	end
 end
 
-function entities.get_entities_at(x, y, z)
+function entities.get_list_at(x, y, z)
 	return cell_list(z, y, x, false) or EMPTY
 end
 
@@ -173,21 +173,21 @@ function entities.move_to(entity, nx, ny, nz)
 end
 
 ---@return any entity
-function entities.get_entity(x, y, z)
+function entities.get_first(x, y, z)
 	local list = cell_list(z, y, x, false)
 	return list and list[1] or nil
 end
 
-function entities.remove_entity(target)
+function entities.remove(target)
 	utils.remove_from_list(entities.entity_list, target)
 	index_remove(target)
 end
 
-function entities.get_entity_list()
+function entities.get_list()
 	return entities.entity_list
 end
 
-function entities.add_entity(entity)
+function entities.add(entity)
 	table.insert(entities.entity_list, entity)
 	index_add(entity)
 
@@ -205,7 +205,7 @@ function entities.add_from_template(name, x, y, z, overrides)
 	new_entity.y = y or 1
 	new_entity.z = z or 1
 
-	entities.add_entity(new_entity)
+	entities.add(new_entity)
 	return new_entity
 end
 
@@ -216,7 +216,7 @@ function entities.convert_item_to_pickup(x, y, z, item)
 end
 
 function entities.add_pickup_from_template(name, x, y, z, overrides)
-	local new_item = inventory.create_item_from_template(name, overrides)
+	local new_item = inventory.create_from_template(name, overrides)
 	return entities.convert_item_to_pickup(x, y, z, new_item)
 end
 

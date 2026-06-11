@@ -2,7 +2,7 @@ local event_log = require("engine.event_log")
 
 local stats = {}
 
-function stats.get_stat(entity, name, context)
+function stats.get(entity, name, context)
 	local stat = entity.stats and entity.stats[name]
 	if not stat then
 		return 0
@@ -17,7 +17,7 @@ function stats.get_current(entity, name)
 		return 0
 	end
 	if stat.current == nil then
-		return stats.get_stat(entity, name)
+		return stats.get(entity, name)
 	end
 	return stat.current
 end
@@ -27,7 +27,7 @@ function stats.set_current(entity, name, value)
 	if not stat or stat.current == nil then
 		return
 	end
-	local max = stats.get_stat(entity, name)
+	local max = stats.get(entity, name)
 	if value < 0 then
 		value = 0
 	elseif value > max then

@@ -18,14 +18,14 @@ function pathfinder.traversal(actor, x, y, z, goal)
 	local best_kind, best_cost
 	local has_unhandleable = false
 
-	for _, ent in ipairs(entities.get_entities_at(x, y, z)) do
-		if not entities.get_tag_entity(ent, "walkable") then
+	for _, ent in ipairs(entities.get_list_at(x, y, z)) do
+		if not entities.get_tag(ent, "walkable") then
 			local kind, cost
 			if ent.passage and ent.passage.open and actor.allowed_actions and actor.allowed_actions.interactable then
 				kind, cost = "open", ent.passage.open
 			end
 			if
-				entities.get_tag_entity(ent, "attackable")
+				entities.get_tag(ent, "attackable")
 				and actor.allowed_actions
 				and actor.allowed_actions.attackable
 				and stats.get_current(actor, "damage") > 0

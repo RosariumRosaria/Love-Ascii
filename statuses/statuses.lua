@@ -4,7 +4,7 @@ local utils = require("utils")
 local event_log = require("engine.event_log")
 local statuses = {}
 
-function statuses.find_status(entity, key)
+function statuses.find(entity, key)
 	if not entity.statuses then
 		return nil
 	end
@@ -16,7 +16,7 @@ function statuses.find_status(entity, key)
 	return nil
 end
 
-function statuses.remove_status(entity, key)
+function statuses.remove(entity, key)
 	if not entity.statuses then
 		return
 	end
@@ -34,7 +34,7 @@ function statuses.remove_status(entity, key)
 	end
 end
 
-function statuses.add_status_from_template(entity, name, overrides, source)
+function statuses.add_from_template(entity, name, overrides, source)
 	local new_status = utils.create_instance_from_template(status_types, name, overrides)
 
 	new_status.source = source or { name = "Unknown" }
@@ -43,7 +43,7 @@ function statuses.add_status_from_template(entity, name, overrides, source)
 		entity.statuses = {}
 	end
 
-	local existing_status = statuses.find_status(entity, new_status.key)
+	local existing_status = statuses.find(entity, new_status.key)
 
 	if existing_status then
 		-- [[TODO Could maybe be more robust, like checking if the damage is higher instead of just refreshing the duration
@@ -61,7 +61,7 @@ function statuses.add_status_from_template(entity, name, overrides, source)
 	table.insert(entity.statuses, new_status)
 end
 
-local function tick_status(entity, status)
+local function tick(entity, status)
 	if status.on_tick then
 		if status.on_tick then
 			if status.on_tick.damage then
@@ -75,7 +75,7 @@ local function tick_status(entity, status)
 
 	status.duration = status.duration - 1
 	if status.duration <= 0 then
-		statuses.remove_status(entity, status.key)
+		statuses.remove(entity, status.key)
 	end
 end
 
@@ -85,7 +85,7 @@ function statuses.tick_entity(entity)
 	end
 
 	for i = #entity.statuses, 1, -1 do
-		tick_status(entity, entity.statuses[i])
+		tick(entity, entity.statuses[i])
 
 		if entity.dead then
 			break
@@ -135,19 +135,19 @@ function statuses.apply_from_tile(entity, tile_stack)
 		if tile.applies_status then
 			local overrides = tile.applies_status.silent and { silent = true } or nil
 			for _, status in ipairs(tile.applies_status) do
-				statuses.add_status_from_template(entity, status, overrides, tile)
+				statuses.add_from_template(entity, status, overrides, tile)
 			end
 		end
 	end
 end
 
-function statuses.apply_on_hit_statuses(attacker, target)
+function statuses.on_hit(attacker, target)
 	if not attacker.applies_on_hit then
 		return
 	end
 	for _, status in ipairs(attacker.applies_on_hit) do
 		if utils.chance(status.chance or 100) then
-			statuses.add_status_from_template(target, status.name, nil, attacker)
+			statuses.add_from_template(target, status.name, nil, attacker)
 		end
 	end
 end

@@ -54,7 +54,7 @@ function love.load()
 	entities.add_from_template("crystal", 280, 255, 1)
 
 	map:load(map_max_x, map_max_y, map_max_z, map_min_z, "town")
-	map:update_visibility(entities.player.x, entities.player.y, stats.get_stat(entities.player, "sight"))
+	map:update_visibility(entities.player.x, entities.player.y, stats.get(entities.player, "sight"))
 	ui:load()
 	ui:update_status(entities.player)
 	scene:load(entities.player.x, entities.player.y)

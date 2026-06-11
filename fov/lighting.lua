@@ -12,7 +12,7 @@ local function deposit(cell, color, contribution, flicker, source_z)
 	prev_lit[#prev_lit + 1] = cell
 end
 
-function lighting.cast_light(source_x, source_y, source_z, light, max_x, max_y, tiles, lighting_grid)
+function lighting.cast(source_x, source_y, source_z, light, max_x, max_y, tiles, lighting_grid)
 	deposit(lighting_grid[source_y][source_x], light.color, light.intensity, light.flicker, source_z)
 
 	shadowcaster.cast(
@@ -60,7 +60,7 @@ function lighting.recompute(max_x, max_y, map_grid, lighting_grid, center_x, cen
 		local ex, ey = entity.x, entity.y
 
 		if entity.light and in_range(ex, ey, center_x, center_y, view_radius, entity.light) then
-			lighting.cast_light(ex, ey, entity.z, entity.light, max_x, max_y, map_grid, lighting_grid)
+			lighting.cast(ex, ey, entity.z, entity.light, max_x, max_y, map_grid, lighting_grid)
 		end
 
 		if
@@ -68,13 +68,13 @@ function lighting.recompute(max_x, max_y, map_grid, lighting_grid, center_x, cen
 			and entity.item.light
 			and in_range(ex, ey, center_x, center_y, view_radius, entity.item.light)
 		then
-			lighting.cast_light(ex, ey, entity.z, entity.item.light, max_x, max_y, map_grid, lighting_grid)
+			lighting.cast(ex, ey, entity.z, entity.item.light, max_x, max_y, map_grid, lighting_grid)
 		end
 
 		if entity.inventory and entity.inventory.equipped then
 			for _, item in pairs(entity.inventory.equipped) do
 				if item.light and in_range(ex, ey, center_x, center_y, view_radius, item.light) then
-					lighting.cast_light(ex, ey, entity.z, item.light, max_x, max_y, map_grid, lighting_grid)
+					lighting.cast(ex, ey, entity.z, item.light, max_x, max_y, map_grid, lighting_grid)
 				end
 			end
 		end

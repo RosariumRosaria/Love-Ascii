@@ -2,7 +2,7 @@ local shadowcaster = require("fov.shadowcaster")
 
 local fov_handler = {}
 
-function fov_handler.refresh_visibility(
+function fov_handler.refresh(
 	entity_x,
 	entity_y,
 	max_distance,

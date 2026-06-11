@@ -35,7 +35,7 @@ local action_order = {
 }
 
 function actions:default_interact(entity, dx, dy)
-	local targets = entities.get_entities_at(entity.x + dx, entity.y + dy, entity.z)
+	local targets = entities.get_list_at(entity.x + dx, entity.y + dy, entity.z)
 	if not targets or #targets == 0 then
 		return false
 	end
@@ -80,7 +80,7 @@ function actions:place(entity, dx, dy, item)
 
 	entities.convert_item_to_pickup(target_x, target_y, entity.z, item)
 
-	inventory.remove_item(entity, item)
+	inventory.remove(entity, item)
 	event_log:add({ type = "entity_placed", entity = item.name, source = entity.name })
 	return true
 end
@@ -133,11 +133,11 @@ end
 
 function actions:use_item(entity, item)
 	if item.on_use.apply_status then
-		statuses.add_status_from_template(entity, item.on_use.apply_status, nil, item)
+		statuses.add_from_template(entity, item.on_use.apply_status, nil, item)
 	end
 	event_log:add({ type = "item_used", entity = entity.name, item = item.name })
 	if inventory.use_charge(item) then
-		inventory.remove_item(entity, item)
+		inventory.remove(entity, item)
 		event_log:add({ type = "item_consumed", entity = entity.name, item = item.name })
 	end
 	return true
@@ -153,7 +153,7 @@ function actions:place_selected(entity, dx, dy)
 end
 
 function actions:pickup(entity, dx, dy, target)
-	target = target or entities.get_entity_with_tag_at(entity.x + dx, entity.y + dy, entity.z, "pickupable")
+	target = target or entities.get_with_tag(entity.x + dx, entity.y + dy, entity.z, "pickupable")
 	if not validate_interaction(entity, target, "Pickup") then
 		return false
 	end
@@ -162,28 +162,27 @@ function actions:pickup(entity, dx, dy, target)
 		return false
 	end
 
-	inventory.add_item(entity, target.item)
+	inventory.add(entity, target.item)
 
-	entities.remove_entity(target)
+	entities.remove(target)
 	event_log:add({ type = "entity_picked_up", entity = target.name, source = entity.name })
 	return true
 end
 
 function actions:attack(entity, dx, dy, target_entity)
-	target_entity = target_entity
-		or entities.get_entity_with_tag_at(entity.x + dx, entity.y + dy, entity.z, "attackable")
+	target_entity = target_entity or entities.get_with_tag(entity.x + dx, entity.y + dy, entity.z, "attackable")
 	if not validate_interaction(entity, target_entity, "Attack") then
 		return false
 	end
-	if not entities.get_tag_entity(target_entity, "attackable") then
+	if not entities.get_tag(target_entity, "attackable") then
 		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not attackable" })
 		return false
 	end
 	if entity.team ~= target_entity.team then
 		effects:add_from_template("attack", entity.x + dx, entity.y + dy, entity.z)
 		animation.add_bump(entity, target_entity.x, target_entity.y)
-		entities.apply_damage(target_entity, stats.get_stat(entity, "damage", "melee"), entity.name)
-		statuses.apply_on_hit_statuses(entity, target_entity)
+		entities.apply_damage(target_entity, stats.get(entity, "damage", "melee"), entity.name)
+		statuses.on_hit(entity, target_entity)
 	end
 	return true
 end
@@ -194,7 +193,7 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 		return false
 	end
 
-	target_entity = target_entity or entities.get_entity_with_tag_at(target_x, target_y, entity.z, "attackable")
+	target_entity = target_entity or entities.get_with_tag(target_x, target_y, entity.z, "attackable")
 	if not validate_interaction(entity, target_entity, "Ranged_Attack", weapon.range) then
 		return false
 	end
@@ -208,15 +207,14 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 
 	inventory.use_charge(weapon)
 	effects:add_from_template("attack", target_x, target_y, entity.z)
-	entities.apply_damage(target_entity, stats.get_stat(entity, "damage"), entity.name)
-	statuses.apply_on_hit_statuses(entity, target_entity) --TODO should on hit apply from ranged
+	entities.apply_damage(target_entity, stats.get(entity, "damage"), entity.name)
+	statuses.on_hit(entity, target_entity) --TODO should on hit apply from ranged
 
 	return true
 end
 
 function actions:interact(entity, dx, dy, target_entity)
-	target_entity = target_entity
-		or entities.get_entity_with_tag_at(entity.x + dx, entity.y + dy, entity.z, "interactable")
+	target_entity = target_entity or entities.get_with_tag(entity.x + dx, entity.y + dy, entity.z, "interactable")
 	if not validate_interaction(entity, target_entity, "Interact") then
 		return false
 	end
@@ -225,17 +223,17 @@ function actions:interact(entity, dx, dy, target_entity)
 		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not interactable" })
 		return false
 	end
-	entities.interact_with_entity(target_entity)
+	entities.interact(target_entity)
 	return true
 end
 
 function actions:inspect(entity, dx, dy)
-	local target_entity = entities.get_entity(entity.x + dx, entity.y + dy, entity.z)
+	local target_entity = entities.get_first(entity.x + dx, entity.y + dy, entity.z)
 	if not validate_interaction(entity, target_entity, "Inspect") then
 		return false
 	end
 
-	entities.inspect_entity(target_entity)
+	entities.inspect(target_entity)
 end
 
 function actions:move(entity, dx, dy)
@@ -253,11 +251,11 @@ function actions:move(entity, dx, dy)
 end
 
 function actions:grab(entity, dx, dy)
-	return entities.get_entity(entity.x + dx, entity.y + dy, entity.z)
+	return entities.get_first(entity.x + dx, entity.y + dy, entity.z)
 end
 
 function actions:drag(entity, dx, dy, target)
-	target = target or entities.get_entity_with_tag_at(entity.x + dx, entity.y + dy, entity.z, "moveable")
+	target = target or entities.get_with_tag(entity.x + dx, entity.y + dy, entity.z, "moveable")
 	if not validate_interaction(entity, target, "Drag") then
 		return false
 	end

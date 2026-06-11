@@ -63,8 +63,8 @@ function map:is_tile_free(x, y, z, skip_entities)
 	if not self:walkable(x, y, z) then
 		return false
 	end
-	for _, ent in ipairs(entities.get_entities_at(x, y, z)) do
-		if (not skip_entities or not skip_entities[ent]) and not entities.get_tag_entity(ent, "walkable") then
+	for _, ent in ipairs(entities.get_list_at(x, y, z)) do
+		if (not skip_entities or not skip_entities[ent]) and not entities.get_tag(ent, "walkable") then
 			return false
 		end
 	end
@@ -185,7 +185,7 @@ function map:update_visibility(center_x, center_y, radius)
 	end
 	self.prev_visible = {}
 
-	fov_handler.refresh_visibility(center_x, center_y, radius, self.max_x, self.max_y, self.tiles, self.visible, true)
+	fov_handler.refresh(center_x, center_y, radius, self.max_x, self.max_y, self.tiles, self.visible, true)
 	lighting.recompute(self.max_x, self.max_y, self.tiles, self.lighting, center_x, center_y, radius)
 	local x1 = math.max(1, center_x - radius)
 	local x2 = math.min(self.max_x, center_x + radius)

@@ -34,25 +34,25 @@ function inventory.increment_selected_index(entity)
 	end
 end
 
-function inventory.add_item(entity, item)
+function inventory.add(entity, item)
 	if not entity.inventory then
 		entity.inventory = utils.deep_copy(inventory_template)
 	end
 	table.insert(entity.inventory.items, item)
 end
 
-function inventory.create_item_from_template(name, overrides)
+function inventory.create_from_template(name, overrides)
 	local new_item = utils.create_instance_from_template(item_types, name, overrides)
 	utils.randomize_flicker(new_item.light)
 	return new_item
 end
 
 function inventory.add_from_template(entity, name, overrides)
-	local new_item = inventory.create_item_from_template(name, overrides)
-	inventory.add_item(entity, new_item)
+	local new_item = inventory.create_from_template(name, overrides)
+	inventory.add(entity, new_item)
 end
 
-function inventory.remove_item(entity, item)
+function inventory.remove(entity, item)
 	if not entity.inventory then
 		return
 	end

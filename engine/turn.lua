@@ -16,7 +16,7 @@ local turn = {
 }
 
 local function post_turn_update(player)
-	map:update_visibility(player.x, player.y, stats.get_stat(player, "sight"))
+	map:update_visibility(player.x, player.y, stats.get(player, "sight"))
 
 	ui:update_status(player)
 end

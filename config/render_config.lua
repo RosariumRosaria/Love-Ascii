@@ -44,7 +44,7 @@ return {
 		},
 
 		dynamic_light_threshold = 0.1,
-		light_emissive = 0.8,
+		light_emissive = 1,
 		cover_emissive = 0.5,
 		z_falloff = 0, --todo should maybe be removed instead of set to 0
 		entity_brightness_boost = 0.4,
