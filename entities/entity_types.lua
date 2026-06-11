@@ -6,7 +6,7 @@ return {
 		name = "Player",
 		team = "player",
 		type = "actor",
-		tags = { covers = true, attackable = true },
+		tags = { covers = true, attackable = true, can_hear = true },
 		default_action = "attackable",
 		allowed_actions = {
 			attackable = true,
@@ -49,6 +49,7 @@ return {
 			covers = true,
 			attackable = true,
 			walkable = false,
+			can_hear = true,
 		},
 		allowed_actions = {
 			attackable = true,
@@ -79,6 +80,7 @@ return {
 			covers = true,
 			attackable = true,
 			walkable = false,
+			can_hear = true,
 		},
 		allowed_actions = {
 			attackable = true,

@@ -4,6 +4,7 @@ local inventory = require("items.inventory")
 
 local utils = require("utils")
 local time = require("engine.time")
+local game_config = require("config.game_config")
 local stats = require("stats.stats")
 
 local entities = {
@@ -162,6 +163,19 @@ function entities.get_list_at(x, y, z)
 	return cell_list(z, y, x, false) or EMPTY
 end
 
+function entities.get_list_at_column(x, y)
+	local result = {}
+	for z = game_config.map.min_z, game_config.map.max_z do
+		local list = cell_list(z, y, x, false)
+		if list then
+			for i = 1, #list do
+				result[#result + 1] = list[i]
+			end
+		end
+	end
+	return result
+end
+
 function entities.move_to(entity, nx, ny, nz)
 	index_remove(entity)
 	entity.x = nx
@@ -218,6 +232,14 @@ end
 function entities.add_pickup_from_template(name, x, y, z, overrides)
 	local new_item = inventory.create_from_template(name, overrides)
 	return entities.convert_item_to_pickup(x, y, z, new_item)
+end
+
+function entities.hear(entity, sound)
+	if entity.type ~= "actor" or not entity.tags.can_hear then
+		return
+	end
+	entity.heard_sounds = entity.heard_sounds or {}
+	table.insert(entity.heard_sounds, sound)
 end
 
 return entities
