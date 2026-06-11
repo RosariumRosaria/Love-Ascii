@@ -184,7 +184,7 @@ return {
 		description = "A door, try opening it!",
 		type = "prop",
 		chars = { "[", "[" },
-		color = { { 0.47, 0.23, 0.23, 1 } },
+		color = { { 0.30, 0.16, 0.06, 1 } },
 		default_action = "interactable",
 		stats = {
 			health = { base = 5, current = 5 },
