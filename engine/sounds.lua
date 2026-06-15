@@ -9,7 +9,7 @@ end
 local function candidates(s)
 	local candidate_list = {}
 
-	for dy = -s.intensityintensity, s.intensity do
+	for dy = -s.intensity, s.intensity do
 		for dx = -s.intensity, s.intensity do
 			local tx, ty = s.x + dx, s.y + dy
 			local entity_list = entities.get_list_at_column(tx, ty)

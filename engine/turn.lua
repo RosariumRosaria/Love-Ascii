@@ -68,8 +68,19 @@ function turn:update(dt)
 
 		if not statuses.can_act(actor) then
 			commit_turn(actor)
-		elseif input:try_take_turn() then
-			commit_turn(actor)
+		else
+			if actor.heard_sounds then
+				for _, sound in ipairs(actor.heard_sounds) do
+					event_log:add({
+						type = "sound",
+						description = sound.description,
+					})
+				end
+				actor.heard_sounds = {}
+			end
+			if input:try_take_turn() then
+				commit_turn(actor)
+			end
 		end
 	end
 	input:end_frame()
