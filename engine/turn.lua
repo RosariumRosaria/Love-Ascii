@@ -73,7 +73,7 @@ function turn:update(dt)
 				for _, sound in ipairs(actor.heard_sounds) do
 					event_log:add({
 						type = "sound",
-						description = sound.description,
+						description = sound.heard.description,
 					})
 				end
 				actor.heard_sounds = {}
