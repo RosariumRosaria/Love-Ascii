@@ -2,8 +2,12 @@ local entities = require("entities.entities")
 local utils = require("utils")
 local sounds = {}
 
-function sounds.audible(entity, sound)
-	return utils.distance_between(entity, sound) <= sound.intensity
+function sounds.perceived(entity, sound)
+	local d = utils.distance_between(entity, sound)
+	if d >= sound.intensity then
+		return nil
+	end
+	return sound.intensity - d
 end
 
 local function candidates(s)
@@ -27,8 +31,9 @@ function sounds.emit(x, y, z, intensity, description, source)
 
 	for _, entity in ipairs(candidates(s)) do
 		if s.source ~= entity then
-			if sounds.audible(entity, s) then
-				entities.hear(entity, s)
+			local perceived = sounds.perceived(entity, s)
+			if perceived then
+				entities.hear(entity, s, perceived)
 			end
 		end
 	end

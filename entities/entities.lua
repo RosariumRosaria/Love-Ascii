@@ -234,12 +234,12 @@ function entities.add_pickup_from_template(name, x, y, z, overrides)
 	return entities.convert_item_to_pickup(x, y, z, new_item)
 end
 
-function entities.hear(entity, sound)
+function entities.hear(entity, sound, loudness)
 	if entity.type ~= "actor" or not entity.tags.can_hear then
 		return
 	end
 	entity.heard_sounds = entity.heard_sounds or {}
-	table.insert(entity.heard_sounds, sound)
+	table.insert(entity.heard_sounds, { sound = sound, loudness = loudness })
 end
 
 return entities
