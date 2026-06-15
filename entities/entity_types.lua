@@ -139,12 +139,16 @@ return {
 		chars = { "#" },
 		color = { { 0.38, 0.33, 0.30 } },
 		default_action = "moveable",
+		stats = {
+			health = { base = 5, current = 5 },
+		},
 		tags = {
 			solid = false,
 			moveable = true,
 			tilelike = true,
 			covers = true,
 			walkable = false,
+			attackable = true,
 		},
 	},
 	item = {
