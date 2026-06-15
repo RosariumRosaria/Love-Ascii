@@ -200,6 +200,8 @@ function ui_handler:log_events()
 				self:add_text_to_ui_by_name("terminal", ev.source .. " picked up " .. ev.entity)
 			elseif ev.type == "entity_placed" then
 				self:add_text_to_ui_by_name("terminal", ev.source .. " placed " .. ev.entity)
+			elseif ev.type == "sound" then
+				self:add_text_to_ui_by_name("terminal", "You heard " .. ev.description)
 			elseif ev.type == "debug" then
 				self:add_text_to_ui_by_name("terminal", "[DEBUG] " .. ev.message)
 			elseif ev.type == "entity_waited" then

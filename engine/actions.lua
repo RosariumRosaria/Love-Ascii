@@ -8,6 +8,7 @@ local statuses = require("statuses.statuses")
 local stats = require("stats.stats")
 local inventory = require("items.inventory")
 local animation = require("visuals.render.animation")
+local sounds = require("engine.sounds")
 local actions = {}
 
 local function validate_interaction(actor, target, name, range)
@@ -183,6 +184,7 @@ function actions:attack(entity, dx, dy, target_entity)
 		animation.add_bump(entity, target_entity.x, target_entity.y)
 		entities.apply_damage(target_entity, stats.get(entity, "damage", "melee"), entity.name)
 		statuses.on_hit(entity, target_entity)
+		sounds.emit(target_entity.x, target_entity.y, entity.z, 8, "a thwack", entity)
 	end
 	return true
 end
@@ -209,7 +211,7 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 	effects:add_from_template("attack", target_x, target_y, entity.z)
 	entities.apply_damage(target_entity, stats.get(entity, "damage"), entity.name)
 	statuses.on_hit(entity, target_entity) --TODO should on hit apply from ranged
-
+	sounds.emit(target_x, target_y, entity.z, 8, "a thwack", entity)
 	return true
 end
 
@@ -289,6 +291,8 @@ function actions:drag(entity, dx, dy, target)
 		dest_x = target_dest_x,
 		dest_y = target_dest_y,
 	})
+
+	sounds.emit(target_dest_x, target_dest_y, entity.z, 8, "a thud", entity)
 
 	return true
 end

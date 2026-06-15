@@ -100,7 +100,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 					features.place("tree", x, y, tiles, self.max_z)
 				end, self.max_x, self.max_y)
 			else
-				features.scatter(tiles, lot, 0.002, function(x, y)
+				features.scatter(tiles, lot, 0.006, function(x, y)
 					entities.add_from_template("zombie", x, y, 1)
 				end, self.max_x, self.max_y)
 				features.scatter(tiles, lot, 0.001, function(x, y)
