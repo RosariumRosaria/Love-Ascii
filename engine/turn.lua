@@ -70,10 +70,10 @@ function turn:update(dt)
 			commit_turn(actor)
 		else
 			if actor.heard_sounds then
-				for _, sound in ipairs(actor.heard_sounds) do
+				for _, heard in ipairs(actor.heard_sounds) do
 					event_log:add({
 						type = "sound",
-						description = sound.heard.description,
+						description = heard.sound.description,
 					})
 				end
 				actor.heard_sounds = {}
