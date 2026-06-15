@@ -9,6 +9,7 @@ local stats = require("stats.stats")
 local inventory = require("items.inventory")
 local animation = require("visuals.render.animation")
 local sounds = require("engine.sounds")
+local vitals = require("engine.vitals")
 local actions = {}
 
 local function validate_interaction(actor, target, name, range)
@@ -183,7 +184,7 @@ function actions:attack(entity, dx, dy, target_entity)
 	if entity.team ~= target_entity.team then
 		effects:add_from_template("attack", entity.x + dx, entity.y + dy, entity.z)
 		animation.add_bump(entity, target_entity.x, target_entity.y)
-		entities.apply_damage(target_entity, stats.get(entity, "damage", "melee"), entity.name)
+		vitals.apply_damage(target_entity, stats.get(entity, "damage", "melee"), entity.name)
 		statuses.on_hit(entity, target_entity)
 		sounds.emit(
 			target_entity.x,
@@ -217,7 +218,7 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 
 	inventory.use_charge(weapon)
 	effects:add_from_template("attack", target_x, target_y, entity.z)
-	entities.apply_damage(target_entity, stats.get(entity, "damage"), entity.name)
+	vitals.apply_damage(target_entity, stats.get(entity, "damage"), entity.name)
 	statuses.on_hit(entity, target_entity) --TODO should on hit apply from ranged
 	sounds.emit(target_x, target_y, entity.z, weapon.volume or 6, weapon.sound or "a thwack", entity)
 	return true
