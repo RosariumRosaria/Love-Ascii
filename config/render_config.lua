@@ -51,7 +51,7 @@ return {
 		distance_drama = 0.5,
 		shadow_brightness_scale = 0.25,
 		shadow_alpha_scale = 0.7,
-		explored_color = { 0.861, 0.771, 0.502, 0.2 },
+		explored_color = { 0.861, 0.771, 0.502, 0.15 },
 	},
 	debug = {
 		show_grid = false,
