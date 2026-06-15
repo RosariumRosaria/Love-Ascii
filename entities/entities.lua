@@ -5,7 +5,6 @@ local inventory = require("items.inventory")
 local utils = require("utils")
 local time = require("engine.time")
 local game_config = require("config.game_config")
-local stats = require("stats.stats")
 
 local entities = {
 	entity_list = {},
@@ -59,34 +58,6 @@ end
 
 function entities.get_tag(entity, tag)
 	return entity.tags[tag]
-end
-
-function entities.apply_damage(target, amount, source_name)
-	if not target.stats or not target.stats.health then
-		return nil
-	end
-	local before = stats.get_current(target, "health")
-	stats.set_current(target, "health", before - amount)
-	local after = stats.get_current(target, "health")
-	event_log:add({ type = "damage", entity = target.name, source = source_name, amount = amount })
-
-	local killed = after <= 0
-
-	if killed then
-		target.dead = true
-		event_log:add({ type = "entity_died", entity = target.name, source = source_name })
-		entities.remove(target)
-	end
-end
-
-function entities.apply_heal(target, amount, source_name)
-	if not target.stats or not target.stats.health then
-		return nil
-	end
-	local before = stats.get_current(target, "health")
-	stats.set_current(target, "health", before + amount)
-
-	event_log:add({ type = "heal", entity = target.name, source = source_name, amount = amount })
 end
 
 function entities.interact(entity)

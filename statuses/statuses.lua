@@ -1,7 +1,7 @@
 local status_types = require("statuses.status_types")
-local entities = require("entities.entities")
 local utils = require("utils")
 local event_log = require("engine.event_log")
+local vitals = require("engine.vitals")
 local statuses = {}
 
 function statuses.find(entity, key)
@@ -63,13 +63,11 @@ end
 
 local function tick(entity, status)
 	if status.on_tick then
-		if status.on_tick then
-			if status.on_tick.damage then
-				entities.apply_damage(entity, status.on_tick.damage, status.name)
-			end
-			if status.on_tick.heal then
-				entities.apply_heal(entity, status.on_tick.heal, status.name)
-			end
+		if status.on_tick.damage then
+			vitals.apply_damage(entity, status.on_tick.damage, status.name)
+		end
+		if status.on_tick.heal then
+			vitals.apply_heal(entity, status.on_tick.heal, status.name)
 		end
 	end
 
