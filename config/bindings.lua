@@ -25,6 +25,7 @@ return {
 	toggle_perf = { "f3" },
 	toggle_xray = { "f4" },
 	debug = { "c" },
+	debug_spawn_zombie = { "n" },
 
 	quit = { "escape" },
 }

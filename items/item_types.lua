@@ -5,6 +5,7 @@ return {
 		color = { { 0.8, 0.8, 0.8, 1 } },
 		slot = "mainhand",
 		chars = { "/" },
+		volume = 6,
 		modifiers = {
 			{ stat = "damage", op = "add", value = 3 },
 		},
@@ -20,6 +21,7 @@ return {
 		},
 		ranged = true,
 		charges = 10,
+		volume = 6,
 		max_charges = 10, --TODO: Some kind of quiver
 		range = 15,
 	},

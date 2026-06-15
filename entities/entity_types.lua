@@ -36,6 +36,8 @@ return {
 		effect_color = { 0.35, 0.6, 0.3, 0.5 },
 		description = "A zombie, try attacking it!",
 		default_action = "attackable",
+		attack_volume = 8,
+		attack_sound = "a thump",
 		stats = {
 			health = { base = 10, current = 10 },
 			sight = { base = 30 },
@@ -67,6 +69,8 @@ return {
 		effect_color = { 0.35, 0.1, 0.1, 0.5 },
 		description = "A vampire, try attacking it!",
 		default_action = "attackable",
+		attack_volume = 2,
+		attack_sound = "the scratch of claws and fangs",
 		stats = {
 			health = { base = 10, current = 10 },
 			sight = { base = 30 },

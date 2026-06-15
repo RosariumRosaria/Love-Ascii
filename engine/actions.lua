@@ -171,6 +171,7 @@ function actions:pickup(entity, dx, dy, target)
 end
 
 function actions:attack(entity, dx, dy, target_entity)
+	local weapon = inventory.get_equipped(entity, "mainhand")
 	target_entity = target_entity or entities.get_with_tag(entity.x + dx, entity.y + dy, entity.z, "attackable")
 	if not validate_interaction(entity, target_entity, "Attack") then
 		return false
@@ -184,13 +185,20 @@ function actions:attack(entity, dx, dy, target_entity)
 		animation.add_bump(entity, target_entity.x, target_entity.y)
 		entities.apply_damage(target_entity, stats.get(entity, "damage", "melee"), entity.name)
 		statuses.on_hit(entity, target_entity)
-		sounds.emit(target_entity.x, target_entity.y, entity.z, 8, "a thwack", entity)
+		sounds.emit(
+			target_entity.x,
+			target_entity.y,
+			entity.z,
+			(weapon and weapon.volume) or entity.attack_volume or 6,
+			(weapon and weapon.sound) or entity.attack_sound or "a thwack",
+			entity
+		)
 	end
 	return true
 end
 
 function actions:ranged_attack(entity, target_x, target_y, target_entity)
-	local weapon = aim.weapon
+	local weapon = aim.weapon --TODO: this doesn't work for anything but the player
 	if not weapon then
 		return false
 	end
@@ -211,7 +219,7 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 	effects:add_from_template("attack", target_x, target_y, entity.z)
 	entities.apply_damage(target_entity, stats.get(entity, "damage"), entity.name)
 	statuses.on_hit(entity, target_entity) --TODO should on hit apply from ranged
-	sounds.emit(target_x, target_y, entity.z, 8, "a thwack", entity)
+	sounds.emit(target_x, target_y, entity.z, weapon.volume or 6, weapon.sound or "a thwack", entity)
 	return true
 end
 
@@ -246,6 +254,7 @@ function actions:move(entity, dx, dy)
 		animation.spawn_pending_trail(entity)
 		entity.pending_trail = { x = entity.x, y = entity.y, z = entity.z, color = entity.effect_color }
 		entities.move_to(entity, tar_x, tar_y)
+		sounds.emit(entity.x, entity.y, entity.z, 3, "footsteps", entity) --TODO: Someday this should tie into stealth or something
 		return true
 	end
 
@@ -292,7 +301,7 @@ function actions:drag(entity, dx, dy, target)
 		dest_y = target_dest_y,
 	})
 
-	sounds.emit(target_dest_x, target_dest_y, entity.z, 8, "a thud", entity)
+	sounds.emit(target_dest_x, target_dest_y, entity.z, 16, "a thud", entity) --TODO: Someday this should tie into a weight system (could also effect stamina, how long it would take etc)
 
 	return true
 end

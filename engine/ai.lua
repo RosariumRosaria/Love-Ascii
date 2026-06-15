@@ -23,6 +23,7 @@ local ai = {}
 local function set_state(entity, new)
 	entity.state = new
 	entity.target_pos = nil
+	entity.target_value = 0
 	entity.wander_turns = nil
 	entity.search_turns = nil
 end
@@ -76,13 +77,14 @@ local function can_see(entity, target)
 
 	if entity.can_see then
 		set_state(entity, "chasing")
-		if entity.last_seen then
+		if entity.last_known then
 			entity.last_heading =
-				{ x = utils.sign(target.x - entity.last_seen.x), y = utils.sign(target.y - entity.last_seen.y) }
+				{ x = utils.sign(target.x - entity.last_known.x), y = utils.sign(target.y - entity.last_known.y) }
 		end
 
-		entity.last_seen = { x = target.x, y = target.y }
+		entity.last_known = { x = target.x, y = target.y }
 		entity.target_pos = { x = target.x, y = target.y }
+		entity.target_value = 7
 		return true
 	end
 
@@ -104,6 +106,7 @@ local function idle(entity)
 		if tar_x ~= entity.x or tar_y ~= entity.y then
 			set_state(entity, "wandering")
 			entity.target_pos = { x = tar_x, y = tar_y }
+			entity.target_value = 3
 			entity.wander_turns = ai_cfg.wander_turns
 		end
 	elseif chance == 2 or chance == 3 then
@@ -137,7 +140,7 @@ local function wander(entity)
 end
 
 local function pick_search_target(entity)
-	local cx, cy = entity.last_seen.x, entity.last_seen.y
+	local cx, cy = entity.last_known.x, entity.last_known.y
 	local spread = ai_cfg.search_radius
 
 	if entity.last_heading then
@@ -147,7 +150,7 @@ local function pick_search_target(entity)
 		entity.last_heading = nil
 	end
 
-	local tx, ty = entity.last_seen.x, entity.last_seen.y
+	local tx, ty = entity.last_known.x, entity.last_known.y
 	for _ = 1, ai_cfg.search_attempts do
 		local angle = math.random() * 2 * math.pi
 		local radius = spread * math.sqrt(math.random())
@@ -160,6 +163,7 @@ local function pick_search_target(entity)
 	end
 
 	entity.target_pos = { x = tx, y = ty }
+	entity.target_value = 4
 	effects:add_from_template("ping", entity.target_pos.x, entity.target_pos.y, 1)
 end
 
@@ -182,7 +186,8 @@ local function investigate(entity)
 		if (entity.x == entity.target_pos.x and entity.y == entity.target_pos.y) or not had_path then
 			set_state(entity, "searching")
 			entity.search_turns = ai_cfg.search_turns
-			entity.target_pos = { x = entity.last_seen.x, y = entity.last_seen.y }
+			entity.target_pos = { x = entity.last_known.x, y = entity.last_known.y }
+			entity.target_value = 4
 		end
 	end
 end
@@ -191,7 +196,39 @@ local function chase(entity)
 	follow_path(entity)
 end
 
+local function process_hearing(entity)
+	if entity.heard_sounds and #entity.heard_sounds > 0 then
+		local loudest = nil
+		for _, heard in ipairs(entity.heard_sounds) do
+			if not loudest or loudest.loudness < heard.loudness then
+				loudest = heard
+			end
+		end
+		entity.heard_sounds = {}
+		return loudest
+	end
+	return nil
+end
+
 local function enemy_turn(entity)
+	local loudest = process_hearing(entity)
+
+	if
+		(
+			entity.state == "wandering"
+			or entity.state == "idle"
+			or entity.state == "investigating"
+			or entity.state == "searching"
+		)
+		and loudest
+		and loudest.loudness > (entity.target_value or 0)
+	then
+		set_state(entity, "investigating")
+		entity.last_known = { x = loudest.sound.x, y = loudest.sound.y }
+		entity.target_pos = { x = loudest.sound.x, y = loudest.sound.y }
+		entity.target_value = loudest.loudness
+	end
+
 	if
 		(entity.state == "idle" or entity.state == "wandering")
 		and utils.distance_between(entity, entities.player) > ai_cfg.activation_range
@@ -202,7 +239,8 @@ local function enemy_turn(entity)
 	local saw = can_see(entity, entities.player)
 	if not saw and entity.state == "chasing" then
 		set_state(entity, "investigating")
-		entity.target_pos = { x = entity.last_seen.x, y = entity.last_seen.y }
+		entity.target_pos = { x = entity.last_known.x, y = entity.last_known.y }
+		entity.target_value = 7
 	end
 
 	if entity.state == "idle" then

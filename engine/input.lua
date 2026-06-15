@@ -8,6 +8,8 @@ local bindings = require("config.bindings")
 local event_log = require("engine.event_log")
 local inventory = require("items.inventory")
 local aim = require("engine.aim")
+local entities = require("entities.entities")
+local map = require("map.map")
 
 local input = {
 	actor = nil,
@@ -99,6 +101,23 @@ function input:pressed(action)
 	return self:_has(action, self.pressed_keys)
 end
 
+function input:debug_spawn_zombie()
+	local p = self.actor
+	if not p then
+		return
+	end
+	local offsets = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 } }
+	for _, o in ipairs(offsets) do
+		local x, y, z = p.x + o[1], p.y + o[2], p.z
+		if map:is_tile_free(x, y, z) then
+			entities.add_from_template("zombie", x, y, z)
+			event_log:add({ type = "debug", message = "spawned zombie" })
+			return
+		end
+	end
+	event_log:add({ type = "debug", message = "no free cell to spawn zombie" })
+end
+
 function input:get_direction(cardinal_only)
 	local x, y = 0, 0
 
@@ -187,6 +206,10 @@ function input:update(dt)
 	if self:pressed("debug") then
 		local item = inventory.get_selected(self.actor)
 		inventory.add_charge(item)
+	end
+
+	if self:pressed("debug_spawn_zombie") then
+		self:debug_spawn_zombie()
 	end
 
 	if self:pressed("aim") then
