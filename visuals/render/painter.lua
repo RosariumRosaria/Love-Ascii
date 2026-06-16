@@ -91,9 +91,10 @@ function painter:emit_effect(effect, center_x, center_y, visible)
 	local pass = effect.params.buffered and draw_buffer.PASS.WORLD or draw_buffer.PASS.OVERLAY
 
 	if effect.rects then
-		local x_screen, y_screen = render_utils.get_screen_coords(effect.x, effect.y, center_x, center_y)
-
 		for _, rect in ipairs(effect.rects) do
+			local cx, cy = effect.x + (rect.ox or 0), effect.y + (rect.oy or 0)
+			local x_screen, y_screen = render_utils.get_screen_coords(cx, cy, center_x, center_y)
+
 			local color
 			if effect.params.decay_over_time then
 				color =
@@ -107,7 +108,7 @@ function painter:emit_effect(effect, center_x, center_y, visible)
 			draw_buffer:emit({
 				pass = pass,
 				z = effect.z,
-				y = effect.y,
+				y = cy, -- sort by the rect's own row
 				layer = draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
 				kind = "rect",
 				x_screen = x_screen + ((tile_size - effect_size) / 2),
