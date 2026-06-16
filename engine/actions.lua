@@ -186,14 +186,15 @@ function actions:attack(entity, dx, dy, target_entity)
 		animation.add_bump(entity, target_entity.x, target_entity.y)
 		vitals.apply_damage(target_entity, stats.get(entity, "damage", "melee"), entity.name)
 		statuses.on_hit(entity, target_entity)
-		sounds.emit(
-			target_entity.x,
-			target_entity.y,
-			entity.z,
-			(weapon and weapon.volume) or entity.attack_volume or 6,
-			(weapon and weapon.sound) or entity.attack_sound or "a thwack",
-			entity
-		)
+		sounds.emit({
+			x = target_entity.x,
+			y = target_entity.y,
+			z = entity.z,
+			volume = (weapon and weapon.volume) or entity.attack_volume or 6,
+			reach = 7,
+			description = (weapon and weapon.sound) or entity.attack_sound or "a thwack",
+			source = entity,
+		})
 	end
 	return true
 end
@@ -220,7 +221,15 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 	effects:add_from_template("attack", target_x, target_y, entity.z)
 	vitals.apply_damage(target_entity, stats.get(entity, "damage"), entity.name)
 	statuses.on_hit(entity, target_entity) --TODO should on hit apply from ranged
-	sounds.emit(target_x, target_y, entity.z, weapon.volume or 6, weapon.sound or "a thwack", entity)
+	sounds.emit({
+		x = target_x,
+		y = target_y,
+		z = entity.z,
+		volume = weapon.volume or 6,
+		reach = 7,
+		description = weapon.sound or "a thwack",
+		source = entity,
+	})
 	return true
 end
 
@@ -255,7 +264,15 @@ function actions:move(entity, dx, dy)
 		animation.spawn_pending_trail(entity)
 		entity.pending_trail = { x = entity.x, y = entity.y, z = entity.z, color = entity.effect_color }
 		entities.move_to(entity, tar_x, tar_y)
-		sounds.emit(entity.x, entity.y, entity.z, 3, "footsteps", entity) --TODO: Someday this should tie into stealth or something
+		sounds.emit({
+			x = entity.x,
+			y = entity.y,
+			z = entity.z,
+			volume = 4,
+			reach = 7,
+			description = "footsteps",
+			source = entity,
+		}) --TODO: Someday this should tie into stealth or something
 		return true
 	end
 
@@ -302,7 +319,15 @@ function actions:drag(entity, dx, dy, target)
 		dest_y = target_dest_y,
 	})
 
-	sounds.emit(target_dest_x, target_dest_y, entity.z, 16, "a thud", entity) --TODO: Someday this should tie into a weight system (could also effect stamina, how long it would take etc)
+	sounds.emit({
+		x = target_dest_x,
+		y = target_dest_y,
+		z = entity.z,
+		volume = 16,
+		reach = 16,
+		description = "a thud",
+		source = entity,
+	}) --TODO: Someday this should tie into a weight system (could also effect stamina, how long it would take etc)
 
 	return true
 end

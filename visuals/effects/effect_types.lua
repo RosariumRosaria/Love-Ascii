@@ -18,6 +18,23 @@ return {
 			},
 		},
 	},
+	sound_flood = {
+		name = "sound_flood",
+		generate = "sound_flood",
+		params = {
+			expand_time = 0.45,
+			fade_time = 0.25,
+			age = 0,
+			reach = 4,
+			peak_alpha = 0.1,
+			color = { 0.8, 0.85, 1.0 },
+			decay_over_time = false,
+			i = 1,
+			frames = 1,
+			needs_to_be_seen = true,
+		},
+		rects = {},
+	},
 	attack = {
 		name = "attack",
 		params = {
