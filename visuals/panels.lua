@@ -98,9 +98,11 @@ function panels:add_panel(name, opts)
 		center_text = opts.center_text or false,
 		tile_grid = opts.tile_grid,
 		scroll_offset = 0,
+		offset_y = (opts.offset_y or 1.5),
 		font = font,
 		tile_size = tile_size,
 		visible = true,
+		auto_size = opts.auto_size or false,
 		capacity = math.floor(height / tile_size) * 10,
 	}
 

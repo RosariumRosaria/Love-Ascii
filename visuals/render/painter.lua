@@ -171,19 +171,32 @@ function painter:emit_effect(effect, center_x, center_y, visible)
 	end
 end
 
--- Screen-space, drawn directly (not through draw_buffer): UI has its own font and is
--- not z/y-sorted into the world.
-function painter:draw_panel(panel)
+function painter:draw_panel(panel, center_x, center_y)
 	if not panel.visible then
 		return
 	end
 	love.graphics.setFont(panel.font or small_font)
 
+	local line_height = panel.tile_size or small_tile_size
+
+	if panel.auto_size then
+		local pad = (panel.outline_width or 1) + line_height * 0.25
+		panel.width = render_utils.get_max_text_width(panel.texts, panel.font) + pad * 2
+		panel.height = #panel.texts * line_height + pad * 2
+	end
+
 	local visible_texts = panels:get_visible_texts(panel)
 
+	local px, py = panel.x, panel.y
+
+	if panel.anchor and panel.anchor.render_x and panel.anchor.render_y then
+		px, py = render_utils.get_screen_coords(panel.anchor.render_x + 0.5, panel.anchor.render_y, center_x, center_y)
+		py = py - panel.height - panel.offset_y
+		px = px - panel.width / 2
+	end
 	render_primitives.draw_panel(
-		panel.x,
-		panel.y,
+		px,
+		py,
 		panel.width,
 		panel.height,
 		panel.color,
