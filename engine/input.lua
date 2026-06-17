@@ -10,6 +10,8 @@ local inventory = require("items.inventory")
 local aim = require("engine.aim")
 local entities = require("entities.entities")
 local map = require("map.map")
+local camera = require("visuals.camera")
+local render_utils = require("visuals.render.utils")
 
 local input = {
 	actor = nil,
@@ -52,6 +54,13 @@ local function remove_from_recency(list, key)
 			return
 		end
 	end
+end
+
+function input.get_mouse_tile()
+	local mx, my = love.mouse.getPosition()
+	local cx, cy = camera:get_position()
+	local x, y = render_utils.get_map_coords(mx, my, cx, cy)
+	return x, y
 end
 
 function love.keypressed(key)
@@ -102,15 +111,18 @@ function input:pressed(action)
 end
 
 function input:debug_spawn_zombie()
-	local p = self.actor
-	if not p then
+	local mx, my = self:get_mouse_tile()
+	print(mx, my)
+	if map:is_tile_free(mx, my, 1) then
+		entities.add_from_template("zombie", mx, my, 1)
+		event_log:add({ type = "debug", message = "spawned zombie" })
 		return
 	end
 	local offsets = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 } }
 	for _, o in ipairs(offsets) do
-		local x, y, z = p.x + o[1], p.y + o[2], p.z
-		if map:is_tile_free(x, y, z) then
-			entities.add_from_template("zombie", x, y, z)
+		local x, y = mx + o[1], my + o[2]
+		if map:is_tile_free(x, y, 1) then
+			entities.add_from_template("zombie", x, y, 1)
 			event_log:add({ type = "debug", message = "spawned zombie" })
 			return
 		end

@@ -105,4 +105,22 @@ return {
 			},
 		},
 	},
+
+	huh = {
+		name = "huh",
+		params = {
+			lifespan = 2,
+			initial_lifespan = 2,
+			i = 1,
+			frames = 1,
+			needs_to_be_seen = true,
+		},
+		panels = {
+			{
+				texts = { "?" },
+				colors = { { 0, 0, 0.0, 0.5 } },
+				offset_y = 1.5,
+			},
+		},
+	},
 }

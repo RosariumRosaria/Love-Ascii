@@ -218,7 +218,7 @@ end
 
 local function enemy_turn(entity)
 	local loudest = process_hearing(entity)
-
+	local heard = false
 	if
 		(
 			entity.state == "wandering"
@@ -230,6 +230,7 @@ local function enemy_turn(entity)
 		and loudest.loudness > (entity.target_value or 0)
 	then
 		start_investigating(entity, loudest.sound.x, loudest.sound.y, loudest.loudness)
+		heard = true
 	end
 
 	if
@@ -264,6 +265,8 @@ local function enemy_turn(entity)
 
 	if entity.can_see and not entity.could_see then
 		effects:add_from_template("alert", entity.x, entity.y, entity.z, { anchor = entity })
+	elseif heard then
+		effects:add_from_template("huh", entity.x, entity.y, entity.z, { anchor = entity })
 	end
 	entity.could_see = entity.can_see
 end
