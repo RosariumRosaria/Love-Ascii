@@ -209,8 +209,9 @@ function entities.hear(entity, sound, loudness)
 	if entity.type ~= "actor" or not entity.tags.can_hear then
 		return
 	end
-	entity.heard_sounds = entity.heard_sounds or {}
-	table.insert(entity.heard_sounds, { sound = sound, loudness = loudness })
+	entity.mind = entity.mind or {}
+	entity.mind.heard_sounds = entity.mind.heard_sounds or {}
+	table.insert(entity.mind.heard_sounds, { sound = sound, loudness = loudness })
 end
 
 return entities
