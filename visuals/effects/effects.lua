@@ -66,12 +66,12 @@ local function ring(effect)
 			for dx = -r, r do
 				local dist = math.sqrt(dx * dx + dy * dy)
 				if dist <= front and dist >= inner then
-					local aa = math.min(alpha + (math.random() * alpha), 1)
+					local alpha_adjusted = math.max(alpha + (math.random() * p.alpha_variance * alpha), 0)
 
 					rects[#rects + 1] = {
 						ox = dx,
 						oy = dy,
-						colors = { { p.color[1], p.color[2], p.color[3], aa } },
+						colors = { { p.color[1], p.color[2], p.color[3], alpha_adjusted } },
 						sizes = { 0.85 },
 						rounded_amount = 1 / 4,
 					}
