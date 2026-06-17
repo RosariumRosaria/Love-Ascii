@@ -12,6 +12,7 @@ local inventory = require("items.inventory")
 local stats = require("stats.stats")
 local perf = require("engine.perf")
 
+local debug_panel = require("debug.debug_panel")
 function love.load()
 	config:load()
 	config:setup_window()
@@ -58,6 +59,7 @@ function love.load()
 	panels:load()
 	panels:update_status(entities.player)
 	scene:load(entities.player.x, entities.player.y)
+	debug_panel.load()
 end
 
 function love.update(dt)
@@ -65,6 +67,7 @@ function love.update(dt)
 	turn:update(dt)
 	scene:update(dt)
 	effects:update(dt)
+	debug_panel.update()
 end
 
 function love.draw()

@@ -14,6 +14,7 @@ return {
 	cycle_next = { "tab" },
 	use_selected = { "u" },
 	place_selected = { "p" },
+	switch_status = { "z" },
 
 	toggle_perf = { "f3" },
 	toggle_xray = { "f4" },
@@ -22,7 +23,7 @@ return {
 	toggle_visualizer = { "f7" },
 	toggle_font = { "f8" },
 	switch_offset = { "f9" },
-	switch_status = { "f10" },
+
 	debug = { "f11" },
 	debug_spawn_zombie = { "f12" },
 
