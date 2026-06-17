@@ -27,6 +27,15 @@ end
 function effects:remove_effect(effect)
 	utils.remove_from_list(self.effect_list, effect)
 end
+
+function effects:remove_anchored(anchor, name)
+	for i = #self.effect_list, 1, -1 do
+		local effect = self.effect_list[i]
+		if effect.anchor == anchor and (not name or effect.name == name) then
+			table.remove(self.effect_list, i)
+		end
+	end
+end
 function effects:add_from_template(name, x, y, z, overrides)
 	local new_effect = utils.create_instance_from_template(effect_types, name, overrides)
 	new_effect.x = x or 1

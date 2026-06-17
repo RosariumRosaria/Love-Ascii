@@ -285,6 +285,7 @@ local function enemy_turn(entity)
 	end
 
 	if mind.can_see and not mind.could_see then
+		effects:remove_anchored(entity, "huh")
 		effects:add_from_template("alert", entity.x, entity.y, entity.z, { anchor = entity })
 	elseif heard then
 		effects:add_from_template("huh", entity.x, entity.y, entity.z, { anchor = entity })

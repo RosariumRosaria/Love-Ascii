@@ -134,11 +134,7 @@ end
 function input:mouse_over_entity()
 	local mx, my = cursor.get_moused_coords()
 	local entity_list = entities.get_list_at(mx, my, 1)
-	local update = cursor.set_moused_entity(entity_list)
-	local entity = cursor.get_moused_entity()
-	if update and entity and debug_state.show_xray and entity.mind then
-		utils.deep_print(entity.mind)
-	end
+	cursor.set_moused_entity(entity_list)
 end
 
 function input:get_direction(cardinal_only)
@@ -180,6 +176,7 @@ end
 function input:update(dt)
 	set_mouse_tile()
 	self:mouse_over_entity()
+
 	if not self.actor then
 		return
 	end

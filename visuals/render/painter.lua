@@ -174,6 +174,9 @@ end
 -- Screen-space, drawn directly (not through draw_buffer): UI has its own font and is
 -- not z/y-sorted into the world.
 function painter:draw_panel(panel)
+	if not panel.visible then
+		return
+	end
 	love.graphics.setFont(panel.font or small_font)
 
 	local visible_texts = panels:get_visible_texts(panel)

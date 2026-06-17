@@ -4,8 +4,8 @@ local inventory = require("items.inventory")
 local event_log = require("engine.event_log")
 local small_tile_size
 local small_font
-local terminal_tile_size
-local terminal_font
+local very_small_tile_size
+local very_small_font
 
 local panels = {
 	panel_list = {},
@@ -15,7 +15,9 @@ local status_types = { "stats", "inventory", "statuses" }
 local status_position = 1
 local status_panel
 
-local function add_text_to_panel(panel, text)
+local FONTS = {}
+
+function panels:add_text_to_panel(panel, text)
 	if not panel then
 		return false
 	end
@@ -66,37 +68,39 @@ function panels:get_visible_texts(panel)
 	return visible_texts
 end
 
-function panels:add_panel(
-	x,
-	y,
-	width,
-	height,
-	name,
-	color,
-	outline_width,
-	outline_color,
-	center_text,
-	tile_grid,
-	font,
-	tile_size
-)
-	font = font or small_font
-	tile_size = tile_size or small_tile_size
+function panels:add_panel(name, opts)
+	opts = opts or {}
+
+	local screen_width = love.graphics.getWidth()
+	local screen_height = love.graphics.getHeight()
+
+	local font = small_font
+	local tile_size = small_tile_size
+
+	if opts.font then
+		font = FONTS[opts.font].font
+		tile_size = FONTS[opts.font].tile
+	end
+
+	local width = opts.width or (screen_width / 6)
+	local height = opts.height or (screen_height / 6)
+
 	local panel = {
-		x = x,
-		y = y,
+		x = opts.x or 0,
+		y = opts.y or 0,
 		height = height,
 		width = width,
 		name = name,
-		color = color,
-		outline_width = outline_width,
-		outline_color = outline_color,
+		color = opts.color or { 0, 0, 0, 0.5 },
+		outline_width = opts.outline_width or (screen_width / 400),
+		outline_color = opts.outline_color or { 1, 1, 1, 0.5 },
 		texts = {},
-		center_text = center_text,
-		tile_grid = tile_grid,
+		center_text = opts.center_text or false,
+		tile_grid = opts.tile_grid,
 		scroll_offset = 0,
 		font = font,
 		tile_size = tile_size,
+		visible = true,
 		capacity = math.floor(height / tile_size) * 10,
 	}
 
@@ -114,14 +118,18 @@ function panels:get_panel(name)
 end
 
 function panels:add_text_to_panel_by_name(name, text)
-	add_text_to_panel(self:get_panel(name), text)
+	self:add_text_to_panel(self:get_panel(name), text)
 end
 
 function panels:reload_fonts()
 	small_tile_size = config.small_tile_size
 	small_font = config.small_font
-	terminal_tile_size = config.terminal_tile_size
-	terminal_font = config.terminal_font
+	very_small_tile_size = config.terminal_tile_size
+	very_small_font = config.terminal_font
+	FONTS = {
+		very_small = { font = very_small_font, tile = very_small_tile_size },
+		small = { font = small_font, tile = small_tile_size },
+	}
 end
 
 function panels:load()
@@ -138,30 +146,26 @@ function panels:load()
 
 	self:reload_fonts()
 
-	self:add_panel(
-		start_x,
-		buffer,
-		width,
-		height,
-		"terminal",
-		black,
-		outline_width,
-		white,
-		nil,
-		nil,
-		terminal_font,
-		terminal_tile_size
-	)
-	status_panel = self:add_panel(
-		start_x,
-		start_y,
-		width,
-		screen_height - height - (4 * buffer),
-		"status",
-		black,
-		outline_width,
-		white
-	)
+	self:add_panel("terminal", {
+		x = start_x,
+		y = buffer,
+		width = width,
+		height = height,
+		color = black,
+		outline_width = outline_width,
+		outline_color = white,
+		font = "very_small",
+	})
+	status_panel = self:add_panel("status", {
+		x = start_x,
+		y = start_y,
+		width = width,
+		height = screen_height - height - (4 * buffer),
+		color = black,
+		outline_width = outline_width,
+		outline_color = white,
+		font = "small",
+	})
 	status_panel.mode = "inventory"
 end
 
@@ -186,7 +190,10 @@ function panels:log_events()
 			elseif ev.type == "action_failed" then
 				self:add_text_to_panel_by_name("terminal", ev.entity .. ": " .. ev.reason)
 			elseif ev.type == "item_equipped" then
-				self:add_text_to_panel_by_name("terminal", ev.entity .. " equipped " .. ev.item .. " (" .. ev.slot .. ")")
+				self:add_text_to_panel_by_name(
+					"terminal",
+					ev.entity .. " equipped " .. ev.item .. " (" .. ev.slot .. ")"
+				)
 			elseif ev.type == "item_unequipped" then
 				self:add_text_to_panel_by_name(
 					"terminal",
