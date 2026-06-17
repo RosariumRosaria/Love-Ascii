@@ -73,7 +73,7 @@ function scene:draw()
 	painter:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
 
 	for _, panel in ipairs(panels:get_panel_list()) do
-		painter:draw_panel(panel)
+		painter:draw_panel(panel, camera_x, camera_y)
 	end
 end
 

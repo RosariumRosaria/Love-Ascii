@@ -36,6 +36,7 @@ function effects:remove_anchored(anchor, name)
 		end
 	end
 end
+
 function effects:add_from_template(name, x, y, z, overrides)
 	local new_effect = utils.create_instance_from_template(effect_types, name, overrides)
 	new_effect.x = x or 1

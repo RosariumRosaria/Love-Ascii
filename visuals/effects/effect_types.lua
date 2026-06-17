@@ -124,4 +124,55 @@ return {
 			},
 		},
 	},
+
+	arrow = {
+		name = "arrow",
+		params = {
+			lifespan = 0.4,
+			initial_lifespan = 0.4,
+			i = 1,
+			frames = 1,
+			needs_to_be_seen = false,
+		},
+		panels = {
+			{
+				texts = { "^" },
+				colors = { { 0, 0, 0.0, 0.5 } },
+			},
+		},
+	},
+	ping_goal = {
+		name = "ping_goal",
+		params = {
+			lifespan = 0.4,
+			initial_lifespan = 0.4,
+			decay_over_time = false,
+			i = 1,
+			frames = 1,
+		},
+		rects = {
+			{
+				colors = { { 0.7, 0.3, 0.3, 0.6 } },
+				rounded_amount = 1 / 4,
+				sizes = { 0.8 },
+			},
+		},
+	},
+	ping_last_known = {
+		name = "ping_last_known",
+		params = {
+			lifespan = 0.4,
+			initial_lifespan = 0.4,
+			decay_over_time = false,
+			i = 1,
+			frames = 1,
+		},
+		rects = {
+			{
+				colors = { { 0.3, 0.3, 0.7, 0.6 } },
+				rounded_amount = 1 / 4,
+				sizes = { 0.8 },
+			},
+		},
+	},
 }
