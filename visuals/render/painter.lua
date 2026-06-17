@@ -381,8 +381,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 		scaled_color = render_utils.tonemap(scaled_color)
 
 		local dx, dy = get_offset(entity.z + i - 1, entity.x, entity.y, center_x, center_y)
-
-		emit_char({
+		local p = {
 			z = entity.z + i - 1,
 			y = entity.y,
 			layer = draw_buffer.LAYER.ENTITY_CHAR,
@@ -394,7 +393,13 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 			rotation = entity.rotation,
 			natural_rotation = entity.natural_rotation,
 			size_scale = 1 + (entity.z + i - 1) * render_cfg.rendering.z_size_scale_per_level,
-		})
+		}
+		if entity.moused and entity.type == "actor" then
+			emit_name(p, entity.name)
+			break
+		else
+			emit_char(p)
+		end
 	end
 end
 
