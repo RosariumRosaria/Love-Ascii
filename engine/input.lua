@@ -12,6 +12,7 @@ local entities = require("entities.entities")
 local map = require("map.map")
 local camera = require("visuals.camera")
 local render_utils = require("visuals.render.utils")
+local utils = require("utils")
 
 local input = {
 	actor = nil,
@@ -112,7 +113,6 @@ end
 
 function input:debug_spawn_zombie()
 	local mx, my = self:get_mouse_tile()
-	print(mx, my)
 	if map:is_tile_free(mx, my, 1) then
 		entities.add_from_template("zombie", mx, my, 1)
 		event_log:add({ type = "debug", message = "spawned zombie" })
@@ -128,6 +128,26 @@ function input:debug_spawn_zombie()
 		end
 	end
 	event_log:add({ type = "debug", message = "no free cell to spawn zombie" })
+end
+
+local last_entity = nil
+function input:mouse_over_entity()
+	if last_entity then
+		last_entity.moused = nil
+	end
+
+	local mx, my = self:get_mouse_tile()
+	local entity_list = entities.get_list_at(mx, my, 1)
+	if entity_list and #entity_list > 0 then
+		local entity = entity_list[1]
+		if debug_state.show_xray and entity.mind and last_entity ~= entity then
+			utils.deep_print(entity.mind)
+		end
+		last_entity = entity
+		entity.moused = true
+	else
+		last_entity = nil
+	end
 end
 
 function input:get_direction(cardinal_only)
@@ -167,6 +187,7 @@ function input:handle_aim()
 end
 
 function input:update(dt)
+	self:mouse_over_entity()
 	if not self.actor then
 		return
 	end
