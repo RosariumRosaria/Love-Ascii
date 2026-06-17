@@ -13,6 +13,7 @@ local map = require("map.map")
 local camera = require("visuals.camera")
 local render_utils = require("visuals.render.utils")
 local utils = require("utils")
+local cursor = require("engine.cursor")
 
 local input = {
 	actor = nil,
@@ -57,11 +58,11 @@ local function remove_from_recency(list, key)
 	end
 end
 
-function input.get_mouse_tile()
+local function set_mouse_tile()
 	local mx, my = love.mouse.getPosition()
 	local cx, cy = camera:get_position()
 	local x, y = render_utils.get_map_coords(mx, my, cx, cy)
-	return x, y
+	cursor.set_moused_coords(x, y)
 end
 
 function love.keypressed(key)
@@ -112,7 +113,7 @@ function input:pressed(action)
 end
 
 function input:debug_spawn_zombie()
-	local mx, my = self:get_mouse_tile()
+	local mx, my = cursor.get_moused_coords()
 	if map:is_tile_free(mx, my, 1) then
 		entities.add_from_template("zombie", mx, my, 1)
 		event_log:add({ type = "debug", message = "spawned zombie" })
@@ -130,23 +131,13 @@ function input:debug_spawn_zombie()
 	event_log:add({ type = "debug", message = "no free cell to spawn zombie" })
 end
 
-local last_entity = nil
 function input:mouse_over_entity()
-	if last_entity then
-		last_entity.moused = nil
-	end
-
-	local mx, my = self:get_mouse_tile()
+	local mx, my = cursor.get_moused_coords()
 	local entity_list = entities.get_list_at(mx, my, 1)
-	if entity_list and #entity_list > 0 then
-		local entity = entity_list[1]
-		if debug_state.show_xray and entity.mind and last_entity ~= entity then
-			utils.deep_print(entity.mind)
-		end
-		last_entity = entity
-		entity.moused = true
-	else
-		last_entity = nil
+	local update = cursor.set_moused_entity(entity_list)
+	local entity = cursor.get_moused_entity()
+	if update and entity and debug_state.show_xray and entity.mind then
+		utils.deep_print(entity.mind)
 	end
 end
 
@@ -187,6 +178,7 @@ function input:handle_aim()
 end
 
 function input:update(dt)
+	set_mouse_tile()
 	self:mouse_over_entity()
 	if not self.actor then
 		return
