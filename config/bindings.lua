@@ -15,17 +15,16 @@ return {
 	use_selected = { "u" },
 	place_selected = { "p" },
 
-	toggle_grid = { "g" },
-	toggle_bw = { "b" },
-	toggle_visualizer = { "v" },
-	toggle_font = { "`" },
-
-	switch_offset = { "z" },
-	switch_status = { "x" },
 	toggle_perf = { "f3" },
 	toggle_xray = { "f4" },
-	debug = { "c" },
-	debug_spawn_zombie = { "n" },
+	toggle_grid = { "f5" },
+	toggle_bw = { "f6" },
+	toggle_visualizer = { "f7" },
+	toggle_font = { "f8" },
+	switch_offset = { "f9" },
+	switch_status = { "f10" },
+	debug = { "f11" },
+	debug_spawn_zombie = { "f12" },
 
 	quit = { "escape" },
 }

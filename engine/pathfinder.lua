@@ -28,9 +28,11 @@ function pathfinder.traversal(actor, x, y, z, goal)
 				entities.get_tag(ent, "attackable")
 				and actor.allowed_actions
 				and actor.allowed_actions.attackable
+				and actor.team ~= ent.team
 				and stats.get_current(actor, "damage") > 0
 			then
 				local bcost = math.ceil(stats.get_current(ent, "health") / stats.get_current(actor, "damage"))
+				print(bcost)
 				if not cost or bcost < cost then
 					kind, cost = "attackable", bcost
 				end
