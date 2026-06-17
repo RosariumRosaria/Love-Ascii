@@ -191,7 +191,7 @@ function actions:attack(entity, dx, dy, target_entity)
 			y = target_entity.y,
 			z = entity.z,
 			volume = (weapon and weapon.volume) or entity.attack_volume or 6,
-			reach = 7,
+			reach = 12,
 			description = (weapon and weapon.sound) or entity.attack_sound or "a thwack",
 			source = entity,
 		})
@@ -226,7 +226,7 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 		y = target_y,
 		z = entity.z,
 		volume = weapon.volume or 6,
-		reach = 7,
+		reach = 10,
 		description = weapon.sound or "a thwack",
 		source = entity,
 	})
@@ -269,7 +269,7 @@ function actions:move(entity, dx, dy)
 			y = entity.y,
 			z = entity.z,
 			volume = 4,
-			reach = 7,
+			reach = 12,
 			description = "footsteps",
 			source = entity,
 		}) --TODO: Someday this should tie into stealth or something
