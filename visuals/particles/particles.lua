@@ -115,7 +115,7 @@ function particles:update(dt, cx, cy)
 			local ex = entity.render_x or entity.x
 			local ey = entity.render_y or entity.y
 			if math.abs(ex - cx) <= draw_dist and math.abs(ey - cy) <= draw_dist then
-				local ez = entity.z + (entity.chars and #entity.chars or 1)
+				local ez = entity.z + (entity.appearance and entity.appearance.chars and #entity.appearance.chars or 1)
 				for _, emitter in ipairs(entity.emitters) do
 					if math.random() < emitter.rate * dt then
 						local params = particle_types[emitter.particle]
