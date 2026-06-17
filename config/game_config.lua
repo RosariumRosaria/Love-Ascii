@@ -26,6 +26,7 @@ return {
 	},
 	pathfinding = {
 		max_iterations = 1000,
+		wait_cost = 5,
 	},
 	perf = {
 		lag_warn_threshold = 0.1,

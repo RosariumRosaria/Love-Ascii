@@ -26,6 +26,7 @@ local function set_state(entity, new)
 	mind.target_pos = nil
 	mind.target_value = 0
 	mind.wander_turns = nil
+	mind.impatience = 0
 	mind.search_turns = nil
 end
 
@@ -42,11 +43,17 @@ local function follow_path(entity)
 		local dy = step.y - entity.y
 		local kind = pathfinder.traversal(entity, step.x, step.y, 1, mind.target_pos)
 
-		if kind == "attackable" then
+		if kind == "attack" then
+			entity.mind.impatience = 0
 			actions:attack(entity, dx, dy)
 		elseif kind == "open" then
+			entity.mind.impatience = 0
 			actions:interact(entity, dx, dy)
+		elseif kind == "wait" then
+			entity.mind.impatience = entity.mind.impatience + 1
+			actions:wait(entity)
 		else
+			entity.mind.impatience = 0
 			actions:move(entity, dx, dy)
 		end
 	end
