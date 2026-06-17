@@ -7,41 +7,41 @@ local small_font
 local terminal_tile_size
 local terminal_font
 
-local ui_handler = {
-	ui_list = {},
+local panels = {
+	panel_list = {},
 }
 
 local status_types = { "stats", "inventory", "statuses" }
 local status_position = 1
 local status_panel
 
-local function add_text_to_ui(ui, text)
-	if not ui then
+local function add_text_to_panel(panel, text)
+	if not panel then
 		return false
 	end
-	table.insert(ui.texts, text)
+	table.insert(panel.texts, text)
 
-	if #ui.texts > ui.capacity then
-		table.remove(ui.texts, 1)
+	if #panel.texts > panel.capacity then
+		table.remove(panel.texts, 1)
 	end
 end
 
-function ui_handler:switch_status()
+function panels:switch_status()
 	status_position = (status_position % #status_types) + 1
 	status_panel.mode = status_types[status_position]
 	self:update_status(status_panel.entity)
 end
 
-function ui_handler:get_ui_list()
-	return self.ui_list
+function panels:get_panel_list()
+	return self.panel_list
 end
 
-function ui_handler:get_visible_texts(ui)
-	local font = ui.font or small_font
-	local tile_size = ui.tile_size or small_tile_size
+function panels:get_visible_texts(panel)
+	local font = panel.font or small_font
+	local tile_size = panel.tile_size or small_tile_size
 	local wrapped = {}
-	for _, text in ipairs(ui.texts) do
-		local _, lines = font:getWrap(text, ui.width)
+	for _, text in ipairs(panel.texts) do
+		local _, lines = font:getWrap(text, panel.width)
 		if #lines == 0 then
 			table.insert(wrapped, "")
 		else
@@ -51,12 +51,12 @@ function ui_handler:get_visible_texts(ui)
 		end
 	end
 
-	local max_lines = math.floor(ui.height / tile_size)
+	local max_lines = math.floor(panel.height / tile_size)
 	local total_lines = #wrapped
 
-	ui.scroll_offset = math.max(0, math.min(ui.scroll_offset, math.max(0, total_lines - max_lines)))
+	panel.scroll_offset = math.max(0, math.min(panel.scroll_offset, math.max(0, total_lines - max_lines)))
 
-	local start_line = math.max(1, total_lines - ui.scroll_offset - max_lines + 1)
+	local start_line = math.max(1, total_lines - panel.scroll_offset - max_lines + 1)
 	local end_line = math.min(total_lines, start_line + max_lines - 1)
 
 	local visible_texts = {}
@@ -66,7 +66,7 @@ function ui_handler:get_visible_texts(ui)
 	return visible_texts
 end
 
-function ui_handler:add_ui(
+function panels:add_panel(
 	x,
 	y,
 	width,
@@ -82,7 +82,7 @@ function ui_handler:add_ui(
 )
 	font = font or small_font
 	tile_size = tile_size or small_tile_size
-	local ui = {
+	local panel = {
 		x = x,
 		y = y,
 		height = height,
@@ -100,31 +100,31 @@ function ui_handler:add_ui(
 		capacity = math.floor(height / tile_size) * 10,
 	}
 
-	table.insert(self.ui_list, ui)
+	table.insert(self.panel_list, panel)
 
-	return ui
+	return panel
 end
 
-function ui_handler:get_ui(name)
-	for _, ui in ipairs(self.ui_list) do
-		if ui.name == name then
-			return ui
+function panels:get_panel(name)
+	for _, panel in ipairs(self.panel_list) do
+		if panel.name == name then
+			return panel
 		end
 	end
 end
 
-function ui_handler:add_text_to_ui_by_name(name, text)
-	add_text_to_ui(self:get_ui(name), text)
+function panels:add_text_to_panel_by_name(name, text)
+	add_text_to_panel(self:get_panel(name), text)
 end
 
-function ui_handler:reload_fonts()
+function panels:reload_fonts()
 	small_tile_size = config.small_tile_size
 	small_font = config.small_font
 	terminal_tile_size = config.terminal_tile_size
 	terminal_font = config.terminal_font
 end
 
-function ui_handler:load()
+function panels:load()
 	local screen_height = love.graphics.getHeight()
 	local screen_width = love.graphics.getWidth()
 	local outline_width = screen_width / 400
@@ -138,7 +138,7 @@ function ui_handler:load()
 
 	self:reload_fonts()
 
-	self:add_ui(
+	self:add_panel(
 		start_x,
 		buffer,
 		width,
@@ -152,7 +152,7 @@ function ui_handler:load()
 		terminal_font,
 		terminal_tile_size
 	)
-	status_panel = self:add_ui(
+	status_panel = self:add_panel(
 		start_x,
 		start_y,
 		width,
@@ -165,53 +165,53 @@ function ui_handler:load()
 	status_panel.mode = "inventory"
 end
 
-function ui_handler:log_events()
+function panels:log_events()
 	for _, ev in ipairs(event_log:drain()) do
 		if not ev.silent then
 			if ev.type == "damage" then
-				self:add_text_to_ui_by_name("terminal", ev.source .. " hit " .. ev.entity .. " for " .. ev.amount)
+				self:add_text_to_panel_by_name("terminal", ev.source .. " hit " .. ev.entity .. " for " .. ev.amount)
 			elseif ev.type == "heal" then
-				self:add_text_to_ui_by_name("terminal", ev.source .. " healed " .. ev.entity .. " for " .. ev.amount)
+				self:add_text_to_panel_by_name("terminal", ev.source .. " healed " .. ev.entity .. " for " .. ev.amount)
 			elseif ev.type == "status_expired" then
-				self:add_text_to_ui_by_name("terminal", ev.status .. " wore off " .. ev.entity)
+				self:add_text_to_panel_by_name("terminal", ev.status .. " wore off " .. ev.entity)
 			elseif ev.type == "status_applied" then
-				self:add_text_to_ui_by_name("terminal", ev.source .. " applied " .. ev.status .. " to " .. ev.entity)
+				self:add_text_to_panel_by_name("terminal", ev.source .. " applied " .. ev.status .. " to " .. ev.entity)
 			elseif ev.type == "entity_died" then
-				self:add_text_to_ui_by_name("terminal", ev.entity .. " was killed by " .. ev.source)
+				self:add_text_to_panel_by_name("terminal", ev.entity .. " was killed by " .. ev.source)
 			elseif ev.type == "entity_dragged" then
-				self:add_text_to_ui_by_name(
+				self:add_text_to_panel_by_name(
 					"terminal",
 					ev.source .. " dragged " .. ev.entity .. " to " .. ev.dest_x .. ", " .. ev.dest_y
 				)
 			elseif ev.type == "action_failed" then
-				self:add_text_to_ui_by_name("terminal", ev.entity .. ": " .. ev.reason)
+				self:add_text_to_panel_by_name("terminal", ev.entity .. ": " .. ev.reason)
 			elseif ev.type == "item_equipped" then
-				self:add_text_to_ui_by_name("terminal", ev.entity .. " equipped " .. ev.item .. " (" .. ev.slot .. ")")
+				self:add_text_to_panel_by_name("terminal", ev.entity .. " equipped " .. ev.item .. " (" .. ev.slot .. ")")
 			elseif ev.type == "item_unequipped" then
-				self:add_text_to_ui_by_name(
+				self:add_text_to_panel_by_name(
 					"terminal",
 					ev.entity .. " unequipped " .. ev.item .. " (" .. ev.slot .. ")"
 				)
 			elseif ev.type == "item_used" then
-				self:add_text_to_ui_by_name("terminal", ev.entity .. " used " .. ev.item)
+				self:add_text_to_panel_by_name("terminal", ev.entity .. " used " .. ev.item)
 			elseif ev.type == "item_consumed" then
-				self:add_text_to_ui_by_name("terminal", ev.item .. " was consumed")
+				self:add_text_to_panel_by_name("terminal", ev.item .. " was consumed")
 			elseif ev.type == "entity_picked_up" then
-				self:add_text_to_ui_by_name("terminal", ev.source .. " picked up " .. ev.entity)
+				self:add_text_to_panel_by_name("terminal", ev.source .. " picked up " .. ev.entity)
 			elseif ev.type == "entity_placed" then
-				self:add_text_to_ui_by_name("terminal", ev.source .. " placed " .. ev.entity)
+				self:add_text_to_panel_by_name("terminal", ev.source .. " placed " .. ev.entity)
 			elseif ev.type == "sound" then
-				self:add_text_to_ui_by_name("terminal", "You heard " .. ev.description)
+				self:add_text_to_panel_by_name("terminal", "You heard " .. ev.description)
 			elseif ev.type == "debug" then
-				self:add_text_to_ui_by_name("terminal", "[DEBUG] " .. ev.message)
+				self:add_text_to_panel_by_name("terminal", "[DEBUG] " .. ev.message)
 			elseif ev.type == "entity_waited" then
-				self:add_text_to_ui_by_name("terminal", ev.entity .. " waited")
+				self:add_text_to_panel_by_name("terminal", ev.entity .. " waited")
 			end
 		end
 	end
 end
 
-function ui_handler:update_status(entity)
+function panels:update_status(entity)
 	status_panel.texts = {}
 	status_panel.entity = entity
 	if status_panel.mode == "stats" and entity.stats then
@@ -219,9 +219,9 @@ function ui_handler:update_status(entity)
 			local max = stats.get(entity, stat_name)
 			if stat.current ~= nil then
 				local current = stats.get_current(entity, stat_name)
-				self:add_text_to_ui_by_name("status", stat_name .. ": " .. current .. " / " .. max)
+				self:add_text_to_panel_by_name("status", stat_name .. ": " .. current .. " / " .. max)
 			else
-				self:add_text_to_ui_by_name("status", stat_name .. ": " .. max)
+				self:add_text_to_panel_by_name("status", stat_name .. ": " .. max)
 			end
 		end
 	elseif status_panel.mode == "inventory" and entity.inventory then
@@ -240,18 +240,18 @@ function ui_handler:update_status(entity)
 			end
 
 			local selected = inventory.get_selected(entity) and inventory.get_selected(entity) == item and " <" or ""
-			self:add_text_to_ui_by_name("status", "- " .. label .. equipped .. charges .. selected)
+			self:add_text_to_panel_by_name("status", "- " .. label .. equipped .. charges .. selected)
 		end
 	elseif status_panel.mode == "statuses" and entity.statuses then
 		for _, status in ipairs(entity.statuses) do
 			local label = status.name or status.key or "?"
-			self:add_text_to_ui_by_name("status", "- " .. label .. " (" .. status.duration .. ")")
+			self:add_text_to_panel_by_name("status", "- " .. label .. " (" .. status.duration .. ")")
 		end
 
 		if not entity.statuses or #entity.statuses == 0 then
-			self:add_text_to_ui_by_name("status", "No statuses")
+			self:add_text_to_panel_by_name("status", "No statuses")
 		end
 	end
 end
 
-return ui_handler
+return panels

@@ -84,17 +84,17 @@ function utils.deep_print(tbl, indent, visited)
 		return
 	end
 	visited[tbl] = true
-	local ui = require("visuals.ui")
+	local panels = require("visuals.panels")
 	for k, v in pairs(tbl) do
 		local key_str = tostring(k)
 		if type(v) == "table" then
-			ui:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. key_str .. " = {"))
+			panels:add_text_to_panel_by_name("terminal", (string.rep("  ", indent) .. key_str .. " = {"))
 			print(string.rep("  ", indent) .. key_str .. " = {")
 			utils.deep_print(v, indent + 1, visited)
-			ui:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. "}"))
+			panels:add_text_to_panel_by_name("terminal", (string.rep("  ", indent) .. "}"))
 			print((string.rep("  ", indent) .. "}"))
 		else
-			ui:add_text_to_ui_by_name("terminal", (string.rep("  ", indent) .. key_str .. " = " .. tostring(v)))
+			panels:add_text_to_panel_by_name("terminal", (string.rep("  ", indent) .. key_str .. " = " .. tostring(v)))
 			print((string.rep("  ", indent) .. key_str .. " = " .. tostring(v)))
 		end
 	end

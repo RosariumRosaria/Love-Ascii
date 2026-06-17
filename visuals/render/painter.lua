@@ -1,4 +1,4 @@
-local ui_handler = require("visuals.ui")
+local panels = require("visuals.panels")
 local entities = require("entities.entities")
 local render_utils = require("visuals.render.utils")
 local map = require("map.map")
@@ -173,23 +173,23 @@ end
 
 -- Screen-space, drawn directly (not through draw_buffer): UI has its own font and is
 -- not z/y-sorted into the world.
-function painter:draw_ui(ui)
-	love.graphics.setFont(ui.font or small_font)
+function painter:draw_panel(panel)
+	love.graphics.setFont(panel.font or small_font)
 
-	local visible_texts = ui_handler:get_visible_texts(ui)
+	local visible_texts = panels:get_visible_texts(panel)
 
 	render_primitives.draw_panel(
-		ui.x,
-		ui.y,
-		ui.width,
-		ui.height,
-		ui.color,
-		ui.outline_width,
-		ui.outline_color,
+		panel.x,
+		panel.y,
+		panel.width,
+		panel.height,
+		panel.color,
+		panel.outline_width,
+		panel.outline_color,
 		visible_texts,
-		ui.center_text,
+		panel.center_text,
 		{ 1, 1, 1, 1 },
-		ui.tile_size or small_tile_size
+		panel.tile_size or small_tile_size
 	)
 end
 

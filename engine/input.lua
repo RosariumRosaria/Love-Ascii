@@ -2,7 +2,7 @@ local config = require("config.runtime")
 local actions = require("engine.actions")
 local scene = require("visuals.render.scene")
 local debug_state = require("debug.debug_state")
-local ui = require("visuals.ui")
+local panels = require("visuals.panels")
 local visualizer = require("debug.visualizer")
 local bindings = require("config.bindings")
 local event_log = require("engine.event_log")
@@ -214,7 +214,7 @@ function input:update(dt)
 	end
 
 	if self:pressed("switch_status") then
-		ui:switch_status()
+		panels:switch_status()
 	end
 
 	if self:is_down("quit") then
@@ -254,8 +254,8 @@ function input:update(dt)
 		end
 	end
 
-	ui:log_events()
-	ui:update_status(self.actor)
+	panels:log_events()
+	panels:update_status(self.actor)
 end
 
 function input:try_take_turn()
@@ -352,7 +352,7 @@ function input:end_frame()
 end
 
 function love.wheelmoved(_, y)
-	local term = ui:get_ui("terminal")
+	local term = panels:get_panel("terminal")
 	if term then
 		term.scroll_offset = math.max(0, term.scroll_offset - y)
 	end

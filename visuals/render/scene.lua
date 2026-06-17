@@ -1,5 +1,5 @@
 local effects = require("visuals.effects.effects")
-local ui_handler = require("visuals.ui")
+local panels = require("visuals.panels")
 local entities = require("entities.entities")
 local animation = require("visuals.render.animation")
 local render_utils = require("visuals.render.utils")
@@ -72,15 +72,15 @@ function scene:draw()
 
 	painter:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
 
-	for _, ui in ipairs(ui_handler:get_ui_list()) do
-		painter:draw_ui(ui)
+	for _, panel in ipairs(panels:get_panel_list()) do
+		painter:draw_panel(panel)
 	end
 end
 
 function scene:reload_fonts()
 	render_utils.load()
 	render_primitives.load()
-	ui_handler:reload_fonts()
+	panels:reload_fonts()
 	painter:reload_fonts()
 end
 

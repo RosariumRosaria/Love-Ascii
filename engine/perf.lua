@@ -46,7 +46,7 @@ function perf:draw()
 	love.graphics.setFont(prev_font)
 end
 
-function perf:end_frame(ui)
+function perf:end_frame(panels)
 	local now = love.timer.getTime()
 	local elapsed = now - self.frame_start
 	self.frame_count = self.frame_count + 1
@@ -65,8 +65,8 @@ function perf:end_frame(ui)
 	self.last_warn_time = now
 	local msg = string.format("[lag] frame %.3fs > %.3fs", elapsed, cfg.lag_warn_threshold)
 	print(msg)
-	if ui then
-		ui:add_text_to_ui_by_name("terminal", msg)
+	if panels then
+		panels:add_text_to_panel_by_name("terminal", msg)
 	end
 end
 
