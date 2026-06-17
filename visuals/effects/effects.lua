@@ -52,26 +52,27 @@ local function update_effect_parts(parts, next_frame)
 	return remaining
 end
 
-local function sound_flood(effect)
+local function ring(effect)
 	local p = effect.params
-	local progress = math.min(p.age / p.expand_time, 1) -- 0..1
-	local front = p.reach * progress -- wavefront radius now
+	local progress = math.min(p.age / p.expand_time, 1)
+	local front = p.reach * progress
+	local inner = front - p.width
+	local alpha = p.peak_alpha * (1 - progress)
 	local rects = {}
 
-	for dy = -p.reach, p.reach do
-		for dx = -p.reach, p.reach do
-			local dist = math.abs(dx) + math.abs(dy) -- manhattan (your 4-neighbor flood)
-			if dist <= p.reach and dist <= front then
-				local lit_at = (dist / p.reach) * p.expand_time
-				local fade = (p.age - lit_at) / p.fade_time
-				local falloff = 1 - dist / p.reach -- fainter toward the edge, matching loudness
-				local alpha = p.peak_alpha * falloff * (1 - fade)
-				if alpha > 0 then
+	if alpha > 0 then
+		local r = math.ceil(front)
+		for dy = -r, r do
+			for dx = -r, r do
+				local dist = math.sqrt(dx * dx + dy * dy)
+				if dist <= front and dist >= inner then
+					local aa = math.min(alpha + (math.random() * alpha), 1)
+
 					rects[#rects + 1] = {
 						ox = dx,
 						oy = dy,
-						colors = { { p.color[1], p.color[2], p.color[3], alpha } },
-						sizes = { 0.85 }, -- <1 so cells read as separate squares
+						colors = { { p.color[1], p.color[2], p.color[3], aa } },
+						sizes = { 0.85 },
 						rounded_amount = 1 / 4,
 					}
 				end
@@ -82,8 +83,8 @@ local function sound_flood(effect)
 end
 
 local function generate(effect)
-	if effect.generate == "sound_flood" then
-		sound_flood(effect)
+	if effect.generate == "ring" then
+		ring(effect)
 	end
 end
 
