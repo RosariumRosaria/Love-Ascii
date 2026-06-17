@@ -173,6 +173,12 @@ function render_utils.get_screen_coords(x, y, center_x, center_y)
 	return screen_x, screen_y
 end
 
+function render_utils.get_map_coords(screen_x, screen_y, center_x, center_y)
+	local x = (screen_x - (love.graphics.getWidth() / 2)) / tile_size + center_x
+	local y = (screen_y - (love.graphics.getHeight() / 2)) / tile_size + center_y
+	return math.floor(x), math.floor(y)
+end
+
 function render_utils.distance_scale(x1, y1, x2, y2)
 	local screen_width = love.graphics.getWidth()
 	local screen_height = love.graphics.getHeight()
