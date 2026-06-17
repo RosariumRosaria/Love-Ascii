@@ -24,6 +24,7 @@ function pathfinder.traversal(actor, x, y, z, goal)
 			if ent.passage and ent.passage.open and actor.allowed_actions and actor.allowed_actions.interactable then
 				kind, cost = "open", ent.passage.open
 			end
+
 			if
 				entities.get_tag(ent, "attackable")
 				and actor.allowed_actions
@@ -32,12 +33,13 @@ function pathfinder.traversal(actor, x, y, z, goal)
 				and stats.get_current(actor, "damage") > 0
 			then
 				local bcost = math.ceil(stats.get_current(ent, "health") / stats.get_current(actor, "damage"))
-				print(bcost)
 				if not cost or bcost < cost then
-					kind, cost = "attackable", bcost
+					kind, cost = "attack", bcost
 				end
 			end
-
+			if actor.team and actor.team == ent.team then
+				kind, cost = "wait", game_cfg.pathfinding.wait_cost * (actor.mind.impatience + 1)
+			end
 			if kind then
 				if not best_cost or cost < best_cost then
 					best_kind, best_cost = kind, cost
