@@ -52,14 +52,18 @@ local function follow_path(entity)
 	return true
 end
 
-local function can_see(entity, target)
+local function reached_or_stuck(entity, had_path)
+	return (entity.x == entity.target_pos.x and entity.y == entity.target_pos.y) or not had_path
+end
+
+local function perceive(entity, target)
+	entity.can_see = false
 	local sight = stats.get(entity, "sight") - stats.get(target, "stealth") --TODO stealth probably shouldn't work this way.
 
 	if sight <= 0 then
 		return false
 	end
 
-	entity.can_see = false
 	if utils.distance_between(entity, target) < sight then
 		entity.can_see = fov_handler.refresh(
 			entity.x,
@@ -75,26 +79,29 @@ local function can_see(entity, target)
 		)
 	end
 
-	if entity.can_see then
-		set_state(entity, "chasing")
-		if entity.last_known then
-			entity.last_heading =
-				{ x = utils.sign(target.x - entity.last_known.x), y = utils.sign(target.y - entity.last_known.y) }
-		end
+	return entity.can_see
+end
 
-		entity.last_known = { x = target.x, y = target.y }
-		entity.target_pos = { x = target.x, y = target.y }
-		entity.target_value = 7
-		return true
+local function start_chasing(entity, target)
+	set_state(entity, "chasing")
+	if entity.last_known then
+		entity.last_heading =
+			{ x = utils.sign(target.x - entity.last_known.x), y = utils.sign(target.y - entity.last_known.y) }
 	end
 
-	return false
+	entity.last_known = { x = target.x, y = target.y }
+	entity.target_pos = { x = target.x, y = target.y }
+	entity.target_value = ai_cfg.target_value.sight
+end
+
+local function start_investigating(entity, x, y, value)
+	set_state(entity, "investigating")
+	entity.last_known = { x = x, y = y }
+	entity.target_pos = { x = x, y = y }
+	entity.target_value = value
 end
 
 local function idle(entity)
-	if can_see(entity, entities.player) then --TODO This is ugly, treats the player as special
-		return
-	end
 	local chance = math.random(1, ai_cfg.wander_chance)
 
 	if chance == 1 then
@@ -106,7 +113,7 @@ local function idle(entity)
 		if tar_x ~= entity.x or tar_y ~= entity.y then
 			set_state(entity, "wandering")
 			entity.target_pos = { x = tar_x, y = tar_y }
-			entity.target_value = 3
+			entity.target_value = ai_cfg.target_value.wander
 			entity.wander_turns = ai_cfg.wander_turns
 		end
 	elseif chance == 2 or chance == 3 then
@@ -120,10 +127,6 @@ end
 
 local function wander(entity)
 	if entity.wander_turns and entity.wander_turns > 0 and entity.target_pos then
-		if can_see(entity, entities.player) then
-			return
-		end
-
 		if entity.x == entity.target_pos.x and entity.y == entity.target_pos.y then
 			set_state(entity, "idle")
 			return
@@ -132,8 +135,8 @@ local function wander(entity)
 		follow_path(entity)
 
 		entity.wander_turns = entity.wander_turns - 1
-		if entity.wander_turns <= 1 then
-			effects:add_from_template("ping", entity.target_pos.x, entity.target_pos.y, 1)
+		if entity.wander_turns <= 0 then
+			effects:add_from_template("ping", entity.target_pos.x, entity.target_pos.y, entity.z)
 			set_state(entity, "idle")
 		end
 	end
@@ -163,8 +166,8 @@ local function pick_search_target(entity)
 	end
 
 	entity.target_pos = { x = tx, y = ty }
-	entity.target_value = 4
-	effects:add_from_template("ping", entity.target_pos.x, entity.target_pos.y, 1)
+	entity.target_value = ai_cfg.target_value.search
+	effects:add_from_template("ping", entity.target_pos.x, entity.target_pos.y, entity.z)
 end
 
 local function search(entity)
@@ -175,7 +178,7 @@ local function search(entity)
 	entity.search_turns = entity.search_turns - 1
 	local had_path = follow_path(entity)
 
-	if (entity.x == entity.target_pos.x and entity.y == entity.target_pos.y) or not had_path then
+	if reached_or_stuck(entity, had_path) then
 		pick_search_target(entity)
 	end
 end
@@ -183,17 +186,20 @@ end
 local function investigate(entity)
 	if entity.target_pos then
 		local had_path = follow_path(entity)
-		if (entity.x == entity.target_pos.x and entity.y == entity.target_pos.y) or not had_path then
+		if reached_or_stuck(entity, had_path) then
 			set_state(entity, "searching")
 			entity.search_turns = ai_cfg.search_turns
 			entity.target_pos = { x = entity.last_known.x, y = entity.last_known.y }
-			entity.target_value = 4
+			entity.target_value = ai_cfg.target_value.search
 		end
 	end
 end
 
 local function chase(entity)
-	follow_path(entity)
+	local had_path = follow_path(entity)
+	if not had_path and entity.last_known then
+		start_investigating(entity, entity.last_known.x, entity.last_known.y, ai_cfg.target_value.sight)
+	end
 end
 
 local function process_hearing(entity)
@@ -223,10 +229,7 @@ local function enemy_turn(entity)
 		and loudest
 		and loudest.loudness > (entity.target_value or 0)
 	then
-		set_state(entity, "investigating")
-		entity.last_known = { x = loudest.sound.x, y = loudest.sound.y }
-		entity.target_pos = { x = loudest.sound.x, y = loudest.sound.y }
-		entity.target_value = loudest.loudness
+		start_investigating(entity, loudest.sound.x, loudest.sound.y, loudest.loudness)
 	end
 
 	if
@@ -236,11 +239,15 @@ local function enemy_turn(entity)
 		return
 	end
 
-	local saw = can_see(entity, entities.player)
-	if not saw and entity.state == "chasing" then
-		set_state(entity, "investigating")
-		entity.target_pos = { x = entity.last_known.x, y = entity.last_known.y }
-		entity.target_value = 7
+	local saw = perceive(entity, entities.player)
+	if saw then
+		start_chasing(entity, entities.player)
+	elseif entity.state == "chasing" then
+		if entity.last_known then
+			start_investigating(entity, entity.last_known.x, entity.last_known.y, ai_cfg.target_value.sight)
+		else
+			set_state(entity, "idle")
+		end
 	end
 
 	if entity.state == "idle" then

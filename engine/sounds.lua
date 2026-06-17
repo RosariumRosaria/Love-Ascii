@@ -27,20 +27,30 @@ local function candidates(s)
 	return candidate_list
 end
 
-local BLOOM_MIN_VOLUME = 5
+local RING_MIN_VOLUME = 5
+
 function sounds.emit(s)
-	if not (s.source and s.source.sound_ring and not s.source.sound_ring.dead) then
-		if s.volume > BLOOM_MIN_VOLUME then
-			local ring = effects:add_from_template("sound_flood", s.x, s.y, s.z)
-			ring.params.reach = s.reach
-			s.source.sound_ring = ring
-		end
-	end
-	for _, entity in ipairs(candidates(s)) do
+	local player_heard = false
+	local candidate_list = candidates(s)
+	for _, entity in ipairs(candidate_list) do
+		local perceived = sounds.perceived(entity, s)
 		if s.source ~= entity then
-			local perceived = sounds.perceived(entity, s)
 			if perceived then
 				entities.hear(entity, s, perceived)
+			end
+		end
+
+		if entities.is_player(entity) and perceived then
+			player_heard = true
+		end
+	end
+
+	if player_heard and not (s.source and s.source.sound_ring and not s.source.sound_ring.dead) then
+		if s.volume > RING_MIN_VOLUME then
+			local ring = effects:add_from_template("sound_ring", s.x, s.y, s.z)
+			ring.params.reach = s.reach
+			if s.source then
+				s.source.sound_ring = ring
 			end
 		end
 	end
