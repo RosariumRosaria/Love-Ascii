@@ -1,7 +1,7 @@
 local input = require("engine.input")
 local ai = require("engine.ai")
 local map = require("map.map")
-local ui = require("visuals.ui")
+local panels = require("visuals.panels")
 local entities = require("entities.entities")
 local time = require("engine.time")
 local game_cfg = require("config.game_config")
@@ -18,7 +18,7 @@ local turn = {
 local function post_turn_update(player)
 	map:update_visibility(player.x, player.y, stats.get(player, "sight"))
 
-	ui:update_status(player)
+	panels:update_status(player)
 end
 
 local function commit_turn(actor)
@@ -28,7 +28,7 @@ local function commit_turn(actor)
 	if not actor.dead then
 		time.schedule_turn(popped)
 	end
-	ui:log_events()
+	panels:log_events()
 	if aim.active then
 		aim.refresh()
 	end

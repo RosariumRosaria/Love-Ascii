@@ -18,20 +18,22 @@ return {
 	lighting = {
 
 		ambient_keys = {
-			{ at = 0.00, color = { r = 0.225, g = 0.273, b = 0.41 } }, -- night
-			{ at = 0.22, color = { r = 0.225, g = 0.273, b = 0.41 } }, -- night
+			{ at = 0.00, color = { r = 0.225, g = 0.273, b = 0.45 } }, -- night
+			{ at = 0.22, color = { r = 0.225, g = 0.273, b = 0.45 } }, -- night
 			{ at = 0.27, color = { r = 1, g = 0.7, b = 0.5 } }, -- dawn
 			{ at = 0.33, color = { r = 1, g = 0.95, b = 0.9 } }, -- day
 			{ at = 0.70, color = { r = 1, g = 0.95, b = 0.9 } }, --  day
 			{ at = 0.78, color = { r = 1, g = 0.7, b = 0.5 } }, -- dusk
-			{ at = 0.85, color = { r = 0.225, g = 0.273, b = 0.41 } }, --night
+			{ at = 0.85, color = { r = 0.225, g = 0.273, b = 0.45 } }, --night
 		},
 		brightness_keys = {
 			{ at = 0.00, v = 1.0 },
-			{ at = 0.27, v = 1.0 },
-			{ at = 0.3, v = 1.4 },
-			{ at = 0.70, v = 1.4 },
-			{ at = 0.78, v = 1.0 },
+			{ at = 0.26, v = 1.2 },
+			{ at = 0.27, v = 1.5 },
+			{ at = 0.3, v = 1.5 },
+			{ at = 0.70, v = 1.5 },
+			{ at = 0.78, v = 1.5 },
+			{ at = 0.79, v = 1.2 },
 			{ at = 0.85, v = 1.0 },
 		},
 		emissive_keys = {

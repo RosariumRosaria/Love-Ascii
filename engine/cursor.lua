@@ -14,27 +14,28 @@ function cursor.get_moused_coords()
 	return moused_x, moused_y
 end
 
+local flagged = nil
 function cursor.set_moused_entity(entity_list)
-	if moused_x == sel_x and moused_y == sel_y then
-		moused_entity_list = entity_list -- same cell: refresh live ref, keep i + flag
-		return false
+	if moused_x ~= sel_x or moused_y ~= sel_y then
+		sel_x, sel_y = moused_x, moused_y
+		moused_entity_i = 1
 	end
-
-	local old = cursor.get_moused_entity()
-	if old then
-		old.moused = false
-	end
-	sel_x, sel_y = moused_x, moused_y
-	moused_entity_i = 1
-	if entity_list and #entity_list > 0 then
-		moused_entity_list = entity_list
-		entity_list[1].moused = true
+	moused_entity_list = (entity_list and #entity_list > 0) and entity_list or nil
+	moused_entity_i = math.min(moused_entity_i, (moused_entity_list and #moused_entity_list) or 1)
+	local new = cursor.get_moused_entity()
+	if new ~= flagged then
+		if flagged then
+			flagged.moused = false
+		end
+		if new then
+			new.moused = true
+		end
+		flagged = new
 		return true
-	else
-		moused_entity_list = nil
-		return false
 	end
+	return false
 end
+
 function cursor.get_moused_entity()
 	if moused_entity_list and moused_entity_list[moused_entity_i] then
 		return moused_entity_list[moused_entity_i]
