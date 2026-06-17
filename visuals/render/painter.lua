@@ -350,8 +350,8 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 		emit_cover_rect(draw_buffer.LAYER.ENTITY_COVER, entity.z, entity.y, x_screen, y_screen, cover_color)
 	end
 
-	for i, char_data in ipairs(entity.chars) do
-		local base_color = entity.color[i] or entity.color[#entity.color]
+	for i, char_data in ipairs(entity.appearance.chars) do
+		local base_color = entity.appearance.color[i] or entity.appearance.color[#entity.appearance.color]
 
 		if tilelike then
 			base_color = render_utils.get_effective_color(base_color, visible, explored)

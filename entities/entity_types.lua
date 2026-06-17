@@ -1,8 +1,10 @@
 return {
 	player = {
-		chars = { "@" },
-		color = { { 0.8, 0.8, 0.9, 1 } },
-		effect_color = { 0.45, 0.45, 0.5, 0.5 },
+		appearance = {
+			chars = { "@" },
+			color = { { 0.8, 0.8, 0.9, 1 } },
+			effect_color = { 0.45, 0.45, 0.5, 0.5 },
+		},
 		name = "Player",
 		team = "player",
 		type = "actor",
@@ -31,9 +33,11 @@ return {
 		type = "actor",
 		team = "enemy",
 		mind = { state = "idle" },
-		chars = { "Z" },
-		color = { { 0.3, 0.45, 0.25, 1 } },
-		effect_color = { 0.35, 0.6, 0.3, 0.5 },
+		appearance = {
+			chars = { "Z" },
+			color = { { 0.3, 0.45, 0.25, 1 } },
+			effect_color = { 0.35, 0.6, 0.3, 0.5 },
+		},
 		description = "A zombie, try attacking it!",
 		default_action = "attackable",
 		attack_volume = 8,
@@ -64,9 +68,11 @@ return {
 		type = "actor",
 		team = "enemy",
 		mind = { state = "idle" },
-		chars = { "V" },
-		color = { { 0.7, 0.2, 0.2, 1 } },
-		effect_color = { 0.35, 0.1, 0.1, 0.5 },
+		appearance = {
+			chars = { "V" },
+			color = { { 0.7, 0.2, 0.2, 1 } },
+			effect_color = { 0.35, 0.1, 0.1, 0.5 },
+		},
 		description = "A vampire, try attacking it!",
 		default_action = "attackable",
 		attack_volume = 2,
@@ -95,8 +101,10 @@ return {
 	campfire = {
 		name = "Campfire",
 		type = "prop",
-		chars = { "%" },
-		color = { { 1, 0.35, 0.1, 1 } },
+		appearance = {
+			chars = { "%" },
+			color = { { 1, 0.35, 0.1, 1 } },
+		},
 		description = "A Campfire",
 		emitters = { { particle = "smoke", rate = 1 }, { particle = "ember", rate = 1.2 } },
 		tags = {
@@ -117,8 +125,10 @@ return {
 	crystal = {
 		name = "Crystal",
 		type = "prop",
-		chars = { "<>", "<>" },
-		color = { { 0.7, 0.9, 0.95, 1 } },
+		appearance = {
+			chars = { "<>", "<>" },
+			color = { { 0.7, 0.9, 0.95, 1 } },
+		},
 		description = "A Crystal",
 		default_action = "moveable",
 		tags = {
@@ -140,8 +150,10 @@ return {
 		name = "Crate",
 		description = "A heavy crate, try pushing it!",
 		type = "prop",
-		chars = { "#" },
-		color = { { 0.38, 0.33, 0.30 } },
+		appearance = {
+			chars = { "#" },
+			color = { { 0.38, 0.33, 0.30 } },
+		},
 		default_action = "moveable",
 		stats = {
 			health = { base = 5, current = 5 },
@@ -159,8 +171,10 @@ return {
 		name = "Item",
 		description = "An item, try picking it up!",
 		type = "prop",
-		chars = { "*" },
-		color = { { 1, 1, 0, 1 } },
+		appearance = {
+			chars = { "*" },
+			color = { { 1, 1, 0, 1 } },
+		},
 		default_action = "pickupable",
 		tags = {
 			solid = false,
@@ -174,8 +188,10 @@ return {
 		name = "Barricade",
 		description = "A heavy barricade, try pushing it!",
 		type = "prop",
-		chars = { "[]", "[]" },
-		color = { { 0.47, 0.23, 0.23, 1 } },
+		appearance = {
+			chars = { "[]", "[]" },
+			color = { { 0.47, 0.23, 0.23, 1 } },
+		},
 		default_action = "moveable",
 		stats = {
 			health = { base = 10, current = 10 },
@@ -193,8 +209,10 @@ return {
 		name = "Door",
 		description = "A door, try opening it!",
 		type = "prop",
-		chars = { "[", "[" },
-		color = { { 0.30, 0.16, 0.06, 1 } },
+		appearance = {
+			chars = { "[", "[" },
+			color = { { 0.30, 0.16, 0.06, 1 } },
+		},
 		default_action = "interactable",
 		stats = {
 			health = { base = 5, current = 5 },
@@ -213,7 +231,9 @@ return {
 		interaction = {
 			toggle = {
 				natural_rotation = 0,
-				chars = { ":", ":" },
+				appearance = {
+					chars = { ":", ":" },
+				},
 				tags = {
 					solid = false,
 					walkable = true,
@@ -225,8 +245,10 @@ return {
 		name = "Window",
 		description = "A window, try opening it!",
 		type = "prop",
-		chars = { " ", "--", "--" },
-		color = { { 0.27, 0.33, 0.63, 1 } },
+		appearance = {
+			chars = { " ", "--", "--" },
+			color = { { 0.27, 0.33, 0.63, 1 } },
+		},
 		default_action = "interactable",
 		tags = {
 			moveable = false,
@@ -239,7 +261,9 @@ return {
 		natural_rotation = 90,
 		interaction = {
 			toggle = {
-				chars = { " ", "''", "''" },
+				appearance = {
+					chars = { " ", "''", "''" },
+				},
 				natural_rotation = 90,
 				tags = {
 					solid = false,
@@ -252,16 +276,18 @@ return {
 	street_lamp = {
 		name = "Street Lamp",
 		type = "prop",
-		chars = { ".", ".", ".", ".", ".", ".", ".", "#" },
-		color = {
-			{ 0.55, 0.35, 0.1, 1 },
-			{ 0.55, 0.35, 0.1, 1 },
-			{ 0.55, 0.35, 0.1, 1 },
-			{ 0.55, 0.35, 0.1, 1 },
-			{ 0.55, 0.35, 0.1, 1 },
-			{ 0.55, 0.35, 0.1, 1 },
-			{ 0.55, 0.35, 0.1, 1 },
-			{ 0.7, 0.55, 0.25, 1 },
+		appearance = {
+			chars = { ".", ".", ".", ".", ".", ".", ".", "#" },
+			color = {
+				{ 0.55, 0.35, 0.1, 1 },
+				{ 0.55, 0.35, 0.1, 1 },
+				{ 0.55, 0.35, 0.1, 1 },
+				{ 0.55, 0.35, 0.1, 1 },
+				{ 0.55, 0.35, 0.1, 1 },
+				{ 0.55, 0.35, 0.1, 1 },
+				{ 0.55, 0.35, 0.1, 1 },
+				{ 0.7, 0.55, 0.25, 1 },
+			},
 		},
 		description = "A Street Lamp",
 		tags = {

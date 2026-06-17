@@ -69,11 +69,11 @@ function entities.interact(entity)
 	local toggle = interaction.toggle
 	if toggle then
 		for k, v in pairs(toggle) do
-			if k == "tags" and type(v) == "table" and type(entity[k]) == "table" then
-				for tag_key, tag_val in pairs(v) do
-					local old_val = entity[k][tag_key]
-					entity[k][tag_key] = tag_val
-					toggle[k][tag_key] = old_val
+			if (k == "tags" or k == "appearance") and type(v) == "table" and type(entity[k]) == "table" then
+				for sub_key, sub_val in pairs(v) do
+					local old_val = entity[k][sub_key]
+					entity[k][sub_key] = sub_val
+					toggle[k][sub_key] = old_val
 				end
 			else
 				entity[k], toggle[k] = v, entity[k]
@@ -196,7 +196,7 @@ end
 
 function entities.convert_item_to_pickup(x, y, z, item)
 	local new_entity =
-		entities.add_from_template("item", x, y, z, { chars = item.chars, color = item.color, item = item })
+		entities.add_from_template("item", x, y, z, { appearance = { chars = item.chars, color = item.color }, item = item })
 	return new_entity
 end
 

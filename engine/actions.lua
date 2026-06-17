@@ -262,7 +262,7 @@ function actions:move(entity, dx, dy)
 
 	if map:is_tile_free(tar_x, tar_y, entity.z, { [entity] = true }) then
 		animation.spawn_pending_trail(entity)
-		entity.pending_trail = { x = entity.x, y = entity.y, z = entity.z, color = entity.effect_color }
+		entity.pending_trail = { x = entity.x, y = entity.y, z = entity.z, color = entity.appearance.effect_color }
 		entities.move_to(entity, tar_x, tar_y)
 		sounds.emit({
 			x = entity.x,
@@ -307,7 +307,7 @@ function actions:drag(entity, dx, dy, target)
 	end
 
 	animation.spawn_pending_trail(entity)
-	entity.pending_trail = { x = entity.x, y = entity.y, z = entity.z, color = entity.effect_color }
+	entity.pending_trail = { x = entity.x, y = entity.y, z = entity.z, color = entity.appearance.effect_color }
 	entities.move_to(entity, actor_dest_x, actor_dest_y)
 	entities.move_to(target, target_dest_x, target_dest_y)
 
