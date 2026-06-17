@@ -123,7 +123,6 @@ function painter:emit_effect(effect, center_x, center_y, visible)
 		end
 	end
 
-	-- panels (a backing rect plus its chars)
 	if effect.panels then
 		for _, panel in ipairs(effect.panels) do
 			local color = panel.colors[effect.params.i] or { 1, 1, 1, 1 }
