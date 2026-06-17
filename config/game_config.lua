@@ -13,6 +13,7 @@ return {
 		min_z = -4,
 	},
 	timing = {
+		frame_ai_budget = 2,
 		turn_delay = 0.175,
 		base_turn_cost = 100,
 		day_length = 10000,
@@ -32,5 +33,6 @@ return {
 		lag_warn_threshold = 0.1,
 		warmup_frames = 30,
 		warn_cooldown = 0.05,
+		worst_frame_window = 5,
 	},
 }

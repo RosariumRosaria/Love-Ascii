@@ -22,6 +22,7 @@ return {
 		ranged = true,
 		charges = 10,
 		volume = 6,
+		reach = 8,
 		max_charges = 10, --TODO: Some kind of quiver
 		range = 15,
 	},

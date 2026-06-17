@@ -3,7 +3,6 @@ local lighting = require("fov.lighting")
 local city_generator = require("map.city_generator")
 local types = require("map.tile_types")
 local utils = require("utils")
-local gen_cfg = require("config.generation_config")
 local render_config = require("config.render_config")
 local entities = require("entities.entities")
 local statuses = require("statuses.statuses")
@@ -21,6 +20,33 @@ local map = {
 }
 
 local ZERO_LIGHT = { r = 0, g = 0, b = 0 }
+
+function map:find_targets_in_range(actor, range) -- TODO: Someday support other predicates
+	local targets = {}
+
+	for _, entity in ipairs(entities.get_list()) do
+		if entity.team and entity.team ~= actor.team and not entity.dead and entity ~= actor then
+			local distance = utils.distance_between(actor, entity)
+
+			if distance <= range then
+				table.insert(targets, {
+					entity = entity,
+					distance = distance,
+				})
+			end
+		end
+	end
+
+	table.sort(targets, function(a, b)
+		return a.distance < b.distance
+	end)
+
+	if #targets > 0 then
+		return targets
+	end
+
+	return nil
+end
 
 function map:apply_on_step(entity)
 	local tile_stack = map:get_tile_stack(entity.x, entity.y)

@@ -39,7 +39,7 @@ function love.load()
 			color = { r = 1.0, g = 0.85, b = 0.65 },
 			flicker = { amp = 0.1, freq = 2, phase = 6 },
 			intensity = 0.5,
-			radius = 10,
+			radius = 8,
 		},
 	})
 	inventory.add_from_template(player, "health_potion")

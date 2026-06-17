@@ -7,6 +7,7 @@ local perf = {
 	frame_start = 0,
 	frame_count = 0,
 	last_warn_time = -math.huge,
+	worst_frame = nil,
 }
 
 function perf:begin_frame()
@@ -27,6 +28,7 @@ function perf:draw()
 	local pad = 10
 	local lines = {
 		string.format("FPS: %d", love.timer.getFPS()),
+		string.format("Worst: %.1fms", (self.worst_frame and self.worst_frame.elapsed or 0) * 1000),
 		string.format("Time: %s (%.2f)", time.part_of_day(), time.time_of_day()),
 	}
 	local line_h = font:getHeight()
@@ -55,6 +57,31 @@ function perf:end_frame(panels)
 	if self.frame_count <= cfg.warmup_frames then
 		return
 	end
+
+	if not self.window_start then
+		self.window_start = now
+	end
+
+	if not self.worst_frame or elapsed > self.worst_frame.elapsed then
+		self.worst_frame = { elapsed = elapsed, frame = self.frame_count }
+	end
+
+	if now - self.window_start >= cfg.worst_frame_window then
+		local worst = self.worst_frame
+		local msg = string.format(
+			"[perf] worst frame in last %ds: %.3fs (frame %d)",
+			cfg.worst_frame_window,
+			worst.elapsed,
+			worst.frame
+		)
+		print(msg)
+		if panels then
+			panels:add_text_to_panel_by_name("terminal", msg)
+		end
+		self.worst_frame = nil
+		self.window_start = now
+	end
+
 	if elapsed <= cfg.lag_warn_threshold then
 		return
 	end

@@ -24,30 +24,21 @@ local function move_to(x, y)
 	aim.reticle.y = y
 end
 
-function aim.find_targets_in_range(actor) -- TODO: Some of this code should definitely live in map, I can see this being useful for enemy ai too.
-	local targets = {}
-	for _, entity in ipairs(entities.get_list()) do
-		if
-			entity.team
-			and entity.team ~= actor.team
-			and not entity.dead
-			and entity ~= actor
-			and map:is_visible(entity.x, entity.y)
-		then
-			local distance = utils.distance_between(actor, entity)
+--TODO: someday add mouse support
 
-			if distance <= aim.range then
-				table.insert(targets, {
-					entity = entity,
-					distance = distance,
-				})
-			end
-		end
+function aim.find_targets_in_range()
+	local targets = map:find_targets_in_range(aim.entity, aim.range)
+	if not targets then
+		return
 	end
 
-	table.sort(targets, function(a, b)
-		return a.distance < b.distance
-	end)
+	for i = #targets, 1, -1 do
+		local pair = targets[i]
+
+		if not map:is_visible(pair.entity.x, pair.entity.y) then
+			table.remove(targets, i)
+		end
+	end
 
 	if #targets > 0 then
 		return targets
@@ -66,7 +57,7 @@ function aim.cycle_target()
 end
 
 function aim.refresh()
-	aim.targets = aim.find_targets_in_range(aim.entity)
+	aim.targets = aim.find_targets_in_range()
 
 	if aim.current_target and aim.targets then
 		for i, t in ipairs(aim.targets) do
@@ -94,7 +85,7 @@ function aim.enter(entity, x, y)
 	aim.origin_y = y
 	aim.reticle = effects:add_from_template("reticle", aim.x, aim.y, entity.z)
 	aim.nth = 1
-	aim.targets = aim.find_targets_in_range(entity)
+	aim.targets = aim.find_targets_in_range()
 	aim.cycle_target()
 end
 
