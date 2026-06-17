@@ -191,7 +191,7 @@ function actions:attack(entity, dx, dy, target_entity)
 			y = target_entity.y,
 			z = entity.z,
 			volume = (weapon and weapon.volume) or entity.attack_volume or 6,
-			reach = 12,
+			reach = (weapon and weapon.reach) or entity.attack_reach or 12,
 			description = (weapon and weapon.sound) or entity.attack_sound or "a thwack",
 			source = entity,
 		})
@@ -226,7 +226,7 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 		y = target_y,
 		z = entity.z,
 		volume = weapon.volume or 6,
-		reach = 10,
+		reach = weapon.reach or 10,
 		description = weapon.sound or "a thwack",
 		source = entity,
 	})

@@ -195,8 +195,13 @@ function entities.add_from_template(name, x, y, z, overrides)
 end
 
 function entities.convert_item_to_pickup(x, y, z, item)
-	local new_entity =
-		entities.add_from_template("item", x, y, z, { appearance = { chars = item.chars, color = item.color }, item = item })
+	local new_entity = entities.add_from_template(
+		"item",
+		x,
+		y,
+		z,
+		{ appearance = { chars = item.chars, color = item.color }, item = item }
+	)
 	return new_entity
 end
 

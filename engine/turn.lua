@@ -43,15 +43,20 @@ function turn:update(dt)
 		self.time_since_last_tick = self.time_since_last_tick + dt
 
 		local actor
+		local start = love.timer.getTime()
 		while true do
 			actor = time.peek()
 			if not actor or actor == input:get_actor() then
 				break
-			end
+			end -- player is up
 			if statuses.can_act(actor) then
 				ai:take_turn(actor)
 			end
 			commit_turn(actor)
+			if (love.timer.getTime() - start) * 1000 > game_cfg.timing.frame_ai_budget then
+				input:end_frame()
+				return -- resume next frame
+			end
 		end
 
 		if not actor then

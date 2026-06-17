@@ -260,10 +260,20 @@ local function enemy_turn(entity)
 	then
 		return
 	end
-
-	local saw = perceive(entity, entities.player)
+	local targets = map:find_targets_in_range(entity, ai_cfg.activation_range)
+	local saw = false
+	local target = nil
+	if targets then
+		for _, tar in ipairs(targets) do
+			saw = perceive(entity, tar.entity)
+			if saw then
+				target = tar.entity
+				break
+			end
+		end
+	end
 	if saw then
-		start_chasing(entity, entities.player)
+		start_chasing(entity, target)
 	elseif mind.state == "chasing" then
 		if mind.last_known then
 			start_investigating(entity, mind.last_known.x, mind.last_known.y, ai_cfg.target_value.sight)
