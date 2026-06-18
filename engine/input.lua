@@ -115,20 +115,20 @@ end
 function input:debug_spawn_zombie()
 	local mx, my = cursor.get_moused_coords()
 	if map:is_tile_free(mx, my, 1) then
-		entities.add_from_template("zombie", mx, my, 1)
-		event_log:add({ type = "debug", message = "spawned zombie" })
+		entities.add_from_template("vampire", mx, my, 1)
+		event_log:add({ type = "debug", message = "spawned vampire" })
 		return
 	end
 	local offsets = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 } }
 	for _, o in ipairs(offsets) do
 		local x, y = mx + o[1], my + o[2]
 		if map:is_tile_free(x, y, 1) then
-			entities.add_from_template("zombie", x, y, 1)
-			event_log:add({ type = "debug", message = "spawned zombie" })
+			entities.add_from_template("vampire", x, y, 1)
+			event_log:add({ type = "debug", message = "spawned vampire" })
 			return
 		end
 	end
-	event_log:add({ type = "debug", message = "no free cell to spawn zombie" })
+	event_log:add({ type = "debug", message = "no free cell to spawn vampire" })
 end
 
 function input:mouse_over_entity()
@@ -349,6 +349,9 @@ function input:end_frame()
 end
 
 function love.wheelmoved(_, y)
+	if cursor.scroll_entity(-y) then
+		return
+	end
 	local term = panels:get_panel("terminal")
 	if term then
 		term.scroll_offset = math.max(0, term.scroll_offset - y)
