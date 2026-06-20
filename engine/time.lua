@@ -52,11 +52,11 @@ function time.part_of_day()
 	return name
 end
 
-function time.schedule_turn(entity)
+function time.schedule_turn(entity, cost)
 	if entity.dead then
 		return
 	end
-	local turns = convert_speed_to_turns(get_speed(entity))
+	local turns = convert_speed_to_turns(get_speed(entity)) * (cost or 1)
 	entity.next_turn = current_time + turns
 	utils.priority_queue_put(queue, entity, entity.next_turn)
 end

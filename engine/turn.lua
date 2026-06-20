@@ -26,7 +26,8 @@ local function commit_turn(actor)
 	map:apply_on_step(actor)
 	local popped = time.pop()
 	if not actor.dead then
-		time.schedule_turn(popped)
+		time.schedule_turn(popped, actor.action_cost)
+		actor.action_cost = nil
 	end
 	panels:log_events()
 	if aim.active then
