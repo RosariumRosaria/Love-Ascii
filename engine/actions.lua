@@ -36,6 +36,24 @@ local action_order = {
 	interactable = 1,
 }
 
+local action_cost = {
+	move = 1,
+	attack = 1.25,
+	ranged_attack = 1.25,
+	interact = 1,
+	pickup = 1,
+	place = 1,
+	drag = 2,
+	use_item = 1,
+	equip = 1,
+	unequip = 1,
+	wait = 5,
+}
+
+local function assign_cost(entity, type)
+	entity.action_cost = action_cost[type]
+end
+
 function actions:default_interact(entity, dx, dy)
 	local targets = entities.get_list_at(entity.x + dx, entity.y + dy, entity.z)
 	if not targets or #targets == 0 then
@@ -83,6 +101,7 @@ function actions:place(entity, dx, dy, item)
 	entities.convert_item_to_pickup(target_x, target_y, entity.z, item)
 
 	inventory.remove(entity, item)
+	assign_cost(entity, "place")
 	event_log:add({ type = "entity_placed", entity = item.name, source = entity.name })
 	return true
 end
@@ -123,12 +142,14 @@ function actions:equip_item(entity, item)
 			slot = item.slot,
 		})
 	end
+	assign_cost(entity, "equip")
 	event_log:add({ type = "item_equipped", entity = entity.name, item = item.name, slot = item.slot })
 	return true
 end
 
 function actions:unequip_item(entity, item)
 	inventory.unequip(entity, item.slot)
+	assign_cost(entity, "unequip")
 	event_log:add({ type = "item_unequipped", entity = entity.name, item = item.name, slot = item.slot })
 	return true
 end
@@ -137,6 +158,7 @@ function actions:use_item(entity, item)
 	if item.on_use.apply_status then
 		statuses.add_from_template(entity, item.on_use.apply_status, nil, item)
 	end
+	assign_cost(entity, "use_item")
 	event_log:add({ type = "item_used", entity = entity.name, item = item.name })
 	if inventory.use_charge(item) then
 		inventory.remove(entity, item)
@@ -167,6 +189,7 @@ function actions:pickup(entity, dx, dy, target)
 	inventory.add(entity, target.item)
 
 	entities.remove(target)
+	assign_cost(entity, "pickup")
 	event_log:add({ type = "entity_picked_up", entity = target.name, source = entity.name })
 	return true
 end
@@ -182,6 +205,7 @@ function actions:attack(entity, dx, dy, target_entity)
 		return false
 	end
 	if entity.team ~= target_entity.team then
+		assign_cost(entity, "attack")
 		effects:add_from_template("attack", entity.x + dx, entity.y + dy, entity.z)
 		animation.add_bump(entity, target_entity.x, target_entity.y)
 		vitals.apply_damage(target_entity, stats.get(entity, "damage", "melee"), entity.name)
@@ -217,6 +241,7 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 		return true
 	end
 
+	assign_cost(entity, "ranged_attack")
 	inventory.use_charge(weapon)
 	effects:add_from_template("attack", target_x, target_y, entity.z)
 	vitals.apply_damage(target_entity, stats.get(entity, "damage"), entity.name)
@@ -243,6 +268,7 @@ function actions:interact(entity, dx, dy, target_entity)
 		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not interactable" })
 		return false
 	end
+	assign_cost(entity, "interact")
 	entities.interact(target_entity)
 	return true
 end
@@ -261,6 +287,7 @@ function actions:move(entity, dx, dy)
 	local tar_y = entity.y + dy
 
 	if map:is_tile_free(tar_x, tar_y, entity.z, { [entity] = true }) then
+		assign_cost(entity, "move")
 		animation.spawn_pending_trail(entity)
 		entity.pending_trail = { x = entity.x, y = entity.y, z = entity.z, color = entity.appearance.effect_color }
 		entities.move_to(entity, tar_x, tar_y)
@@ -306,6 +333,7 @@ function actions:drag(entity, dx, dy, target)
 		return false
 	end
 
+	assign_cost(entity, "drag")
 	animation.spawn_pending_trail(entity)
 	entity.pending_trail = { x = entity.x, y = entity.y, z = entity.z, color = entity.appearance.effect_color }
 	entities.move_to(entity, actor_dest_x, actor_dest_y)
@@ -333,6 +361,7 @@ function actions:drag(entity, dx, dy, target)
 end
 
 function actions:wait(entity)
+	assign_cost(entity, "wait")
 	event_log:add({ type = "entity_waited", entity = entity.name })
 	return true
 end
