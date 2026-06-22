@@ -16,6 +16,8 @@ return {
 	place_selected = { "p" },
 	switch_status = { "z" },
 
+	select_slot = { "1", "2", "3", "4", "5", "6", "7", "8", "9" },
+
 	toggle_perf = { "f3" },
 	toggle_xray = { "f4" },
 	toggle_grid = { "f5" },

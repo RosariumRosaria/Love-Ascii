@@ -34,6 +34,13 @@ function inventory.increment_selected_index(entity)
 	end
 end
 
+function inventory.set_selected_index(entity, index)
+	if not entity.inventory or index < 1 or #entity.inventory.items < index then
+		return
+	end
+	entity.inventory.selected_index = index
+end
+
 function inventory.add(entity, item)
 	if not entity.inventory then
 		entity.inventory = utils.deep_copy(inventory_template)

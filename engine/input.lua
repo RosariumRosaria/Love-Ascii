@@ -112,6 +112,15 @@ function input:pressed(action)
 	return self:_has(action, self.pressed_keys)
 end
 
+function input:pressed_slot()
+	for index, key in ipairs(bindings.select_slot or {}) do
+		if self.pressed_keys[key] then
+			return index
+		end
+	end
+	return nil
+end
+
 function input:debug_spawn_zombie()
 	local mx, my = cursor.get_moused_coords()
 	if map:is_tile_free(mx, my, 1) then
@@ -249,6 +258,11 @@ function input:update(dt)
 				self.last_turn = { x = 0, y = 0 }
 			end
 		end
+	end
+
+	local slot = self:pressed_slot()
+	if slot then
+		inventory.set_selected_index(self.actor, slot)
 	end
 
 	panels:log_events()
