@@ -17,14 +17,18 @@ local aim = {
 	current_target = nil,
 }
 
-local function move_to(x, y)
-	aim.x = x
-	aim.y = y
-	aim.reticle.x = x
-	aim.reticle.y = y
+function aim.move_to(x, y)
+	if
+		map:in_bounds(x, y)
+		and map:is_visible(x, y)
+		and utils.distance_between_coords(x, y, aim.origin_x, aim.origin_y) <= aim.range
+	then
+		aim.x = x
+		aim.y = y
+		aim.reticle.x = x
+		aim.reticle.y = y
+	end
 end
-
---TODO: someday add mouse support
 
 function aim.find_targets_in_range()
 	local targets = map:find_targets_in_range(aim.entity, aim.range)
@@ -51,7 +55,7 @@ function aim.cycle_target()
 	if aim.targets and #aim.targets > 0 then
 		local target = aim.targets[aim.nth].entity
 		aim.current_target = target
-		move_to(target.x, target.y)
+		aim.move_to(target.x, target.y)
 		aim.nth = (aim.nth % #aim.targets) + 1
 	end
 end
@@ -62,7 +66,7 @@ function aim.refresh()
 	if aim.current_target and aim.targets then
 		for i, t in ipairs(aim.targets) do
 			if t.entity == aim.current_target then
-				move_to(t.entity.x, t.entity.y)
+				aim.move_to(t.entity.x, t.entity.y)
 				aim.nth = (i % #aim.targets) + 1
 				return
 			end
@@ -104,16 +108,8 @@ function aim.exit()
 end
 
 function aim.move(dx, dy)
-	local tar_x = aim.x + dx
-	local tar_y = aim.y + dy
-	if
-		map:in_bounds(tar_x, tar_y)
-		and map:is_visible(tar_x, tar_y)
-		and utils.distance_between_coords(tar_x, tar_y, aim.origin_x, aim.origin_y) <= aim.range
-	then
-		aim.current_target = nil
-		move_to(tar_x, tar_y)
-	end
+	aim.current_target = nil
+	aim.move_to(aim.x + dx, aim.y + dy)
 end
 
 return aim

@@ -179,6 +179,11 @@ function input:handle_aim()
 			target_y = aim.y,
 		})
 	end
+
+	if love.mouse.isDown(1) then
+		local mx, my = cursor.get_moused_coords()
+		aim.move_to(mx, my)
+	end
 	return took_action
 end
 
