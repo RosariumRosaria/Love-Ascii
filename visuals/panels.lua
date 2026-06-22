@@ -234,7 +234,7 @@ function panels:update_status(entity)
 			end
 		end
 	elseif status_panel.mode == "inventory" and entity.inventory then
-		for _, item in ipairs(entity.inventory.items) do
+		for i, item in ipairs(entity.inventory.items) do
 			local label = item.name or item.key or "?"
 
 			local equipped = inventory.is_equipped(entity, item) and " (equipped)" or ""
@@ -249,7 +249,7 @@ function panels:update_status(entity)
 			end
 
 			local selected = inventory.get_selected(entity) and inventory.get_selected(entity) == item and " <" or ""
-			self:add_text_to_panel_by_name("status", "- " .. label .. equipped .. charges .. selected)
+			self:add_text_to_panel_by_name("status", i .. " - " .. label .. equipped .. charges .. selected)
 		end
 	elseif status_panel.mode == "statuses" and entity.statuses then
 		for _, status in ipairs(entity.statuses) do
