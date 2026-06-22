@@ -362,7 +362,7 @@ end
 
 function actions:wait(entity)
 	assign_cost(entity, "wait")
-	event_log:add({ type = "entity_waited", entity = entity.name })
+	event_log:add({ type = "entity_waited", entity = entity.name, spam = true })
 	return true
 end
 

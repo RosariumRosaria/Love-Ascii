@@ -1,7 +1,9 @@
 local event_log = { current = {} }
 
 function event_log:add(ev)
-	table.insert(event_log.current, ev)
+	if not ev.spam then
+		table.insert(event_log.current, ev)
+	end
 end
 
 function event_log:drain()
