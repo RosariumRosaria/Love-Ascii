@@ -20,10 +20,10 @@ return {
 		ambient_keys = {
 			{ at = 0.00, color = { r = 0.225, g = 0.273, b = 0.45 } }, -- night
 			{ at = 0.22, color = { r = 0.225, g = 0.273, b = 0.45 } }, -- night
-			{ at = 0.27, color = { r = 0.6, g = 0.45, b = 0.4 } }, -- dawn
-			{ at = 0.33, color = { r = 1, g = 0.55, b = 0.4 } }, -- day
-			{ at = 0.70, color = { r = 1, g = 0.55, b = 0.4 } }, --  day
-			{ at = 0.78, color = { r = 0.6, g = 0.45, b = 0.4 } }, -- dusk
+			{ at = 0.27, color = { r = 1, g = 0.75, b = 0.6 } }, -- dawn
+			{ at = 0.33, color = { r = 1, g = 0.85, b = 0.7 } }, -- day
+			{ at = 0.70, color = { r = 1, g = 0.85, b = 0.7 } }, --  day
+			{ at = 0.78, color = { r = 1, g = 0.75, b = 0.6 } }, -- dusk
 			{ at = 0.85, color = { r = 0.225, g = 0.273, b = 0.45 } }, --night
 		},
 		brightness_keys = {

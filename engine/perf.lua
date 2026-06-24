@@ -67,17 +67,6 @@ function perf:end_frame(panels)
 	end
 
 	if now - self.window_start >= cfg.worst_frame_window then
-		local worst = self.worst_frame
-		local msg = string.format(
-			"[perf] worst frame in last %ds: %.3fs (frame %d)",
-			cfg.worst_frame_window,
-			worst.elapsed,
-			worst.frame
-		)
-		print(msg)
-		if panels then
-			panels:add_text_to_panel_by_name("terminal", msg)
-		end
 		self.worst_frame = nil
 		self.window_start = now
 	end
