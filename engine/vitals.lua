@@ -8,8 +8,8 @@ function vitals.apply_damage(target, amount, source_name)
 	if not target.stats or not target.stats.health then
 		return nil
 	end
-	local before = stats.get_current(target, "health")
-	stats.set_current(target, "health", before - amount)
+
+	stats.change_current(target, "health", -amount)
 	local after = stats.get_current(target, "health")
 	event_log:add({ type = "damage", entity = target.name, source = source_name, amount = amount })
 
@@ -26,8 +26,7 @@ function vitals.apply_heal(target, amount, source_name)
 	if not target.stats or not target.stats.health then
 		return nil
 	end
-	local before = stats.get_current(target, "health")
-	stats.set_current(target, "health", before + amount)
+	stats.change_current(target, "health", amount)
 
 	event_log:add({ type = "heal", entity = target.name, source = source_name, amount = amount })
 end

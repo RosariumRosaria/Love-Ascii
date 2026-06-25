@@ -16,6 +16,19 @@ function statuses.find(entity, key)
 	return nil
 end
 
+function statuses.absorb(target, amount)
+	local absorbers = statuses.with_tag(target, "absorbs")
+	for _, absorber in ipairs(absorbers) do
+		local soaked = math.min(amount, absorber.hp)
+		absorber.hp = absorber.hp - soaked
+		amount = amount - soaked
+		if absorber.hp == 0 and utils.get_tag(absorber, "remove_when_empty") then
+			statuses.remove(target, absorber.key)
+		end
+	end
+	return amount
+end
+
 function statuses.remove(entity, key)
 	if not entity.statuses then
 		return
@@ -34,6 +47,14 @@ function statuses.remove(entity, key)
 	end
 end
 
+function statuses.has_tag(entity, tag)
+	return utils.has_tag(entity.statuses, tag)
+end
+
+function statuses.with_tag(entity, tag)
+	return utils.with_tag(entity.statuses, tag)
+end
+
 function statuses.add_from_template(entity, name, overrides, source)
 	local new_status = utils.create_instance_from_template(status_types, name, overrides)
 
@@ -47,8 +68,10 @@ function statuses.add_from_template(entity, name, overrides, source)
 
 	if existing_status then
 		-- [[TODO Could maybe be more robust, like checking if the damage is higher instead of just refreshing the duration
-		-- Or should it care about the source? Maybe only refresh if it's the same source? ]]
-		existing_status.duration = math.max(existing_status.duration, new_status.duration)
+		-- Or should it care about the source? Maybe only refresh if it's the same source? Also I feel like statuses should be able to call out if they stack or not]]
+		if existing_status.duration and new_status.duration then
+			existing_status.duration = math.max(existing_status.duration, new_status.duration)
+		end
 		return
 	end
 	event_log:add({
@@ -71,9 +94,11 @@ local function tick(entity, status)
 		end
 	end
 
-	status.duration = status.duration - 1
-	if status.duration <= 0 then
-		statuses.remove(entity, status.key)
+	if status.duration then
+		status.duration = status.duration - 1
+		if status.duration <= 0 then
+			statuses.remove(entity, status.key)
+		end
 	end
 end
 
@@ -92,18 +117,14 @@ function statuses.tick_entity(entity)
 end
 
 function statuses.can_act(entity)
-	if not entity.statuses then
-		return true
-	end
-	for _, status in ipairs(entity.statuses) do
-		if status.disables_action then
-			return false
-		end
-	end
-	return true
+	return not statuses.has_tag(entity, "disables_action")
 end
 
-function statuses.get_visual_state(entity)
+function statuses.can_be_interacted(entity)
+	return not statuses.has_tag(entity, "disables_interaction")
+end
+
+function statuses.get_visual_state(entity) --TODO, EXTEND TO CHAR REPLACE
 	local alpha = 1
 	local tint = { 1, 1, 1 }
 	if not entity.statuses then

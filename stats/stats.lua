@@ -36,6 +36,15 @@ function stats.set_current(entity, name, value)
 	stat.current = value
 end
 
+function stats.change_current(entity, name, value)
+	local stat = entity.stats and entity.stats[name]
+	if not stat or stat.current == nil then
+		return
+	end
+	local new = stat.current + value
+	stats.set_current(entity, name, new)
+end
+
 function stats.sum_modifiers(entity, stat_name, context)
 	local add, mul = 0, 1
 

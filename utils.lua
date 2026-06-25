@@ -149,4 +149,47 @@ function utils.pick(list)
 	return list[math.random(#list)]
 end
 
+-- TODO: if tags grow behavior (non-boolean values, inheritance, status/equipment-granted
+-- tags), graduate these helpers out of utils into a dedicated tags module.
+function utils.get_tag(taggable, tag)
+	return taggable.tags and taggable.tags[tag]
+end
+
+function utils.has_tag(taggables, tag)
+	if not taggables then
+		return false
+	end
+	for _, taggable in ipairs(taggables) do
+		if utils.get_tag(taggable, tag) then
+			return true
+		end
+	end
+	return false
+end
+
+function utils.with_tag(taggables, tag)
+	local ret = {}
+	if not taggables then
+		return ret
+	end
+	for _, taggable in ipairs(taggables) do
+		if utils.get_tag(taggable, tag) then
+			table.insert(ret, taggable)
+		end
+	end
+	return ret
+end
+
+function utils.find_with_tag(taggables, tag)
+	if not taggables then
+		return nil
+	end
+	for _, taggable in ipairs(taggables) do
+		if utils.get_tag(taggable, tag) then
+			return taggable
+		end
+	end
+	return nil
+end
+
 return utils
