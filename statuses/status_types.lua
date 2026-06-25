@@ -26,7 +26,7 @@ return {
 	stun = {
 		name = "Stun",
 		description = "Unable to move or act.",
-		disables_action = true,
+		tags = { disables_action = true },
 		color = { 0.5, 0.5, 1 },
 		duration = 2,
 	},
@@ -40,5 +40,13 @@ return {
 			{ stat = "stealth", op = "mul", value = 2 },
 		},
 		visual = { alpha = 0.5 },
+	},
+	barricaded = {
+		name = "Barricaded",
+		description = "Blocked interaction and increased health.",
+		color = { 1, 0.8, 0.5 },
+		hp = 5,
+		tags = { absorbs = true, disables_interaction = true, remove_when_empty = true },
+		visual = { tint = { 1, 0.8, 0.5 } },
 	},
 }

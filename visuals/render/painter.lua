@@ -1,6 +1,7 @@
 local panels = require("visuals.panels")
 local entities = require("entities.entities")
 local render_utils = require("visuals.render.utils")
+local utils = require("utils")
 local map = require("map.map")
 local render_primitives = require("visuals.render.primitives")
 local config = require("config.runtime")
@@ -333,7 +334,7 @@ function painter:emit_particle(p, center_x, center_y, time)
 end
 
 function painter:emit_entity(entity, center_x, center_y, visible, explored, time)
-	local tilelike = entities.get_tag(entity, "tilelike")
+	local tilelike = utils.get_tag(entity, "tilelike")
 
 	local xray = debug_state.show_xray and not tilelike
 
@@ -351,7 +352,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 	local x_screen, y_screen = render_utils.get_screen_coords(entity.render_x, entity.render_y, center_x, center_y)
 	local base = render_utils.distance_scale(entity.x, entity.y, center_x, center_y)
 
-	if entities.get_tag(entity, "covers") then
+	if utils.get_tag(entity, "covers") then
 		local cover_color = { 0, 0, 0, 1 }
 		if visible then
 			local rx = math.floor(entity.render_x)

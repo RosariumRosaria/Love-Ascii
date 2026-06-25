@@ -31,14 +31,7 @@ function entities.get_tag_location(x, y, z, tag)
 	if not ents then
 		return false
 	end
-
-	for _, ent in ipairs(ents) do
-		if entities.get_tag(ent, tag) then
-			return true
-		end
-	end
-
-	return false
+	return utils.has_tag(ents, tag)
 end
 
 function entities.get_with_tag(x, y, z, tag)
@@ -46,18 +39,7 @@ function entities.get_with_tag(x, y, z, tag)
 	if not ents then
 		return nil
 	end
-
-	for _, ent in ipairs(ents) do
-		if entities.get_tag(ent, tag) then
-			return ent
-		end
-	end
-
-	return nil
-end
-
-function entities.get_tag(entity, tag)
-	return entity.tags[tag]
+	return utils.find_with_tag(ents, tag)
 end
 
 function entities.interact(entity)
@@ -211,7 +193,7 @@ function entities.add_pickup_from_template(name, x, y, z, overrides)
 end
 
 function entities.hear(entity, sound, loudness)
-	if entity.type ~= "actor" or not entity.tags.can_hear then
+	if entity.type ~= "actor" or not utils.get_tag(entity, "can_hear") then
 		return
 	end
 	entity.mind = entity.mind or {}

@@ -181,7 +181,7 @@ function actions:pickup(entity, dx, dy, target)
 	if not validate_interaction(entity, target, "Pickup") then
 		return false
 	end
-	if not target.tags.pickupable then
+	if not utils.get_tag(target, "pickupable") then
 		event_log:add({ type = "action_failed", entity = target.name, reason = "Not pickupable" })
 		return false
 	end
@@ -194,13 +194,19 @@ function actions:pickup(entity, dx, dy, target)
 	return true
 end
 
+local function deal_damage(target, amount, src)
+	local leftover = statuses.absorb(target, amount)
+	if leftover > 0 then
+		vitals.apply_damage(target, leftover, src)
+	end
+end
 function actions:attack(entity, dx, dy, target_entity)
 	local weapon = inventory.get_equipped(entity, "mainhand")
 	target_entity = target_entity or entities.get_with_tag(entity.x + dx, entity.y + dy, entity.z, "attackable")
 	if not validate_interaction(entity, target_entity, "Attack") then
 		return false
 	end
-	if not entities.get_tag(target_entity, "attackable") then
+	if not utils.get_tag(target_entity, "attackable") then
 		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not attackable" })
 		return false
 	end
@@ -208,7 +214,7 @@ function actions:attack(entity, dx, dy, target_entity)
 		assign_cost(entity, "attack")
 		effects:add_from_template("attack", entity.x + dx, entity.y + dy, entity.z)
 		animation.add_bump(entity, target_entity.x, target_entity.y)
-		vitals.apply_damage(target_entity, stats.get(entity, "damage", "melee"), entity.name)
+		deal_damage(target_entity, stats.get(entity, "damage", "melee"), entity.name)
 		statuses.on_hit(entity, target_entity)
 		sounds.emit({
 			x = target_entity.x,
@@ -244,7 +250,7 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 	assign_cost(entity, "ranged_attack")
 	inventory.use_charge(weapon)
 	effects:add_from_template("attack", target_x, target_y, entity.z)
-	vitals.apply_damage(target_entity, stats.get(entity, "damage"), entity.name)
+	deal_damage(target_entity, stats.get(entity, "damage"), entity.name)
 	statuses.on_hit(entity, target_entity) --TODO should on hit apply from ranged
 	sounds.emit({
 		x = target_x,
@@ -264,8 +270,13 @@ function actions:interact(entity, dx, dy, target_entity)
 		return false
 	end
 
-	if not target_entity.tags.interactable then
+	if not utils.get_tag(target_entity, "interactable") then
 		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not interactable" })
+		return false
+	end
+
+	if not statuses.can_be_interacted(target_entity) then
+		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Interaction blocked" })
 		return false
 	end
 	assign_cost(entity, "interact")
@@ -315,7 +326,7 @@ function actions:drag(entity, dx, dy, target)
 	if not validate_interaction(entity, target, "Drag") then
 		return false
 	end
-	if not target.tags.moveable then
+	if not utils.get_tag(target, "moveable") then
 		event_log:add({ type = "action_failed", entity = target.name, reason = "Target is not moveable" })
 		return false
 	end
