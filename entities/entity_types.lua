@@ -225,6 +225,7 @@ return {
 			interactable = true,
 			covers = false,
 			attackable = true,
+			barricadeable = true,
 		},
 		passage = { open = 1 },
 		natural_rotation = 0,
@@ -237,6 +238,7 @@ return {
 				tags = {
 					solid = false,
 					walkable = true,
+					barricadeable = false,
 				},
 			},
 		},
@@ -257,6 +259,7 @@ return {
 			tilelike = true,
 			interactable = true,
 			covers = false,
+			barricadeable = true,
 		},
 		natural_rotation = 90,
 		interaction = {
@@ -268,6 +271,7 @@ return {
 				tags = {
 					solid = false,
 					walkable = false,
+					barricadeable = false,
 				},
 			},
 		},

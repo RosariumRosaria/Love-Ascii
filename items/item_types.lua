@@ -26,6 +26,15 @@ return {
 		max_charges = 10, --TODO: Some kind of quiver
 		range = 15,
 	},
+	planks = {
+		name = "Planks",
+		description = "Can be used to barricade walls and windows.",
+		color = { { 0.8, 0.7, 0.5, 1 } },
+		on_use = { apply_status = "barricaded", target_tag = "barricadeable" },
+		chars = { "=" },
+		charges = 3,
+		max_charges = 3,
+	},
 	health_potion = {
 		name = "Health Potion",
 		description = "Restores health when consumed.",

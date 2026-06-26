@@ -42,6 +42,7 @@ function love.load()
 			radius = 8,
 		},
 	})
+	inventory.add_from_template(player, "planks")
 	inventory.add_from_template(player, "health_potion")
 	inventory.add_from_template(player, "strength_potion")
 
