@@ -47,7 +47,7 @@ local action_cost = {
 	use_item = 1,
 	equip = 1,
 	unequip = 1,
-	wait = 5,
+	wait = 1,
 }
 
 local function assign_cost(entity, type)
@@ -106,7 +106,7 @@ function actions:place(entity, dx, dy, item)
 	return true
 end
 
-function actions:use_selected(entity)
+function actions:use_selected(entity, dx, dy)
 	local item = inventory.get_selected(entity)
 	if not item then
 		event_log:add({ type = "action_failed", entity = entity.name, reason = "No item selected" })
@@ -121,7 +121,7 @@ function actions:use_selected(entity)
 	end
 
 	if item.on_use then
-		return self:use_item(entity, item)
+		return self:use_item(entity, item, dx, dy)
 	end
 
 	event_log:add({
@@ -154,9 +154,21 @@ function actions:unequip_item(entity, item)
 	return true
 end
 
-function actions:use_item(entity, item)
+function actions:use_item(entity, item, dx, dy)
+	local target = entity
+	if item.on_use.target_tag then
+		target = entities.get_with_tag(entity.x + dx, entity.y + dy, entity.z, item.on_use.target_tag)
+		if not validate_interaction(entity, target, "Use Item") then
+			return false
+		end
+		if item.on_use.apply_status and statuses.find(target, item.on_use.apply_status) then
+			event_log:add({ type = "action_failed", entity = target.name, reason = "Already " .. item.on_use.apply_status })
+			return false
+		end
+	end
+
 	if item.on_use.apply_status then
-		statuses.add_from_template(entity, item.on_use.apply_status, nil, item)
+		statuses.add_from_template(target, item.on_use.apply_status, nil, item)
 	end
 	assign_cost(entity, "use_item")
 	event_log:add({ type = "item_used", entity = entity.name, item = item.name })
@@ -397,7 +409,7 @@ function actions:handle_action(entity, action)
 	elseif t == "grab_interaction" then
 		return self:drag(entity, action.dx, action.dy, action.target)
 	elseif t == "use_selected" then
-		return self:use_selected(entity)
+		return self:use_selected(entity, action.dx, action.dy)
 	elseif t == "place_selected" then
 		return self:place_selected(entity, action.dx, action.dy)
 	elseif t == "wait" then

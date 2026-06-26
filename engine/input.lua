@@ -285,22 +285,22 @@ function input:try_take_turn()
 	if self.mode == modes.aiming then
 		return self:handle_aim()
 	else
-		if self:is_down("use_selected") then
-			return actions:handle_action(actor, { type = "use_selected" })
-		elseif self:is_down("wait") then
-			return actions:handle_action(actor, { type = "wait" })
-		end
-
 		local move_dir = self:get_direction(true)
 		local is_moving = move_dir.x ~= 0 or move_dir.y ~= 0
 		local has_moved = self.last_turn.x ~= 0 or self.last_turn.y ~= 0
 
-		if not (is_moving or has_moved) then
-			return false
-		end
-
 		if not is_moving then
 			move_dir = self.last_turn
+		end
+
+		if self:is_down("use_selected") then
+			return actions:handle_action(actor, { type = "use_selected", dx = move_dir.x, dy = move_dir.y })
+		elseif self:is_down("wait") then
+			return actions:handle_action(actor, { type = "wait" })
+		end
+
+		if not (is_moving or has_moved) then
+			return false
 		end
 
 		if self:is_down("attack") then
