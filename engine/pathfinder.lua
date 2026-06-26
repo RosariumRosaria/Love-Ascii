@@ -4,6 +4,7 @@ local entities = require("entities.entities")
 local utils = require("utils")
 local game_cfg = require("config.game_config")
 local stats = require("stats.stats")
+local statuses = require("statuses.statuses")
 
 local pathfinder = {}
 local max_checks = game_cfg.pathfinding.max_iterations
@@ -21,7 +22,13 @@ function pathfinder.traversal(actor, x, y, z, goal)
 	for _, ent in ipairs(entities.get_list_at(x, y, z)) do
 		if not utils.get_tag(ent, "walkable") then
 			local kind, cost
-			if ent.passage and ent.passage.open and actor.allowed_actions and actor.allowed_actions.interactable then
+			if
+				ent.passage
+				and ent.passage.open
+				and actor.allowed_actions
+				and actor.allowed_actions.interactable
+				and statuses.can_be_interacted(ent)
+			then
 				kind, cost = "open", ent.passage.open
 			end
 
