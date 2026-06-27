@@ -78,6 +78,12 @@ function lighting.recompute(max_x, max_y, map_grid, lighting_grid, center_x, cen
 				end
 			end
 		end
+
+		for _, status in ipairs(entity.statuses or {}) do
+			if status.light and in_range(ex, ey, center_x, center_y, view_radius, status.light) then
+				lighting.cast(ex, ey, entity.z, status.light, max_x, max_y, map_grid, lighting_grid)
+			end
+		end
 	end
 end
 

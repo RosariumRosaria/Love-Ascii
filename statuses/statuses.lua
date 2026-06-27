@@ -93,11 +93,13 @@ end
 
 local function tick(entity, status)
 	if status.on_tick then
-		if status.on_tick.damage then
-			vitals.apply_damage(entity, status.on_tick.damage, status.name)
-		end
-		if status.on_tick.heal then
-			vitals.apply_heal(entity, status.on_tick.heal, status.name)
+		if utils.chance(status.on_tick.chance or 100) then
+			if status.on_tick.damage then
+				vitals.apply_damage(entity, status.on_tick.damage, status.name)
+			end
+			if status.on_tick.heal then
+				vitals.apply_heal(entity, status.on_tick.heal, status.name)
+			end
 		end
 	end
 

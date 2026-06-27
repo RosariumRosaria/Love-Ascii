@@ -5,7 +5,7 @@ local utils = require("utils")
 local entities = require("entities.entities")
 
 local particles = {
-	mode = "normalDO",
+	mode = "rain",
 	particles = {},
 	screen_w = 0,
 	screen_h = 0,
@@ -28,6 +28,15 @@ local particle_types = {
 		drift = 0.35,
 		color = { 0.9, 0.6, 0.2, 0.7 },
 		linger = 1,
+		lifespan = 4,
+	},
+	blood = {
+		char = ".",
+		vz_min = 0,
+		vz_max = 0,
+		drift = 0.0,
+		color = { 1, 0.0, 0.05, 1 },
+		linger = 3,
 		lifespan = 4,
 	},
 }
@@ -110,20 +119,40 @@ function particles:update(dt, cx, cy)
 	end
 	local emitter_cap = render_cfg.particles.count * (1 - render_cfg.particles.weather_proportion)
 
+	local function run_emitters(list, ex, ey, base_z, default_offset)
+		if not list then
+			return 0
+		end
+		local spawned = 0
+		for _, emitter in ipairs(list) do
+			if math.random() < emitter.rate * dt then
+				local ez = base_z + (emitter.z_offset or default_offset)
+				local jx, jy = 0, 0
+				if emitter.jitter then
+					jx = -0.5 + math.random()
+					jy = -0.5 + math.random()
+				end
+
+				local p = spawn_particle(ex + jx, ey + jy, ez, false, particle_types[emitter.particle])
+				if p then
+					table.insert(self.particles, p)
+					spawned = spawned + 1
+				end
+			end
+		end
+		return spawned
+	end
+
 	for _, entity in ipairs(entities.get_list()) do
-		if entity.emitters and emitter_count < emitter_cap then
+		if emitter_count < emitter_cap then
 			local ex = entity.render_x or entity.x
 			local ey = entity.render_y or entity.y
 			if math.abs(ex - cx) <= draw_dist and math.abs(ey - cy) <= draw_dist then
-				local ez = entity.z + (entity.appearance and entity.appearance.chars and #entity.appearance.chars or 1)
-				for _, emitter in ipairs(entity.emitters) do
-					if math.random() < emitter.rate * dt then
-						local params = particle_types[emitter.particle]
-						local p = spawn_particle(ex, ey, ez, false, params)
-						if p then
-							table.insert(self.particles, p)
-							emitter_count = emitter_count + 1
-						end
+				local top_offset = entity.appearance and entity.appearance.chars and #entity.appearance.chars or 1
+				emitter_count = emitter_count + run_emitters(entity.emitters, ex, ey, entity.z, top_offset)
+				if entity.statuses then
+					for _, status in ipairs(entity.statuses) do
+						emitter_count = emitter_count + run_emitters(status.emitters, ex, ey, entity.z, top_offset)
 					end
 				end
 			end

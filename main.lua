@@ -14,20 +14,8 @@ local perf = require("engine.perf")
 local statuses = require("statuses.statuses")
 
 local debug_panel = require("debug.debug_panel")
-function love.load()
-	config:load()
-	config:setup_window()
 
-	scene:reload_fonts()
-
-	local map_max_x = game_cfg.map.max_x
-	local map_max_y = game_cfg.map.max_y
-	local map_max_z = game_cfg.map.max_z
-	local map_min_z = game_cfg.map.min_z
-
-	local player = entities.add_from_template("player", 250, 250, 1)
-	entities.set_player(player)
-	input_handler:set_actor(player)
+local function load_default_inventory(player)
 	inventory.add_from_template(player, "sword")
 	inventory.add_from_template(player, "bow")
 	inventory.add_from_template(player, "leather_armor")
@@ -52,13 +40,39 @@ function love.load()
 	inventory.equip(player, player.inventory.items[1])
 	inventory.equip(player, player.inventory.items[3])
 	inventory.equip(player, player.inventory.items[4])
+end
+
+local function apply_default_statuses(player)
+	statuses.add_from_template(player, "bleeding")
+	--statuses.add_from_template(player, "broken_leg")
+end
+
+local function spawn_default_entities()
 	entities.add_from_template("zombie", 256, 256, 1)
 	entities.add_from_template("crate", 250, 260, 1)
 	entities.add_from_template("barricade", 250, 255, 1)
 	entities.add_from_template("campfire", 255, 260, 1)
 	entities.add_from_template("crystal", 280, 255, 1)
-	statuses.add_from_template(player, "bleeding")
-	statuses.add_from_template(player, "broken_leg")
+end
+
+function love.load()
+	config:load()
+	config:setup_window()
+
+	scene:reload_fonts()
+
+	local map_max_x = game_cfg.map.max_x
+	local map_max_y = game_cfg.map.max_y
+	local map_max_z = game_cfg.map.max_z
+	local map_min_z = game_cfg.map.min_z
+
+	local player = entities.add_from_template("player", 250, 250, 1)
+	entities.set_player(player)
+	input_handler:set_actor(player)
+	apply_default_statuses(player)
+	load_default_inventory(player)
+	spawn_default_entities()
+
 	map:load(map_max_x, map_max_y, map_max_z, map_min_z, "town")
 	map:update_visibility(entities.player.x, entities.player.y, stats.get(entities.player, "sight"))
 	panels:load()
