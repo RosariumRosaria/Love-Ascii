@@ -23,6 +23,19 @@ return {
 			{ stat = "damage", op = "add", value = 1 },
 		},
 	},
+
+	glowing = {
+		name = "Glowing",
+		description = "Glowing.",
+		color = { 0.75, 0.75, 0.5 },
+		light = {
+			color = { r = 1.0, g = 0.85, b = 0.65 },
+			flicker = { amp = 0.1, freq = 2, phase = 6 },
+			intensity = 0.25,
+			radius = 12,
+		},
+		duration = 5,
+	},
 	stun = {
 		name = "Stun",
 		description = "Unable to move or act.",
@@ -54,16 +67,17 @@ return {
 		description = "Losing health over time.",
 		color = { 1, 0.5, 0.6 },
 		visual = { tint = { 0.6, 0.35, 0.3 } },
-		duration = 20,
+		emitters = { { particle = "blood", rate = 2, z_offset = 0, jitter = true } },
+		duration = 40,
 		tags = { bandageable = true },
-		on_tick = { damage = 1 },
+		on_tick = { damage = 1, chance = 25 },
 	},
 	broken_leg = {
 		name = "Broken Leg",
 		description = "Decreased movement speed.",
 		color = { 1, 0.5, 0.6 },
 		modifiers = {
-			{ stat = "speed", op = "mul", value = 0.5 },
+			{ stat = "speed", op = "mul", value = 0.66 },
 		},
 		tags = { splintable = true },
 	},
