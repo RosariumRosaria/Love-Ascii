@@ -156,20 +156,38 @@ end
 
 function actions:use_item(entity, item, dx, dy)
 	local target = entity
-	if item.on_use.target_tag then
+	if item.on_use.targets then
 		target = entities.get_with_tag(entity.x + dx, entity.y + dy, entity.z, item.on_use.target_tag)
 		if not validate_interaction(entity, target, "Use Item") then
 			return false
 		end
 		if item.on_use.apply_status and statuses.find(target, item.on_use.apply_status) then
-			event_log:add({ type = "action_failed", entity = target.name, reason = "Already " .. item.on_use.apply_status })
+			event_log:add({
+				type = "action_failed",
+				entity = (target and target.name) or "",
+				reason = "Already " .. item.on_use.apply_status,
+			})
 			return false
 		end
+	end
+
+	if item.on_use.clear_status and not statuses.has_tag(target, item.on_use.clear_status) then
+		event_log:add({
+			type = "action_failed",
+			entity = (target and target.name) or "",
+			reason = "not " .. item.on_use.clear_status,
+		})
+		return false
 	end
 
 	if item.on_use.apply_status then
 		statuses.add_from_template(target, item.on_use.apply_status, nil, item)
 	end
+
+	if item.on_use.clear_status then
+		statuses.remove_with_tag(target, item.on_use.clear_status)
+	end
+
 	assign_cost(entity, "use_item")
 	event_log:add({ type = "item_used", entity = entity.name, item = item.name })
 	if inventory.use_charge(item) then

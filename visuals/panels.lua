@@ -254,7 +254,7 @@ function panels:update_status(entity)
 	elseif status_panel.mode == "statuses" and entity.statuses then
 		for _, status in ipairs(entity.statuses) do
 			local label = status.name or status.key or "?"
-			self:add_text_to_panel_by_name("status", "- " .. label .. " (" .. status.duration .. ")")
+			self:add_text_to_panel_by_name("status", "- " .. label .. " (" .. (status.duration or "") .. ")")
 		end
 
 		if not entity.statuses or #entity.statuses == 0 then

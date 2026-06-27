@@ -29,6 +29,13 @@ function statuses.absorb(target, amount)
 	return amount
 end
 
+function statuses.remove_with_tag(entity, tag)
+	local status_list = statuses.with_tag(entity, tag)
+	if status_list and #status_list > 0 then
+		statuses.remove(entity, status_list[1].key)
+	end
+end
+
 function statuses.remove(entity, key)
 	if not entity.statuses then
 		return

@@ -96,6 +96,7 @@ return {
 			attackable = true,
 			interactable = true,
 		},
+		applies_on_hit = { { name = "bleeding", chance = 50 } },
 		next_turn = 0,
 	},
 	campfire = {
