@@ -49,4 +49,22 @@ return {
 		tags = { absorbs = true, disables_interaction = true, remove_when_empty = true },
 		visual = { tint = { 1, 0.8, 0.5 } },
 	},
+	bleeding = {
+		name = "Bleeding",
+		description = "Losing health over time.",
+		color = { 1, 0.5, 0.6 },
+		visual = { tint = { 0.6, 0.35, 0.3 } },
+		duration = 20,
+		tags = { bandageable = true },
+		on_tick = { damage = 1 },
+	},
+	broken_leg = {
+		name = "Broken Leg",
+		description = "Decreased movement speed.",
+		color = { 1, 0.5, 0.6 },
+		modifiers = {
+			{ stat = "speed", op = "mul", value = 0.5 },
+		},
+		tags = { splintable = true },
+	},
 }
