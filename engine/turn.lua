@@ -22,8 +22,12 @@ local function post_turn_update(player)
 end
 
 local function commit_turn(actor)
+	if actor == entities.player then
+		panels:clear_panel_by_name("terminal")
+	end
 	statuses.tick_entity(actor)
 	map:apply_on_step(actor)
+
 	local popped = time.pop()
 	if not actor.dead then
 		time.schedule_turn(popped, actor.action_cost)
