@@ -322,12 +322,12 @@ function render_utils.brighten(color)
 	}
 end
 
-function render_utils.apply_lighting(color, light, z)
+function render_utils.apply_lighting(color, light, z, emissive_scale)
 	if not color then
 		return { 1, 1, 1, 1 }
 	end
 	local ambient = ambient_color()
-	local emissive = render_config.lighting.light_emissive * render_utils.emissive_by_time()
+	local emissive = (emissive_scale or render_config.lighting.light_emissive) * render_utils.emissive_by_time()
 
 	local z_factor = render_utils.lighting_z_factor(light.sources, z)
 	local zr = (light.r or 0) * z_factor

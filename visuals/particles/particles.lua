@@ -1,11 +1,10 @@
 local map = require("map.map")
 local render_cfg = require("config.render_config")
 local types = require("map.tile_types")
-local utils = require("utils")
 local entities = require("entities.entities")
 
 local particles = {
-	mode = "rain",
+	mode = "normal",
 	particles = {},
 	screen_w = 0,
 	screen_h = 0,
@@ -35,9 +34,10 @@ local particle_types = {
 		vz_min = 0,
 		vz_max = 0,
 		drift = 0.0,
-		color = { 1, 0.0, 0.05, 1 },
-		linger = 3,
+		color = { 0.9, 0.3, 0.35, 1 },
+		linger = 4,
 		lifespan = 4,
+		layer = "below_entity",
 	},
 }
 
@@ -84,6 +84,7 @@ local function spawn_particle(x, y, z, ease_in, params)
 		alpha_mult = 1,
 		char = params.char,
 		color = params.color,
+		layer = params.layer,
 		delay = ease_in and math.random() * render_cfg.particles.weather_ease_in_duration or 0,
 		source = "emitter",
 	}

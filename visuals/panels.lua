@@ -123,6 +123,14 @@ function panels:add_text_to_panel_by_name(name, text)
 	self:add_text_to_panel(self:get_panel(name), text)
 end
 
+function panels:clear_panel_by_name(name)
+	local panel = self:get_panel(name)
+	if not panel then
+		return
+	end
+	panel.texts = {}
+end
+
 function panels:reload_fonts()
 	small_tile_size = config.small_tile_size
 	small_font = config.small_font

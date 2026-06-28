@@ -12,6 +12,11 @@ local statuses = require("statuses.statuses")
 
 local painter = {}
 
+-- Named draw layers a particle type can opt into; unset falls back to WEATHER (drawn above entities).
+local PARTICLE_LAYERS = {
+	below_entity = draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
+}
+
 local tile_size
 local small_tile_size
 local small_font
@@ -314,7 +319,7 @@ function painter:emit_particle(p, center_x, center_y, time)
 	local scaled_color = render_utils.scale_color(p.color, alpha)
 	local light_data = map:get_lighting_tile(tx, ty)
 	if light_data then
-		scaled_color = render_utils.apply_lighting(scaled_color, light_data, p.z)
+		scaled_color = render_utils.apply_lighting(scaled_color, light_data, p.z, render_cfg.lighting.particle_emissive)
 	end
 	scaled_color = apply_bw_mode(scaled_color, nil, 2)
 
@@ -324,7 +329,7 @@ function painter:emit_particle(p, center_x, center_y, time)
 	emit_char({
 		z = p.z,
 		y = p.y,
-		layer = draw_buffer.LAYER.WEATHER,
+		layer = PARTICLE_LAYERS[p.layer] or draw_buffer.LAYER.WEATHER,
 		x_screen = x_screen + dx,
 		y_screen = y_screen + dy,
 		char = p.char,
