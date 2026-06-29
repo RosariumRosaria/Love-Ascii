@@ -48,7 +48,7 @@ local function apply_default_statuses(player)
 end
 
 local function spawn_default_entities()
-	entities.add_from_template("ogre", 252, 253, 1)
+	entities.add_from_template("Ogre", 252, 253, 1)
 	entities.add_from_template("zombie", 256, 256, 1)
 	entities.add_from_template("crate", 250, 260, 1)
 	entities.add_from_template("barricade", 250, 255, 1)

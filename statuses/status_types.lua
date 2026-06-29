@@ -36,6 +36,21 @@ return {
 		},
 		duration = 5,
 	},
+
+	burning = {
+		name = "Burning",
+		description = "Taking damage over time.",
+		color = { 0.75, 0.6, 0.4 },
+		light = {
+			color = { r = 1.0, g = 0.6, b = 0.25 },
+			intensity = 1,
+			radius = 5,
+			flicker = { amp = 0.02, freq = 2, phase = 3 },
+		},
+		emitters = { { particle = "smoke", rate = 1 }, { particle = "ember", rate = 1.2 } },
+		duration = 7,
+		on_tick = { damage = 1, chance = 50 },
+	},
 	stun = {
 		name = "Stun",
 		description = "Unable to move or act.",
