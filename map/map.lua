@@ -97,6 +97,17 @@ function map:is_tile_free(x, y, z, skip_entities)
 	return true
 end
 
+function map:is_footprint_free(x, y, z, entity)
+	local skip_entities = { [entity] = true }
+	for _, c in ipairs(utils.footprint_offsets(entity)) do
+		local ret = map:is_tile_free(x + c.dx, y + c.dy, z, skip_entities)
+		if not ret then
+			return ret
+		end
+	end
+	return true
+end
+
 function map:is_visible(x, y)
 	if not self:in_bounds(x, y) then
 		return false

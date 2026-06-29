@@ -15,14 +15,41 @@ function animation.add_from_template(name, overrides)
 	return new_anim
 end
 
+local function trailing_edge_offsets(offsets, dx, dy)
+	if dx == 0 and dy == 0 then
+		return offsets
+	end
+	local sx, sy = utils.sign(dx), utils.sign(dy)
+	local back_x, back_y
+	for _, c in ipairs(offsets) do
+		if sx ~= 0 and (not back_x or c.dx * sx < back_x) then
+			back_x = c.dx * sx
+		end
+		if sy ~= 0 and (not back_y or c.dy * sy < back_y) then
+			back_y = c.dy * sy
+		end
+	end
+
+	local ret = {}
+	for _, c in ipairs(offsets) do
+		if (sx ~= 0 and c.dx * sx == back_x) or (sy ~= 0 and c.dy * sy == back_y) then
+			ret[#ret + 1] = c
+		end
+	end
+	return ret
+end
+
 function animation.spawn_pending_trail(entity)
 	local pt = entity.pending_trail
 	if not pt then
 		return
 	end
-	local effect = effects:add_from_template("trail", pt.x, pt.y, pt.z)
-	if pt.color then
-		effect.rects[1].colors[1] = pt.color
+	local offsets = trailing_edge_offsets(utils.footprint_offsets(entity), entity.x - pt.x, entity.y - pt.y)
+	for _, c in ipairs(offsets) do
+		local effect = effects:add_from_template("trail", pt.x + c.dx, pt.y + c.dy, pt.z)
+		if pt.color then
+			effect.rects[1].colors[1] = pt.color
+		end
 	end
 	entity.pending_trail = nil
 end

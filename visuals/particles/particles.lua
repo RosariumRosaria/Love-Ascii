@@ -39,6 +39,15 @@ local particle_types = {
 		lifespan = 4,
 		layer = "below_entity",
 	},
+	dazed = {
+		char = "?",
+		vz_min = 1,
+		vz_max = 2,
+		drift = 0.35,
+		color = { 0.9, 0.7, 0.2, 0.7 },
+		linger = 2,
+		lifespan = 3,
+	},
 }
 
 local modes = { rain = "rain", snow = "snow", normal = "normal" }

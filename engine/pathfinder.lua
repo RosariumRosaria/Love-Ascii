@@ -9,18 +9,18 @@ local statuses = require("statuses.statuses")
 local pathfinder = {}
 local max_checks = game_cfg.pathfinding.max_iterations
 
-function pathfinder.traversal(actor, x, y, z, goal)
+local function cell_traversal(actor, x, y, z, goal)
 	if not map:walkable(x, y, z) then
 		return "blocked", nil
 	end
 
 	local at_goal = x == goal.x and y == goal.y and z == 1
 
-	local best_kind, best_cost
+	local best_kind, best_cost, best_target
 	local has_unhandleable = false
 
 	for _, ent in ipairs(entities.get_list_at(x, y, z)) do
-		if not utils.get_tag(ent, "walkable") then
+		if not utils.get_tag(ent, "walkable") and ent ~= actor then
 			local kind, cost
 			if
 				ent.passage
@@ -49,7 +49,7 @@ function pathfinder.traversal(actor, x, y, z, goal)
 			end
 			if kind then
 				if not best_cost or cost < best_cost then
-					best_kind, best_cost = kind, cost
+					best_kind, best_cost, best_target = kind, cost, ent
 				end
 			else
 				has_unhandleable = true
@@ -58,18 +58,49 @@ function pathfinder.traversal(actor, x, y, z, goal)
 	end
 
 	if at_goal then
-		return best_kind or "walk", 1
+		return best_kind or "walk", 1, best_target
 	end
 
 	if has_unhandleable then
-		return "blocked", nil
+		return "blocked", nil, nil
 	end
 
 	if best_kind then
-		return best_kind, best_cost
+		return best_kind, best_cost, best_target
 	end
 
-	return "walk", 1
+	return "walk", 1, nil
+end
+
+local kind_order = {
+	blocked = 1,
+	attack = 2,
+	open = 3,
+	wait = 4,
+	walk = 5,
+}
+
+function pathfinder.traversal(actor, x, y, z, goal)
+	local ret_kind, ret_cost, ret_target = "walk", 1, nil
+	local blocked = false
+	for _, c in ipairs(utils.footprint_offsets(actor)) do
+		local kind, cost, target = cell_traversal(actor, x + c.dx, y + c.dy, z, goal)
+		if kind == "blocked" then
+			blocked = true
+		elseif kind_order[kind] < kind_order[ret_kind] and cost then
+			ret_kind, ret_cost, ret_target = kind, cost, target
+		end
+	end
+
+	-- A blocked footprint cell only stops the body from *moving* onto (x, y); an
+	-- attack/open/wait is performed from the current cell, so a blocked sibling
+	-- must not mask it. Only fall through to "blocked" when the best outcome was
+	-- to walk into the blocked footprint.
+	if blocked and ret_kind == "walk" then
+		return "blocked", nil
+	end
+
+	return ret_kind, ret_cost, ret_target
 end
 
 local function get_neighbors(x, y, goal, actor)
@@ -117,6 +148,7 @@ end
 
 function pathfinder.a_star(start, goal, actor)
 	local frontier = {}
+	local arrival = nil
 	utils.priority_queue_put(frontier, start, 0)
 
 	local came_from = {}
@@ -132,7 +164,8 @@ function pathfinder.a_star(start, goal, actor)
 		local node = utils.priority_queue_get(frontier)
 		local current = node[1]
 
-		if current.x == goal.x and current.y == goal.y then
+		if utils.footprint_reaches(utils.footprint_offsets(actor), current.x, current.y, goal) then
+			arrival = current
 			break
 		end
 
@@ -151,12 +184,11 @@ function pathfinder.a_star(start, goal, actor)
 		end
 	end
 
-	local goal_key = key(goal.x, goal.y)
-	if not came_from[goal_key] then
+	if not arrival then
 		return nil
 	end
 
-	return reconstruct_path(came_from, start, goal)
+	return reconstruct_path(came_from, start, arrival)
 end
 
 return pathfinder

@@ -22,11 +22,17 @@ local function validate_interaction(actor, target, name, range)
 		event_log:add({ type = "action_failed", entity = "Unknown", reason = name .. " target is nil" })
 		return false
 	end
-	if utils.distance_between(actor, target) > range then
-		event_log:add({ type = "action_failed", entity = target.name, reason = "Too far apart" })
-		return false
+
+	for _, c in ipairs(utils.footprint_cells(actor)) do
+		for _, cc in ipairs(utils.footprint_cells(target)) do
+			if utils.distance_between(c, cc) <= range then
+				return true
+			end
+		end
 	end
-	return true
+
+	event_log:add({ type = "action_failed", entity = target.name, reason = "Too far apart" })
+	return false
 end
 
 local action_order = {
@@ -242,7 +248,11 @@ function actions:attack(entity, dx, dy, target_entity)
 	end
 	if entity.team ~= target_entity.team then
 		assign_cost(entity, "attack")
-		effects:add_from_template("attack", entity.x + dx, entity.y + dy, entity.z)
+
+		for _, c in ipairs(utils.footprint_offsets(target_entity)) do
+			effects:add_from_template("attack", target_entity.x + c.dx, target_entity.y + c.dy, entity.z)
+		end
+
 		animation.add_bump(entity, target_entity.x, target_entity.y)
 		deal_damage(target_entity, stats.get(entity, "damage", "melee"), entity.name)
 		statuses.on_hit(entity, target_entity)
@@ -250,7 +260,7 @@ function actions:attack(entity, dx, dy, target_entity)
 			x = target_entity.x,
 			y = target_entity.y,
 			z = entity.z,
-			volume = (weapon and weapon.volume) or entity.attack_volume or 6,
+			volume = (weapon and weapon.volume) or entity.attack_volume or 6, --TODO, Bigger question, should all these defaults exist here or be defined on the ent
 			reach = (weapon and weapon.reach) or entity.attack_reach or 12,
 			description = (weapon and weapon.sound) or entity.attack_sound or "a thwack",
 			source = entity,
@@ -327,7 +337,7 @@ function actions:move(entity, dx, dy)
 	local tar_x = entity.x + dx
 	local tar_y = entity.y + dy
 
-	if map:is_tile_free(tar_x, tar_y, entity.z, { [entity] = true }) then
+	if map:is_footprint_free(tar_x, tar_y, entity.z, entity) then
 		assign_cost(entity, "move")
 		animation.spawn_pending_trail(entity)
 		entity.pending_trail = { x = entity.x, y = entity.y, z = entity.z, color = entity.appearance.effect_color }

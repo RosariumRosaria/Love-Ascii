@@ -41,14 +41,14 @@ local function follow_path(entity)
 	if step and step.x and step.y then
 		local dx = step.x - entity.x
 		local dy = step.y - entity.y
-		local kind = pathfinder.traversal(entity, step.x, step.y, 1, mind.target_pos)
+		local kind, _, target = pathfinder.traversal(entity, step.x, step.y, 1, mind.target_pos)
 
 		if kind == "attack" then
 			entity.mind.impatience = 0
-			actions:attack(entity, dx, dy)
+			actions:attack(entity, dx, dy, target)
 		elseif kind == "open" then
 			entity.mind.impatience = 0
-			actions:interact(entity, dx, dy)
+			actions:interact(entity, dx, dy, target)
 		elseif kind == "wait" then
 			entity.mind.impatience = entity.mind.impatience + 1
 			actions:wait(entity)
@@ -61,9 +61,13 @@ local function follow_path(entity)
 	return true
 end
 
+local function reached_target(entity, target_pos)
+	return utils.footprint_reaches(utils.footprint_offsets(entity), entity.x, entity.y, target_pos)
+end
+
 local function reached_or_stuck(entity, had_path)
 	local mind = entity.mind
-	return (entity.x == mind.target_pos.x and entity.y == mind.target_pos.y) or not had_path
+	return reached_target(entity, mind.target_pos) or not had_path
 end
 
 local function perceive(entity, target)
@@ -96,11 +100,11 @@ end
 local function start_chasing(entity, target)
 	set_state(entity, "chasing")
 	local mind = entity.mind
+
 	if mind.last_known then
 		mind.last_heading =
 			{ x = utils.sign(target.x - mind.last_known.x), y = utils.sign(target.y - mind.last_known.y) }
 	end
-
 	mind.last_known = { x = target.x, y = target.y }
 	mind.target_pos = { x = target.x, y = target.y }
 	mind.target_value = ai_cfg.target_value.sight
@@ -142,7 +146,7 @@ end
 local function wander(entity)
 	local mind = entity.mind
 	if mind.wander_turns and mind.wander_turns > 0 and mind.target_pos then
-		if entity.x == mind.target_pos.x and entity.y == mind.target_pos.y then
+		if reached_target(entity, mind.target_pos) then
 			set_state(entity, "idle")
 			return
 		end
@@ -296,6 +300,7 @@ local function enemy_turn(entity)
 
 	if mind.can_see and not mind.could_see then
 		effects:remove_anchored(entity, "huh")
+
 		effects:add_from_template("alert", entity.x, entity.y, entity.z, { anchor = entity })
 	elseif heard then
 		effects:add_from_template("huh", entity.x, entity.y, entity.z, { anchor = entity })

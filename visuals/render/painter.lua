@@ -114,7 +114,7 @@ function painter:emit_effect(effect, center_x, center_y, visible)
 			draw_buffer:emit({
 				pass = pass,
 				z = effect.z,
-				y = cy, -- sort by the rect's own row
+				y = cy,
 				layer = draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
 				kind = "rect",
 				x_screen = x_screen + ((tile_size - effect_size) / 2),
@@ -130,13 +130,15 @@ function painter:emit_effect(effect, center_x, center_y, visible)
 	end
 
 	if effect.panels then
+		local anchor_offset_x = effect.anchor and utils.get_center_of_footprint(effect.anchor) or 0
+
 		for _, panel in ipairs(effect.panels) do
 			local color = panel.colors[effect.params.i] or { 1, 1, 1, 1 }
 			local size_scale = (panel.sizes and panel.sizes[effect.params.i]) or 1
 			local rect_size = tile_size * size_scale
 
 			local px, py = render_utils.get_screen_coords(
-				(effect.anchor and effect.anchor.render_x) or effect.x,
+				(effect.anchor and effect.anchor.render_x + anchor_offset_x) or effect.x,
 				(effect.anchor and effect.anchor.render_y - panel.offset_y) or effect.y,
 				center_x,
 				center_y
@@ -338,6 +340,19 @@ function painter:emit_particle(p, center_x, center_y, time)
 	})
 end
 
+local function footprint_cells(entity)
+	local ret = {}
+	for _, c in ipairs(utils.footprint_offsets(entity)) do
+		table.insert(ret, {
+			render_x = entity.render_x + c.dx,
+			x = entity.x + c.dx,
+			render_y = entity.render_y + c.dy,
+			y = entity.y + c.dy,
+		})
+	end
+	return ret
+end
+
 function painter:emit_entity(entity, center_x, center_y, visible, explored, time)
 	local tilelike = utils.get_tag(entity, "tilelike")
 
@@ -352,74 +367,77 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 		outline_color = render_utils.to_grayscale(outline_color)
 	end
 
-	local light_data = visible and map:get_lighting_tile(entity.x, entity.y) or nil
+	local visuals = statuses.get_visual_state(entity)
+	for _, entity_part in ipairs(footprint_cells(entity)) do
+		local light_data = visible and map:get_lighting_tile(entity_part.x, entity_part.y) or nil
 
-	local x_screen, y_screen = render_utils.get_screen_coords(entity.render_x, entity.render_y, center_x, center_y)
-	local base = render_utils.distance_scale(entity.x, entity.y, center_x, center_y)
-
-	if utils.get_tag(entity, "covers") then
-		local cover_color = { 0, 0, 0, 1 }
-		if visible then
-			local rx = math.floor(entity.render_x)
-			local ry = math.floor(entity.render_y)
-			local cover_light = map:get_lighting_tile(rx, ry)
-			local r, g, b = render_utils.normalize_light(cover_light)
-			local k = render_cfg.lighting.cover_emissive * render_utils.emissive_by_time()
-			cover_color = { r * k, g * k, b * k, 1 }
-		end
-		cover_color = render_utils.scale_color(cover_color, base)
-		emit_cover_rect(draw_buffer.LAYER.ENTITY_COVER, entity.z, entity.y, x_screen, y_screen, cover_color)
-	end
-
-	for i, char_data in ipairs(entity.appearance.chars) do
-		local base_color = entity.appearance.color[i] or entity.appearance.color[#entity.appearance.color]
-
-		if tilelike then
-			base_color = render_utils.get_effective_color(base_color, visible, explored)
+		local base = render_utils.distance_scale(entity_part.x, entity_part.y, center_x, center_y)
+		local x_screen, y_screen =
+			render_utils.get_screen_coords(entity_part.render_x, entity_part.render_y, center_x, center_y)
+		if utils.get_tag(entity, "covers") then
+			local cover_color = { 0, 0, 0, 1 }
+			if visible then
+				local rx = math.floor(entity_part.render_x)
+				local ry = math.floor(entity_part.render_y)
+				local cover_light = map:get_lighting_tile(rx, ry)
+				local r, g, b = render_utils.normalize_light(cover_light)
+				local k = render_cfg.lighting.cover_emissive * render_utils.emissive_by_time()
+				cover_color = { r * k, g * k, b * k, 1 }
+			end
+			cover_color = render_utils.scale_color(cover_color, base)
+			emit_cover_rect(draw_buffer.LAYER.ENTITY_COVER, entity.z, entity_part.y, x_screen, y_screen, cover_color)
 		end
 
-		local scale = render_utils.height_level_scale(entity.z + i - 1, map.max_z, map.min_z, visible)
-		if not tilelike then
-			scale = scale + render_cfg.lighting.entity_brightness_boost
-		end
+		for i, char_data in ipairs(entity.appearance.chars) do
+			local base_color = entity.appearance.color[i] or entity.appearance.color[#entity.appearance.color]
 
-		local scaled_color = render_utils.scale_color(base_color, scale)
-		if light_data then
-			scaled_color = render_utils.apply_lighting(scaled_color, light_data, entity.z + i - 1)
-			-- TODO: Determine if this should apply to entity colors
-			-- scaled_color = render_utils.apply_flicker(scaled_color, light_data.flicker, time)
-		end
-		local visuals = statuses.get_visual_state(entity)
-		if visuals.tint then
-			scaled_color = render_utils.tint_color(scaled_color, visuals.tint)
-		end
-		if visuals.alpha then
-			scaled_color = render_utils.scale_color(scaled_color, visuals.alpha)
-		end
-		scaled_color = apply_bw_mode(scaled_color, nil, 2)
+			if tilelike then
+				base_color = render_utils.get_effective_color(base_color, visible, explored)
+			end
 
-		scaled_color = render_utils.scale_color(scaled_color, base)
-		scaled_color = render_utils.tonemap(scaled_color)
+			local scale = render_utils.height_level_scale(entity.z + i - 1, map.max_z, map.min_z, visible)
+			if not tilelike then
+				scale = scale + render_cfg.lighting.entity_brightness_boost
+			end
 
-		local dx, dy = get_offset(entity.z + i - 1, entity.x, entity.y, center_x, center_y)
-		local p = {
-			z = entity.z + i - 1,
-			y = entity.y,
-			layer = draw_buffer.LAYER.ENTITY_CHAR,
-			x_screen = x_screen + dx,
-			y_screen = y_screen + dy,
-			char = char_data,
-			color = scaled_color,
-			outline_color = outline_color,
-			rotation = entity.rotation,
-			natural_rotation = entity.natural_rotation,
-			size_scale = 1 + (entity.z + i - 1) * render_cfg.rendering.z_size_scale_per_level,
-		}
-		if entity.moused and entity.type == "actor" then
-			emit_name(p, entity.name)
-			break
-		else
-			emit_char(p)
+			local scaled_color = render_utils.scale_color(base_color, scale)
+			if light_data then
+				scaled_color = render_utils.apply_lighting(scaled_color, light_data, entity.z + i - 1)
+				-- TODO: Determine if this should apply to entity colors
+				-- scaled_color = render_utils.apply_flicker(scaled_color, light_data.flicker, time)
+			end
+
+			if visuals.tint then
+				scaled_color = render_utils.tint_color(scaled_color, visuals.tint)
+			end
+			if visuals.alpha then
+				scaled_color = render_utils.scale_color(scaled_color, visuals.alpha)
+			end
+			scaled_color = apply_bw_mode(scaled_color, nil, 2)
+
+			scaled_color = render_utils.scale_color(scaled_color, base)
+			scaled_color = render_utils.tonemap(scaled_color)
+
+			local dx, dy = get_offset(entity.z + i - 1, entity_part.x, entity_part.y, center_x, center_y)
+			local p = {
+				z = entity.z + i - 1,
+				y = entity_part.y,
+				layer = draw_buffer.LAYER.ENTITY_CHAR,
+				x_screen = x_screen + dx,
+				y_screen = y_screen + dy,
+				char = char_data,
+				color = scaled_color,
+				outline_color = outline_color,
+				rotation = entity.rotation,
+				natural_rotation = entity.natural_rotation,
+				size_scale = 1 + (entity.z + i - 1) * render_cfg.rendering.z_size_scale_per_level,
+			}
+			if entity.moused and entity.type == "actor" then
+				emit_name(p, entity.name)
+				break
+			else
+				emit_char(p)
+			end
 		end
 	end
 end

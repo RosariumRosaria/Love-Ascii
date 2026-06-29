@@ -72,6 +72,53 @@ function utils.distance_between(a, b)
 	return utils.distance_between_coords(a.x, a.y, b.x, b.y)
 end
 
+function utils.footprint_reaches(offsets, ax, ay, goal, stop_dist)
+	for _, c in ipairs(offsets) do
+		local cx, cy = ax + c.dx, ay + c.dy
+		if math.abs(cx - goal.x) + math.abs(cy - goal.y) <= (stop_dist or 0) then
+			return true
+		end
+	end
+	return false
+end
+
+local SINGLE_FOOTPRINT = { { dx = 0, dy = 0 } }
+function utils.footprint_offsets(entity)
+	return entity.footprint or SINGLE_FOOTPRINT
+end
+
+function utils.footprint_cells(entity)
+	local ret = {}
+	for _, c in ipairs(utils.footprint_offsets(entity)) do
+		ret[#ret + 1] = { x = entity.x + c.dx, y = entity.y + c.dy }
+	end
+	return ret
+end
+
+function utils.get_center_of_footprint(entity)
+	if not entity.footprint then
+		return 0, 0
+	end
+	local min_x, min_y, max_x, max_y
+
+	for _, c in ipairs(entity.footprint) do
+		if not min_x or c.dx < min_x then
+			min_x = c.dx
+		end
+		if not min_y or c.dy < min_y then
+			min_y = c.dy
+		end
+		if not max_x or c.dx > max_x then
+			max_x = c.dx
+		end
+		if not max_y or c.dy > max_y then
+			max_y = c.dy
+		end
+	end
+
+	return (min_x + max_x) / 2, (min_y + max_y) / 2
+end
+
 function utils.distance_between_coords(x1, y1, x2, y2)
 	return math.sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2)
 end
