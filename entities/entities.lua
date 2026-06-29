@@ -101,14 +101,18 @@ local function cell_list(z, y, x, create)
 end
 
 local function index_add(entity)
-	local list = cell_list(entity.z, entity.y, entity.x, true)
-	list[#list + 1] = entity
+	for _, c in ipairs(utils.footprint_cells(entity)) do
+		local list = cell_list(entity.z, c.y, c.x, true)
+		list[#list + 1] = entity
+	end
 end
 
 local function index_remove(entity)
-	local list = cell_list(entity.z, entity.y, entity.x, false)
-	if list then
-		utils.remove_from_list(list, entity)
+	for _, c in ipairs(utils.footprint_cells(entity)) do
+		local list = cell_list(entity.z, c.y, c.x, false)
+		if list then
+			utils.remove_from_list(list, entity)
+		end
 	end
 end
 
@@ -116,7 +120,7 @@ function entities.get_list_at(x, y, z)
 	return cell_list(z, y, x, false) or EMPTY
 end
 
-function entities.get_list_at_column(x, y)
+function entities.get_list_at_column(x, y) --TODO might come up for AOE esque things, need to dedup for big entities
 	local result = {}
 	for z = game_config.map.min_z, game_config.map.max_z do
 		local list = cell_list(z, y, x, false)

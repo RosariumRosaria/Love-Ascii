@@ -102,7 +102,7 @@ return {
 			{
 				texts = { "!" },
 				colors = { { 0, 0, 0.0, 0.5 } },
-				offset_y = 1.5,
+				offset_y = 1.25,
 			},
 		},
 	},
@@ -120,7 +120,7 @@ return {
 			{
 				texts = { "?" },
 				colors = { { 0, 0, 0.0, 0.5 } },
-				offset_y = 1.5,
+				offset_y = 1.25,
 			},
 		},
 	},

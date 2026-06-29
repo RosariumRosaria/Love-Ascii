@@ -40,6 +40,7 @@ return {
 		name = "Stun",
 		description = "Unable to move or act.",
 		tags = { disables_action = true },
+		emitters = { { particle = "dazed", rate = 3, jitter = true } },
 		color = { 0.5, 0.5, 1 },
 		duration = 2,
 	},
