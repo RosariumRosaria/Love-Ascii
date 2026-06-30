@@ -336,6 +336,7 @@ function painter:emit_particle(p, center_x, center_y, time)
 		y_screen = y_screen + dy,
 		char = p.char,
 		color = scaled_color,
+		rotation = p.r,
 		size_scale = (1 + (p.z - 1) * render_cfg.rendering.z_size_scale_per_level) * render_cfg.particles.size_scale,
 	})
 end
@@ -402,7 +403,8 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 
 			local scaled_color = render_utils.scale_color(base_color, scale)
 			if light_data then
-				scaled_color = render_utils.apply_lighting(scaled_color, light_data, entity.z + i - 1)
+				scaled_color =
+					render_utils.apply_lighting(scaled_color, light_data, entity.z + i - 1, render_cfg.lighting.entity_emissive)
 				-- TODO: Determine if this should apply to entity colors
 				-- scaled_color = render_utils.apply_flicker(scaled_color, light_data.flicker, time)
 			end

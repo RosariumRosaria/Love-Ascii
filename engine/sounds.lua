@@ -14,9 +14,10 @@ end
 local function candidates(s)
 	local candidate_list = {}
 
+	local ox, oy = math.floor(s.x), math.floor(s.y)
 	for dy = -s.reach, s.reach do
 		for dx = -s.reach, s.reach do
-			local tx, ty = s.x + dx, s.y + dy
+			local tx, ty = ox + dx, oy + dy
 			local entity_list = entities.get_list_at_column(tx, ty)
 			for _, e in ipairs(entity_list) do
 				table.insert(candidate_list, e)
@@ -47,7 +48,7 @@ function sounds.emit(s)
 
 	if player_heard and not (s.source and s.source.sound_ring and not s.source.sound_ring.dead) then
 		if s.volume > RING_MIN_VOLUME then
-			local ring = effects:add_from_template("sound_ring", s.x, s.y, s.z)
+			local ring = effects:add_from_template("sound_ring", math.floor(s.x), math.floor(s.y), s.z)
 			ring.params.reach = s.reach
 			if s.source then
 				s.source.sound_ring = ring

@@ -176,6 +176,13 @@ function utils.chance(percent)
 	return math.random() < percent / 100
 end
 
+function utils.randomize_sign()
+	if utils.chance(50) then
+		return -1
+	end
+	return 1
+end
+
 function utils.randomize_flicker(light)
 	if light and light.flicker then
 		light.flicker.phase = math.random() * 2 * math.pi

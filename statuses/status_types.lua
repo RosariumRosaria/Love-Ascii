@@ -12,6 +12,7 @@ return {
 		color = { 1, 0.5, 0.5 },
 		duration = 5,
 		on_tick = { heal = 1 },
+		emitters = { { particle = "heal", rate = 2, jitter = true } },
 		visual = { tint = { 0.5, 1, 0.5 } },
 	},
 	strength = {
@@ -43,7 +44,7 @@ return {
 		color = { 0.75, 0.6, 0.4 },
 		light = {
 			color = { r = 1.0, g = 0.6, b = 0.25 },
-			intensity = 1,
+			intensity = 0.7,
 			radius = 5,
 			flicker = { amp = 0.02, freq = 2, phase = 3 },
 		},
@@ -55,7 +56,7 @@ return {
 		name = "Stun",
 		description = "Unable to move or act.",
 		tags = { disables_action = true },
-		emitters = { { particle = "dazed", rate = 3, jitter = true } },
+		emitters = { { particle = "dazed", rate = 5, jitter = true } },
 		color = { 0.5, 0.5, 1 },
 		duration = 2,
 	},
