@@ -17,7 +17,7 @@ local aim = {
 	current_target = nil,
 }
 
-function aim.move_to(x, y)
+function aim.move_to(x, y, target)
 	if
 		map:in_bounds(x, y)
 		and map:is_visible(x, y)
@@ -27,6 +27,9 @@ function aim.move_to(x, y)
 		aim.y = y
 		aim.reticle.x = x
 		aim.reticle.y = y
+		if target then
+			aim.current_target = target
+		end
 	end
 end
 
@@ -67,6 +70,7 @@ function aim.refresh()
 		for i, t in ipairs(aim.targets) do
 			if t.entity == aim.current_target then
 				aim.move_to(t.entity.x, t.entity.y)
+
 				aim.nth = (i % #aim.targets) + 1
 				return
 			end
@@ -79,9 +83,14 @@ function aim.refresh()
 end
 
 function aim.enter(entity, x, y)
+	local weapon = inventory.get_equipped(entity, "mainhand")
+	if not weapon or not weapon.ranged then
+		return false
+	end
+
 	aim.active = true
 	aim.entity = entity
-	aim.weapon = inventory.get_equipped(entity, "mainhand")
+	aim.weapon = weapon
 	aim.range = aim.weapon.range
 	aim.x = x
 	aim.origin_x = x
@@ -91,6 +100,7 @@ function aim.enter(entity, x, y)
 	aim.nth = 1
 	aim.targets = aim.find_targets_in_range()
 	aim.cycle_target()
+	return true
 end
 
 function aim.exit()
