@@ -263,15 +263,16 @@ function actions:attack(entity, dx, dy, target_entity)
 		local ctx, cty = utils.get_center_of_footprint(target_entity)
 		local acx, acy = entity.x + cx, entity.y + cy
 		local tcx, tcy = target_entity.x + ctx, target_entity.y + cty
-
-		particles:burst(
-			tcx,
-			tcy,
-			target_entity.z + 1,
-			"blood",
-			5,
-			{ dir = { dx = tcx - acx, dy = tcy - acy }, spread = 1, smin = 5, smax = 10 }
-		)
+		if target_entity.hit_burst then
+			particles:burst(
+				tcx,
+				tcy,
+				target_entity.z + 1,
+				target_entity.hit_burst,
+				5,
+				{ dir = { dx = tcx - acx, dy = tcy - acy }, spread = 1, smin = 5, smax = 10 }
+			)
+		end
 		sounds.emit({
 			x = tcx,
 			y = tcy,
