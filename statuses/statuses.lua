@@ -170,10 +170,10 @@ function statuses.apply_from_tile(entity, tile_stack)
 end
 
 function statuses.on_hit(attacker, target)
-	if not attacker.applies_on_hit then
+	if not (attacker.combat and attacker.combat.applies_on_hit) then
 		return
 	end
-	for _, status in ipairs(attacker.applies_on_hit) do
+	for _, status in ipairs(attacker.combat.applies_on_hit) do
 		if utils.chance(status.chance or 100) then
 			statuses.add_from_template(target, status.name, nil, attacker)
 		end

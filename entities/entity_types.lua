@@ -8,10 +8,10 @@ return {
 		name = "Player",
 		team = "player",
 		type = "actor",
-		hit_burst = "blood",
+		combat = { hit_burst = "blood" },
 		tags = { covers = true, attackable = true, can_hear = true },
 		default_action = "attackable",
-		allowed_actions = {
+		can_perform = {
 			attackable = true,
 			moveable = true,
 			interactable = true,
@@ -26,14 +26,11 @@ return {
 			speed = { base = 5 },
 			damage = { base = 1 },
 		},
-
-		next_turn = 0,
 	},
 	zombie = {
 		name = "Zombie",
 		type = "actor",
 		team = "enemy",
-		hit_burst = "blood",
 		mind = { state = "idle" },
 		appearance = {
 			chars = { "Z" },
@@ -42,8 +39,12 @@ return {
 		},
 		description = "A zombie, try attacking it!",
 		default_action = "attackable",
-		attack_volume = 8,
-		attack_sound = "a thump",
+		combat = {
+			attack_volume = 8,
+			attack_sound = "a thump",
+			applies_on_hit = { { name = "poison", chance = 50 } },
+			hit_burst = "blood",
+		},
 		stats = {
 			health = { base = 10, current = 10 },
 			sight = { base = 30 },
@@ -51,19 +52,14 @@ return {
 			damage = { base = 1 },
 		},
 		tags = {
-			solid = false,
 			moveable = true,
-			tilelike = false,
 			covers = true,
 			attackable = true,
-			walkable = false,
 			can_hear = true,
 		},
-		allowed_actions = {
+		can_perform = {
 			attackable = true,
 		},
-		applies_on_hit = { { name = "poison", chance = 50 } },
-		next_turn = 0,
 	},
 	ogre = {
 		name = "Ogre",
@@ -73,15 +69,18 @@ return {
 		appearance = {
 			chars = { "O" },
 			color = { { 0.5, 0.45, 0.25, 1 } },
-			effect_color = { 0.5, 0.45, 0.25, 1 },
+			effect_color = { 0.5, 0.45, 0.25, 0.5 },
 		},
 		footprint = { { dx = 0, dy = 0 }, { dx = 1, dy = 0 }, { dx = 0, dy = 1 }, { dx = 1, dy = 1 } },
 		description = "An ogre, try attacking it!",
 		default_action = "attackable",
-		attack_volume = 16,
-		attack_reach = 20,
-		attack_sound = "a thud",
-		hit_burst = "blood",
+		combat = {
+			attack_volume = 16,
+			attack_reach = 20,
+			attack_sound = "a thud",
+			applies_on_hit = { { name = "stun", chance = 50 } },
+			hit_burst = "blood",
+		},
 		stats = {
 			health = { base = 30, current = 30 },
 			sight = { base = 30 },
@@ -89,19 +88,14 @@ return {
 			damage = { base = 3 },
 		},
 		tags = {
-			solid = false,
 			moveable = true,
-			tilelike = false,
 			covers = true,
 			attackable = true,
-			walkable = false,
 			can_hear = true,
 		},
-		allowed_actions = {
+		can_perform = {
 			attackable = true,
 		},
-		applies_on_hit = { { name = "stun", chance = 50 } },
-		next_turn = 0,
 	},
 	dragon = {
 		name = "Dragon",
@@ -126,10 +120,13 @@ return {
 		},
 		description = "A dragon, try attacking it!",
 		default_action = "attackable",
-		attack_volume = 16,
-		attack_reach = 20,
-		hit_burst = "blood",
-		attack_sound = "a crash",
+		combat = {
+			attack_volume = 16,
+			attack_reach = 20,
+			attack_sound = "a crash",
+			applies_on_hit = { { name = "burning", chance = 50 } },
+			hit_burst = "blood",
+		},
 		stats = {
 			health = { base = 30, current = 30 },
 			sight = { base = 30 },
@@ -137,19 +134,14 @@ return {
 			damage = { base = 3 },
 		},
 		tags = {
-			solid = false,
 			moveable = true,
-			tilelike = false,
 			covers = true,
 			attackable = true,
-			walkable = false,
 			can_hear = true,
 		},
-		allowed_actions = {
+		can_perform = {
 			attackable = true,
 		},
-		applies_on_hit = { { name = "burning", chance = 50 } },
-		next_turn = 0,
 	},
 	vampire = {
 		name = "Vampire",
@@ -163,9 +155,12 @@ return {
 		},
 		description = "A vampire, try attacking it!",
 		default_action = "attackable",
-		attack_volume = 2,
-		hit_burst = "blood",
-		attack_sound = "the scratch of claws and fangs",
+		combat = {
+			attack_volume = 2,
+			attack_sound = "the scratch of claws and fangs",
+			applies_on_hit = { { name = "bleeding", chance = 50 } },
+			hit_burst = "blood",
+		},
 		stats = {
 			health = { base = 10, current = 10 },
 			sight = { base = 30 },
@@ -173,20 +168,15 @@ return {
 			damage = { base = 1 },
 		},
 		tags = {
-			solid = false,
 			moveable = true,
-			tilelike = false,
 			covers = true,
 			attackable = true,
-			walkable = false,
 			can_hear = true,
 		},
-		allowed_actions = {
+		can_perform = {
 			attackable = true,
 			interactable = true,
 		},
-		applies_on_hit = { { name = "bleeding", chance = 50 } },
-		next_turn = 0,
 	},
 	campfire = {
 		name = "Campfire",
@@ -198,12 +188,8 @@ return {
 		description = "A Campfire",
 		emitters = { { particle = "smoke", rate = 1 }, { particle = "ember", rate = 1.2 } },
 		tags = {
-			solid = false,
-			moveable = false,
 			tilelike = true,
 			covers = true,
-			attackable = false,
-			walkable = false,
 		},
 		light = {
 			color = { r = 1.0, g = 0.6, b = 0.25 },
@@ -222,12 +208,9 @@ return {
 		description = "A Crystal",
 		default_action = "moveable",
 		tags = {
-			solid = false,
 			moveable = true,
 			tilelike = true,
 			covers = true,
-			attackable = false,
-			walkable = false,
 		},
 		light = {
 			color = { r = 0.7, g = 0.9, b = 1 },
@@ -240,8 +223,7 @@ return {
 		name = "Crate",
 		description = "A heavy crate, try pushing it!",
 		type = "prop",
-
-		hit_burst = "dust",
+		combat = { hit_burst = "dust" },
 		appearance = {
 			chars = { "#" },
 			color = { { 0.38, 0.33, 0.30 } },
@@ -251,11 +233,9 @@ return {
 			health = { base = 5, current = 5 },
 		},
 		tags = {
-			solid = false,
 			moveable = true,
 			tilelike = true,
 			covers = true,
-			walkable = false,
 			attackable = true,
 		},
 	},
@@ -269,10 +249,8 @@ return {
 		},
 		default_action = "pickupable",
 		tags = {
-			solid = false,
 			tilelike = true,
 			covers = true,
-			walkable = false,
 			pickupable = true,
 		},
 	},
@@ -280,8 +258,7 @@ return {
 		name = "Barricade",
 		description = "A heavy barricade, try pushing it!",
 		type = "prop",
-
-		hit_burst = "dust",
+		combat = { hit_burst = "dust" },
 		appearance = {
 			chars = { "[]", "[]" },
 			color = { { 0.47, 0.23, 0.23, 1 } },
@@ -295,7 +272,6 @@ return {
 			moveable = true,
 			tilelike = true,
 			covers = true,
-			walkable = false,
 			attackable = true,
 		},
 	},
@@ -311,14 +287,12 @@ return {
 		stats = {
 			health = { base = 5, current = 5 },
 		},
-		hit_burst = "dust",
+		combat = { hit_burst = "dust" },
 		tags = {
-			moveable = false,
 			solid = true,
-			walkable = false,
+			walkable = false, -- swapped by interaction.toggle; must stay explicit
 			tilelike = true,
 			interactable = true,
-			covers = false,
 			attackable = true,
 			barricadeable = true,
 		},
@@ -342,20 +316,17 @@ return {
 		name = "Window",
 		description = "A window, try opening it!",
 		type = "prop",
-
-		hit_burst = "dust",
+		combat = { hit_burst = "dust" },
 		appearance = {
 			chars = { " ", "--", "--" },
 			color = { { 0.30, 0.16, 0.06, 1 } },
 		},
 		default_action = "interactable",
 		tags = {
-			moveable = false,
 			solid = true,
-			walkable = false,
+			walkable = false, -- swapped by interaction.toggle; must stay explicit
 			tilelike = true,
 			interactable = true,
-			covers = false,
 			barricadeable = true,
 		},
 		natural_rotation = 90,
@@ -396,8 +367,6 @@ return {
 			moveable = true,
 			tilelike = true,
 			covers = true,
-			attackable = false,
-			walkable = false,
 		},
 		light = {
 			color = { r = 0.8, g = 0.65, b = 0.45 },
