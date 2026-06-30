@@ -2,6 +2,7 @@ local map = require("map.map")
 local render_cfg = require("config.render_config")
 local types = require("map.tile_types")
 local entities = require("entities.entities")
+local utils = require("utils")
 
 local particles = {
 	mode = "normal",
@@ -19,15 +20,24 @@ local weather_modes = {
 }
 
 local particle_types = {
-	smoke = { char = "*", vz_min = 4, vz_max = 5, drift = 0.2, color = { 0.5, 0.6, 0.6, 0.5 }, linger = 4 },
+	smoke = {
+		char = "*",
+		vz_min = 4,
+		vz_max = 5,
+		drift = 0.2,
+		color = { 0.5, 0.6, 0.6, 0.5 },
+		linger = 4,
+	},
 	ember = {
 		char = "`",
 		vz_min = 1,
 		vz_max = 2,
 		drift = 0.35,
+		r_rate = 60,
 		color = { 0.9, 0.6, 0.2, 0.7 },
 		linger = 1,
 		lifespan = 4,
+		gravity = 0.5,
 	},
 	blood = {
 		char = ".",
@@ -35,8 +45,8 @@ local particle_types = {
 		vz_max = 0,
 		drift = 0.0,
 		color = { 0.9, 0.3, 0.35, 1 },
-		linger = 4,
-		lifespan = 4,
+		linger = 2,
+		lifespan = 3,
 		layer = "below_entity",
 	},
 	dazed = {
@@ -44,7 +54,18 @@ local particle_types = {
 		vz_min = 1,
 		vz_max = 2,
 		drift = 0.35,
+		r_rate = 20,
 		color = { 0.9, 0.7, 0.2, 0.7 },
+		linger = 2,
+		lifespan = 3,
+	},
+	heal = {
+		char = "+",
+		vz_min = 1,
+		vz_max = 2,
+		drift = 0.35,
+		r_rate = 20,
+		color = { 0.2, 0.9, 0.4, 0.7 },
 		linger = 2,
 		lifespan = 3,
 	},
@@ -52,30 +73,13 @@ local particle_types = {
 
 local modes = { rain = "rain", snow = "snow", normal = "normal" }
 
-local function spawn_weather_particle(cx, cy, draw_dist, ease_in, params)
-	if not params then
-		return
-	end
-	return {
-		x = cx + (math.random() * 2 - 1) * draw_dist,
-		y = cy + (math.random() * 2 - 1) * draw_dist,
-		z = particles.ceiling - math.random(0, 3),
-		vz = params.vz_min + math.random() * (params.vz_max - params.vz_min),
-		vx = (math.random() * 2 - 1) * params.drift,
-		vy = (math.random() * 2 - 1) * params.drift,
-		linger = params.linger,
-		linger_initial = params.linger,
-		lifespan = params.lifespan,
-		lifespan_initial = params.lifespan,
-		alpha_mult = 1,
-		char = params.char,
-		color = params.color,
-		delay = ease_in and math.random() * render_cfg.particles.weather_ease_in_duration or 0,
-		source = "weather",
-	}
+local function weather_position(cx, cy, draw_dist)
+	return cx + (math.random() * 2 - 1) * draw_dist,
+		cy + (math.random() * 2 - 1) * draw_dist,
+		particles.ceiling - math.random(0, 3)
 end
 
-local function spawn_particle(x, y, z, ease_in, params)
+local function spawn_particle(x, y, z, ease_in, params, source)
 	if not params then
 		return
 	end
@@ -91,19 +95,47 @@ local function spawn_particle(x, y, z, ease_in, params)
 		lifespan = params.lifespan,
 		lifespan_initial = params.lifespan,
 		alpha_mult = 1,
+		r_rate = (params.r_rate or 0) * (0.25 + math.random()) * utils.randomize_sign(),
 		char = params.char,
 		color = params.color,
+		gravity = params.gravity,
 		layer = params.layer,
 		delay = ease_in and math.random() * render_cfg.particles.weather_ease_in_duration or 0,
-		source = "emitter",
+		source = source,
 	}
+end
+
+function particles:burst(x, y, z, type_name, count, opts)
+	local dir = opts.dir
+	local spread = opts.spread or 0.2
+	local smin = opts.smin or 10
+	local smax = opts.smax or 16
+	local gravity = opts.gravity or 3
+	local base = dir and math.atan2(dir.dy, dir.dx) or math.random() * 2 * math.pi
+	local params = particle_types[type_name]
+
+	if not params then
+		return
+	end
+	for _ = 1, count do
+		local p = spawn_particle(x, y, z, false, params, "emitter")
+		local a = base + (math.random() * 2 - 1) * spread
+		local speed = smin + math.random() * (smax - smin)
+		p.vx, p.vy = math.cos(a) * speed, math.sin(a) * speed
+		p.vz = 1
+		p.gravity = gravity
+		table.insert(self.particles, p)
+	end
 end
 
 function particles:load(cx, cy)
 	self.ceiling = map.max_z * 3
 	for _ = 1, render_cfg.particles.count do
-		local p = spawn_weather_particle(cx, cy, render_cfg.camera.draw_distance, true)
-		table.insert(self.particles, p)
+		local wx, wy, wz = weather_position(cx, cy, render_cfg.camera.draw_distance)
+		local p = spawn_particle(wx, wy, wz, true, weather_modes[self.mode], "weather")
+		if p then
+			table.insert(self.particles, p)
+		end
 	end
 end
 
@@ -115,7 +147,8 @@ function particles:update(dt, cx, cy)
 		self.mode ~= modes.normal
 		and #self.particles < render_cfg.particles.count * render_cfg.particles.weather_proportion
 	then
-		local p = spawn_weather_particle(cx, cy, draw_dist, true, weather_params)
+		local wx, wy, wz = weather_position(cx, cy, draw_dist)
+		local p = spawn_particle(wx, wy, wz, true, weather_params, "weather")
 		if p then
 			table.insert(self.particles, p)
 		end
@@ -143,7 +176,7 @@ function particles:update(dt, cx, cy)
 					jy = -0.5 + math.random()
 				end
 
-				local p = spawn_particle(ex + jx, ey + jy, ez, false, particle_types[emitter.particle])
+				local p = spawn_particle(ex + jx, ey + jy, ez, false, particle_types[emitter.particle], "emitter")
 				if p then
 					table.insert(self.particles, p)
 					spawned = spawned + 1
@@ -165,6 +198,12 @@ function particles:update(dt, cx, cy)
 						emitter_count = emitter_count + run_emitters(status.emitters, ex, ey, entity.z, top_offset)
 					end
 				end
+
+				if entity.inventory and entity.inventory.equipped then
+					for _, item in pairs(entity.inventory.equipped) do
+						emitter_count = emitter_count + run_emitters(item.emitters, ex, ey, entity.z, top_offset)
+					end
+				end
 			end
 		end
 	end
@@ -176,6 +215,8 @@ function particles:update(dt, cx, cy)
 			p.x = p.x + p.vx * dt
 			p.y = p.y + p.vy * dt
 			p.z = p.z + p.vz * dt
+			p.vz = p.vz - ((p.gravity or 0) * dt)
+			p.r = (p.r or 0) + ((p.r_rate or 0) * dt)
 			local tx, ty = math.floor(p.x), math.floor(p.y)
 			local hit = false
 			if map:in_bounds(tx, ty) then
@@ -213,7 +254,8 @@ function particles:update(dt, cx, cy)
 			if kill and (p.linger <= 0 or (p.lifespan and p.lifespan <= 0)) then
 				local new_p = nil
 				if p.source == "weather" then
-					new_p = spawn_weather_particle(cx, cy, draw_dist, false, weather_params)
+					local wx, wy, wz = weather_position(cx, cy, draw_dist)
+					new_p = spawn_particle(wx, wy, wz, false, weather_params, "weather")
 				end
 				if new_p then
 					self.particles[i] = new_p

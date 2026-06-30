@@ -10,6 +10,7 @@ local inventory = require("items.inventory")
 local animation = require("visuals.render.animation")
 local sounds = require("engine.sounds")
 local vitals = require("engine.vitals")
+local particles = require("visuals.particles.particles")
 local actions = {}
 
 local function validate_interaction(actor, target, name, range)
@@ -254,11 +255,26 @@ function actions:attack(entity, dx, dy, target_entity)
 		end
 
 		animation.add_bump(entity, target_entity.x, target_entity.y)
+
 		deal_damage(target_entity, stats.get(entity, "damage", "melee"), entity.name)
 		statuses.on_hit(entity, target_entity)
+
+		local cx, cy = utils.get_center_of_footprint(entity)
+		local ctx, cty = utils.get_center_of_footprint(target_entity)
+		local acx, acy = entity.x + cx, entity.y + cy
+		local tcx, tcy = target_entity.x + ctx, target_entity.y + cty
+
+		particles:burst(
+			tcx,
+			tcy,
+			target_entity.z + 1,
+			"blood",
+			5,
+			{ dir = { dx = tcx - acx, dy = tcy - acy }, spread = 1, smin = 5, smax = 10 }
+		)
 		sounds.emit({
-			x = target_entity.x,
-			y = target_entity.y,
+			x = tcx,
+			y = tcy,
 			z = entity.z,
 			volume = (weapon and weapon.volume) or entity.attack_volume or 6, --TODO, Bigger question, should all these defaults exist here or be defined on the ent
 			reach = (weapon and weapon.reach) or entity.attack_reach or 12,

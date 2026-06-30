@@ -28,7 +28,7 @@ local function load_default_inventory(player)
 			color = { r = 1.0, g = 0.85, b = 0.65 },
 			flicker = { amp = 0.1, freq = 2, phase = 6 },
 			intensity = 0.5,
-			radius = 8,
+			radius = 10,
 		},
 	})
 	inventory.add_from_template(player, "planks")
@@ -44,11 +44,11 @@ end
 
 local function apply_default_statuses(player)
 	statuses.add_from_template(player, "bleeding")
-	--statuses.add_from_template(player, "broken_leg")
+	statuses.add_from_template(player, "broken_leg")
 end
 
 local function spawn_default_entities()
-	entities.add_from_template("Ogre", 252, 253, 1)
+	entities.add_from_template("ogre", 262, 253, 1)
 	entities.add_from_template("zombie", 256, 256, 1)
 	entities.add_from_template("crate", 250, 260, 1)
 	entities.add_from_template("barricade", 250, 255, 1)
@@ -70,7 +70,7 @@ function love.load()
 	local player = entities.add_from_template("player", 250, 250, 1)
 	entities.set_player(player)
 	input_handler:set_actor(player)
-	apply_default_statuses(player)
+	--apply_default_statuses(player)
 	load_default_inventory(player)
 	spawn_default_entities()
 

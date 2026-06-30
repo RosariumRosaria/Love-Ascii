@@ -155,7 +155,6 @@ local function wander(entity)
 
 		mind.wander_turns = mind.wander_turns - 1
 		if mind.wander_turns <= 0 then
-			effects:add_from_template("ping", mind.target_pos.x, mind.target_pos.y, entity.z)
 			set_state(entity, "idle")
 		end
 	end
@@ -187,7 +186,6 @@ local function pick_search_target(entity)
 
 	mind.target_pos = { x = tx, y = ty }
 	mind.target_value = ai_cfg.target_value.search
-	effects:add_from_template("ping", mind.target_pos.x, mind.target_pos.y, entity.z)
 end
 
 local function search(entity)
