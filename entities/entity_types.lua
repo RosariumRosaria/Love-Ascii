@@ -8,6 +8,7 @@ return {
 		name = "Player",
 		team = "player",
 		type = "actor",
+		hit_burst = "blood",
 		tags = { covers = true, attackable = true, can_hear = true },
 		default_action = "attackable",
 		allowed_actions = {
@@ -32,6 +33,7 @@ return {
 		name = "Zombie",
 		type = "actor",
 		team = "enemy",
+		hit_burst = "blood",
 		mind = { state = "idle" },
 		appearance = {
 			chars = { "Z" },
@@ -79,6 +81,7 @@ return {
 		attack_volume = 16,
 		attack_reach = 20,
 		attack_sound = "a thud",
+		hit_burst = "blood",
 		stats = {
 			health = { base = 30, current = 30 },
 			sight = { base = 30 },
@@ -125,6 +128,7 @@ return {
 		default_action = "attackable",
 		attack_volume = 16,
 		attack_reach = 20,
+		hit_burst = "blood",
 		attack_sound = "a crash",
 		stats = {
 			health = { base = 30, current = 30 },
@@ -160,6 +164,7 @@ return {
 		description = "A vampire, try attacking it!",
 		default_action = "attackable",
 		attack_volume = 2,
+		hit_burst = "blood",
 		attack_sound = "the scratch of claws and fangs",
 		stats = {
 			health = { base = 10, current = 10 },
@@ -235,6 +240,8 @@ return {
 		name = "Crate",
 		description = "A heavy crate, try pushing it!",
 		type = "prop",
+
+		hit_burst = "dust",
 		appearance = {
 			chars = { "#" },
 			color = { { 0.38, 0.33, 0.30 } },
@@ -273,6 +280,8 @@ return {
 		name = "Barricade",
 		description = "A heavy barricade, try pushing it!",
 		type = "prop",
+
+		hit_burst = "dust",
 		appearance = {
 			chars = { "[]", "[]" },
 			color = { { 0.47, 0.23, 0.23, 1 } },
@@ -302,6 +311,7 @@ return {
 		stats = {
 			health = { base = 5, current = 5 },
 		},
+		hit_burst = "dust",
 		tags = {
 			moveable = false,
 			solid = true,
@@ -332,6 +342,8 @@ return {
 		name = "Window",
 		description = "A window, try opening it!",
 		type = "prop",
+
+		hit_burst = "dust",
 		appearance = {
 			chars = { " ", "--", "--" },
 			color = { { 0.30, 0.16, 0.06, 1 } },

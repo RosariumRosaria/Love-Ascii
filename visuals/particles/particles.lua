@@ -49,6 +49,16 @@ local particle_types = {
 		lifespan = 3,
 		layer = "below_entity",
 	},
+	dust = {
+		char = "`",
+		vz_min = 0,
+		vz_max = 0,
+		drift = 0.0,
+		color = { 0.3, 0.3, 0.35, 1 },
+		linger = 2,
+		lifespan = 3,
+		layer = "below_entity",
+	},
 	dazed = {
 		char = "?",
 		vz_min = 1,
