@@ -146,6 +146,16 @@ function input:mouse_over_entity()
 	cursor.set_moused_entity(entity_list)
 end
 
+function input:enter_aim()
+	if not aim.enter(self.actor, self.actor.x, self.actor.y) then
+		event_log:add({ type = "action_failed", entity = self.actor.name, reason = "no ranged weapon" })
+		return false
+	end
+	self.mode = modes.aiming
+	self.last_turn = { x = 0, y = 0 }
+	return true
+end
+
 function input:get_direction(cardinal_only)
 	local x, y = 0, 0
 
@@ -182,7 +192,8 @@ function input:handle_aim()
 
 	if love.mouse.isDown(1) then
 		local mx, my = cursor.get_moused_coords()
-		aim.move_to(mx, my)
+		local moused_entity = cursor.get_moused_entity()
+		aim.move_to(mx, my, moused_entity)
 	end
 	return took_action
 end
@@ -255,12 +266,16 @@ function input:update(dt)
 			self.last_turn = { x = 0, y = 0 }
 		else
 			local weapon = inventory.get_equipped(self.actor, "mainhand")
-			if not weapon or not weapon.ranged then
+			local possible_weapon = inventory.get_first_with_field(self.actor, "ranged")
+
+			if (not weapon or not weapon.ranged) and possible_weapon then
+				self.pending_draw = possible_weapon
+			elseif not weapon then
+				event_log:add({ type = "action_failed", entity = self.actor.name, reason = "no weapon" })
+			elseif not weapon.ranged then
 				event_log:add({ type = "action_failed", entity = self.actor.name, reason = "no ranged weapon" })
 			else
-				self.mode = modes.aiming
-				aim.enter(self.actor, self.actor.x, self.actor.y)
-				self.last_turn = { x = 0, y = 0 }
+				self:enter_aim()
 			end
 		end
 	end
@@ -276,11 +291,20 @@ end
 
 function input:try_take_turn()
 	local actor = self.actor
+
 	if not actor or actor.dead then
 		return false
 	end
 
 	local took_action = false
+
+	local draw_weapon = self.pending_draw
+	self.pending_draw = nil
+	if draw_weapon then
+		took_action = actions:handle_action(actor, { type = "equip_item", item = draw_weapon })
+		self:enter_aim()
+		return took_action
+	end
 
 	if self.mode == modes.aiming then
 		return self:handle_aim()
@@ -304,11 +328,16 @@ function input:try_take_turn()
 		end
 
 		if self:is_down("attack") then
-			took_action = actions:handle_action(actor, {
-				type = "attack",
-				dx = move_dir.x,
-				dy = move_dir.y,
-			})
+			local weapon = inventory.get_equipped(self.actor, "mainhand")
+			if weapon and weapon.ranged then
+				self:enter_aim()
+			else
+				took_action = actions:handle_action(actor, {
+					type = "attack",
+					dx = move_dir.x,
+					dy = move_dir.y,
+				})
+			end
 		elseif self:is_down("interact") then
 			took_action = actions:handle_action(actor, {
 				type = "interact",

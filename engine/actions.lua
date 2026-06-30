@@ -1,6 +1,5 @@
 local entities = require("entities.entities")
 local effects = require("visuals.effects.effects")
-local aim = require("engine.aim")
 local event_log = require("engine.event_log")
 local map = require("map.map")
 local utils = require("utils")
@@ -237,6 +236,36 @@ local function deal_damage(target, amount, src)
 		vitals.apply_damage(target, leftover, src)
 	end
 end
+
+local function emit_on_hit_effects(attacker, target, weapon)
+	local cx, cy = utils.get_center_of_footprint(attacker)
+	local ctx, cty = utils.get_center_of_footprint(target)
+	local acx, acy = attacker.x + cx, attacker.y + cy
+	local tcx, tcy = target.x + ctx, target.y + cty
+
+	local hit_burst = target.combat and target.combat.hit_burst
+	if hit_burst then
+		particles:burst(
+			tcx,
+			tcy,
+			target.z + 1,
+			hit_burst,
+			3,
+			{ dir = { dx = tcx - acx, dy = tcy - acy }, spread = 1, smin = 3, smax = 10 }
+		)
+	end
+
+	local combat = attacker.combat
+	sounds.emit({
+		x = tcx,
+		y = tcy,
+		z = attacker.z,
+		volume = (weapon and weapon.volume) or (combat and combat.attack_volume) or 6,
+		reach = (weapon and weapon.reach) or (combat and combat.attack_reach) or 12,
+		description = (weapon and weapon.sound) or (combat and combat.attack_sound) or "a thwack",
+		source = attacker,
+	})
+end
 function actions:attack(entity, dx, dy, target_entity)
 	local weapon = inventory.get_equipped(entity, "mainhand")
 	target_entity = target_entity or entities.get_with_tag(entity.x + dx, entity.y + dy, entity.z, "attackable")
@@ -255,42 +284,17 @@ function actions:attack(entity, dx, dy, target_entity)
 		end
 
 		animation.add_bump(entity, target_entity.x, target_entity.y)
-
 		deal_damage(target_entity, stats.get(entity, "damage", "melee"), entity.name)
 		statuses.on_hit(entity, target_entity)
 
-		local cx, cy = utils.get_center_of_footprint(entity)
-		local ctx, cty = utils.get_center_of_footprint(target_entity)
-		local acx, acy = entity.x + cx, entity.y + cy
-		local tcx, tcy = target_entity.x + ctx, target_entity.y + cty
-		local hit_burst = target_entity.combat and target_entity.combat.hit_burst
-		if hit_burst then
-			particles:burst(
-				tcx,
-				tcy,
-				target_entity.z + 1,
-				hit_burst,
-				3,
-				{ dir = { dx = tcx - acx, dy = tcy - acy }, spread = 1, smin = 3, smax = 10 }
-			)
-		end
-		local combat = entity.combat
-		sounds.emit({
-			x = tcx,
-			y = tcy,
-			z = entity.z,
-			volume = (weapon and weapon.volume) or (combat and combat.attack_volume) or 6, --TODO, Bigger question, should all these defaults exist here or be defined on the ent
-			reach = (weapon and weapon.reach) or (combat and combat.attack_reach) or 12,
-			description = (weapon and weapon.sound) or (combat and combat.attack_sound) or "a thwack",
-			source = entity,
-		})
+		emit_on_hit_effects(entity, target_entity, weapon)
 	end
 	return true
 end
 
 function actions:ranged_attack(entity, target_x, target_y, target_entity)
-	local weapon = aim.weapon --TODO: this doesn't work for anything but the player
-	if not weapon then
+	local weapon = inventory.get_equipped(entity, "mainhand")
+	if not weapon or not weapon.ranged then
 		return false
 	end
 
@@ -309,17 +313,9 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 	assign_cost(entity, "ranged_attack")
 	inventory.use_charge(weapon)
 	effects:add_from_template("attack", target_x, target_y, entity.z)
-	deal_damage(target_entity, stats.get(entity, "damage"), entity.name)
+	deal_damage(target_entity, stats.get(entity, "damage", "ranged"), entity.name)
 	statuses.on_hit(entity, target_entity) --TODO should on hit apply from ranged
-	sounds.emit({
-		x = target_x,
-		y = target_y,
-		z = entity.z,
-		volume = weapon.volume or 6,
-		reach = weapon.reach or 10,
-		description = weapon.sound or "a thwack",
-		source = entity,
-	})
+	emit_on_hit_effects(entity, target_entity, weapon)
 	return true
 end
 
@@ -409,6 +405,9 @@ function actions:drag(entity, dx, dy, target)
 	entities.move_to(entity, actor_dest_x, actor_dest_y)
 	entities.move_to(target, target_dest_x, target_dest_y)
 
+	local dcx, dcy = utils.get_center_of_footprint(target)
+	particles:burst(target_dest_x + dcx, target_dest_y + dcy, target.z + 1, "dust", 2, { spread = 4, smin = 1, smax = 3 })
+
 	event_log:add({
 		type = "entity_dragged",
 		entity = target.name,
@@ -453,6 +452,8 @@ function actions:handle_action(entity, action)
 		return self:interact(entity, action.dx, action.dy)
 	elseif t == "inspect" then
 		return self:inspect(entity, action.dx, action.dy)
+	elseif t == "equip_item" then
+		return self:equip_item(entity, action.item)
 	elseif t == "grab_interaction" then
 		return self:drag(entity, action.dx, action.dy, action.target)
 	elseif t == "use_selected" then

@@ -54,10 +54,14 @@ function turn:update(dt)
 			if not actor or actor == input:get_actor() then
 				break
 			end -- player is up
-			if statuses.can_act(actor) then
-				ai:take_turn(actor)
+			if actor.dead then
+				time.pop()
+			else
+				if statuses.can_act(actor) then
+					ai:take_turn(actor)
+				end
+				commit_turn(actor)
 			end
-			commit_turn(actor)
 			if (love.timer.getTime() - start) * 1000 > game_cfg.timing.frame_ai_budget then
 				input:end_frame()
 				return -- resume next frame

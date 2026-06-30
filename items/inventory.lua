@@ -75,6 +75,18 @@ function inventory.remove(entity, item)
 	end
 end
 
+function inventory.get_first_with_field(entity, tag)
+	if not entity.inventory or not tag then
+		return nil
+	end
+	for _, i_item in ipairs(entity.inventory.items) do
+		if i_item[tag] then
+			return i_item
+		end
+	end
+	return nil
+end
+
 function inventory.equip(entity, item)
 	if not entity.inventory or not item.slot then
 		return nil
