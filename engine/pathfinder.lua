@@ -25,8 +25,8 @@ local function cell_traversal(actor, x, y, z, goal)
 			if
 				ent.passage
 				and ent.passage.open
-				and actor.allowed_actions
-				and actor.allowed_actions.interactable
+				and actor.can_perform
+				and actor.can_perform.interactable
 				and statuses.can_be_interacted(ent)
 			then
 				kind, cost = "open", ent.passage.open
@@ -34,8 +34,8 @@ local function cell_traversal(actor, x, y, z, goal)
 
 			if
 				utils.get_tag(ent, "attackable")
-				and actor.allowed_actions
-				and actor.allowed_actions.attackable
+				and actor.can_perform
+				and actor.can_perform.attackable
 				and actor.team ~= ent.team
 				and stats.get_current(actor, "damage") > 0
 			then

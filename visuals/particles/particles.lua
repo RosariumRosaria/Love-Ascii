@@ -50,12 +50,13 @@ local particle_types = {
 		layer = "below_entity",
 	},
 	dust = {
-		char = "`",
+		char = ",",
 		vz_min = 0,
 		vz_max = 0,
 		drift = 0.0,
 		color = { 0.3, 0.3, 0.35, 1 },
 		linger = 2,
+		r_rate = 30,
 		lifespan = 3,
 		layer = "below_entity",
 	},
@@ -93,6 +94,7 @@ local function spawn_particle(x, y, z, ease_in, params, source)
 	if not params then
 		return
 	end
+
 	return {
 		x = x,
 		y = y,
@@ -106,6 +108,7 @@ local function spawn_particle(x, y, z, ease_in, params, source)
 		lifespan_initial = params.lifespan,
 		alpha_mult = 1,
 		r_rate = (params.r_rate or 0) * (0.25 + math.random()) * utils.randomize_sign(),
+		r = params.r_rate and math.random() * 2 * math.pi or nil,
 		char = params.char,
 		color = params.color,
 		gravity = params.gravity,
@@ -120,6 +123,7 @@ function particles:burst(x, y, z, type_name, count, opts)
 	local spread = opts.spread or 0.2
 	local smin = opts.smin or 10
 	local smax = opts.smax or 16
+	local popup = opts.popup or 1
 	local gravity = opts.gravity or 3
 	local base = dir and math.atan2(dir.dy, dir.dx) or math.random() * 2 * math.pi
 	local params = particle_types[type_name]
@@ -132,7 +136,7 @@ function particles:burst(x, y, z, type_name, count, opts)
 		local a = base + (math.random() * 2 - 1) * spread
 		local speed = smin + math.random() * (smax - smin)
 		p.vx, p.vy = math.cos(a) * speed, math.sin(a) * speed
-		p.vz = 1
+		p.vz = popup
 		p.gravity = gravity
 		table.insert(self.particles, p)
 	end

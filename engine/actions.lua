@@ -71,7 +71,7 @@ function actions:default_interact(entity, dx, dy)
 	for _, tar in ipairs(targets) do
 		if
 			tar.default_action
-			and (entity.allowed_actions and entity.allowed_actions[tar.default_action])
+			and (entity.can_perform and entity.can_perform[tar.default_action])
 			and (not target or (action_order[tar.default_action] > action_order[target.default_action]))
 		then
 			target = tar
@@ -263,23 +263,25 @@ function actions:attack(entity, dx, dy, target_entity)
 		local ctx, cty = utils.get_center_of_footprint(target_entity)
 		local acx, acy = entity.x + cx, entity.y + cy
 		local tcx, tcy = target_entity.x + ctx, target_entity.y + cty
-		if target_entity.hit_burst then
+		local hit_burst = target_entity.combat and target_entity.combat.hit_burst
+		if hit_burst then
 			particles:burst(
 				tcx,
 				tcy,
 				target_entity.z + 1,
-				target_entity.hit_burst,
-				5,
-				{ dir = { dx = tcx - acx, dy = tcy - acy }, spread = 1, smin = 5, smax = 10 }
+				hit_burst,
+				3,
+				{ dir = { dx = tcx - acx, dy = tcy - acy }, spread = 1, smin = 3, smax = 10 }
 			)
 		end
+		local combat = entity.combat
 		sounds.emit({
 			x = tcx,
 			y = tcy,
 			z = entity.z,
-			volume = (weapon and weapon.volume) or entity.attack_volume or 6, --TODO, Bigger question, should all these defaults exist here or be defined on the ent
-			reach = (weapon and weapon.reach) or entity.attack_reach or 12,
-			description = (weapon and weapon.sound) or entity.attack_sound or "a thwack",
+			volume = (weapon and weapon.volume) or (combat and combat.attack_volume) or 6, --TODO, Bigger question, should all these defaults exist here or be defined on the ent
+			reach = (weapon and weapon.reach) or (combat and combat.attack_reach) or 12,
+			description = (weapon and weapon.sound) or (combat and combat.attack_sound) or "a thwack",
 			source = entity,
 		})
 	end
