@@ -95,6 +95,16 @@ function utils.footprint_cells(entity)
 	return ret
 end
 
+function utils.render_x(entity)
+	local a = entity.anim
+	return (a and a.render_x) or entity.x
+end
+
+function utils.render_y(entity)
+	local a = entity.anim
+	return (a and a.render_y) or entity.y
+end
+
 function utils.get_center_of_footprint(entity)
 	if not entity.footprint then
 		return 0, 0

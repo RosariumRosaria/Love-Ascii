@@ -129,6 +129,23 @@ function painter:emit_effect(effect, center_x, center_y, visible)
 		end
 	end
 
+	if effect.glyph then
+		local px, py = render_utils.get_screen_coords(effect.x, effect.y, center_x, center_y)
+
+		emit_char({
+			pass = pass,
+			z = effect.z,
+			y = effect.y,
+			layer = draw_buffer.LAYER.EFFECT_ABOVE_ENTITY,
+			x_screen = px,
+			y_screen = py,
+			char = effect.glyph.char,
+			color = effect.glyph.color,
+			size_scale = effect.glyph.size,
+			rotation = effect.r or 0,
+		})
+	end
+
 	if effect.panels then
 		local anchor_offset_x = effect.anchor and utils.get_center_of_footprint(effect.anchor) or 0
 
@@ -138,8 +155,8 @@ function painter:emit_effect(effect, center_x, center_y, visible)
 			local rect_size = tile_size * size_scale
 
 			local px, py = render_utils.get_screen_coords(
-				(effect.anchor and effect.anchor.render_x + anchor_offset_x) or effect.x,
-				(effect.anchor and effect.anchor.render_y - panel.offset_y) or effect.y,
+				(effect.anchor and utils.render_x(effect.anchor) + anchor_offset_x) or effect.x,
+				(effect.anchor and utils.render_y(effect.anchor) - panel.offset_y) or effect.y,
 				center_x,
 				center_y
 			)
@@ -196,8 +213,9 @@ function painter:draw_panel(panel, center_x, center_y)
 
 	local px, py = panel.x, panel.y
 
-	if panel.anchor and panel.anchor.render_x and panel.anchor.render_y then
-		px, py = render_utils.get_screen_coords(panel.anchor.render_x + 0.5, panel.anchor.render_y, center_x, center_y)
+	local anchor_anim = panel.anchor and panel.anchor.anim
+	if anchor_anim and anchor_anim.render_x and anchor_anim.render_y then
+		px, py = render_utils.get_screen_coords(anchor_anim.render_x + 0.5, anchor_anim.render_y, center_x, center_y)
 		py = py - panel.height - panel.offset_y
 		px = px - panel.width / 2
 	end
@@ -345,9 +363,9 @@ local function footprint_cells(entity)
 	local ret = {}
 	for _, c in ipairs(utils.footprint_offsets(entity)) do
 		table.insert(ret, {
-			render_x = entity.render_x + c.dx,
+			render_x = utils.render_x(entity) + c.dx,
 			x = entity.x + c.dx,
-			render_y = entity.render_y + c.dy,
+			render_y = utils.render_y(entity) + c.dy,
 			y = entity.y + c.dy,
 		})
 	end
@@ -403,8 +421,12 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 
 			local scaled_color = render_utils.scale_color(base_color, scale)
 			if light_data then
-				scaled_color =
-					render_utils.apply_lighting(scaled_color, light_data, entity.z + i - 1, render_cfg.lighting.entity_emissive)
+				scaled_color = render_utils.apply_lighting(
+					scaled_color,
+					light_data,
+					entity.z + i - 1,
+					render_cfg.lighting.entity_emissive
+				)
 				-- TODO: Determine if this should apply to entity colors
 				-- scaled_color = render_utils.apply_flicker(scaled_color, light_data.flicker, time)
 			end

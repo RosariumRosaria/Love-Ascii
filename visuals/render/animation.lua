@@ -39,8 +39,18 @@ local function trailing_edge_offsets(offsets, dx, dy)
 	return ret
 end
 
+local function anim(entity)
+	local a = entity.anim
+	if not a then
+		a = {}
+		entity.anim = a
+	end
+	return a
+end
+
 function animation.spawn_pending_trail(entity)
-	local pt = entity.pending_trail
+	local a = entity.anim
+	local pt = a and a.pending_trail
 	if not pt then
 		return
 	end
@@ -51,7 +61,11 @@ function animation.spawn_pending_trail(entity)
 			effect.rects[1].colors[1] = pt.color
 		end
 	end
-	entity.pending_trail = nil
+	a.pending_trail = nil
+end
+
+function animation.set_pending_trail(entity)
+	anim(entity).pending_trail = { x = entity.x, y = entity.y, z = entity.z, color = entity.appearance.effect_color }
 end
 
 function animation.add_bump(entity, target_x, target_y)
@@ -63,64 +77,68 @@ function animation.add_bump(entity, target_x, target_y)
 	bump.dx = utils.sign(target_x - entity.x) * bump.amount
 	bump.dy = utils.sign(target_y - entity.y) * bump.amount
 
-	entity.bump = bump
+	anim(entity).bump = bump
 end
 
 local function ensure_init(entity)
-	if not entity.tween_x or not entity.tween_y then
-		entity.tween_x = entity.x
-		entity.tween_y = entity.y
-		entity.tween_from_x = entity.x
-		entity.tween_from_y = entity.y
-		entity.tween_target_x = entity.x
-		entity.tween_target_y = entity.y
-		entity.tween_elapsed = base_duration
-		entity.tween_duration = base_duration
+	local a = anim(entity)
+	if not a.tween_x or not a.tween_y then
+		a.tween_x = entity.x
+		a.tween_y = entity.y
+		a.tween_from_x = entity.x
+		a.tween_from_y = entity.y
+		a.tween_target_x = entity.x
+		a.tween_target_y = entity.y
+		a.tween_elapsed = base_duration
+		a.tween_duration = base_duration
 	end
 end
 
 local function start_tween_to(entity, target)
-	entity.tween_from_x = entity.tween_x
-	entity.tween_from_y = entity.tween_y
-	entity.tween_target_x = target.x
-	entity.tween_target_y = target.y
-	entity.tween_elapsed = 0
-	entity.tween_duration = math.max(min_step_fraction * base_duration, base_duration / (#entity.move_queue + 1))
+	local a = entity.anim
+	a.tween_from_x = a.tween_x
+	a.tween_from_y = a.tween_y
+	a.tween_target_x = target.x
+	a.tween_target_y = target.y
+	a.tween_elapsed = 0
+	a.tween_duration = math.max(min_step_fraction * base_duration, base_duration / (#a.move_queue + 1))
 end
 
 local function advance_and_write(entity, dt)
-	entity.tween_elapsed = math.min(entity.tween_elapsed + dt, entity.tween_duration)
-	local t = entity.tween_elapsed / entity.tween_duration
-	entity.tween_x = entity.tween_from_x + (entity.tween_target_x - entity.tween_from_x) * t
-	entity.tween_y = entity.tween_from_y + (entity.tween_target_y - entity.tween_from_y) * t
+	local a = entity.anim
+	a.tween_elapsed = math.min(a.tween_elapsed + dt, a.tween_duration)
+	local t = a.tween_elapsed / a.tween_duration
+	a.tween_x = a.tween_from_x + (a.tween_target_x - a.tween_from_x) * t
+	a.tween_y = a.tween_from_y + (a.tween_target_y - a.tween_from_y) * t
 
-	entity.render_x = entity.tween_x
-	entity.render_y = entity.tween_y
+	a.render_x = a.tween_x
+	a.render_y = a.tween_y
 end
 
 function animation.update(dt)
 	for _, entity in ipairs(entities.get_list()) do
 		ensure_init(entity)
-		local move_queue_length = entity.move_queue and #entity.move_queue or 0
+		local a = entity.anim
+		local move_queue_length = a.move_queue and #a.move_queue or 0
 
-		if entity.tween_elapsed >= entity.tween_duration and move_queue_length > 0 then
-			start_tween_to(entity, table.remove(entity.move_queue, 1))
+		if a.tween_elapsed >= a.tween_duration and move_queue_length > 0 then
+			start_tween_to(entity, table.remove(a.move_queue, 1))
 		end
 		advance_and_write(entity, dt)
 
-		if entity.pending_trail and entity.tween_elapsed >= 0.8 * entity.tween_duration then
+		if a.pending_trail and a.tween_elapsed >= 0.8 * a.tween_duration then
 			animation.spawn_pending_trail(entity)
 		end
 
-		if entity.bump then
-			entity.bump.elapsed = entity.bump.elapsed + dt
-			if entity.bump.elapsed >= entity.bump.duration then
-				entity.bump = nil
+		if a.bump then
+			a.bump.elapsed = a.bump.elapsed + dt
+			if a.bump.elapsed >= a.bump.duration then
+				a.bump = nil
 			else
-				local p = entity.bump.elapsed / entity.bump.duration
+				local p = a.bump.elapsed / a.bump.duration
 				local curve = math.sin(p * math.pi)
-				entity.render_x = entity.render_x + entity.bump.dx * curve
-				entity.render_y = entity.render_y + entity.bump.dy * curve
+				a.render_x = a.render_x + a.bump.dx * curve
+				a.render_y = a.render_y + a.bump.dy * curve
 			end
 		end
 	end

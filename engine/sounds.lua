@@ -30,6 +30,25 @@ end
 
 local RING_MIN_VOLUME = 5
 
+-- Spawns the visual "you heard something" ring for a sound. Split out from
+-- sounds.emit so callers (e.g. a projectile) can defer the ring to a later
+-- moment than the propagation. player_heard is emit's return value.
+function sounds.spawn_ring(s, player_heard)
+	if not player_heard then
+		return
+	end
+	if s.source and s.source.sound_ring and not s.source.sound_ring.dead then
+		return
+	end
+	if s.volume > RING_MIN_VOLUME then
+		local ring = effects:add_from_template("sound_ring", math.floor(s.x), math.floor(s.y), s.z)
+		ring.params.reach = s.reach
+		if s.source then
+			s.source.sound_ring = ring
+		end
+	end
+end
+
 function sounds.emit(s)
 	local player_heard = false
 	local candidate_list = candidates(s)
@@ -46,15 +65,11 @@ function sounds.emit(s)
 		end
 	end
 
-	if player_heard and not (s.source and s.source.sound_ring and not s.source.sound_ring.dead) then
-		if s.volume > RING_MIN_VOLUME then
-			local ring = effects:add_from_template("sound_ring", math.floor(s.x), math.floor(s.y), s.z)
-			ring.params.reach = s.reach
-			if s.source then
-				s.source.sound_ring = ring
-			end
-		end
+	if not s.defer_ring then
+		sounds.spawn_ring(s, player_heard)
 	end
+
+	return player_heard
 end
 
 return sounds

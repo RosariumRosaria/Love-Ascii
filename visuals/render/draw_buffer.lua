@@ -13,7 +13,8 @@ local draw_buffer = {
 		EFFECT_BELOW_ENTITY = 5,
 		ENTITY_COVER = 4,
 		ENTITY_CHAR = 6,
-		WEATHER = 7,
+		EFFECT_ABOVE_ENTITY = 7,
+		WEATHER = 8,
 	},
 }
 

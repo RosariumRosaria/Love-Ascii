@@ -23,7 +23,7 @@ return {
 		generate = "ring",
 		params = {
 			expand_time = 0.45,
-			fade_time = 0,
+			duration = 0.45,
 			age = 0,
 			reach = 4,
 			peak_alpha = 0.035,
@@ -40,8 +40,8 @@ return {
 	attack = {
 		name = "attack",
 		params = {
-			lifespan = 0.4,
-			initial_lifespan = 0.4,
+			lifespan = 0.2,
+			initial_lifespan = 0.2,
 			decay_over_time = false,
 			i = 1,
 			frames = 3,
@@ -123,6 +123,15 @@ return {
 				offset_y = 1.25,
 			},
 		},
+	},
+	projectile = {
+		name = "projectile",
+		generate = "travel",
+		params = {
+			needs_to_be_seen = false,
+			speed = 25,
+		},
+		glyph = { char = "#->", color = { 0.37, 0.34, 0.20, 1 }, size = 0.25 },
 	},
 
 	arrow = {

@@ -92,9 +92,33 @@ local function ring(effect)
 	effect.rects = rects
 end
 
+local function travel(effect)
+	local p = effect.params
+	local from, to = p.from, p.to
+
+	local t = p.age / p.duration
+
+	local tx = utils.render_x(to)
+
+	local ty = utils.render_y(to)
+	effect.x = from.x + (tx - from.x) * t
+	effect.y = from.y + (ty - from.y) * t
+	local dx = tx - from.x
+	local dy = ty - from.y
+
+	local r = math.atan2(dy, dx) * (180 / math.pi)
+	if r < 0 then
+		r = r + 360
+	end
+
+	effect.r = r
+end
+
 local function generate(effect)
 	if effect.generate == "ring" then
 		ring(effect)
+	elseif effect.generate == "travel" then
+		travel(effect)
 	end
 end
 
@@ -105,7 +129,11 @@ function effects:update(dt)
 
 		if effect.generate then
 			params.age = (params.age or 0) + dt
-			if params.age >= params.expand_time + params.fade_time then
+
+			if params.age >= params.duration then
+				if effect.params.on_arrive then
+					effect.params.on_arrive()
+				end
 				effect.dead = true
 				table.remove(self.effect_list, i)
 			else
