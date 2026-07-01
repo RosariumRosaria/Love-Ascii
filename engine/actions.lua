@@ -56,8 +56,25 @@ local action_cost = {
 	wait = 1,
 }
 
-local function assign_cost(entity, type)
-	entity.action_cost = action_cost[type]
+local function assign_cost(entity, action_type)
+	entity.action_cost = action_cost[action_type]
+end
+
+local function record_trail(entity)
+	animation.spawn_pending_trail(entity)
+	animation.set_pending_trail(entity)
+end
+
+local function resolve_target(actor, dx, dy, tag, name, target)
+	target = target or entities.get_with_tag(actor.x + dx, actor.y + dy, actor.z, tag)
+	if not validate_interaction(actor, target, name) then
+		return nil
+	end
+	if not utils.get_tag(target, tag) then
+		event_log:add({ type = "action_failed", entity = target.name, reason = "Not " .. tag })
+		return nil
+	end
+	return target
 end
 
 function actions:default_interact(entity, dx, dy)
@@ -213,12 +230,8 @@ function actions:place_selected(entity, dx, dy)
 end
 
 function actions:pickup(entity, dx, dy, target)
-	target = target or entities.get_with_tag(entity.x + dx, entity.y + dy, entity.z, "pickupable")
-	if not validate_interaction(entity, target, "Pickup") then
-		return false
-	end
-	if not utils.get_tag(target, "pickupable") then
-		event_log:add({ type = "action_failed", entity = target.name, reason = "Not pickupable" })
+	target = resolve_target(entity, dx, dy, "pickupable", "Pickup", target)
+	if not target then
 		return false
 	end
 
@@ -237,7 +250,26 @@ local function deal_damage(target, amount, src)
 	end
 end
 
-local function emit_on_hit_effects(attacker, target, weapon)
+-- Builds the sound spec for a hit at the target's current position. Kept
+-- separate from emit_on_hit_effects so ranged attacks can propagate the sound at
+-- fire time while the ring waits for the projectile to land.
+local function build_hit_sound(attacker, target, weapon)
+	local ctx, cty = utils.get_center_of_footprint(target)
+	local combat = attacker.combat
+	return {
+		x = target.x + ctx,
+		y = target.y + cty,
+		z = attacker.z,
+		volume = (weapon and weapon.volume) or (combat and combat.attack_volume) or 6,
+		reach = (weapon and weapon.reach) or (combat and combat.attack_reach) or 12,
+		description = (weapon and weapon.sound) or (combat and combat.attack_sound) or "a thwack",
+		source = attacker,
+	}
+end
+
+-- Impact visuals only (blood burst + attack glyphs). The hit sound is emitted
+-- separately by the caller so its timing can differ from the visuals.
+local function emit_on_hit_effects(attacker, target)
 	local cx, cy = utils.get_center_of_footprint(attacker)
 	local ctx, cty = utils.get_center_of_footprint(target)
 	local acx, acy = attacker.x + cx, attacker.y + cy
@@ -255,39 +287,25 @@ local function emit_on_hit_effects(attacker, target, weapon)
 		)
 	end
 
-	local combat = attacker.combat
-	sounds.emit({
-		x = tcx,
-		y = tcy,
-		z = attacker.z,
-		volume = (weapon and weapon.volume) or (combat and combat.attack_volume) or 6,
-		reach = (weapon and weapon.reach) or (combat and combat.attack_reach) or 12,
-		description = (weapon and weapon.sound) or (combat and combat.attack_sound) or "a thwack",
-		source = attacker,
-	})
+	for _, c in ipairs(utils.footprint_offsets(target)) do
+		effects:add_from_template("attack", target.x + c.dx, target.y + c.dy, target.z)
+	end
 end
 function actions:attack(entity, dx, dy, target_entity)
 	local weapon = inventory.get_equipped(entity, "mainhand")
-	target_entity = target_entity or entities.get_with_tag(entity.x + dx, entity.y + dy, entity.z, "attackable")
-	if not validate_interaction(entity, target_entity, "Attack") then
-		return false
-	end
-	if not utils.get_tag(target_entity, "attackable") then
-		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not attackable" })
+	target_entity = resolve_target(entity, dx, dy, "attackable", "Attack", target_entity)
+	if not target_entity then
 		return false
 	end
 	if entity.team ~= target_entity.team then
 		assign_cost(entity, "attack")
 
-		for _, c in ipairs(utils.footprint_offsets(target_entity)) do
-			effects:add_from_template("attack", target_entity.x + c.dx, target_entity.y + c.dy, entity.z)
-		end
-
 		animation.add_bump(entity, target_entity.x, target_entity.y)
 		deal_damage(target_entity, stats.get(entity, "damage", "melee"), entity.name)
 		statuses.on_hit(entity, target_entity)
 
-		emit_on_hit_effects(entity, target_entity, weapon)
+		emit_on_hit_effects(entity, target_entity)
+		sounds.emit(build_hit_sound(entity, target_entity, weapon))
 	end
 	return true
 end
@@ -312,21 +330,30 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 
 	assign_cost(entity, "ranged_attack")
 	inventory.use_charge(weapon)
-	effects:add_from_template("attack", target_x, target_y, entity.z)
+
+	local shot_sound = build_hit_sound(entity, target_entity, weapon)
+	shot_sound.defer_ring = true
+	local player_heard = sounds.emit(shot_sound)
+
+	local projectile = effects:add_from_template("projectile", entity.x, entity.y, entity.z)
+	projectile.params.from = { x = entity.x, y = entity.y }
+	projectile.params.to = target_entity
+	projectile.params.duration = utils.distance_between(projectile.params.from, projectile.params.to)
+		/ projectile.params.speed
+
+	projectile.params.on_arrive = function()
+		emit_on_hit_effects(entity, target_entity)
+		sounds.spawn_ring(build_hit_sound(entity, target_entity, weapon), player_heard)
+	end
 	deal_damage(target_entity, stats.get(entity, "damage", "ranged"), entity.name)
-	statuses.on_hit(entity, target_entity) --TODO should on hit apply from ranged
-	emit_on_hit_effects(entity, target_entity, weapon)
+	statuses.on_hit(entity, target_entity) --TODO should on hit effects  apply from ranged attacks
+
 	return true
 end
 
 function actions:interact(entity, dx, dy, target_entity)
-	target_entity = target_entity or entities.get_with_tag(entity.x + dx, entity.y + dy, entity.z, "interactable")
-	if not validate_interaction(entity, target_entity, "Interact") then
-		return false
-	end
-
-	if not utils.get_tag(target_entity, "interactable") then
-		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not interactable" })
+	target_entity = resolve_target(entity, dx, dy, "interactable", "Interact", target_entity)
+	if not target_entity then
 		return false
 	end
 
@@ -354,8 +381,7 @@ function actions:move(entity, dx, dy)
 
 	if map:is_footprint_free(tar_x, tar_y, entity.z, entity) then
 		assign_cost(entity, "move")
-		animation.spawn_pending_trail(entity)
-		entity.pending_trail = { x = entity.x, y = entity.y, z = entity.z, color = entity.appearance.effect_color }
+		record_trail(entity)
 		entities.move_to(entity, tar_x, tar_y)
 		sounds.emit({
 			x = entity.x,
@@ -377,12 +403,8 @@ function actions:grab(entity, dx, dy)
 end
 
 function actions:drag(entity, dx, dy, target)
-	target = target or entities.get_with_tag(entity.x + dx, entity.y + dy, entity.z, "moveable")
-	if not validate_interaction(entity, target, "Drag") then
-		return false
-	end
-	if not utils.get_tag(target, "moveable") then
-		event_log:add({ type = "action_failed", entity = target.name, reason = "Target is not moveable" })
+	target = resolve_target(entity, dx, dy, "moveable", "Drag", target)
+	if not target then
 		return false
 	end
 
@@ -400,13 +422,19 @@ function actions:drag(entity, dx, dy, target)
 	end
 
 	assign_cost(entity, "drag")
-	animation.spawn_pending_trail(entity)
-	entity.pending_trail = { x = entity.x, y = entity.y, z = entity.z, color = entity.appearance.effect_color }
+	record_trail(entity)
 	entities.move_to(entity, actor_dest_x, actor_dest_y)
 	entities.move_to(target, target_dest_x, target_dest_y)
 
 	local dcx, dcy = utils.get_center_of_footprint(target)
-	particles:burst(target_dest_x + dcx, target_dest_y + dcy, target.z + 1, "dust", 2, { spread = 4, smin = 1, smax = 3 })
+	particles:burst(
+		target_dest_x + dcx,
+		target_dest_y + dcy,
+		target.z + 1,
+		"dust",
+		2,
+		{ spread = 4, smin = 1, smax = 3 }
+	)
 
 	event_log:add({
 		type = "entity_dragged",

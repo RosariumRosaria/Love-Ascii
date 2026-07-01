@@ -64,7 +64,8 @@ function scene:draw()
 	end
 
 	for _, effect in ipairs(effects:get_effect_list()) do
-		painter:emit_effect(effect, camera_x, camera_y, map:is_visible(effect.x, effect.y))
+		local ex, ey = math.floor(effect.x), math.floor(effect.y)
+		painter:emit_effect(effect, camera_x, camera_y, map:is_visible(ex, ey))
 	end
 
 	draw_buffer:sort()
@@ -93,8 +94,9 @@ end
 function scene:update(dt)
 	animation.update(dt)
 	local player = entities.player
-	local tx = player.tween_x or player.x
-	local ty = player.tween_y or player.y
+	local pa = player.anim
+	local tx = (pa and pa.tween_x) or player.x
+	local ty = (pa and pa.tween_y) or player.y
 	camera:update(tx, ty, dt)
 	local cx, cy = camera:get_position()
 	weather:update(dt, cx, cy)

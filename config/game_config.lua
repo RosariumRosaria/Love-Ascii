@@ -14,7 +14,7 @@ return {
 	},
 	timing = {
 		frame_ai_budget = 2,
-		turn_delay = 0.175,
+		turn_delay = 0.2,
 		base_turn_cost = 100,
 		day_length = 10000,
 		time_keyframes = {
