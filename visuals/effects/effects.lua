@@ -39,9 +39,15 @@ end
 
 function effects:add_from_template(name, x, y, z, overrides)
 	local new_effect = utils.create_instance_from_template(effect_types, name, overrides)
-	new_effect.x = x or 1
-	new_effect.y = y or 1
+	local jx, jy = 0, 0
+	if new_effect.params.jitter then
+		jx = -0.5 + math.random()
+		jy = -0.5 + math.random()
+	end
+	new_effect.x = x + jx
+	new_effect.y = y + jy
 	new_effect.z = z or 1
+
 	self:add_effect(new_effect)
 	return new_effect
 end
@@ -114,11 +120,24 @@ local function travel(effect)
 	effect.r = r
 end
 
+local function bounce(effect)
+	local p = effect.params
+
+	local t = p.age / p.duration
+	if not effect.sy then
+		effect.sy = effect.y
+	end
+
+	effect.y = effect.sy - (math.abs(math.sin(t * math.pi * p.bounce_times)) * p.bounce_height) * (1 - t)
+end
+
 local function generate(effect)
 	if effect.generate == "ring" then
 		ring(effect)
 	elseif effect.generate == "travel" then
 		travel(effect)
+	elseif effect.generate == "bounce" then
+		bounce(effect)
 	end
 end
 

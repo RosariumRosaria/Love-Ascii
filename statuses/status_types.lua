@@ -11,7 +11,7 @@ return {
 		description = "Gaining health over time.",
 		color = { 1, 0.5, 0.5 },
 		duration = 5,
-		on_tick = { heal = 1 },
+		on_tick = { heal = 3 },
 		emitters = { { particle = "heal", rate = 2, jitter = true } },
 		visual = { tint = { 0.5, 1, 0.5 } },
 	},
@@ -21,7 +21,7 @@ return {
 		color = { 0.75, 0.75, 0.5 },
 		duration = 5,
 		modifiers = {
-			{ stat = "damage", op = "add", value = 1 },
+			{ stat = "damage", op = "add", value = 3 },
 		},
 	},
 

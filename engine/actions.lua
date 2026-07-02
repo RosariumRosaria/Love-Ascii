@@ -250,9 +250,6 @@ local function deal_damage(target, amount, src)
 	end
 end
 
--- Builds the sound spec for a hit at the target's current position. Kept
--- separate from emit_on_hit_effects so ranged attacks can propagate the sound at
--- fire time while the ring waits for the projectile to land.
 local function build_hit_sound(attacker, target, weapon)
 	local ctx, cty = utils.get_center_of_footprint(target)
 	local combat = attacker.combat
@@ -267,15 +264,13 @@ local function build_hit_sound(attacker, target, weapon)
 	}
 end
 
--- Impact visuals only (blood burst + attack glyphs). The hit sound is emitted
--- separately by the caller so its timing can differ from the visuals.
-local function emit_on_hit_effects(attacker, target)
+local function emit_on_hit_effects(attacker, target, damage)
 	local cx, cy = utils.get_center_of_footprint(attacker)
 	local ctx, cty = utils.get_center_of_footprint(target)
 	local acx, acy = attacker.x + cx, attacker.y + cy
 	local tcx, tcy = target.x + ctx, target.y + cty
 
-	local hit_burst = target.combat and target.combat.hit_burst
+	local hit_burst = target.combat and target.combat.hit_burst --TODO: Hit burst and attack burst dup  a lot. Also should this go in vitals? So that statuses can also pop here...
 	if hit_burst then
 		particles:burst(
 			tcx,
@@ -286,6 +281,21 @@ local function emit_on_hit_effects(attacker, target)
 			{ dir = { dx = tcx - acx, dy = tcy - acy }, spread = 1, smin = 3, smax = 10 }
 		)
 	end
+
+	local attack_burst = attacker.combat and attacker.combat.attack_burst
+	if attack_burst then
+		particles:burst(
+			tcx,
+			tcy,
+			target.z + 1,
+			attack_burst,
+			3,
+			{ dir = { dx = tcx - acx, dy = tcy - acy }, spread = 1, smin = 3, smax = 10 }
+		)
+	end
+
+	local damage_number = effects:add_from_template("damage_number", tcx, tcy, target.z)
+	damage_number.glyph.char = tostring(math.floor(damage))
 
 	for _, c in ipairs(utils.footprint_offsets(target)) do
 		effects:add_from_template("attack", target.x + c.dx, target.y + c.dy, target.z)
@@ -301,10 +311,11 @@ function actions:attack(entity, dx, dy, target_entity)
 		assign_cost(entity, "attack")
 
 		animation.add_bump(entity, target_entity.x, target_entity.y)
-		deal_damage(target_entity, stats.get(entity, "damage", "melee"), entity.name)
+		local damage = stats.get(entity, "damage", "melee")
+		deal_damage(target_entity, damage, entity.name)
 		statuses.on_hit(entity, target_entity)
 
-		emit_on_hit_effects(entity, target_entity)
+		emit_on_hit_effects(entity, target_entity, damage)
 		sounds.emit(build_hit_sound(entity, target_entity, weapon))
 	end
 	return true
@@ -331,6 +342,8 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 	assign_cost(entity, "ranged_attack")
 	inventory.use_charge(weapon)
 
+	local damage = stats.get(entity, "damage", "ranged")
+	deal_damage(target_entity, damage, entity.name)
 	local shot_sound = build_hit_sound(entity, target_entity, weapon)
 	shot_sound.defer_ring = true
 	local player_heard = sounds.emit(shot_sound)
@@ -342,10 +355,10 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 		/ projectile.params.speed
 
 	projectile.params.on_arrive = function()
-		emit_on_hit_effects(entity, target_entity)
+		emit_on_hit_effects(entity, target_entity, damage)
 		sounds.spawn_ring(build_hit_sound(entity, target_entity, weapon), player_heard)
 	end
-	deal_damage(target_entity, stats.get(entity, "damage", "ranged"), entity.name)
+
 	statuses.on_hit(entity, target_entity) --TODO should on hit effects  apply from ranged attacks
 
 	return true
