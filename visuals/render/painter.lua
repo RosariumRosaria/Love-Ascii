@@ -108,7 +108,7 @@ function painter:emit_effect(effect, center_x, center_y, visible)
 			local color
 			if effect.params.decay_over_time then
 				color =
-					render_utils.scale_color(rect.colors[1], effect.params.lifespan / effect.params.initial_lifespan)
+					render_utils.scale_alpha(rect.colors[1], effect.params.lifespan / effect.params.initial_lifespan)
 			else
 				color = rect.colors[((effect.params.i - 1) % #rect.colors) + 1]
 			end
@@ -135,7 +135,11 @@ function painter:emit_effect(effect, center_x, center_y, visible)
 
 	if effect.glyph then
 		local px, py = render_utils.get_screen_coords(effect.x, effect.y, center_x, center_y)
+		local color = effect.glyph.color
 
+		if effect.params.decay_over_time then
+			color = render_utils.scale_alpha(color, 1 - (effect.params.age / effect.params.duration))
+		end
 		emit_char({
 			pass = pass,
 			z = effect.z,
@@ -144,7 +148,7 @@ function painter:emit_effect(effect, center_x, center_y, visible)
 			x_screen = px,
 			y_screen = py,
 			char = effect.glyph.char,
-			color = effect.glyph.color,
+			color = color,
 			size_scale = effect.glyph.size,
 			rotation = effect.r or 0,
 		})
