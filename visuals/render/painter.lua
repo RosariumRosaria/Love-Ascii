@@ -12,9 +12,13 @@ local statuses = require("statuses.statuses")
 
 local painter = {}
 
--- Named draw layers a particle type can opt into; unset falls back to WEATHER (drawn above entities).
 local PARTICLE_LAYERS = {
 	below_entity = draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
+}
+
+local EFFECT_LAYERS = {
+	below_entity = draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
+	above_entity = draw_buffer.LAYER.EFFECT_ABOVE_ENTITY,
 }
 
 local tile_size
@@ -136,7 +140,7 @@ function painter:emit_effect(effect, center_x, center_y, visible)
 			pass = pass,
 			z = effect.z,
 			y = effect.y,
-			layer = draw_buffer.LAYER.EFFECT_ABOVE_ENTITY,
+			layer = EFFECT_LAYERS[effect.layer] or draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
 			x_screen = px,
 			y_screen = py,
 			char = effect.glyph.char,
@@ -367,6 +371,7 @@ local function footprint_cells(entity)
 			x = entity.x + c.dx,
 			render_y = utils.render_y(entity) + c.dy,
 			y = entity.y + c.dy,
+			char = c.char,
 		})
 	end
 	return ret
@@ -407,7 +412,8 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 			emit_cover_rect(draw_buffer.LAYER.ENTITY_COVER, entity.z, entity_part.y, x_screen, y_screen, cover_color)
 		end
 
-		for i, char_data in ipairs(entity.appearance.chars) do
+		local cell_chars = entity_part.char and { entity_part.char } or entity.appearance.chars
+		for i, char_data in ipairs(cell_chars) do
 			local base_color = entity.appearance.color[i] or entity.appearance.color[#entity.appearance.color]
 
 			if tilelike then
@@ -456,7 +462,8 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 				natural_rotation = entity.natural_rotation,
 				size_scale = 1 + (entity.z + i - 1) * render_cfg.rendering.z_size_scale_per_level,
 			}
-			if entity.moused and entity.type == "actor" then
+
+			if entity.moused and entity.type == "actor" and not entity.footprint then
 				emit_name(p, entity.name)
 				break
 			else

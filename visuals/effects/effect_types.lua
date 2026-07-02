@@ -48,7 +48,7 @@ return {
 		},
 		rects = {
 			{
-				colors = { { 1, 0.1, 0.1, 0.3 }, { 0.8, 0.07, 0.07, 0.25 }, { 0.6, 0.04, 0.04, 0.2 } },
+				colors = { { 1, 0.1, 0.1, 0.2 }, { 0.8, 0.07, 0.07, 0.15 }, { 0.6, 0.04, 0.04, 0.1 } },
 				rounded_amount = 1 / 4,
 				sizes = { 0.8, 0.6, 0.4 },
 			},
@@ -127,11 +127,12 @@ return {
 	projectile = {
 		name = "projectile",
 		generate = "travel",
+
 		params = {
 			needs_to_be_seen = false,
 			speed = 25,
 		},
-		glyph = { char = "#->", color = { 0.37, 0.34, 0.20, 1 }, size = 0.25 },
+		glyph = { char = "#->", color = { 0.40, 0.26, 0.116, 1 }, size = 0.33 },
 	},
 
 	arrow = {
@@ -139,6 +140,7 @@ return {
 		params = {
 			lifespan = 0.4,
 			initial_lifespan = 0.4,
+			buffered = true,
 			i = 1,
 			frames = 1,
 			needs_to_be_seen = false,
@@ -183,5 +185,22 @@ return {
 				sizes = { 0.8 },
 			},
 		},
+	},
+
+	damage_number = {
+		name = "damage_number",
+		layer = "above_entity",
+
+		generate = "bounce",
+		params = {
+			duration = 1,
+			buffered = true,
+			bounce_height = 0.5,
+			bounce_times = 2,
+			decay_over_time = true, --todo make this apply to glyphs
+			needs_to_be_seen = true,
+			jitter = true,
+		},
+		glyph = { char = 0, color = { 0.8, 0.1, 0.1, 0.5 }, size = 0.33 },
 	},
 }
