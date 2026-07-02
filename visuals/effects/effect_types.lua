@@ -131,8 +131,9 @@ return {
 		params = {
 			needs_to_be_seen = false,
 			speed = 25,
+			age = 0,
 		},
-		glyph = { char = "#->", color = { 0.40, 0.26, 0.116, 1 }, size = 0.33 },
+		glyph = { char = "#->", color = { 0.40, 0.3, 0.216, 1 }, size = 0.33 },
 	},
 
 	arrow = {
@@ -196,8 +197,9 @@ return {
 			duration = 1,
 			buffered = true,
 			bounce_height = 0.5,
+			age = 0,
 			bounce_times = 2,
-			decay_over_time = true, --todo make this apply to glyphs
+			decay_over_time = true,
 			needs_to_be_seen = true,
 			jitter = true,
 		},

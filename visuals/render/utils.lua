@@ -352,4 +352,8 @@ function render_utils.load()
 	default_font = config.font
 end
 
+function render_utils.scale_alpha(color, scale)
+	return { color[1], color[2], color[3], color[4] * scale }
+end
+
 return render_utils
