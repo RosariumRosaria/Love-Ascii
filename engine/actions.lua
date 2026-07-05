@@ -277,7 +277,7 @@ local function emit_on_hit_effects(attacker, target, damage)
 			tcy,
 			target.z + 1,
 			hit_burst,
-			3,
+			4, -- TODO: someday this and things like ths shake could be based on damage
 			{ dir = { dx = tcx - acx, dy = tcy - acy }, spread = 1, smin = 3, smax = 10 }
 		)
 	end
@@ -289,14 +289,14 @@ local function emit_on_hit_effects(attacker, target, damage)
 			tcy,
 			target.z + 1,
 			attack_burst,
-			3,
+			4,
 			{ dir = { dx = tcx - acx, dy = tcy - acy }, spread = 1, smin = 3, smax = 10 }
 		)
 	end
 
 	local damage_number = effects:add_from_template("damage_number", tcx, tcy, target.z)
 	damage_number.glyph.char = tostring(math.floor(damage))
-
+	animation.add_shake(target)
 	animation.add_flash(target)
 end
 function actions:attack(entity, dx, dy, target_entity)
@@ -353,7 +353,7 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 		/ projectile.params.speed
 
 	projectile.params.on_arrive = function()
-		emit_on_hit_effects(entity, target_entity, damage)
+		emit_on_hit_effects(entity, target_entity, damage) --TODO: someday I want statuses to trigger some of these, which would require thinking about this
 		sounds.spawn_ring(build_hit_sound(entity, target_entity, weapon), player_heard)
 	end
 
