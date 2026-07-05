@@ -180,6 +180,10 @@ function render_utils.get_map_coords(screen_x, screen_y, center_x, center_y)
 end
 
 function render_utils.distance_scale(x1, y1, x2, y2)
+	if not render_config.lighting.distance_vignette then
+		return 1
+	end
+
 	local screen_width = love.graphics.getWidth()
 	local screen_height = love.graphics.getHeight()
 
