@@ -12,8 +12,8 @@ return {
 	},
 	rendering = {
 		default_offset_type = 1,
-		offset_amount_factor = 0.3,
-		z_size_scale_per_level = 0.02,
+		offset_amount_factor = 0.4,
+		z_size_scale_per_level = 0.05,
 	},
 	lighting = {
 
@@ -54,10 +54,18 @@ return {
 		entity_emissive = 0.75,
 		z_falloff = 0, --todo should maybe be removed instead of set to 0
 		entity_brightness_boost = 0.4,
+		distance_vignette = false,
 		distance_drama = 0.5,
 		shadow_brightness_scale = 0.25,
 		shadow_alpha_scale = 0.7,
 		explored_color = { 0.21, 0.271, 0.762, 0.15 },
+	},
+
+	vignette = {
+		enabled = true,
+		strength = 0.8,
+		radius = 0.35,
+		softness = 0.4,
 	},
 	debug = {
 		show_grid = false,

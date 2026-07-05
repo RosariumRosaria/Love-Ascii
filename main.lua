@@ -82,6 +82,10 @@ function love.load()
 	debug_panel.load()
 end
 
+function love.resize()
+	scene:resize()
+end
+
 function love.update(dt)
 	perf:begin_frame()
 	turn:update(dt)

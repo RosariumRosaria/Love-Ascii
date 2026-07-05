@@ -14,11 +14,51 @@ local weather = require("visuals.particles.particles")
 
 local scene = {}
 
+local VIGNETTE_SHADER_SRC = [[
+	extern number strength;
+	extern number radius;
+	extern number softness;
+
+	vec4 effect(vec4 color, Image tex, vec2 uv, vec2 screen_coords) {
+		vec4 px = Texel(tex, uv);
+		number d = distance(uv, vec2(0.5, 0.5));
+		number v = smoothstep(radius, radius + softness, d);
+		px.rgb *= 1.0 - v * strength;
+		return px * color;
+	}
+]]
+
+function scene:_ensure_canvas()
+	local w, h = love.graphics.getWidth(), love.graphics.getHeight()
+	if self.world_canvas then
+		local cw, ch = self.world_canvas:getDimensions()
+		if cw == w and ch == h then
+			return
+		end
+	end
+	self.world_canvas = love.graphics.newCanvas(w, h)
+end
+
+function scene:_build_vignette()
+	local cfg = render_cfg.vignette
+	if not (cfg and cfg.enabled) then
+		self.vignette_shader = nil
+		return
+	end
+	self.vignette_shader = love.graphics.newShader(VIGNETTE_SHADER_SRC)
+	self.vignette_shader:send("strength", cfg.strength)
+	self.vignette_shader:send("radius", cfg.radius)
+	self.vignette_shader:send("softness", cfg.softness)
+end
+
+function scene:resize()
+	self:_ensure_canvas()
+end
+
 function scene:draw()
 	local draw_dist = render_cfg.camera.draw_distance
 	local camera_x, camera_y = camera:get_position()
 
-	--Draw Map
 	local cx = math.floor(camera_x or 0)
 	local cy = math.floor(camera_y or 0)
 	local end_x = math.min(cx + draw_dist, map:get_max_x())
@@ -30,6 +70,7 @@ function scene:draw()
 	local tiles = map:get_tiles()
 	local time = love.timer.getTime()
 	draw_buffer:clear()
+
 	for z = start_z, end_z do
 		for y = start_y, end_y do
 			for x = start_x, end_x do
@@ -69,7 +110,20 @@ function scene:draw()
 	end
 
 	draw_buffer:sort()
-	draw_buffer:walk()
+
+	if self.vignette_shader and self.world_canvas then
+		love.graphics.setCanvas(self.world_canvas)
+		love.graphics.clear(0, 0, 0, 1)
+		draw_buffer:walk()
+		love.graphics.setCanvas()
+
+		love.graphics.setShader(self.vignette_shader)
+		love.graphics.setColor(1, 1, 1, 1)
+		love.graphics.draw(self.world_canvas, 0, 0)
+		love.graphics.setShader()
+	else
+		draw_buffer:walk()
+	end
 
 	painter:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
 
@@ -89,6 +143,8 @@ function scene:load(player_x, player_y)
 	camera:load(player_x, player_y)
 	local cx, cy = camera:get_position()
 	weather:load(cx, cy)
+	self:_ensure_canvas()
+	self:_build_vignette()
 end
 
 function scene:update(dt)
