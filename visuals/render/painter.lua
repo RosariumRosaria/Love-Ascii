@@ -1,5 +1,4 @@
 local panels = require("visuals.panels")
-local entities = require("entities.entities")
 local render_utils = require("visuals.render.utils")
 local utils = require("utils")
 local map = require("map.map")
@@ -8,7 +7,6 @@ local config = require("config.runtime")
 local render_cfg = require("config.render_config")
 local debug_state = require("debug.debug_state")
 local draw_buffer = require("visuals.render.draw_buffer")
-local statuses = require("statuses.statuses")
 
 local painter = {}
 
@@ -395,7 +393,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 		outline_color = render_utils.to_grayscale(outline_color)
 	end
 
-	local visuals = statuses.get_visual_state(entity)
+	local visuals = render_utils.get_visual_state(entity)
 	for _, entity_part in ipairs(footprint_cells(entity)) do
 		local light_data = visible and map:get_lighting_tile(entity_part.x, entity_part.y) or nil
 

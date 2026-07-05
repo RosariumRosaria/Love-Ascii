@@ -2,7 +2,6 @@ local game_cfg = require("config.game_config")
 local render_cfg = require("config.render_config")
 local entities = require("entities.entities")
 local effects = require("visuals.effects.effects")
-
 local animation_types = require("visuals.render.animation_types")
 local utils = require("utils")
 
@@ -12,6 +11,7 @@ local min_step_fraction = 0.25
 
 function animation.add_from_template(name, overrides)
 	local new_anim = utils.create_instance_from_template(animation_types, name, overrides)
+	new_anim.elapsed = 0
 	return new_anim
 end
 
@@ -80,6 +80,15 @@ function animation.add_bump(entity, target_x, target_y)
 	anim(entity).bump = bump
 end
 
+function animation.add_flash(entity)
+	if not entity then
+		return false
+	end
+	local flash = animation.add_from_template("flash")
+
+	anim(entity).flash = flash
+end
+
 local function ensure_init(entity)
 	local a = anim(entity)
 	if not a.tween_x or not a.tween_y then
@@ -108,8 +117,8 @@ local function advance_and_write(entity, dt)
 	local a = entity.anim
 	a.tween_elapsed = math.min(a.tween_elapsed + dt, a.tween_duration)
 	local t = a.tween_elapsed / a.tween_duration
-	a.tween_x = a.tween_from_x + (a.tween_target_x - a.tween_from_x) * t
-	a.tween_y = a.tween_from_y + (a.tween_target_y - a.tween_from_y) * t
+	a.tween_x = utils.lerp(a.tween_from_x, a.tween_target_x, t)
+	a.tween_y = utils.lerp(a.tween_from_y, a.tween_target_y, t)
 
 	a.render_x = a.tween_x
 	a.render_y = a.tween_y
@@ -130,7 +139,7 @@ function animation.update(dt)
 			animation.spawn_pending_trail(entity)
 		end
 
-		if a.bump then
+		if a.bump then -- TODO, someday anims should be more generic things like duration and elpapsed
 			a.bump.elapsed = a.bump.elapsed + dt
 			if a.bump.elapsed >= a.bump.duration then
 				a.bump = nil
@@ -139,6 +148,13 @@ function animation.update(dt)
 				local curve = math.sin(p * math.pi)
 				a.render_x = a.render_x + a.bump.dx * curve
 				a.render_y = a.render_y + a.bump.dy * curve
+			end
+		end
+
+		if a.flash then
+			a.flash.elapsed = a.flash.elapsed + dt
+			if a.flash.elapsed >= a.flash.duration then
+				a.flash = nil
 			end
 		end
 	end

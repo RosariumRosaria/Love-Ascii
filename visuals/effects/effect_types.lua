@@ -37,23 +37,6 @@ return {
 		},
 		rects = {},
 	},
-	attack = {
-		name = "attack",
-		params = {
-			lifespan = 0.2,
-			initial_lifespan = 0.2,
-			decay_over_time = false,
-			i = 1,
-			frames = 3,
-		},
-		rects = {
-			{
-				colors = { { 1, 0.1, 0.1, 0.2 }, { 0.8, 0.07, 0.07, 0.15 }, { 0.6, 0.04, 0.04, 0.1 } },
-				rounded_amount = 1 / 4,
-				sizes = { 0.8, 0.6, 0.4 },
-			},
-		},
-	},
 	reticle = {
 		name = "reticle",
 		params = {
