@@ -133,28 +133,6 @@ function statuses.can_be_interacted(entity)
 	return not statuses.has_tag(entity, "disables_interaction")
 end
 
-function statuses.get_visual_state(entity) --TODO, EXTEND TO CHAR REPLACE
-	local alpha = 1
-	local tint = { 1, 1, 1 }
-	if not entity.statuses then
-		return { alpha = alpha, tint = tint }
-	end
-	for _, status in ipairs(entity.statuses) do
-		local v = status.visual
-		if v then
-			if v.alpha then
-				alpha = alpha * v.alpha
-			end
-			if v.tint then
-				tint[1] = tint[1] * (v.tint[1] or 1)
-				tint[2] = tint[2] * (v.tint[2] or 1)
-				tint[3] = tint[3] * (v.tint[3] or 1)
-			end
-		end
-	end
-	return { alpha = alpha, tint = tint }
-end
-
 function statuses.apply_from_tile(entity, tile_stack)
 	if not tile_stack then
 		return

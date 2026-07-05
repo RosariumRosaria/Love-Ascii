@@ -1,13 +1,10 @@
 local config = require("config.runtime")
 local render_config = require("config.render_config")
 local time = require("engine.time")
+local utils = require("utils")
 local default_font
 local tile_size
 local render_utils = {}
-
-local function lerp(a, b, f)
-	return a + (b - a) * f
-end
 
 local ambient_cache = { r = 0, g = 0, b = 0 }
 local ambient_cache_t = nil
@@ -35,9 +32,9 @@ local function ambient_color()
 	end
 	f = span > 0 and (t - A.at) / span or 0
 
-	ambient_cache.r = lerp(A.color.r, B.color.r, f)
-	ambient_cache.g = lerp(A.color.g, B.color.g, f)
-	ambient_cache.b = lerp(A.color.b, B.color.b, f)
+	ambient_cache.r = utils.lerp(A.color.r, B.color.r, f)
+	ambient_cache.g = utils.lerp(A.color.g, B.color.g, f)
+	ambient_cache.b = utils.lerp(A.color.b, B.color.b, f)
 	ambient_cache_t = t
 	return ambient_cache
 end
@@ -299,7 +296,7 @@ local function sample_keyframes(keys, t)
 	end
 	local f = span > 0 and (t - A.at) / span or 0
 
-	local v = lerp(A.v, B.v, f)
+	local v = utils.lerp(A.v, B.v, f)
 	if cached then
 		cached.t, cached.v = t, v
 	else
@@ -358,6 +355,42 @@ end
 
 function render_utils.scale_alpha(color, scale)
 	return { color[1], color[2], color[3], color[4] * scale }
+end
+
+function render_utils.get_visual_state(entity)
+	local alpha = 1
+	local tint = { 1, 1, 1 }
+	if entity.statuses then
+		for _, status in ipairs(entity.statuses) do
+			local v = status.visual
+			if v then
+				if v.alpha then
+					alpha = alpha * v.alpha
+				end
+				if v.tint then
+					tint[1] = tint[1] * (v.tint[1] or 1)
+					tint[2] = tint[2] * (v.tint[2] or 1)
+					tint[3] = tint[3] * (v.tint[3] or 1)
+				end
+			end
+		end
+	end
+
+	if entity.anim and entity.anim.flash then
+		local f = entity.anim.flash
+		local p = f.elapsed / f.duration
+		local v = f.visual
+		if v.tint then
+			for i = 1, 3 do
+				tint[i] = tint[i] * utils.lerp(v.tint[i], 1, p)
+			end
+		end
+		if v.alpha then
+			alpha = alpha * utils.lerp(v.alpha, 1, p)
+		end
+	end
+
+	return { alpha = alpha, tint = tint }
 end
 
 return render_utils

@@ -4,6 +4,10 @@ function utils.clamp(val, min, max)
 	return math.max(min, math.min(max, val))
 end
 
+function utils.lerp(a, b, f)
+	return a + (b - a) * f
+end
+
 function utils.in_bounds(x, y, max_x, max_y)
 	return x >= 1 and x <= max_x and y >= 1 and y <= max_y
 end

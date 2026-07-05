@@ -297,9 +297,7 @@ local function emit_on_hit_effects(attacker, target, damage)
 	local damage_number = effects:add_from_template("damage_number", tcx, tcy, target.z)
 	damage_number.glyph.char = tostring(math.floor(damage))
 
-	for _, c in ipairs(utils.footprint_offsets(target)) do
-		effects:add_from_template("attack", target.x + c.dx, target.y + c.dy, target.z)
-	end
+	animation.add_flash(target)
 end
 function actions:attack(entity, dx, dy, target_entity)
 	local weapon = inventory.get_equipped(entity, "mainhand")
