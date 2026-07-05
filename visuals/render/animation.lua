@@ -89,6 +89,15 @@ function animation.add_flash(entity)
 	anim(entity).flash = flash
 end
 
+function animation.add_shake(entity)
+	if not entity then
+		return false
+	end
+	local shake = animation.add_from_template("shake")
+
+	anim(entity).shake = shake
+end
+
 local function ensure_init(entity)
 	local a = anim(entity)
 	if not a.tween_x or not a.tween_y then
@@ -139,23 +148,26 @@ function animation.update(dt)
 			animation.spawn_pending_trail(entity)
 		end
 
-		if a.bump then -- TODO, someday anims should be more generic things like duration and elpapsed
-			a.bump.elapsed = a.bump.elapsed + dt
-			if a.bump.elapsed >= a.bump.duration then
-				a.bump = nil
-			else
-				local p = a.bump.elapsed / a.bump.duration
-				local curve = math.sin(p * math.pi)
-				a.render_x = a.render_x + a.bump.dx * curve
-				a.render_y = a.render_y + a.bump.dy * curve
+		for key, aa in pairs(a) do
+			if type(aa) == "table" and aa.elapsed then --TODO brittle. move elapsed anims to subtable
+				aa.elapsed = aa.elapsed + dt
+				if aa.elapsed >= aa.duration then
+					a[key] = nil
+				end
 			end
 		end
 
-		if a.flash then
-			a.flash.elapsed = a.flash.elapsed + dt
-			if a.flash.elapsed >= a.flash.duration then
-				a.flash = nil
-			end
+		if a.bump then -- TODO, someday anims should be more generic
+			local p = a.bump.elapsed / a.bump.duration
+			local curve = math.sin(p * math.pi)
+			a.render_x = a.render_x + a.bump.dx * curve
+			a.render_y = a.render_y + a.bump.dy * curve
+		end
+
+		if a.shake then
+			local p = a.shake.elapsed / a.shake.duration
+			a.render_x = a.render_x + (utils.randomize_sign() * a.shake.amount * (1 - p))
+			a.render_y = a.render_y + (utils.randomize_sign() * a.shake.amount * (1 - p))
 		end
 	end
 end
