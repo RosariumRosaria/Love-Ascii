@@ -65,6 +65,11 @@ local function record_trail(entity)
 	animation.set_pending_trail(entity)
 end
 
+local function spawn_burst(entity, type_name, count, opts)
+	local cx, cy = utils.get_center_of_footprint(entity)
+	particles:burst(entity.x + cx, entity.y + cy, entity.z + 1, type_name, count, opts)
+end
+
 local function resolve_target(actor, dx, dy, tag, name, target)
 	target = target or entities.get_with_tag(actor.x + dx, actor.y + dy, actor.z, tag)
 	if not validate_interaction(actor, target, name) then
@@ -213,6 +218,14 @@ function actions:use_item(entity, item, dx, dy)
 
 	assign_cost(entity, "use_item")
 	event_log:add({ type = "item_used", entity = entity.name, item = item.name })
+	if item.on_use.burst then
+		spawn_burst(target, item.on_use.burst.type, item.on_use.burst.count or 1, {
+			spread = item.on_use.burst.spread or 2,
+			smin = item.on_use.burst.smin or 1,
+			smax = item.on_use.burst.smax or 2,
+		})
+	end
+
 	if inventory.use_charge(item) then
 		inventory.remove(entity, item)
 		event_log:add({ type = "item_consumed", entity = entity.name, item = item.name })
@@ -272,26 +285,22 @@ local function emit_on_hit_effects(attacker, target, damage)
 
 	local hit_burst = target.combat and target.combat.hit_burst --TODO: Hit burst and attack burst dup  a lot. Also should this go in vitals? So that statuses can also pop here...
 	if hit_burst then
-		particles:burst(
-			tcx,
-			tcy,
-			target.z + 1,
-			hit_burst,
-			4, -- TODO: someday this and things like ths shake could be based on damage
-			{ dir = { dx = tcx - acx, dy = tcy - acy }, spread = 1, smin = 3, smax = 10 }
-		)
+		spawn_burst(target, hit_burst, 4, { -- TODO: someday this and things like ths shake could be based on damage
+			dir = { dx = tcx - acx, dy = tcy - acy },
+			spread = 1,
+			smin = 3,
+			smax = 10,
+		})
 	end
 
 	local attack_burst = attacker.combat and attacker.combat.attack_burst
 	if attack_burst then
-		particles:burst(
-			tcx,
-			tcy,
-			target.z + 1,
-			attack_burst,
-			4,
-			{ dir = { dx = tcx - acx, dy = tcy - acy }, spread = 1, smin = 3, smax = 10 }
-		)
+		spawn_burst(target, attack_burst, 4, {
+			dir = { dx = tcx - acx, dy = tcy - acy },
+			spread = 1,
+			smin = 3,
+			smax = 10,
+		})
 	end
 
 	local damage_number = effects:add_from_template("damage_number", tcx, tcy, target.z)
@@ -437,15 +446,11 @@ function actions:drag(entity, dx, dy, target)
 	entities.move_to(entity, actor_dest_x, actor_dest_y)
 	entities.move_to(target, target_dest_x, target_dest_y)
 
-	local dcx, dcy = utils.get_center_of_footprint(target)
-	particles:burst(
-		target_dest_x + dcx,
-		target_dest_y + dcy,
-		target.z + 1,
-		"dust",
-		2,
-		{ spread = 4, smin = 1, smax = 3 }
-	)
+	spawn_burst(target, "dust", 2, {
+		spread = 4,
+		smin = 1,
+		smax = 3,
+	})
 
 	event_log:add({
 		type = "entity_dragged",
