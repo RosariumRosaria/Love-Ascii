@@ -164,10 +164,11 @@ function render_utils.tonemap(color)
 	return { r, g, b, (color[4] or 1) }
 end
 
+local half_screen_x, half_screen_y = 0, 0
+local emissive_now, brighten_now, brighten_gamma = 1, 1, 1
+
 function render_utils.get_screen_coords(x, y, center_x, center_y)
-	local screen_x = (x - center_x + love.graphics.getWidth() / tile_size / 2) * tile_size
-	local screen_y = (y - center_y + love.graphics.getHeight() / tile_size / 2) * tile_size
-	return screen_x, screen_y
+	return (x - center_x + half_screen_x) * tile_size, (y - center_y + half_screen_y) * tile_size
 end
 
 function render_utils.get_map_coords(screen_x, screen_y, center_x, center_y)
@@ -305,16 +306,28 @@ local function sample_keyframes(keys, t)
 	return v
 end
 
+function render_utils.refresh_frame_cache()
+	half_screen_x = love.graphics.getWidth() / tile_size / 2
+	half_screen_y = love.graphics.getHeight() / tile_size / 2
+	local t = time.time_of_day()
+	brighten_now = sample_keyframes(render_config.lighting.brightness_keys, t)
+	emissive_now = sample_keyframes(render_config.lighting.emissive_keys, t)
+	brighten_gamma = 1 / brighten_now
+end
+
 function render_utils.brighten_by_time()
-	return sample_keyframes(render_config.lighting.brightness_keys, time.time_of_day())
+	return brighten_now
 end
 
 function render_utils.emissive_by_time()
-	return sample_keyframes(render_config.lighting.emissive_keys, time.time_of_day())
+	return emissive_now
 end
 
 function render_utils.brighten(color)
-	local g = 1 / render_utils.brighten_by_time()
+	local g = brighten_gamma
+	if g == 1 then
+		return color
+	end
 	return {
 		color[1] ^ g,
 		color[2] ^ g,
@@ -351,6 +364,7 @@ end
 function render_utils.load()
 	tile_size = config.tile_size
 	default_font = config.font
+	render_utils.refresh_frame_cache()
 end
 
 function render_utils.scale_alpha(color, scale)
