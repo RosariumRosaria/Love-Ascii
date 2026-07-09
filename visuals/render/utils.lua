@@ -165,6 +165,7 @@ function render_utils.tonemap(color)
 end
 
 local half_screen_x, half_screen_y = 0, 0
+local max_dist = 1
 local emissive_now, brighten_now, brighten_gamma = 1, 1, 1
 
 function render_utils.get_screen_coords(x, y, center_x, center_y)
@@ -182,13 +183,6 @@ function render_utils.distance_scale(x1, y1, x2, y2)
 		return 1
 	end
 
-	local screen_width = love.graphics.getWidth()
-	local screen_height = love.graphics.getHeight()
-
-	local tiles_wide = screen_width / tile_size
-	local tiles_high = screen_height / tile_size
-
-	local max_dist = math.sqrt((tiles_wide / 2) ^ 2 + (tiles_high / 2) ^ 2)
 	local dist = math.sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2)
 
 	local linear = math.max(1 - (dist / max_dist), 0)
@@ -309,14 +303,11 @@ end
 function render_utils.refresh_frame_cache()
 	half_screen_x = love.graphics.getWidth() / tile_size / 2
 	half_screen_y = love.graphics.getHeight() / tile_size / 2
+	max_dist = math.sqrt(half_screen_x ^ 2 + half_screen_y ^ 2)
 	local t = time.time_of_day()
 	brighten_now = sample_keyframes(render_config.lighting.brightness_keys, t)
 	emissive_now = sample_keyframes(render_config.lighting.emissive_keys, t)
 	brighten_gamma = 1 / brighten_now
-end
-
-function render_utils.brighten_by_time()
-	return brighten_now
 end
 
 function render_utils.emissive_by_time()

@@ -6,6 +6,7 @@ local debug_state = {
 	offset_type = render_cfg.rendering.default_offset_type,
 	show_perf = false,
 	show_xray = false,
+	profiling = false,
 }
 
 function debug_state.toggle_grid()

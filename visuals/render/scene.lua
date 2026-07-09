@@ -68,21 +68,42 @@ function scene:draw()
 	local start_z = map.min_z
 	local end_z = map.max_z
 	local tiles = map:get_tiles()
+	local visible_grid, explored_grid = map:get_visibility_grids()
 	local time = love.timer.getTime()
 	render_utils.refresh_frame_cache()
 	draw_buffer:clear()
 
 	for y = start_y, end_y do
-		local vis_row = map.visible[y]
-		local exp_row = map.explored[y]
+		local vis_row = visible_grid[y]
+		local exp_row = explored_grid[y]
 		local tile_row = tiles[y]
 		for x = start_x, end_x do
 			local visible = vis_row[x]
 			local explored = exp_row[x]
 			if visible or explored then
 				local stack = tile_row[x]
+				local x_screen, y_screen = render_utils.get_screen_coords(x, y, camera_x, camera_y)
+				local base = render_utils.distance_scale(x, y, camera_x, camera_y)
+				local light_data = map:get_lighting_tile(x, y)
 				for z = start_z, end_z do
-					painter:emit_tile_at_z(stack[z], x, y, z, camera_x, camera_y, visible, explored, time)
+					local tile = stack[z]
+					if tile then
+						painter:emit_tile_at_z(
+							tile,
+							x,
+							y,
+							z,
+							camera_x,
+							camera_y,
+							visible,
+							explored,
+							time,
+							x_screen,
+							y_screen,
+							base,
+							light_data
+						)
+					end
 				end
 			end
 		end
