@@ -347,6 +347,7 @@ return {
 					solid = false,
 					walkable = false,
 					barricadeable = false,
+					vaultable = true,
 				},
 			},
 		},

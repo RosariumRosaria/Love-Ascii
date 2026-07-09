@@ -4,6 +4,7 @@ local scene = require("visuals.render.scene")
 local debug_state = require("debug.debug_state")
 local panels = require("visuals.panels")
 local visualizer = require("debug.visualizer")
+local profiler = require("debug.profiler")
 local bindings = require("config.bindings")
 local event_log = require("engine.event_log")
 local inventory = require("items.inventory")
@@ -212,6 +213,10 @@ function input:update(dt)
 
 	if self:pressed("toggle_bw") then
 		debug_state.toggle_bw()
+	end
+
+	if self:pressed("toggle_profiler") then
+		profiler:toggle()
 	end
 
 	if self:pressed("toggle_perf") then

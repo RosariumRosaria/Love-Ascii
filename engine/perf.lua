@@ -2,6 +2,7 @@ local game_cfg = require("config.game_config")
 local debug_state = require("debug.debug_state")
 local config = require("config.runtime")
 local time = require("engine.time")
+local profiler = require("debug.profiler")
 
 local perf = {
 	frame_start = 0,
@@ -31,6 +32,9 @@ function perf:draw()
 		string.format("Worst: %.1fms", (self.worst_frame and self.worst_frame.elapsed or 0) * 1000),
 		string.format("Time: %s (%.2f)", time.part_of_day(), time.time_of_day()),
 	}
+	if profiler.active then
+		table.insert(lines, "PROFILING (f2 to stop)")
+	end
 	local line_h = font:getHeight()
 	local width = 0
 	for _, l in ipairs(lines) do
