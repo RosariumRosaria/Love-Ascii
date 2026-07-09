@@ -412,11 +412,9 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 				local r, g, b = render_utils.normalize_light(cover_light)
 				local k = render_cfg.lighting.cover_emissive * render_utils.emissive_by_time()
 				cover_color = { r * k, g * k, b * k, 1 }
+				cover_color = render_utils.apply_flicker(cover_color, cover_light.sources, time)
 			end
 			cover_color = render_utils.scale_color(cover_color, base)
-			if light_data then
-				cover_color = render_utils.apply_flicker(cover_color, light_data.sources, time)
-			end
 			emit_cover_rect(draw_buffer.LAYER.ENTITY_COVER, entity.z, entity_part.y, x_screen, y_screen, cover_color)
 		end
 
