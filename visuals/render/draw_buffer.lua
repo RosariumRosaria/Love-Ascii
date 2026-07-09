@@ -19,45 +19,35 @@ local draw_buffer = {
 }
 
 local buf = {}
+local keys = {}
 
-local function compare(a, b)
-	local pa = a.pass or 0
-	local pb = b.pass or 0
-	if pa ~= pb then
-		return pa < pb
-	end
-	if a.z ~= b.z then
-		return a.z < b.z
-	end
-	if a.layer ~= b.layer then
-		return a.layer < b.layer
-	end
-	if a.y ~= b.y then
-		return a.y < b.y
-	end
-
-	return a.insertion_order < b.insertion_order
-end
+local Y_W = 2 ^ 18
+local ORDER_W = 2 ^ 17
+local floor = math.floor
 
 function draw_buffer:emit(entry)
-	entry.insertion_order = #buf + 1
-	buf[#buf + 1] = entry
+	local n = #buf + 1
+	buf[n] = entry
+	local zq = floor((entry.z + 16) * 64)
+	local yq = floor((entry.y + 2) * 256)
+	keys[n] = ((((entry.pass or 0) * 4096 + zq) * 16 + entry.layer) * Y_W + yq) * ORDER_W + n
 end
 
 function draw_buffer:clear()
 	for i = #buf, 1, -1 do
 		buf[i] = nil
+		keys[i] = nil
 	end
 end
 
 function draw_buffer:sort()
-	table.sort(buf, compare)
+	table.sort(keys)
 end
 
 function draw_buffer:walk()
 	love.graphics.setFont(config.font)
-	for i = 1, #buf do
-		local d = buf[i]
+	for i = 1, #keys do
+		local d = buf[keys[i] % ORDER_W]
 		if d.kind == "char" then
 			render_primitives.draw_char(
 				d.x_screen,
