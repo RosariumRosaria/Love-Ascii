@@ -331,9 +331,10 @@ return {
 		default_action = "interactable",
 		tags = {
 			solid = true,
-			walkable = false, -- swapped by interaction.toggle; must stay explicit
+			walkable = false,
 			tilelike = true,
 			interactable = true,
+			vaultable = false,
 			barricadeable = true,
 		},
 		natural_rotation = 90,

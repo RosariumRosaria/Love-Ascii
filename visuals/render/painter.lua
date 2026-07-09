@@ -240,17 +240,21 @@ function painter:draw_panel(panel, center_x, center_y)
 	)
 end
 
-function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, explored, time)
-	if not tile then
-		return
-	end
-	if not visible and not explored then
-		return
-	end
-
-	local x_screen, y_screen = render_utils.get_screen_coords(x, y, center_x, center_y)
-	local base = render_utils.distance_scale(x, y, center_x, center_y)
-
+function painter:emit_tile_at_z(
+	tile,
+	x,
+	y,
+	z,
+	center_x,
+	center_y,
+	visible,
+	explored,
+	time,
+	x_screen,
+	y_screen,
+	base,
+	light_data
+)
 	local char = tile.chars[1]
 	local natural_height = tile.natural_height or 0
 	local z_eff = z + natural_height
@@ -259,7 +263,6 @@ function painter:emit_tile_at_z(tile, x, y, z, center_x, center_y, visible, expl
 
 	local base_color = render_utils.get_effective_color(tile.color, visible, explored)
 	local scaled_color = render_utils.scale_color(base_color, alpha)
-	local light_data = map:get_lighting_tile(x, y)
 
 	if visible then
 		scaled_color = render_utils.apply_lighting(scaled_color, light_data, z)
@@ -411,6 +414,9 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 				cover_color = { r * k, g * k, b * k, 1 }
 			end
 			cover_color = render_utils.scale_color(cover_color, base)
+			if light_data then
+				cover_color = render_utils.apply_flicker(cover_color, light_data.flicker, time)
+			end
 			emit_cover_rect(draw_buffer.LAYER.ENTITY_COVER, entity.z, entity_part.y, x_screen, y_screen, cover_color)
 		end
 
@@ -475,7 +481,6 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 	end
 end
 
--- Debug-only overlay, drawn directly (not through draw_buffer).
 function painter:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
 	if not debug_state.show_grid then
 		return

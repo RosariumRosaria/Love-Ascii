@@ -192,6 +192,10 @@ function map:get_tiles()
 	return self.tiles
 end
 
+function map:get_visibility_grids()
+	return self.visible, self.explored
+end
+
 function map:load(max_x, max_y, max_z, min_z, map_type)
 	math.randomseed(os.time())
 	self.max_x = max_x or 10
