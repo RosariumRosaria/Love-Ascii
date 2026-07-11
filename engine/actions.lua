@@ -10,6 +10,7 @@ local animation = require("visuals.render.animation")
 local sounds = require("engine.sounds")
 local vitals = require("engine.vitals")
 local particles = require("visuals.particles.particles")
+local game_cfg = require("config.game_config")
 local actions = {}
 
 local function validate_interaction(actor, target, name, range)
@@ -36,25 +37,14 @@ local function validate_interaction(actor, target, name, range)
 end
 
 local action_order = {
-	attackable = 4,
-	pickupable = 3,
-	moveable = 2,
+	attackable = 5,
+	pickupable = 4,
+	moveable = 3,
+	vaultable = 2,
 	interactable = 1,
 }
 
-local action_cost = {
-	move = 1,
-	attack = 1.25,
-	ranged_attack = 1.25,
-	interact = 1,
-	pickup = 1,
-	place = 1,
-	drag = 2,
-	use_item = 1,
-	equip = 1,
-	unequip = 1,
-	wait = 1,
-}
+local action_cost = game_cfg.action_cost
 
 local function assign_cost(entity, action_type)
 	entity.action_cost = action_cost[action_type]
@@ -113,6 +103,8 @@ function actions:default_interact(entity, dx, dy)
 		return self:drag(entity, dx, dy, target)
 	elseif action == "pickupable" then
 		return self:pickup(entity, dx, dy, target)
+	elseif action == "vaultable" then
+		return self:vault(entity, dx, dy, target)
 	end
 	return false
 end
@@ -308,6 +300,7 @@ local function emit_on_hit_effects(attacker, target, damage)
 	animation.add_shake(target)
 	animation.add_flash(target)
 end
+
 function actions:attack(entity, dx, dy, target_entity)
 	local weapon = inventory.get_equipped(entity, "mainhand")
 	target_entity = resolve_target(entity, dx, dy, "attackable", "Attack", target_entity)
@@ -418,6 +411,61 @@ function actions:move(entity, dx, dy)
 	return actions:default_interact(entity, dx, dy)
 end
 
+-- TODO: fragile, doesn't account for bigger entities (either an entity
+-- vaulting a big entity or a big entity vaulting a small entity)
+function actions.vault_landing(actor, from_x, from_y, x, y, z, target)
+	if not (actor.can_perform and actor.can_perform.vaultable) or actor.footprint then
+		return nil, "incapable"
+	end
+	if target and target.footprint then
+		return nil, "incapable"
+	end
+	local dx, dy = x - from_x, y - from_y
+	if dx == 0 and dy == 0 then
+		return nil, "incapable"
+	end
+	local land_x, land_y = x + dx, y + dy
+	if not map:is_footprint_free(land_x, land_y, z, actor) then
+		return nil, "occupied"
+	end
+	return land_x, land_y
+end
+
+function actions:vault(entity, dx, dy, target)
+	target = resolve_target(entity, dx, dy, "vaultable", "Vault", target)
+	if not target then
+		return false
+	end
+
+	local land_x, land_y =
+		actions.vault_landing(entity, entity.x, entity.y, entity.x + dx, entity.y + dy, entity.z, target)
+	if not land_x then
+		event_log:add({ type = "action_failed", entity = entity.name, reason = "Target not free" })
+		return false
+	end
+
+	assign_cost(entity, "vault")
+	record_trail(entity)
+	entities.move_to(entity, land_x, land_y)
+
+	animation.add_vault(entity, 2)
+	sounds.emit({
+		x = entity.x,
+		y = entity.y,
+		z = entity.z,
+		volume = 8,
+		reach = 12,
+		description = "a thud",
+		source = entity,
+	}) --TODO: Someday this should tie into stealth or something
+	spawn_burst(entity, "dust", 4, {
+		spread = 4,
+		smin = 1,
+		smax = 3,
+	})
+	return true
+end
+
 function actions:grab(entity, dx, dy)
 	return entities.get_first(entity.x + dx, entity.y + dy, entity.z)
 end
@@ -488,6 +536,8 @@ function actions:handle_action(entity, action)
 
 	if t == "move" then
 		return self:move(entity, action.dx, action.dy)
+	elseif t == "vault" then
+		return self:vault(entity, action.dx, action.dy, action.target)
 	elseif t == "attack" then
 		return self:attack(entity, action.dx, action.dy)
 	elseif t == "ranged_attack" then

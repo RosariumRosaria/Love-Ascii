@@ -20,14 +20,33 @@ local ai = {}
   Then pick based on some weights to be a target
 ]]
 
+local stride = ai_cfg.avoid.stride
+local avoid_cap = ai_cfg.avoid.cap
+local avoid_inc = ai_cfg.avoid.inc
+
 local function set_state(entity, new)
 	local mind = entity.mind
+	if not mind.avoid or (new == "idle" and mind.state ~= "idle") then
+		mind.avoid = {}
+	end
+
 	mind.state = new
 	mind.target_pos = nil
 	mind.target_value = 0
 	mind.wander_turns = nil
-	mind.impatience = 0
+
 	mind.search_turns = nil
+end
+
+local function decay_avoidance(entity)
+	if entity.mind and entity.mind.avoid then
+		for key, penalty in pairs(entity.mind.avoid) do
+			entity.mind.avoid[key] = math.max(penalty - avoid_inc / 6, 0)
+			if entity.mind.avoid[key] == 0 then
+				entity.mind.avoid[key] = nil
+			end
+		end
+	end
 end
 
 local function follow_path(entity)
@@ -41,21 +60,28 @@ local function follow_path(entity)
 	if step and step.x and step.y then
 		local dx = step.x - entity.x
 		local dy = step.y - entity.y
-		local kind, _, target = pathfinder.traversal(entity, step.x, step.y, 1, mind.target_pos)
+		local kind, _, target = pathfinder.traversal(entity, entity.x, entity.y, step.x, step.y, 1, mind.target_pos)
 
+		local acted
 		if kind == "attack" then
-			entity.mind.impatience = 0
-			actions:attack(entity, dx, dy, target)
+			acted = actions:attack(entity, dx, dy, target)
 		elseif kind == "open" then
-			entity.mind.impatience = 0
-			actions:interact(entity, dx, dy, target)
+			acted = actions:interact(entity, dx, dy, target)
+		elseif kind == "vault" then
+			acted = actions:vault(entity, dx, dy, target)
 		elseif kind == "wait" then
-			entity.mind.impatience = entity.mind.impatience + 1
-			actions:wait(entity)
+			acted = actions:wait(entity)
 		else
-			entity.mind.impatience = 0
-			actions:move(entity, dx, dy)
+			acted = actions:move(entity, dx, dy)
 		end
+		local k = step.y + (step.x * stride)
+		if not acted then
+			mind.avoid[k] = math.min(avoid_cap, (mind.avoid[k] or 0) + avoid_inc)
+			actions:wait(entity)
+		elseif kind == "wait" then
+			mind.avoid[k] = math.min(avoid_cap, (mind.avoid[k] or 0) + avoid_inc)
+		end
+		decay_avoidance(entity)
 	end
 
 	return true

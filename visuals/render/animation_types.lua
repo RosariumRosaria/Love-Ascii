@@ -8,7 +8,7 @@ return {
 		duration = 0.5,
 	},
 	shake = {
-		amount = 0.1,
+		amount = 0.05,
 		duration = 0.1,
 	},
 }

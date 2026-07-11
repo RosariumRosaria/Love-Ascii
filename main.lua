@@ -70,7 +70,7 @@ function love.load()
 	local player = entities.add_from_template("player", 250, 250, 1)
 	entities.set_player(player)
 	input_handler:set_actor(player)
-	apply_default_statuses(player)
+	--apply_default_statuses(player)
 	load_default_inventory(player)
 	spawn_default_entities()
 

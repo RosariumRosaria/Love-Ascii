@@ -109,6 +109,11 @@ function utils.render_y(entity)
 	return (a and a.render_y) or entity.y
 end
 
+function utils.render_z(entity)
+	local a = entity.anim
+	return (a and a.render_z) or entity.z
+end
+
 function utils.get_center_of_footprint(entity)
 	if not entity.footprint then
 		return 0, 0

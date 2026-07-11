@@ -16,6 +16,7 @@ return {
 			moveable = true,
 			interactable = true,
 			pickupable = true,
+			vaultable = true,
 		},
 		stats = {
 			health = { base = 35, current = 35 },
@@ -183,6 +184,7 @@ return {
 		can_perform = {
 			attackable = true,
 			interactable = true,
+			vaultable = true,
 		},
 	},
 	campfire = {
@@ -292,7 +294,7 @@ return {
 		},
 		default_action = "interactable",
 		stats = {
-			health = { base = 5, current = 5 },
+			health = { base = 10, current = 10 },
 		},
 		combat = { hit_burst = "dust" },
 		tags = {
@@ -303,7 +305,7 @@ return {
 			attackable = true,
 			barricadeable = true,
 		},
-		passage = { open = 1 },
+		passage = { kind = "walkable" },
 		natural_rotation = 0,
 		interaction = {
 			toggle = {
@@ -323,10 +325,9 @@ return {
 		name = "Window",
 		description = "A window, try opening it!",
 		type = "prop",
-		combat = { hit_burst = "dust" },
 		appearance = {
 			chars = { " ", "--", "--" },
-			color = { { 0.30, 0.16, 0.06, 1 } },
+			color = { { 0.55, 0.35, 0.1, 1 }, { 0.30, 0.16, 0.06, 1 }, { 0.30, 0.16, 0.06, 1 } },
 		},
 		default_action = "interactable",
 		tags = {
@@ -336,22 +337,50 @@ return {
 			interactable = true,
 			vaultable = false,
 			barricadeable = true,
+			attackable = true,
 		},
+		stats = {
+			health = { base = 10, current = 10 },
+		},
+		combat = { hit_burst = "dust" },
+		corpse = "broken_window",
+		passage = { kind = "vaultable" },
 		natural_rotation = 90,
 		interaction = {
 			toggle = {
 				appearance = {
 					chars = { " ", "''", "''" },
 				},
+				default_action = "vaultable",
 				natural_rotation = 90,
 				tags = {
 					solid = false,
 					walkable = false,
 					barricadeable = false,
 					vaultable = true,
+					attackable = true,
 				},
 			},
 		},
+	},
+
+	broken_window = {
+		name = "Broken Window",
+		description = "A broken window, try climbing through it!",
+		type = "prop",
+		appearance = {
+			chars = { " ", "'", "'" },
+			color = { { 0.55, 0.35, 0.1, 1 }, { 0.30, 0.16, 0.06, 1 }, { 0.30, 0.16, 0.06, 1 } },
+		},
+		default_action = "vaultable",
+		passage = { kind = "vaultable" },
+		tags = {
+			solid = false,
+			walkable = false,
+			tilelike = true,
+			vaultable = true,
+		},
+		natural_rotation = 90,
 	},
 
 	street_lamp = {

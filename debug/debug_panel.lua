@@ -2,6 +2,7 @@ local cursor = require("engine.cursor")
 local debug_state = require("debug.debug_state")
 local panels = require("visuals.panels")
 local effects = require("visuals.effects.effects")
+local ai_cfg = require("config.ai_config")
 local debug_panel = {}
 
 local target
@@ -55,6 +56,17 @@ function debug_panel.update()
 				description = v[1].sound.description or ""
 			end
 			val_str = "(" .. "count: " .. #v .. ", " .. "vol: " .. loudness .. ", " .. "desc: " .. description .. ")"
+		elseif k == "avoid" then
+			local stride = ai_cfg.avoid.stride
+			local count = 0
+			local parts = {}
+			for key, penalty in pairs(v) do
+				count = count + 1
+				local ax = math.floor(key / stride)
+				local ay = key % stride
+				parts[#parts + 1] = "(" .. ax .. ", " .. ay .. ")=" .. penalty
+			end
+			val_str = "count: " .. count .. " [" .. table.concat(parts, " ") .. "]"
 		else
 			val_str = tostring(v)
 		end
