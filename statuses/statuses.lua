@@ -16,6 +16,21 @@ function statuses.find(entity, key)
 	return nil
 end
 
+function statuses.absorb_pool(target)
+	-- Hot path (pathfinding cost model); sum in place rather than allocating
+	-- a with_tag list per call.
+	if not target.statuses then
+		return 0
+	end
+	local total = 0
+	for _, status in ipairs(target.statuses) do
+		if utils.get_tag(status, "absorbs") then
+			total = total + (status.hp or 0)
+		end
+	end
+	return total
+end
+
 function statuses.absorb(target, amount)
 	local absorbers = statuses.with_tag(target, "absorbs")
 	for _, absorber in ipairs(absorbers) do

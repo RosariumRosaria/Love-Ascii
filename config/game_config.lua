@@ -14,7 +14,7 @@ return {
 	},
 	timing = {
 		frame_ai_budget = 2,
-		turn_delay = 0.2,
+		turn_delay = 0.175,
 		base_turn_cost = 100,
 		day_length = 100000,
 		time_keyframes = {
@@ -25,9 +25,23 @@ return {
 			{ at = 0.85, "night" },
 		},
 	},
+	action_cost = {
+		move = 1,
+		attack = 1.25,
+		ranged_attack = 1.25,
+		interact = 1,
+		pickup = 1,
+		place = 1,
+		drag = 2,
+		use_item = 1,
+		vault = 3,
+		equip = 1,
+		unequip = 1,
+		wait = 1,
+	},
 	pathfinding = {
 		max_iterations = 1000,
-		wait_cost = 5,
+		wait_cost = 4,
 	},
 	perf = {
 		lag_warn_threshold = 0.1,

@@ -454,7 +454,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 			scaled_color = render_utils.scale_color(scaled_color, base)
 			scaled_color = render_utils.tonemap(scaled_color)
 
-			local dx, dy = get_offset(entity.z + i - 1, entity_part.x, entity_part.y, center_x, center_y)
+			local dx, dy = get_offset(utils.render_z(entity) + i - 1, entity_part.x, entity_part.y, center_x, center_y)
 			local p = {
 				z = entity.z + i - 1,
 				y = entity_part.y,
@@ -466,7 +466,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 				outline_color = outline_color,
 				rotation = entity.rotation,
 				natural_rotation = entity.natural_rotation,
-				size_scale = 1 + (entity.z + i - 1) * render_cfg.rendering.z_size_scale_per_level,
+				size_scale = 1 + (utils.render_z(entity) + i - 1) * render_cfg.rendering.z_size_scale_per_level,
 			}
 
 			if entity.moused and entity.type == "actor" and not entity.footprint then

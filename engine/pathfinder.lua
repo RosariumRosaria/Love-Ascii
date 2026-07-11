@@ -3,15 +3,87 @@ local map = require("map.map")
 local entities = require("entities.entities")
 local utils = require("utils")
 local game_cfg = require("config.game_config")
+local ai_cfg = require("config.ai_config")
 local stats = require("stats.stats")
 local statuses = require("statuses.statuses")
+local actions = require("engine.actions")
 
 local pathfinder = {}
 local max_checks = game_cfg.pathfinding.max_iterations
+local action_cost = game_cfg.action_cost
+local stride = ai_cfg.avoid.stride
 
-local function cell_traversal(actor, x, y, z, goal)
+local passage_terminal = {
+	walkable = { kind = "walk", cost = action_cost.move },
+
+	vaultable = { kind = "vault", cost = math.max(action_cost.vault - action_cost.move, 1) },
+}
+
+local function hits_cost(damage, hp)
+	return math.ceil(hp / damage) * action_cost.attack
+end
+
+local function can_attack(actor, ent, damage)
+	return damage > 0 and utils.get_tag(ent, "attackable") and actor.team ~= ent.team
+end
+
+local function destroy_cost(damage, ent)
+	return hits_cost(damage, statuses.absorb_pool(ent) + stats.get_current(ent, "health"))
+end
+
+local function passage_traversal(actor, ent, landing, damage)
+	local terminal = ent.passage and passage_terminal[ent.passage.kind]
+	if not terminal or not actor.can_perform then
+		return nil
+	end
+	if ent.passage.kind == "vaultable" and landing ~= "free" then
+		if landing == "occupied" and not ent.footprint then
+			return "wait", game_cfg.pathfinding.wait_cost
+		end
+		return nil
+	end
+
+	local remaining = terminal.cost
+	local needs_open = not utils.get_tag(ent, ent.passage.kind)
+	if needs_open then
+		if not actor.can_perform.interactable then
+			return nil
+		end
+		remaining = remaining + action_cost.interact
+	end
+
+	local pool = statuses.absorb_pool(ent)
+	if pool > 0 then
+		if not can_attack(actor, ent, damage) then
+			return nil
+		end
+		return "attack", hits_cost(damage, pool) + remaining
+	end
+
+	if needs_open then
+		if not statuses.can_be_interacted(ent) then
+			return nil
+		end
+		return "open", remaining
+	end
+
+	return terminal.kind, remaining
+end
+
+local function cell_traversal(actor, x, y, z, goal, landing, damage)
 	if not map:walkable(x, y, z) then
-		return "blocked", nil
+		for _, ent in ipairs(entities.get_list_at(x, y, z)) do
+			if ent.passage and ent.passage.kind == "vaultable" then
+				local kind, cost = passage_traversal(actor, ent, landing, damage)
+				if kind then
+					if kind == "wait" then
+						cost = cost + (actor.mind.avoid[y + (x * stride)] or 0)
+					end
+					return kind, cost, ent
+				end
+			end
+		end
+		return "blocked"
 	end
 
 	local at_goal = x == goal.x and y == goal.y and z == 1
@@ -21,33 +93,22 @@ local function cell_traversal(actor, x, y, z, goal)
 
 	for _, ent in ipairs(entities.get_list_at(x, y, z)) do
 		if not utils.get_tag(ent, "walkable") and ent ~= actor then
-			local kind, cost
-			if
-				ent.passage
-				and ent.passage.open
-				and actor.can_perform
-				and actor.can_perform.interactable
-				and statuses.can_be_interacted(ent)
-			then
-				kind, cost = "open", ent.passage.open
-			end
+			local kind, cost = passage_traversal(actor, ent, landing, damage)
 
-			if
-				utils.get_tag(ent, "attackable")
-				and actor.can_perform
-				and actor.can_perform.attackable
-				and actor.team ~= ent.team
-				and stats.get_current(actor, "damage") > 0
-			then
-				local bcost = math.ceil(stats.get_current(ent, "health") / stats.get_current(actor, "damage"))
+			if can_attack(actor, ent, damage) then
+				local bcost = destroy_cost(damage, ent)
 				if not cost or bcost < cost then
 					kind, cost = "attack", bcost
 				end
 			end
 			if actor.team and actor.team == ent.team then
-				kind, cost = "wait", game_cfg.pathfinding.wait_cost * (actor.mind.impatience + 1)
+				kind, cost = "wait", game_cfg.pathfinding.wait_cost
 			end
+
 			if kind then
+				if kind == "wait" then
+					cost = cost + (actor.mind.avoid[y + (x * stride)] or 0)
+				end
 				if not best_cost or cost < best_cost then
 					best_kind, best_cost, best_target = kind, cost, ent
 				end
@@ -75,16 +136,21 @@ end
 local kind_order = {
 	blocked = 1,
 	attack = 2,
-	open = 3,
-	wait = 4,
-	walk = 5,
+	vault = 3,
+	open = 4,
+	wait = 5,
+	walk = 6,
 }
 
-function pathfinder.traversal(actor, x, y, z, goal)
+function pathfinder.traversal(actor, from_x, from_y, x, y, z, goal)
+	local land_x, land_reason = actions.vault_landing(actor, from_x, from_y, x, y, z)
+	local landing = land_x and "free" or land_reason
+
+	local damage = actor.can_perform and actor.can_perform.attackable and stats.get_current(actor, "damage") or 0
 	local ret_kind, ret_cost, ret_target = "walk", 1, nil
 	local blocked = false
 	for _, c in ipairs(utils.footprint_offsets(actor)) do
-		local kind, cost, target = cell_traversal(actor, x + c.dx, y + c.dy, z, goal)
+		local kind, cost, target = cell_traversal(actor, x + c.dx, y + c.dy, z, goal, landing, damage)
 		if kind == "blocked" then
 			blocked = true
 		elseif kind_order[kind] < kind_order[ret_kind] and cost then
@@ -92,10 +158,6 @@ function pathfinder.traversal(actor, x, y, z, goal)
 		end
 	end
 
-	-- A blocked footprint cell only stops the body from *moving* onto (x, y); an
-	-- attack/open/wait is performed from the current cell, so a blocked sibling
-	-- must not mask it. Only fall through to "blocked" when the best outcome was
-	-- to walk into the blocked footprint.
 	if blocked and ret_kind == "walk" then
 		return "blocked", nil
 	end
@@ -115,7 +177,7 @@ local function get_neighbors(x, y, goal, actor)
 
 	local neighbors = {}
 	for _, pos in ipairs(candidates) do
-		local kind, cost = pathfinder.traversal(actor, pos.x, pos.y, 1, goal)
+		local kind, cost = pathfinder.traversal(actor, x, y, pos.x, pos.y, 1, goal)
 		if kind ~= "blocked" then
 			table.insert(neighbors, { x = pos.x, y = pos.y, kind = kind, cost = cost })
 		end

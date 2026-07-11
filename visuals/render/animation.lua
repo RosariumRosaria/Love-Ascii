@@ -74,10 +74,22 @@ function animation.add_bump(entity, target_x, target_y)
 	end
 	local bump = animation.add_from_template("bump")
 
-	bump.dx = utils.sign(target_x - entity.x) * bump.amount
-	bump.dy = utils.sign(target_y - entity.y) * bump.amount
-
+	bump.dx = utils.sign((target_x or entity.x) - entity.x) * bump.amount
+	bump.dy = utils.sign((target_y or entity.y) - entity.y) * bump.amount
 	anim(entity).bump = bump
+	return bump
+end
+
+function animation.add_vault(entity, target_z)
+	if not entity then
+		return false
+	end
+	local bump = animation.add_from_template("bump")
+
+	bump.dz = target_z
+	anim(entity).bump = bump
+
+	return bump
 end
 
 function animation.add_flash(entity)
@@ -131,6 +143,7 @@ local function advance_and_write(entity, dt)
 
 	a.render_x = a.tween_x
 	a.render_y = a.tween_y
+	a.render_z = entity.z
 end
 
 function animation.update(dt)
@@ -160,8 +173,9 @@ function animation.update(dt)
 		if a.bump then -- TODO, someday anims should be more generic
 			local p = a.bump.elapsed / a.bump.duration
 			local curve = math.sin(p * math.pi)
-			a.render_x = a.render_x + a.bump.dx * curve
-			a.render_y = a.render_y + a.bump.dy * curve
+			a.render_x = a.render_x + (a.bump.dx or 0) * curve
+			a.render_y = a.render_y + (a.bump.dy or 0) * curve
+			a.render_z = a.render_z + (a.bump.dz or 0) * curve
 		end
 
 		if a.shake then
