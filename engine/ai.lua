@@ -136,11 +136,36 @@ local function start_chasing(entity, target)
 	mind.target_value = ai_cfg.target_value.sight
 end
 
+local function closest_walkable_neighbor(entity, x, y, z)
+	z = z or 1
+	if map:walkable(x, y, z) then
+		return x, y
+	end
+
+	local best_x, best_y, best_dist
+	for dx = -1, 1 do
+		for dy = -1, 1 do
+			if not (dx == 0 and dy == 0) then
+				local nx, ny = x + dx, y + dy
+				if map:walkable(nx, ny, z) then
+					local dist = utils.distance_between(entity, { x = nx, y = ny })
+					if not best_dist or dist < best_dist then
+						best_x, best_y, best_dist = nx, ny, dist
+					end
+				end
+			end
+		end
+	end
+
+	return best_x or x, best_y or y
+end
+
 local function start_investigating(entity, x, y, value)
 	set_state(entity, "investigating")
 	local mind = entity.mind
+	local tx, ty = closest_walkable_neighbor(entity, x, y)
 	mind.last_known = { x = x, y = y }
-	mind.target_pos = { x = x, y = y }
+	mind.target_pos = { x = tx, y = ty }
 	mind.target_value = value
 end
 
@@ -154,6 +179,7 @@ local function idle(entity)
 		local map_max_x, map_max_y = map:get_max_x(), map:get_max_y()
 		tar_x = utils.clamp(tar_x, 1, map_max_x)
 		tar_y = utils.clamp(tar_y, 1, map_max_y)
+		tar_x, tar_y = closest_walkable_neighbor(entity, tar_x, tar_y)
 		if tar_x ~= entity.x or tar_y ~= entity.y then
 			set_state(entity, "wandering")
 			mind.target_pos = { x = tar_x, y = tar_y }
