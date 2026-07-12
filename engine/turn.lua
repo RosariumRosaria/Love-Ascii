@@ -18,9 +18,6 @@ local turn = {
 
 local function update_status_panel()
 	local entity = entities.player
-	if container.is_open then
-		entity = container:get()
-	end
 	panels:update_status(entity)
 end
 

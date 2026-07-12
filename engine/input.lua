@@ -218,14 +218,20 @@ end
 function input:handle_container()
 	local took_action = false
 	local move_dir = self:get_direction()
-	local is_moving = move_dir.x ~= 0 or move_dir.y ~= 0
 
-	if is_moving then
+	if move_dir.y ~= 0 then
 		self:set_mode(modes.normal)
 	elseif self:is_down("use_selected") then
+		local from, to
+		if container.focus_container then
+			from, to = container:get(), self.actor
+		else
+			from, to = self.actor, container:get()
+		end
 		took_action = actions:handle_action(self.actor, {
 			type = "transfer_item",
-			target = container:get(),
+			from = from,
+			to = to,
 		})
 	end
 
@@ -288,9 +294,14 @@ function input:update(dt)
 		if self.mode == modes.aiming then
 			aim.cycle_target()
 		else
-			local entity = (self.mode == modes.container and container:get()) or self.actor
+			local entity = (self.mode == modes.container and container.focus_container and container:get())
+				or self.actor
 			inventory.increment_selected_index(entity)
 		end
+	end
+
+	if self.mode == modes.container and (self:pressed("move_left") or self:pressed("move_right")) then
+		container:swap_focus()
 	end
 	if self:pressed("debug") then
 		local item = inventory.get_selected(self.actor)
@@ -322,7 +333,8 @@ function input:update(dt)
 
 	local slot = self:pressed_slot()
 	if slot then
-		local entity = (self.mode == modes.container and container:get()) or self.actor
+		local entity = (self.mode == modes.container and container.focus_container and container:get()) or self.actor
+
 		inventory.set_selected_index(entity, slot)
 	end
 
