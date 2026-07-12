@@ -66,10 +66,11 @@ function inventory.remove(entity, item)
 	for i, i_item in ipairs(entity.inventory.items) do
 		if i_item == item then
 			inventory.unequip(entity, item.slot)
-			if inventory.get_selected(entity) == item then
+
+			table.remove(entity.inventory.items, i)
+			if not inventory.get_selected(entity) then
 				inventory.increment_selected_index(entity)
 			end
-			table.remove(entity.inventory.items, i)
 			return
 		end
 	end
@@ -142,6 +143,15 @@ function inventory.add_charge(item)
 	end
 
 	item.charges = item.charges + 1
+	return true
+end
+
+function inventory.transfer(from, to, item)
+	if not item then
+		return false
+	end
+	inventory.remove(from, item)
+	inventory.add(to, item)
 	return true
 end
 

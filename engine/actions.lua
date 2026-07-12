@@ -529,6 +529,14 @@ function actions:wait(entity)
 	return true
 end
 
+function actions:transfer_item(entity, target)
+	if inventory.transfer(target, entity, inventory.get_selected(target)) then
+		assign_cost(entity, "transfer_item")
+		return true
+	end
+	return false
+end
+
 function actions:handle_action(entity, action)
 	if not entity or not action then
 		return false
@@ -556,6 +564,8 @@ function actions:handle_action(entity, action)
 		return self:use_selected(entity, action.dx, action.dy)
 	elseif t == "place_selected" then
 		return self:place_selected(entity, action.dx, action.dy)
+	elseif t == "transfer_item" then
+		return self:transfer_item(entity, action.target)
 	elseif t == "wait" then
 		return self:wait(entity)
 	end

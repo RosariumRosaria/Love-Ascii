@@ -1,6 +1,7 @@
 local entity_types = require("entities.entity_types")
 local event_log = require("engine.event_log")
 local inventory = require("items.inventory")
+local container = require("engine.container")
 
 local utils = require("utils")
 local time = require("engine.time")
@@ -43,6 +44,10 @@ function entities.get_with_tag(x, y, z, tag)
 end
 
 function entities.interact(entity)
+	if utils.get_tag(entity, "container") then
+		container:open(entity)
+	end
+
 	local interaction = entity.interaction
 	if not interaction then
 		return

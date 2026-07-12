@@ -9,16 +9,23 @@ local statuses = require("statuses.statuses")
 local stats = require("stats.stats")
 local event_log = require("engine.event_log")
 local aim = require("engine.aim")
+local container = require("engine.container")
 
 local turn = {
 	time_since_last_tick = 0,
 	time_between_ticks = game_cfg.timing.turn_delay,
 }
 
+local function update_status_panel()
+	local entity = entities.player
+	if container.is_open then
+		entity = container:get()
+	end
+	panels:update_status(entity)
+end
+
 local function post_turn_update(player)
 	map:update_visibility(player.x, player.y, stats.get(player, "sight"))
-
-	panels:update_status(player)
 end
 
 local function commit_turn(actor)
@@ -46,7 +53,7 @@ function turn:update(dt)
 	input:update(dt)
 	if not entities.player.dead then
 		self.time_since_last_tick = self.time_since_last_tick + dt
-
+		update_status_panel()
 		local actor
 		local start = love.timer.getTime()
 		while true do
