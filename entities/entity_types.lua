@@ -43,6 +43,40 @@ return {
 		combat = {
 			attack_volume = 8,
 			attack_sound = "a thump",
+			hit_burst = "blood",
+		},
+		stats = {
+			health = { base = 10, current = 10 },
+			sight = { base = 30 },
+			speed = { base = 4 },
+			damage = { base = 1 },
+		},
+		tags = {
+			moveable = true,
+			covers = true,
+			attackable = true,
+			can_hear = true,
+		},
+		can_perform = {
+			attackable = true,
+			vaultable = true,
+		},
+	},
+	shambler = {
+		name = "Shambler",
+		type = "actor",
+		team = "enemy",
+		mind = { state = "idle" },
+		appearance = {
+			chars = { "S" },
+			color = { { 0.35, 0.45, 0.23, 1 } },
+			effect_color = { 0.35, 0.6, 0.3, 0.5 },
+		},
+		description = "A shambler, try attacking it!",
+		default_action = "attackable",
+		combat = {
+			attack_volume = 8,
+			attack_sound = "a thump",
 			applies_on_hit = { { name = "poison", chance = 50 } },
 			hit_burst = "blood",
 		},
