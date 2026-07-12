@@ -38,6 +38,7 @@ return {
 		equip = 1,
 		unequip = 1,
 		wait = 1,
+		transfer_item = 0.5,
 	},
 	pathfinding = {
 		max_iterations = 1000,

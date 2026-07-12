@@ -13,7 +13,7 @@ local entities = require("entities.entities")
 local map = require("map.map")
 local camera = require("visuals.camera")
 local render_utils = require("visuals.render.utils")
-local utils = require("utils")
+local container = require("engine.container")
 local cursor = require("engine.cursor")
 
 local input = {
@@ -28,7 +28,7 @@ local input = {
 	grabbed = nil,
 }
 
-local modes = { normal = "normal", aiming = "aiming" }
+local modes = { normal = "normal", aiming = "aiming", container = "container" }
 
 local move_axis_of_key
 local function get_move_of_key(key)
@@ -147,13 +147,29 @@ function input:mouse_over_entity()
 	cursor.set_moused_entity(entity_list)
 end
 
+local function exit_mode(mode)
+	if mode == modes.container then
+		container:close()
+	elseif mode == modes.aiming then
+		aim.exit()
+	end
+end
+
+function input:set_mode(new_mode)
+	if new_mode == self.mode then
+		return
+	end
+	exit_mode(self.mode)
+	self.mode = new_mode
+	self.last_turn = { x = 0, y = 0 }
+end
+
 function input:enter_aim()
 	if not aim.enter(self.actor, self.actor.x, self.actor.y) then
 		event_log:add({ type = "action_failed", entity = self.actor.name, reason = "no ranged weapon" })
 		return false
 	end
-	self.mode = modes.aiming
-	self.last_turn = { x = 0, y = 0 }
+	self:set_mode(modes.aiming)
 	return true
 end
 
@@ -199,6 +215,22 @@ function input:handle_aim()
 	return took_action
 end
 
+function input:handle_container()
+	local took_action = false
+	local move_dir = self:get_direction()
+	local is_moving = move_dir.x ~= 0 or move_dir.y ~= 0
+
+	if is_moving then
+		self:set_mode(modes.normal)
+	elseif self:is_down("use_selected") then
+		took_action = actions:handle_action(self.actor, {
+			type = "transfer_item",
+			target = container:get(),
+		})
+	end
+
+	return took_action
+end
 function input:update(dt)
 	set_mouse_tile()
 	self:mouse_over_entity()
@@ -244,15 +276,20 @@ function input:update(dt)
 		panels:switch_status()
 	end
 
-	if self:is_down("quit") then
-		love.event.quit()
+	if self:pressed("quit") then
+		if self.mode == modes.container then
+			self:set_mode(modes.normal)
+		else
+			love.event.quit()
+		end
 	end
 
 	if self:pressed("cycle_next") then
 		if self.mode == modes.aiming then
 			aim.cycle_target()
 		else
-			inventory.increment_selected_index(self.actor)
+			local entity = (self.mode == modes.container and container:get()) or self.actor
+			inventory.increment_selected_index(entity)
 		end
 	end
 	if self:pressed("debug") then
@@ -266,9 +303,7 @@ function input:update(dt)
 
 	if self:pressed("aim") then
 		if self.mode == modes.aiming then
-			self.mode = modes.normal
-			aim.exit()
-			self.last_turn = { x = 0, y = 0 }
+			self:set_mode(modes.normal)
 		else
 			local weapon = inventory.get_equipped(self.actor, "mainhand")
 			local possible_weapon = inventory.get_first_with_field(self.actor, "ranged")
@@ -287,11 +322,11 @@ function input:update(dt)
 
 	local slot = self:pressed_slot()
 	if slot then
-		inventory.set_selected_index(self.actor, slot)
+		local entity = (self.mode == modes.container and container:get()) or self.actor
+		inventory.set_selected_index(entity, slot)
 	end
 
 	panels:log_events()
-	panels:update_status(self.actor)
 end
 
 function input:try_take_turn()
@@ -313,6 +348,8 @@ function input:try_take_turn()
 
 	if self.mode == modes.aiming then
 		return self:handle_aim()
+	elseif self.mode == modes.container then
+		return self:handle_container()
 	else
 		local move_dir = self:get_direction(true)
 		local is_moving = move_dir.x ~= 0 or move_dir.y ~= 0
@@ -355,6 +392,10 @@ function input:try_take_turn()
 					dx = -move_dir.x,
 					dy = -move_dir.y,
 				})
+			end
+
+			if took_action and self.mode == modes.normal and container.is_open then
+				self:set_mode(modes.container)
 			end
 		elseif self:is_down("inspect") then
 			actions:handle_action(actor, {

@@ -282,6 +282,34 @@ return {
 			attackable = true,
 		},
 	},
+
+	chest = {
+		name = "Chest",
+		description = "A chest, try interacting with it!",
+		type = "prop",
+		combat = { hit_burst = "dust" },
+		appearance = {
+			chars = { "#", "#" },
+			color = { { 0.48, 0.43, 0.30 }, { 0.48, 0.43, 0.30 } },
+		},
+		inventory = {
+			items = {},
+			equipped = { armor = nil, offhand = nil, accessory = nil, mainhand = nil },
+			selected_index = nil,
+		},
+		default_action = "moveable",
+		stats = {
+			health = { base = 5, current = 5 },
+		},
+		tags = {
+			moveable = true,
+			tilelike = true,
+			covers = true,
+			attackable = true,
+			interactable = true,
+			container = true,
+		},
+	},
 	item = {
 		name = "Item",
 		description = "An item, try picking it up!",
