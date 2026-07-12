@@ -92,11 +92,13 @@ end
 
 local function cell_traversal(actor, x, y, z, goal, landing, damage)
 	if not map:walkable(x, y, z) then
-		for _, ent in ipairs(entities.get_list_at(x, y, z)) do
-			if ent.passage and ent.passage.kind == "vaultable" then
-				local kind, cost = passage_entity(actor, ent, x, y, landing, damage)
-				if kind then
-					return kind, cost, ent
+		if landing ~= "incapable" then
+			for _, ent in ipairs(entities.get_list_at(x, y, z)) do
+				if ent.passage and ent.passage.kind == "vaultable" then
+					local kind, cost = passage_entity(actor, ent, x, y, landing, damage)
+					if kind then
+						return kind, cost, ent
+					end
 				end
 			end
 		end

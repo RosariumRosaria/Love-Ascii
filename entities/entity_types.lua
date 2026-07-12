@@ -48,7 +48,7 @@ return {
 		stats = {
 			health = { base = 10, current = 10 },
 			sight = { base = 30 },
-			speed = { base = 4 },
+			speed = { base = 5 },
 			damage = { base = 1 },
 		},
 		tags = {
@@ -69,8 +69,8 @@ return {
 		mind = { state = "idle" },
 		appearance = {
 			chars = { "S" },
-			color = { { 0.35, 0.45, 0.23, 1 } },
-			effect_color = { 0.35, 0.6, 0.3, 0.5 },
+			color = { { 0.45, 0.45, 0.23, 1 } },
+			effect_color = { 0.45, 0.55, 0.3, 0.5 },
 		},
 		description = "A shambler, try attacking it!",
 		default_action = "attackable",

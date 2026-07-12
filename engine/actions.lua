@@ -13,6 +13,8 @@ local particles = require("visuals.particles.particles")
 local game_cfg = require("config.game_config")
 local actions = {}
 
+--TODO: Someday this should split the validatity and targeting of an action from it's execution, so that it and pathfinder can always be in sync.
+
 local function validate_interaction(actor, target, name, range)
 	range = range or 1
 	if not actor then
