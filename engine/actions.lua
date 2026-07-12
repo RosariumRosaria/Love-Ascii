@@ -304,7 +304,7 @@ end
 function actions:attack(entity, dx, dy, target_entity)
 	local weapon = inventory.get_equipped(entity, "mainhand")
 	target_entity = resolve_target(entity, dx, dy, "attackable", "Attack", target_entity)
-	if not target_entity then
+	if not target_entity or not entity.can_perform or not entity.can_perform.attackable then
 		return false
 	end
 	if entity.team ~= target_entity.team then

@@ -70,15 +70,32 @@ local function passage_traversal(actor, ent, landing, damage)
 	return terminal.kind, remaining
 end
 
+local function passage_entity(actor, ent, x, y, landing, damage)
+	local kind, cost = passage_traversal(actor, ent, landing, damage)
+
+	if can_attack(actor, ent, damage) then
+		local bcost = destroy_cost(damage, ent)
+		if not cost or bcost < cost then
+			kind, cost = "attack", bcost
+		end
+	end
+	if actor.team and actor.team == ent.team then
+		kind, cost = "wait", game_cfg.pathfinding.wait_cost
+	end
+
+	if kind == "wait" then
+		cost = cost + (actor.mind.avoid[y + (x * stride)] or 0)
+	end
+
+	return kind, cost
+end
+
 local function cell_traversal(actor, x, y, z, goal, landing, damage)
 	if not map:walkable(x, y, z) then
 		for _, ent in ipairs(entities.get_list_at(x, y, z)) do
 			if ent.passage and ent.passage.kind == "vaultable" then
-				local kind, cost = passage_traversal(actor, ent, landing, damage)
+				local kind, cost = passage_entity(actor, ent, x, y, landing, damage)
 				if kind then
-					if kind == "wait" then
-						cost = cost + (actor.mind.avoid[y + (x * stride)] or 0)
-					end
 					return kind, cost, ent
 				end
 			end
@@ -93,22 +110,8 @@ local function cell_traversal(actor, x, y, z, goal, landing, damage)
 
 	for _, ent in ipairs(entities.get_list_at(x, y, z)) do
 		if not utils.get_tag(ent, "walkable") and ent ~= actor then
-			local kind, cost = passage_traversal(actor, ent, landing, damage)
-
-			if can_attack(actor, ent, damage) then
-				local bcost = destroy_cost(damage, ent)
-				if not cost or bcost < cost then
-					kind, cost = "attack", bcost
-				end
-			end
-			if actor.team and actor.team == ent.team then
-				kind, cost = "wait", game_cfg.pathfinding.wait_cost
-			end
-
+			local kind, cost = passage_entity(actor, ent, x, y, landing, damage)
 			if kind then
-				if kind == "wait" then
-					cost = cost + (actor.mind.avoid[y + (x * stride)] or 0)
-				end
 				if not best_cost or cost < best_cost then
 					best_kind, best_cost, best_target = kind, cost, ent
 				end
