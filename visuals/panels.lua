@@ -1,7 +1,7 @@
 local config = require("config.runtime")
 local stats = require("stats.stats")
 local inventory = require("items.inventory")
-
+local container = require("engine.container")
 local event_log = require("engine.event_log")
 local small_tile_size
 local small_font
@@ -15,6 +15,7 @@ local panels = {
 local status_types = { "stats", "inventory", "statuses" }
 local status_position = 1
 local status_panel
+local context_panel
 
 local FONTS = {}
 
@@ -177,6 +178,17 @@ function panels:load()
 		outline_color = white,
 		font = "small",
 	})
+	context_panel = self:add_panel("context", {
+		x = start_x - width - (2 * buffer),
+		y = start_y,
+		width = width,
+		height = screen_height - height - (4 * buffer),
+		color = black,
+		outline_width = outline_width,
+		outline_color = white,
+		font = "small",
+	})
+	context_panel.visible = false
 	status_panel.mode = "inventory"
 end
 
@@ -257,7 +269,11 @@ function panels:update_status(entity)
 				charges = charges .. "]"
 			end
 
-			local selected = inventory.get_selected(entity) and inventory.get_selected(entity) == item and " <" or ""
+			local selected = not container.focus_container
+					and inventory.get_selected(entity)
+					and inventory.get_selected(entity) == item
+					and " <"
+				or ""
 			self:add_text_to_panel_by_name("status", i .. " - " .. label .. equipped .. charges .. selected)
 		end
 	elseif status_panel.mode == "statuses" and entity.statuses then
@@ -268,6 +284,33 @@ function panels:update_status(entity)
 
 		if not entity.statuses or #entity.statuses == 0 then
 			self:add_text_to_panel_by_name("status", "No statuses")
+		end
+	end
+
+	context_panel.visible = container.is_open
+	if container.is_open then
+		context_panel.texts = {}
+		local container_entity = container:get()
+		if container_entity then
+			for i, item in ipairs(container_entity.inventory.items) do
+				local label = item.name or item.key or "?"
+
+				local charges = ""
+				if item.charges then
+					charges = " [" .. item.charges
+					if item.max_charges then
+						charges = charges .. "/" .. item.max_charges
+					end
+					charges = charges .. "]"
+				end
+
+				local selected = container.focus_container
+						and inventory.get_selected(container_entity)
+						and inventory.get_selected(container_entity) == item
+						and " <"
+					or ""
+				self:add_text_to_panel_by_name("context", i .. " - " .. label .. charges .. selected)
+			end
 		end
 	end
 end
