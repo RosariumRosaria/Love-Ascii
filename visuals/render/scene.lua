@@ -14,15 +14,17 @@ local weather = require("visuals.particles.particles")
 
 local scene = {}
 
-local VIGNETTE_SHADER_SRC = [[
+local POST_SHADER = [[
 	extern number strength;
 	extern number radius;
 	extern number softness;
+	extern number gamma;
 
 	vec4 effect(vec4 color, Image tex, vec2 uv, vec2 screen_coords) {
 		vec4 px = Texel(tex, uv);
 		number d = distance(uv, vec2(0.5, 0.5));
 		number v = smoothstep(radius, radius + softness, d);
+		px.rgb = pow(px.rgb, vec3(gamma));
 		px.rgb *= 1.0 - v * strength;
 		return px * color;
 	}
@@ -39,14 +41,12 @@ function scene:_ensure_canvas()
 	self.world_canvas = love.graphics.newCanvas(w, h)
 end
 
-function scene:_build_vignette()
+function scene:_build_post_shader()
 	local cfg = render_cfg.vignette
-	if not (cfg and cfg.enabled) then
-		self.vignette_shader = nil
-		return
-	end
-	self.vignette_shader = love.graphics.newShader(VIGNETTE_SHADER_SRC)
-	self.vignette_shader:send("strength", cfg.strength)
+	local strength = (cfg.enabled and cfg.strength) or 0
+
+	self.vignette_shader = love.graphics.newShader(POST_SHADER)
+	self.vignette_shader:send("strength", strength)
 	self.vignette_shader:send("radius", cfg.radius)
 	self.vignette_shader:send("softness", cfg.softness)
 end
@@ -71,6 +71,7 @@ function scene:draw()
 	local visible_grid, explored_grid = map:get_visibility_grids()
 	local time = love.timer.getTime()
 	render_utils.refresh_frame_cache()
+	self.vignette_shader:send("gamma", render_utils.get_gamma())
 	draw_buffer:clear()
 
 	for y = start_y, end_y do
@@ -131,19 +132,15 @@ function scene:draw()
 
 	draw_buffer:sort()
 
-	if self.vignette_shader and self.world_canvas then
-		love.graphics.setCanvas(self.world_canvas)
-		love.graphics.clear(0, 0, 0, 1)
-		draw_buffer:walk()
-		love.graphics.setCanvas()
+	love.graphics.setCanvas(self.world_canvas)
+	love.graphics.clear(0, 0, 0, 1)
+	draw_buffer:walk()
+	love.graphics.setCanvas()
 
-		love.graphics.setShader(self.vignette_shader)
-		love.graphics.setColor(1, 1, 1, 1)
-		love.graphics.draw(self.world_canvas, 0, 0)
-		love.graphics.setShader()
-	else
-		draw_buffer:walk()
-	end
+	love.graphics.setShader(self.vignette_shader)
+	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.draw(self.world_canvas, 0, 0)
+	love.graphics.setShader()
 
 	painter:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
 
@@ -164,7 +161,7 @@ function scene:load(player_x, player_y)
 	local cx, cy = camera:get_position()
 	weather:load(cx, cy)
 	self:_ensure_canvas()
-	self:_build_vignette()
+	self:_build_post_shader()
 end
 
 function scene:update(dt)
