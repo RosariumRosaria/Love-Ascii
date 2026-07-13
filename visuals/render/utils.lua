@@ -302,17 +302,8 @@ function render_utils.emissive_by_time()
 	return emissive_now
 end
 
-function render_utils.brighten(color)
-	local g = brighten_gamma
-	if g == 1 then
-		return color
-	end
-	return {
-		color[1] ^ g,
-		color[2] ^ g,
-		color[3] ^ g,
-		color[4],
-	}
+function render_utils.get_gamma()
+	return brighten_gamma
 end
 
 function render_utils.apply_lighting(color, light, emissive_scale)

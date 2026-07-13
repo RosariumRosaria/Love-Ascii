@@ -22,12 +22,12 @@ function render_primitives.draw_rect(
 		rounded_amount_y = height * rounded_amount
 	end
 
-	love.graphics.setColor(render_utils.brighten(color))
+	love.graphics.setColor(color)
 	love.graphics.rectangle("fill", x_screen, y_screen, width, height, rounded_amount_x, rounded_amount_y)
 
 	if outline_width and outline_color then
 		love.graphics.setLineWidth(outline_width)
-		love.graphics.setColor(render_utils.brighten(outline_color))
+		love.graphics.setColor(outline_color)
 		love.graphics.rectangle(
 			"line",
 			x_screen - outline_width,
@@ -70,11 +70,11 @@ function render_primitives.draw_char(
 	local oy = center_from_top
 
 	if outline_color then
-		love.graphics.setColor(render_utils.brighten(outline_color))
+		love.graphics.setColor(outline_color)
 		love.graphics.print(text, cx + 1, cy + 1, rads, s, s, ox, oy)
 	end
 
-	love.graphics.setColor(render_utils.brighten(color))
+	love.graphics.setColor(color)
 	love.graphics.print(text, cx, cy, rads, s, s, ox, oy)
 
 	love.graphics.setColor(1, 1, 1, 1)
