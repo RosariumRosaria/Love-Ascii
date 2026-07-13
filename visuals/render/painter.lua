@@ -265,7 +265,7 @@ function painter:emit_tile_at_z(
 	local scaled_color = render_utils.scale_color(base_color, alpha)
 
 	if visible then
-		scaled_color = render_utils.apply_lighting(scaled_color, light_data, z)
+		scaled_color = render_utils.apply_lighting(scaled_color, light_data)
 		scaled_color = render_utils.apply_flicker(scaled_color, light_data.sources, time)
 	end
 
@@ -348,7 +348,7 @@ function painter:emit_particle(p, center_x, center_y, time)
 	local scaled_color = render_utils.scale_color(p.color, alpha)
 	local light_data = map:get_lighting_tile(tx, ty)
 	if light_data then
-		scaled_color = render_utils.apply_lighting(scaled_color, light_data, p.z, render_cfg.lighting.particle_emissive)
+		scaled_color = render_utils.apply_lighting(scaled_color, light_data, render_cfg.lighting.particle_emissive)
 	end
 	scaled_color = apply_bw_mode(scaled_color, nil, 2)
 
@@ -436,7 +436,6 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 				scaled_color = render_utils.apply_lighting(
 					scaled_color,
 					light_data,
-					entity.z + i - 1,
 					render_cfg.lighting.entity_emissive
 				)
 				-- TODO: Determine if this should apply to entity colors

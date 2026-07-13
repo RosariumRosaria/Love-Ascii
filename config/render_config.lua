@@ -52,7 +52,6 @@ return {
 		cover_emissive = 0.5,
 		particle_emissive = 0.5,
 		entity_emissive = 0.75,
-		z_falloff = 0, --todo should maybe be removed instead of set to 0
 		entity_brightness_boost = 0.4,
 		distance_vignette = false,
 		distance_drama = 0.5,

@@ -18,6 +18,7 @@ return {
 
 	select_slot = { "1", "2", "3", "4", "5", "6", "7", "8", "9" },
 
+	reload_prefab = { "f1" },
 	toggle_profiler = { "f2" },
 	toggle_perf = { "f3" },
 	toggle_xray = { "f4" },

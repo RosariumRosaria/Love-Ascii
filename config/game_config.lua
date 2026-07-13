@@ -50,4 +50,14 @@ return {
 		warn_cooldown = 0.05,
 		worst_frame_window = 5,
 	},
+	-- Map maker prefab loading (tools/mapmaker). Absent by default → the loader in
+	-- map/prefab.lua never runs and nothing about the game changes. To stamp a prefab,
+	-- set this table:
+	--   prefab = {
+	--     file = "starter_house.prefab", -- name under prefabs/ (or the tool's save dir)
+	--     ox = 248, oy = 248,            -- map coords of the prefab's top-left cell
+	--     map_type = "town",             -- "town" (compose over the city) or "empty"
+	--     move_player = true,            -- reposition player to the prefab's player start
+	--   }
+	prefab = nil,
 }

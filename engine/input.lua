@@ -15,6 +15,9 @@ local camera = require("visuals.camera")
 local render_utils = require("visuals.render.utils")
 local container = require("engine.container")
 local cursor = require("engine.cursor")
+local prefab = require("map.prefab")
+local stats = require("stats.stats")
+local game_cfg = require("config.game_config")
 
 local input = {
 	actor = nil,
@@ -310,6 +313,15 @@ function input:update(dt)
 
 	if self:pressed("debug_spawn_zombie") then
 		self:debug_spawn_zombie()
+	end
+
+	-- Debug: re-read + re-stamp the configured prefab without restarting (map maker
+	-- edit→save→tap-key loop). No-op unless game_config.prefab is set.
+	if self:pressed("reload_prefab") and game_cfg.prefab then
+		prefab.clear_last()
+		prefab.stamp(game_cfg.prefab.file, game_cfg.prefab.ox, game_cfg.prefab.oy)
+		map:update_visibility(self.actor.x, self.actor.y, stats.get(self.actor, "sight"))
+		event_log:add({ type = "debug", message = "reloaded prefab" })
 	end
 
 	if self:pressed("aim") then
