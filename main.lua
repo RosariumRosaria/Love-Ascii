@@ -12,6 +12,7 @@ local inventory = require("items.inventory")
 local stats = require("stats.stats")
 local perf = require("engine.perf")
 local statuses = require("statuses.statuses")
+local prefab = require("map.prefab")
 
 local debug_panel = require("debug.debug_panel")
 
@@ -78,7 +79,18 @@ function love.load()
 	load_default_inventory(player)
 	spawn_default_entities()
 
-	map:load(map_max_x, map_max_y, map_max_z, map_min_z, "town")
+	local prefab_cfg = game_cfg.prefab
+	local map_type = (prefab_cfg and prefab_cfg.map_type) or "town"
+	map:load(map_max_x, map_max_y, map_max_z, map_min_z, map_type)
+
+	-- Prefab stamp (inert unless game_cfg.prefab is set — see config/game_config.lua).
+	if prefab_cfg then
+		local start = prefab.stamp(prefab_cfg.file, prefab_cfg.ox, prefab_cfg.oy)
+		if start and prefab_cfg.move_player ~= false then
+			entities.move_to(player, start.x, start.y, start.z)
+		end
+	end
+
 	map:update_visibility(entities.player.x, entities.player.y, stats.get(entities.player, "sight"))
 	panels:load()
 	panels:update_status(entities.player)
