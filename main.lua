@@ -52,13 +52,13 @@ local function apply_default_statuses(player)
 end
 
 local function spawn_default_entities()
-	entities.add_from_template("ogre", 262, 253, 1)
-	entities.add_from_template("zombie", 256, 256, 1)
-	entities.add_from_template("crate", 250, 260, 1)
-	entities.add_from_template("barricade", 250, 255, 1)
-	entities.add_from_template("campfire", 255, 260, 1)
-	entities.add_from_template("crystal", 280, 255, 1)
-	load_chest_inventory(entities.add_from_template("chest", 252, 251, 1))
+	entities.add_from_template_free("ogre", 262, 253, 1)
+	entities.add_from_template_free("zombie", 256, 256, 1)
+	entities.add_from_template_free("crate", 250, 260, 1)
+	entities.add_from_template_free("barricade", 250, 255, 1)
+	entities.add_from_template_free("campfire", 255, 260, 1)
+	entities.add_from_template_free("crystal", 280, 255, 1)
+	load_chest_inventory(entities.add_from_template_free("chest", 252, 251, 1))
 end
 
 function love.load()
@@ -77,7 +77,6 @@ function love.load()
 	input_handler:set_actor(player)
 	--apply_default_statuses(player)
 	load_default_inventory(player)
-	spawn_default_entities()
 
 	local prefab_cfg = game_cfg.prefab
 	local map_type = (prefab_cfg and prefab_cfg.map_type) or "town"
@@ -90,6 +89,9 @@ function love.load()
 			entities.move_to(player, start.x, start.y, start.z)
 		end
 	end
+
+	-- After the map (and any prefab) exist, so free-cell checks see real geometry.
+	spawn_default_entities()
 
 	map:update_visibility(entities.player.x, entities.player.y, stats.get(entities.player, "sight"))
 	panels:load()

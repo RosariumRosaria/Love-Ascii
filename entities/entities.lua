@@ -186,6 +186,22 @@ function entities.add_from_template(name, x, y, z, overrides)
 	return new_entity
 end
 
+function entities.add_from_template_free(name, x, y, z, overrides)
+	local map = require("map.map")
+	local new_entity = utils.create_instance_from_template(entity_types, name, overrides)
+
+	utils.randomize_flicker(new_entity.light)
+
+	x, y, z = x or 1, y or 1, z or 1
+	local fx, fy = map:closest_free_cell(x, y, z, new_entity)
+	new_entity.x = fx or x
+	new_entity.y = fy or y
+	new_entity.z = z
+
+	entities.add(new_entity)
+	return new_entity
+end
+
 function entities.convert_item_to_pickup(x, y, z, item)
 	local new_entity = entities.add_from_template(
 		"item",
