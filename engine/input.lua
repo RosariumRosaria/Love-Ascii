@@ -18,6 +18,7 @@ local cursor = require("engine.cursor")
 local prefab = require("map.prefab")
 local stats = require("stats.stats")
 local game_cfg = require("config.game_config")
+local utils = require("utils")
 
 local input = {
 	actor = nil,
@@ -148,6 +149,18 @@ function input:mouse_over_entity()
 	local mx, my = cursor.get_moused_coords()
 	local entity_list = entities.get_list_at(mx, my, 1)
 	cursor.set_moused_entity(entity_list)
+end
+
+local function move_with_mouse(actor)
+	local mx, my = cursor.get_moused_coords()
+	local dx = mx - actor.x
+	local dy = my - actor.y
+	if math.abs(dx) > math.abs(dy) then
+		dy = 0
+	else
+		dx = 0
+	end
+	return { x = utils.sign(dx), y = utils.sign(dy) }
 end
 
 local function exit_mode(mode)
@@ -376,6 +389,9 @@ function input:try_take_turn()
 		return self:handle_container()
 	else
 		local move_dir = self:get_direction(true)
+		if love.mouse.isDown(1) and move_dir.x == 0 and move_dir.y == 0 then
+			move_dir = move_with_mouse(self.actor)
+		end
 		local is_moving = move_dir.x ~= 0 or move_dir.y ~= 0
 		local has_moved = self.last_turn.x ~= 0 or self.last_turn.y ~= 0
 
