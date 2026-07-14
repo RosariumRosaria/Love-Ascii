@@ -14,7 +14,7 @@ return {
 	cycle_next = { "tab" },
 	use_selected = { "u" },
 	place_selected = { "p" },
-	switch_status = { "z" },
+	switch_character = { "z" },
 
 	select_slot = { "1", "2", "3", "4", "5", "6", "7", "8", "9" },
 

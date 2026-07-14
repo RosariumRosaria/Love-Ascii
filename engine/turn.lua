@@ -16,9 +16,9 @@ local turn = {
 	time_between_ticks = game_cfg.timing.turn_delay,
 }
 
-local function update_status_panel()
+local function update_character_panel()
 	local entity = entities.player
-	panels:update_status(entity)
+	panels:update_character(entity)
 end
 
 local function post_turn_update(player)
@@ -44,13 +44,15 @@ local function commit_turn(actor)
 	if actor == entities.player then
 		post_turn_update(entities.player)
 	end
+
+	panels:update_statuses(entities.player)
 end
 
 function turn:update(dt)
 	input:update(dt)
 	if not entities.player.dead then
 		self.time_since_last_tick = self.time_since_last_tick + dt
-		update_status_panel()
+		update_character_panel()
 		local actor
 		local start = love.timer.getTime()
 		while true do

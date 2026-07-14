@@ -207,12 +207,8 @@ function painter:draw_panel(panel, center_x, center_y)
 	end
 	love.graphics.setFont(panel.font or small_font)
 
-	local line_height = panel.tile_size or small_tile_size
-
 	if panel.auto_size then
-		local pad = (panel.outline_width or 1) + line_height * 0.25
-		panel.width = render_utils.get_max_text_width(panel.texts, panel.font) + pad * 2
-		panel.height = #panel.texts * line_height + pad * 2
+		panels:measure_auto_size(panel)
 	end
 
 	local visible_texts = panels:get_visible_texts(panel)

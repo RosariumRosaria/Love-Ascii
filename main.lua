@@ -48,7 +48,7 @@ end
 
 local function apply_default_statuses(player)
 	statuses.add_from_template(player, "bleeding")
-	statuses.add_from_template(player, "broken_leg")
+	--	statuses.add_from_template(player, "broken_leg")
 end
 
 local function spawn_default_entities()
@@ -75,7 +75,7 @@ function love.load()
 	local player = entities.add_from_template("player", 250, 250, 1)
 	entities.set_player(player)
 	input_handler:set_actor(player)
-	--apply_default_statuses(player)
+	apply_default_statuses(player)
 	load_default_inventory(player)
 
 	local prefab_cfg = game_cfg.prefab
@@ -95,7 +95,7 @@ function love.load()
 
 	map:update_visibility(entities.player.x, entities.player.y, stats.get(entities.player, "sight"))
 	panels:load()
-	panels:update_status(entities.player)
+	panels:update_character(entities.player)
 	scene:load(entities.player.x, entities.player.y)
 	debug_panel.load()
 end
