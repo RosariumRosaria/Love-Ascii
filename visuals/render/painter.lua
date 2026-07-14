@@ -433,11 +433,8 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 
 			local scaled_color = render_utils.scale_color(base_color, scale)
 			if light_data then
-				scaled_color = render_utils.apply_lighting(
-					scaled_color,
-					light_data,
-					render_cfg.lighting.entity_emissive
-				)
+				scaled_color =
+					render_utils.apply_lighting(scaled_color, light_data, render_cfg.lighting.entity_emissive)
 				-- TODO: Determine if this should apply to entity colors
 				-- scaled_color = render_utils.apply_flicker(scaled_color, light_data.flicker, time)
 			end
