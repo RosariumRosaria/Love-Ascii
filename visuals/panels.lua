@@ -3,6 +3,7 @@ local stats = require("stats.stats")
 local inventory = require("items.inventory")
 local container = require("engine.container")
 local event_log = require("engine.event_log")
+local render_utils = require("visuals.render.utils")
 local small_tile_size
 local small_font
 local very_small_tile_size
@@ -12,10 +13,10 @@ local panels = {
 	panel_list = {},
 }
 
-local status_types = { "stats", "inventory", "statuses" }
-local status_position = 1
-local status_panel
-local context_panel
+local character_modes = { "stats", "inventory" }
+local character_position = 1
+local character_panel
+local container_panel
 
 local FONTS = {}
 
@@ -30,10 +31,10 @@ function panels:add_text_to_panel(panel, text)
 	end
 end
 
-function panels:switch_status()
-	status_position = (status_position % #status_types) + 1
-	status_panel.mode = status_types[status_position]
-	self:update_status(status_panel.entity)
+function panels:switch_character()
+	character_position = (character_position % #character_modes) + 1
+	character_panel.mode = character_modes[character_position]
+	self:update_character(character_panel.entity)
 end
 
 function panels:get_panel_list()
@@ -94,7 +95,7 @@ function panels:add_panel(name, opts)
 		width = width,
 		name = name,
 		color = opts.color or { 0, 0, 0, 0.5 },
-		outline_width = opts.outline_width or (screen_width / 400),
+		outline_width = opts.outline_width or (screen_width / 600),
 		outline_color = opts.outline_color or { 1, 1, 1, 0.5 },
 		texts = {},
 		center_text = opts.center_text or false,
@@ -117,6 +118,14 @@ function panels:get_panel(name)
 	for _, panel in ipairs(self.panel_list) do
 		if panel.name == name then
 			return panel
+		end
+	end
+end
+function panels:remove_panel(name)
+	for i, panel in ipairs(self.panel_list) do
+		if panel.name == name then
+			table.remove(self.panel_list, i)
+			return
 		end
 	end
 end
@@ -168,7 +177,7 @@ function panels:load()
 		outline_color = white,
 		font = "very_small",
 	})
-	status_panel = self:add_panel("status", {
+	character_panel = self:add_panel("character", {
 		x = start_x,
 		y = start_y,
 		width = width,
@@ -178,7 +187,7 @@ function panels:load()
 		outline_color = white,
 		font = "small",
 	})
-	context_panel = self:add_panel("context", {
+	container_panel = self:add_panel("container", {
 		x = start_x - width - (2 * buffer),
 		y = start_y,
 		width = width,
@@ -188,8 +197,8 @@ function panels:load()
 		outline_color = white,
 		font = "small",
 	})
-	context_panel.visible = false
-	status_panel.mode = "inventory"
+	container_panel.visible = false
+	character_panel.mode = "inventory"
 end
 
 function panels:log_events()
@@ -241,20 +250,45 @@ function panels:log_events()
 	end
 end
 
-function panels:update_status(entity)
-	status_panel.texts = {}
-	status_panel.entity = entity
-	if status_panel.mode == "stats" and entity.stats then
-		for stat_name, stat in pairs(entity.stats) do
-			local max = stats.get(entity, stat_name)
-			if stat.current ~= nil then
-				local current = stats.get_current(entity, stat_name)
-				self:add_text_to_panel_by_name("status", stat_name .. ": " .. current .. " / " .. max)
-			else
-				self:add_text_to_panel_by_name("status", stat_name .. ": " .. max)
-			end
-		end
-	elseif status_panel.mode == "inventory" and entity.inventory then
+function panels:measure_auto_size(panel)
+	local line_height = panel.tile_size or small_tile_size
+	local outline = panel.outline_width or 1
+	local pad_x = outline + line_height * 0.25
+	local pad_y = line_height * 0.2
+	panel.width = render_utils.get_max_text_width(panel.texts, panel.font) + pad_x * 2
+	panel.height = #panel.texts * line_height + pad_y * 2
+end
+
+local status_panels = {}
+local STATUS_ANCHOR = { x = 25, y = 25 }
+local status_panel_opts = { x = STATUS_ANCHOR.x, y = STATUS_ANCHOR.y, font = "very_small", auto_size = true }
+
+function panels:update_statuses(entity)
+	for _, panel in ipairs(status_panels) do
+		self:remove_panel(panel.name)
+	end
+	status_panels = {}
+	if not entity.statuses then
+		return
+	end
+	local y = STATUS_ANCHOR.y
+	for i, status in ipairs(entity.statuses) do
+		local label = status.name or status.key or "?"
+		local panel = self:add_panel(label .. i, status_panel_opts)
+		local duration_text = status.duration and (" (" .. status.duration .. ")") or ""
+		self:add_text_to_panel_by_name(label .. i, "- " .. label .. duration_text)
+		self:measure_auto_size(panel)
+		panel.y = y
+		y = y + panel.height + 4 * panel.outline_width
+		table.insert(status_panels, panel)
+	end
+end
+
+function panels:update_character(entity)
+	character_panel.texts = {}
+	character_panel.entity = entity
+
+	if (character_panel.mode == "inventory" or container.is_open) and entity.inventory then
 		for i, item in ipairs(entity.inventory.items) do
 			local label = item.name or item.key or "?"
 
@@ -274,42 +308,42 @@ function panels:update_status(entity)
 					and inventory.get_selected(entity) == item
 					and " <"
 				or ""
-			self:add_text_to_panel_by_name("status", i .. " - " .. label .. equipped .. charges .. selected)
+			self:add_text_to_panel_by_name("character", i .. " - " .. label .. equipped .. charges .. selected)
 		end
-	elseif status_panel.mode == "statuses" and entity.statuses then
-		for _, status in ipairs(entity.statuses) do
-			local label = status.name or status.key or "?"
-			self:add_text_to_panel_by_name("status", "- " .. label .. " (" .. (status.duration or "") .. ")")
-		end
+		container_panel.visible = container.is_open
+		if container.is_open then
+			container_panel.texts = {}
+			local container_entity = container:get()
+			if container_entity then
+				for i, item in ipairs(container_entity.inventory.items) do
+					local label = item.name or item.key or "?"
 
-		if not entity.statuses or #entity.statuses == 0 then
-			self:add_text_to_panel_by_name("status", "No statuses")
-		end
-	end
-
-	context_panel.visible = container.is_open
-	if container.is_open then
-		context_panel.texts = {}
-		local container_entity = container:get()
-		if container_entity then
-			for i, item in ipairs(container_entity.inventory.items) do
-				local label = item.name or item.key or "?"
-
-				local charges = ""
-				if item.charges then
-					charges = " [" .. item.charges
-					if item.max_charges then
-						charges = charges .. "/" .. item.max_charges
+					local charges = ""
+					if item.charges then
+						charges = " [" .. item.charges
+						if item.max_charges then
+							charges = charges .. "/" .. item.max_charges
+						end
+						charges = charges .. "]"
 					end
-					charges = charges .. "]"
-				end
 
-				local selected = container.focus_container
-						and inventory.get_selected(container_entity)
-						and inventory.get_selected(container_entity) == item
-						and " <"
-					or ""
-				self:add_text_to_panel_by_name("context", i .. " - " .. label .. charges .. selected)
+					local selected = container.focus_container
+							and inventory.get_selected(container_entity)
+							and inventory.get_selected(container_entity) == item
+							and " <"
+						or ""
+					self:add_text_to_panel_by_name("container", i .. " - " .. label .. charges .. selected)
+				end
+			end
+		end
+	elseif character_panel.mode == "stats" and entity.stats then
+		for stat_name, stat in pairs(entity.stats) do
+			local max = stats.get(entity, stat_name)
+			if stat.current ~= nil then
+				local current = stats.get_current(entity, stat_name)
+				self:add_text_to_panel_by_name("character", stat_name .. ": " .. current .. " / " .. max)
+			else
+				self:add_text_to_panel_by_name("character", stat_name .. ": " .. max)
 			end
 		end
 	end

@@ -297,8 +297,8 @@ function input:update(dt)
 		debug_state.switch_offset()
 	end
 
-	if self:pressed("switch_status") then
-		panels:switch_status()
+	if self:pressed("switch_character") then
+		panels:switch_character()
 	end
 
 	if self:pressed("quit") then

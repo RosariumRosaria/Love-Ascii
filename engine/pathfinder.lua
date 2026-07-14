@@ -150,7 +150,7 @@ local kind_order = {
 	walk = 6,
 }
 
-function pathfinder.traversal(actor, from_x, from_y, x, y, z, goal, player_nav)
+function pathfinder.traversal(actor, from_x, from_y, x, y, z, goal, player_nav) --TODO: tbh this whole player nav vs AI thing is a code smell
 	local land_x, land_reason = actions.vault_landing(actor, from_x, from_y, x, y, z)
 	local landing = land_x and "free" or land_reason
 
