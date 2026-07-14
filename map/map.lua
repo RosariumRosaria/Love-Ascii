@@ -21,6 +21,63 @@ local map = {
 
 local ZERO_LIGHT = { r = 0, g = 0, b = 0 }
 
+function map:closest_walkable_neighbor(entity, x, y, z)
+	z = z or 1
+	if self:walkable(x, y, z) then
+		return x, y
+	end
+
+	local best_x, best_y, best_dist
+	for dx = -1, 1 do
+		for dy = -1, 1 do
+			if not (dx == 0 and dy == 0) then
+				local nx, ny = x + dx, y + dy
+				if self:walkable(nx, ny, z) then
+					local dist = utils.distance_between(entity, { x = nx, y = ny })
+					if not best_dist or dist < best_dist then
+						best_x, best_y, best_dist = nx, ny, dist
+					end
+				end
+			end
+		end
+	end
+
+	return best_x or x, best_y or y
+end
+
+function map:closest_free_cell(x, y, z, entity, max_radius, skip_entities)
+	z = z or 1
+	max_radius = max_radius or 8
+
+	local function is_free(cx, cy)
+		if entity then
+			return self:is_footprint_free(cx, cy, z, entity)
+		end
+		return self:is_tile_free(cx, cy, z, skip_entities)
+	end
+
+	for r = 0, max_radius do
+		if r == 0 then
+			if is_free(x, y) then
+				return x, y
+			end
+		else
+			for dx = -r, r do
+				for dy = -r, r do
+					if math.abs(dx) == r or math.abs(dy) == r then
+						local nx, ny = x + dx, y + dy
+						if is_free(nx, ny) then
+							return nx, ny
+						end
+					end
+				end
+			end
+		end
+	end
+
+	return nil
+end
+
 function map:find_targets_in_range(actor, range) -- TODO: Someday support other predicates
 	local targets = {}
 

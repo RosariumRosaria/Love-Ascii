@@ -48,7 +48,7 @@ return {
 		stats = {
 			health = { base = 10, current = 10 },
 			sight = { base = 30 },
-			speed = { base = 5 },
+			speed = { base = 4 },
 			damage = { base = 1 },
 		},
 		tags = {

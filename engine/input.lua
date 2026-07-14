@@ -19,6 +19,7 @@ local prefab = require("map.prefab")
 local stats = require("stats.stats")
 local game_cfg = require("config.game_config")
 local utils = require("utils")
+local pathfinder = require("engine.pathfinder")
 
 local input = {
 	actor = nil,
@@ -153,14 +154,16 @@ end
 
 local function move_with_mouse(actor)
 	local mx, my = cursor.get_moused_coords()
-	local dx = mx - actor.x
-	local dy = my - actor.y
-	if math.abs(dx) > math.abs(dy) then
-		dy = 0
-	else
-		dx = 0
+
+	local tx, ty = map:closest_walkable_neighbor(actor, mx, my, actor.z)
+	local target = { x = tx, y = ty }
+	local path = pathfinder.a_star({ x = actor.x, y = actor.y }, target, actor, true)
+	if path and path[2] then
+		local dx = path[2].x - actor.x
+		local dy = path[2].y - actor.y
+		return { x = utils.sign(dx), y = utils.sign(dy) }
 	end
-	return { x = utils.sign(dx), y = utils.sign(dy) }
+	return { x = 0, y = 0 }
 end
 
 local function exit_mode(mode)

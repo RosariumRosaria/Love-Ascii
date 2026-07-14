@@ -84,13 +84,16 @@ local function passage_entity(actor, ent, x, y, landing, damage)
 	end
 
 	if kind == "wait" then
-		cost = cost + (actor.mind.avoid[y + (x * stride)] or 0)
+		cost = cost + (actor.mind and actor.mind.avoid[y + (x * stride)] or 0)
 	end
 
 	return kind, cost
 end
 
-local function cell_traversal(actor, x, y, z, goal, landing, damage)
+local function cell_traversal(actor, x, y, z, goal, landing, damage, player_nav)
+	if player_nav and map:in_bounds(x, y) and not map:is_explored(x, y) then
+		return "walk", action_cost.move
+	end
 	if not map:walkable(x, y, z) then
 		if landing ~= "incapable" then
 			for _, ent in ipairs(entities.get_list_at(x, y, z)) do
@@ -147,7 +150,7 @@ local kind_order = {
 	walk = 6,
 }
 
-function pathfinder.traversal(actor, from_x, from_y, x, y, z, goal)
+function pathfinder.traversal(actor, from_x, from_y, x, y, z, goal, player_nav)
 	local land_x, land_reason = actions.vault_landing(actor, from_x, from_y, x, y, z)
 	local landing = land_x and "free" or land_reason
 
@@ -155,7 +158,7 @@ function pathfinder.traversal(actor, from_x, from_y, x, y, z, goal)
 	local ret_kind, ret_cost, ret_target = "walk", 1, nil
 	local blocked = false
 	for _, c in ipairs(utils.footprint_offsets(actor)) do
-		local kind, cost, target = cell_traversal(actor, x + c.dx, y + c.dy, z, goal, landing, damage)
+		local kind, cost, target = cell_traversal(actor, x + c.dx, y + c.dy, z, goal, landing, damage, player_nav)
 		if kind == "blocked" then
 			blocked = true
 		elseif kind_order[kind] < kind_order[ret_kind] and cost then
@@ -170,7 +173,7 @@ function pathfinder.traversal(actor, from_x, from_y, x, y, z, goal)
 	return ret_kind, ret_cost, ret_target
 end
 
-local function get_neighbors(x, y, goal, actor)
+local function get_neighbors(x, y, goal, actor, player_nav)
 	local candidates = {
 		{ x = x + 1, y = y },
 		{ x = x - 1, y = y },
@@ -178,11 +181,17 @@ local function get_neighbors(x, y, goal, actor)
 		{ x = x, y = y - 1 },
 	}
 
-	utils.shuffle(candidates)
+	if player_nav then
+		table.sort(candidates, function(a, b)
+			return utils.distance_between(a, goal) < utils.distance_between(b, goal)
+		end)
+	else
+		utils.shuffle(candidates)
+	end
 
 	local neighbors = {}
 	for _, pos in ipairs(candidates) do
-		local kind, cost = pathfinder.traversal(actor, x, y, pos.x, pos.y, 1, goal)
+		local kind, cost = pathfinder.traversal(actor, x, y, pos.x, pos.y, 1, goal, player_nav)
 		if kind ~= "blocked" then
 			table.insert(neighbors, { x = pos.x, y = pos.y, kind = kind, cost = cost })
 		end
@@ -213,7 +222,7 @@ local function reconstruct_path(came_from, start, goal)
 	return path
 end
 
-function pathfinder.a_star(start, goal, actor)
+function pathfinder.a_star(start, goal, actor, player_nav)
 	local frontier = {}
 	local arrival = nil
 	utils.priority_queue_put(frontier, start, 0)
@@ -236,12 +245,12 @@ function pathfinder.a_star(start, goal, actor)
 			break
 		end
 
-		for _, ret in ipairs(get_neighbors(current.x, current.y, goal, actor)) do
+		for _, ret in ipairs(get_neighbors(current.x, current.y, goal, actor, player_nav)) do
 			local kind, cost = ret.kind, ret.cost
 			local current_key = key(current.x, current.y)
 			local next_key = key(ret.x, ret.y)
-
-			local new_cost = cost_so_far[current_key] + cost
+			local step = player_nav and 1 or cost
+			local new_cost = cost_so_far[current_key] + step
 			if cost_so_far[next_key] == nil or new_cost < cost_so_far[next_key] then
 				cost_so_far[next_key] = new_cost
 				local priority = new_cost + heuristic(goal, ret)
