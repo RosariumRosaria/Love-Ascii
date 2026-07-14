@@ -30,8 +30,8 @@ function render_primitives.draw_rect(
 		love.graphics.setColor(outline_color)
 		love.graphics.rectangle(
 			"line",
-			x_screen - outline_width,
-			y_screen - outline_width,
+			x_screen - outline_width / 2,
+			y_screen - outline_width / 2,
 			width + outline_width,
 			height + outline_width,
 			rounded_amount_x,
@@ -88,13 +88,10 @@ function render_primitives.draw_text_block(texts, x_screen, y_screen, width, out
 	end
 
 	for i, text in ipairs(texts) do
-		local dx = 0
-		if center_text then
-			dx = dx + (width - font:getWidth(text)) / 2
-		end
-
+		local offset = outline * 2
+		local dx = (center_text and (width - font:getWidth(text)) / 2) or offset
 		local draw_x = x_screen + dx
-		local draw_y = y_screen + outline + ((i - 1) * line_height)
+		local draw_y = y_screen + outline + offset + ((i - 1) * line_height)
 
 		love.graphics.print(text, draw_x, draw_y)
 	end
