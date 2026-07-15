@@ -261,7 +261,7 @@ end
 
 local status_panels = {}
 local STATUS_ANCHOR = { x = 25, y = 25 }
-local status_panel_opts = { x = STATUS_ANCHOR.x, y = STATUS_ANCHOR.y, font = "very_small", auto_size = true }
+local status_panel_opts = { x = STATUS_ANCHOR.x, y = STATUS_ANCHOR.y, font = "very_small", center_text = true }
 
 function panels:update_statuses(entity)
 	for _, panel in ipairs(status_panels) do
@@ -271,16 +271,24 @@ function panels:update_statuses(entity)
 	if not entity.statuses then
 		return
 	end
-	local y = STATUS_ANCHOR.y
+	-- First pass: build each pill and auto-size it to its own text.
+	local max_width = 0
 	for i, status in ipairs(entity.statuses) do
 		local label = status.name or status.key or "?"
 		local panel = self:add_panel(label .. i, status_panel_opts)
 		local duration_text = status.duration and (" (" .. status.duration .. ")") or ""
-		self:add_text_to_panel_by_name(label .. i, "- " .. label .. duration_text)
+		self:add_text_to_panel_by_name(label .. i, label .. duration_text)
 		self:measure_auto_size(panel)
+		max_width = math.max(max_width, panel.width)
+		table.insert(status_panels, panel)
+	end
+
+	-- Second pass: give every pill the widest measured width, and stack them.
+	local y = STATUS_ANCHOR.y
+	for _, panel in ipairs(status_panels) do
+		panel.width = max_width
 		panel.y = y
 		y = y + panel.height + 4 * panel.outline_width
-		table.insert(status_panels, panel)
 	end
 end
 

@@ -43,18 +43,29 @@ function entities.get_with_tag(x, y, z, tag)
 	return utils.find_with_tag(ents, tag)
 end
 
+local function cell_has_other_entity(entity)
+	for _, e in ipairs(entities.get_list_at(entity.x, entity.y, entity.z)) do
+		if e ~= entity then
+			return true
+		end
+	end
+	return false
+end
+
 function entities.interact(entity)
+	local ret = false
 	if utils.get_tag(entity, "container") then
 		container:open(entity)
+		ret = true
 	end
 
 	local interaction = entity.interaction
 	if not interaction then
-		return
+		return ret
 	end
 
 	local toggle = interaction.toggle
-	if toggle then
+	if toggle and (not interaction.requires_empty or not cell_has_other_entity(entity)) then
 		for k, v in pairs(toggle) do
 			if (k == "tags" or k == "appearance") and type(v) == "table" and type(entity[k]) == "table" then
 				for sub_key, sub_val in pairs(v) do
@@ -66,7 +77,10 @@ function entities.interact(entity)
 				entity[k], toggle[k] = v, entity[k]
 			end
 		end
+		ret = true
 	end
+
+	return ret
 end
 
 function entities.inspect(entity)

@@ -7,6 +7,7 @@ return {
 		},
 		name = "Player",
 		team = "player",
+		natural_rotation = 270,
 		type = "actor",
 		combat = { hit_burst = "blood" },
 		tags = { covers = true, attackable = true, can_hear = true },
@@ -370,6 +371,7 @@ return {
 		passage = { kind = "walkable" },
 		natural_rotation = 0,
 		interaction = {
+			requires_empty = true,
 			toggle = {
 				natural_rotation = 0,
 				appearance = {

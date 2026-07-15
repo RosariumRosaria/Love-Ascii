@@ -28,6 +28,7 @@ local input = {
 	pressed_keys = {},
 	released_keys = {},
 	move_recency = {},
+	buffered_keys = {},
 	mode = "normal",
 	last_turn = { x = 0, y = 0 },
 	grabbed = nil,
@@ -111,7 +112,10 @@ function input:_has(action, state_table)
 end
 
 function input:is_down(action)
-	return self:_has(action, self.down_keys)
+	-- During the buffered-input fallback pass, reads resolve against the keys
+	-- captured during the blackout instead of what's physically held now.
+	local source = self.buffer_reading and self.buffer_set or self.down_keys
+	return self:_has(action, source)
 end
 
 function input:pressed(action)
@@ -130,20 +134,20 @@ end
 function input:debug_spawn_zombie()
 	local mx, my = cursor.get_moused_coords()
 	if map:is_tile_free(mx, my, 1) then
-		entities.add_from_template("vampire", mx, my, 1)
-		event_log:add({ type = "debug", message = "spawned vampire" })
+		entities.add_from_template("barricade", mx, my, 1)
+		event_log:add({ type = "debug", message = "spawned barricade" })
 		return
 	end
 	local offsets = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 } }
 	for _, o in ipairs(offsets) do
 		local x, y = mx + o[1], my + o[2]
 		if map:is_tile_free(x, y, 1) then
-			entities.add_from_template("vampire", x, y, 1)
-			event_log:add({ type = "debug", message = "spawned vampire" })
+			entities.add_from_template("barricade", x, y, 1)
+			event_log:add({ type = "debug", message = "spawned barricade" })
 			return
 		end
 	end
-	event_log:add({ type = "debug", message = "no free cell to spawn vampire" })
+	event_log:add({ type = "debug", message = "no free cell to spawn barricade" })
 end
 
 function input:mouse_over_entity()
@@ -181,6 +185,7 @@ function input:set_mode(new_mode)
 	exit_mode(self.mode)
 	self.mode = new_mode
 	self.last_turn = { x = 0, y = 0 }
+	self.buffered_keys = {}
 end
 
 function input:enter_aim()
@@ -195,16 +200,21 @@ end
 function input:get_direction(cardinal_only)
 	local x, y = 0, 0
 
-	for i = #self.move_recency, 1, -1 do
-		local k = self.move_recency[i]
+	-- The buffer may hold non-movement keys too, so skip anything that isn't a
+	-- direction (get_move_of_key returns nil) rather than assuming a binding.
+	local recency = self.buffer_reading and self.buffered_keys or self.move_recency
+	for i = #recency, 1, -1 do
+		local k = recency[i]
 		local binding = get_move_of_key(k)
-		if binding.axis == "y" and y == 0 then
-			y = binding.dir
-		elseif binding.axis == "x" and x == 0 then
-			x = binding.dir
-		end
-		if cardinal_only then
-			break
+		if binding then
+			if binding.axis == "y" and y == 0 then
+				y = binding.dir
+			elseif binding.axis == "x" and x == 0 then
+				x = binding.dir
+			end
+			if cardinal_only then
+				break
+			end
 		end
 	end
 
@@ -262,6 +272,17 @@ function input:update(dt)
 
 	if not self.actor then
 		return
+	end
+
+	-- Accumulate this frame's presses so a tap during the post-turn cooldown
+	-- (when try_take_turn isn't reached) survives to the next open gate. Same
+	-- recency dance as move_recency, but it does NOT forget on key-up — that's
+	-- what lets a released tap still register. Cleared when a turn resolves.
+	if self.mode == modes.normal then
+		for key in pairs(self.pressed_keys) do
+			remove_from_recency(self.buffered_keys, key)
+			table.insert(self.buffered_keys, key)
+		end
 	end
 
 	if self:pressed("toggle_grid") then
@@ -369,6 +390,13 @@ function input:update(dt)
 	panels:log_events()
 end
 
+function input:face(actor, dx, dy)
+	if dx == 0 and dy == 0 then
+		return
+	end
+	actor.rotation = math.deg(math.atan2(dy, dx)) % 360
+end
+
 function input:try_take_turn()
 	local actor = self.actor
 
@@ -376,12 +404,10 @@ function input:try_take_turn()
 		return false
 	end
 
-	local took_action = false
-
 	local draw_weapon = self.pending_draw
 	self.pending_draw = nil
 	if draw_weapon then
-		took_action = actions:handle_action(actor, { type = "equip_item", item = draw_weapon })
+		local took_action = actions:handle_action(actor, { type = "equip_item", item = draw_weapon })
 		self:enter_aim()
 		return took_action
 	end
@@ -390,93 +416,121 @@ function input:try_take_turn()
 		return self:handle_aim()
 	elseif self.mode == modes.container then
 		return self:handle_container()
-	else
-		local move_dir = self:get_direction(true)
-		if love.mouse.isDown(1) and move_dir.x == 0 and move_dir.y == 0 then
-			move_dir = move_with_mouse(self.actor)
-		end
-		local is_moving = move_dir.x ~= 0 or move_dir.y ~= 0
-		local has_moved = self.last_turn.x ~= 0 or self.last_turn.y ~= 0
+	end
 
-		if not is_moving then
-			move_dir = self.last_turn
-		end
+	-- Normal mode: resolve against live input first. If nothing was held that
+	-- produced a turn, replay any keys buffered during the cooldown through the
+	-- same body (their existing branches supply precedence + dispatch). Either
+	-- way the buffer is spent once the gate resolves.
+	local took_action = self:_take_normal_turn()
 
-		if self:is_down("use_selected") then
-			return actions:handle_action(actor, { type = "use_selected", dx = move_dir.x, dy = move_dir.y })
-		elseif self:is_down("wait") then
-			return actions:handle_action(actor, { type = "wait" })
+	-- Only fall back to the buffer when nothing live is driving movement, so a
+	-- held direction that merely bumped a wall isn't overridden by a stale tap.
+	local live_moving = #self.move_recency > 0 or love.mouse.isDown(1)
+	if not took_action and not live_moving and #self.buffered_keys > 0 then
+		self.buffer_set = {}
+		for _, key in ipairs(self.buffered_keys) do
+			self.buffer_set[key] = true
 		end
+		self.buffer_reading = true
+		took_action = self:_take_normal_turn()
+		self.buffer_reading = false
+	end
 
-		if not (is_moving or has_moved) then
-			return false
+	self.buffered_keys = {}
+	return took_action
+end
+
+function input:_take_normal_turn()
+	local actor = self.actor
+	local took_action = false
+
+	local move_dir = self:get_direction(true)
+	if love.mouse.isDown(1) and move_dir.x == 0 and move_dir.y == 0 then
+		move_dir = move_with_mouse(actor)
+	end
+	local is_moving = move_dir.x ~= 0 or move_dir.y ~= 0
+	local has_moved = self.last_turn.x ~= 0 or self.last_turn.y ~= 0
+
+	if not is_moving then
+		move_dir = self.last_turn
+	end
+	input:face(actor, move_dir.x, move_dir.y)
+
+	if self:is_down("use_selected") then
+		return actions:handle_action(actor, { type = "use_selected", dx = move_dir.x, dy = move_dir.y })
+	elseif self:is_down("wait") then
+		return actions:handle_action(actor, { type = "wait" })
+	end
+
+	if not (is_moving or has_moved) then
+		return false
+	end
+
+	if self:is_down("attack") then
+		local weapon = inventory.get_equipped(actor, "mainhand")
+		if weapon and weapon.ranged then
+			self:enter_aim()
+		else
+			took_action = actions:handle_action(actor, {
+				type = "attack",
+				dx = move_dir.x,
+				dy = move_dir.y,
+			})
 		end
-
-		if self:is_down("attack") then
-			local weapon = inventory.get_equipped(self.actor, "mainhand")
-			if weapon and weapon.ranged then
-				self:enter_aim()
-			else
-				took_action = actions:handle_action(actor, {
-					type = "attack",
-					dx = move_dir.x,
-					dy = move_dir.y,
-				})
-			end
-		elseif self:is_down("interact") then
+	elseif self:is_down("interact") then
+		took_action = actions:handle_action(actor, {
+			type = "interact",
+			dx = move_dir.x,
+			dy = move_dir.y,
+		})
+		if not took_action then
 			took_action = actions:handle_action(actor, {
 				type = "interact",
-				dx = move_dir.x,
-				dy = move_dir.y,
+				dx = -move_dir.x,
+				dy = -move_dir.y,
 			})
-			if not took_action then
-				took_action = actions:handle_action(actor, {
-					type = "interact",
-					dx = -move_dir.x,
-					dy = -move_dir.y,
-				})
-			end
-
-			if took_action and self.mode == modes.normal and container.is_open then
-				self:set_mode(modes.container)
-			end
-		elseif self:is_down("inspect") then
-			actions:handle_action(actor, {
-				type = "inspect",
-				dx = move_dir.x,
-				dy = move_dir.y,
-			})
-		elseif self:is_down("place_selected") then
-			took_action = actions:handle_action(actor, {
-				type = "place_selected",
-				dx = move_dir.x,
-				dy = move_dir.y,
-			})
-		elseif is_moving then
-			if self:is_down("grab") then
-				if not self.grabbed then
-					self.grabbed = actions:grab(actor, move_dir.x, move_dir.y)
-				end
-				if self.grabbed then
-					took_action = actions:handle_action(actor, {
-						type = "grab_interaction",
-						dx = move_dir.x,
-						dy = move_dir.y,
-						target = self.grabbed,
-					})
-				end
-			else
-				self.grabbed = nil
-				took_action = actions:handle_action(actor, {
-					type = "move",
-					dx = move_dir.x,
-					dy = move_dir.y,
-				})
-			end
 		end
 
-		self.last_turn = { x = move_dir.x, y = move_dir.y }
+		if took_action and self.mode == modes.normal and container.is_open then
+			self:set_mode(modes.container)
+		end
+	elseif self:is_down("inspect") then
+		actions:handle_action(actor, {
+			type = "inspect",
+			dx = move_dir.x,
+			dy = move_dir.y,
+		})
+	elseif self:is_down("place_selected") then
+		took_action = actions:handle_action(actor, {
+			type = "place_selected",
+			dx = move_dir.x,
+			dy = move_dir.y,
+		})
+	elseif is_moving then
+		if self:is_down("grab") then
+			if not self.grabbed then
+				self.grabbed = actions:grab(actor, move_dir.x, move_dir.y)
+			end
+			if self.grabbed then
+				took_action = actions:handle_action(actor, {
+					type = "grab_interaction",
+					dx = move_dir.x,
+					dy = move_dir.y,
+					target = self.grabbed,
+				})
+			end
+		else
+			self.grabbed = nil
+			took_action = actions:handle_action(actor, {
+				type = "move",
+				dx = move_dir.x,
+				dy = move_dir.y,
+			})
+		end
 	end
+
+	self.last_turn = { x = move_dir.x, y = move_dir.y }
 	return took_action
 end
 
