@@ -376,9 +376,11 @@ function actions:interact(entity, dx, dy, target_entity)
 		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Interaction blocked" })
 		return false
 	end
-	assign_cost(entity, "interact")
-	entities.interact(target_entity)
-	return true
+	if entities.interact(target_entity) then
+		assign_cost(entity, "interact")
+		return true
+	end
+	return false
 end
 
 function actions:inspect(entity, dx, dy)
