@@ -1,7 +1,7 @@
 return {
 	font = {
 		use_pixel = true,
-		scale = 3.3,
+		scale = 3.5,
 		base_size = 16,
 		ui_scale = 0.875,
 		terminal_scale = 0.75,
