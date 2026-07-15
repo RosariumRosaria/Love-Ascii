@@ -187,6 +187,30 @@ function entities.add(entity)
 	end
 end
 
+function entities.loot_roll(entity, loot)
+	local sum_weights = 0
+	for _, entry in ipairs(loot.drops) do
+		sum_weights = sum_weights + entry.weight
+	end
+
+	if sum_weights <= 0 then
+		return
+	end
+
+	local count = love.math.random(loot.count.min, loot.count.max)
+	for _ = 1, count do
+		local r = love.math.random(0, sum_weights - 1)
+		for _, entry in ipairs(loot.drops) do
+			r = r - entry.weight
+
+			if r < 0 then
+				inventory.add_from_template(entity, entry.item)
+				break
+			end
+		end
+	end
+end
+
 function entities.add_from_template(name, x, y, z, overrides)
 	local new_entity = utils.create_instance_from_template(entity_types, name, overrides)
 
@@ -196,24 +220,19 @@ function entities.add_from_template(name, x, y, z, overrides)
 	new_entity.y = y or 1
 	new_entity.z = z or 1
 
+	if new_entity.loot then
+		entities.loot_roll(new_entity, new_entity.loot)
+	end
+
 	entities.add(new_entity)
 	return new_entity
 end
 
 function entities.add_from_template_free(name, x, y, z, overrides)
 	local map = require("map.map")
-	local new_entity = utils.create_instance_from_template(entity_types, name, overrides)
-
-	utils.randomize_flicker(new_entity.light)
-
 	x, y, z = x or 1, y or 1, z or 1
-	local fx, fy = map:closest_free_cell(x, y, z, new_entity)
-	new_entity.x = fx or x
-	new_entity.y = fy or y
-	new_entity.z = z
-
-	entities.add(new_entity)
-	return new_entity
+	local fx, fy = map:closest_free_cell(x, y, z, entity_types[name])
+	return entities.add_from_template(name, fx or x, fy or y, z, overrides)
 end
 
 function entities.convert_item_to_pickup(x, y, z, item)

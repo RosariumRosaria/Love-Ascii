@@ -19,7 +19,7 @@ function features.roll_height(name, max_z)
 		return 0
 	end
 	local base_z = template.base_z or 1
-	local height = math.random(template.min_height, template.max_height)
+	local height = love.math.random(template.min_height, template.max_height)
 	return math.max(0, math.min(height, max_z - base_z + 1))
 end
 
@@ -92,11 +92,11 @@ function features.make_building(tiles, start_x, start_y, width, height, top_z, m
 	end
 
 	if width <= 2 or height <= 2 then
-		return { x = start_x, y = start_y, width = width, height = height }
+		return { x = start_x, y = start_y, w = width, h = height }
 	end
 
 	local function safe_door_start(len)
-		return math.random(2, math.max(2, len - 1))
+		return love.math.random(2, math.max(2, len - 1))
 	end
 
 	local door_x = safe_door_start(width)
@@ -109,8 +109,8 @@ function features.make_building(tiles, start_x, start_y, width, height, top_z, m
 		{ x = start_x + door_x - 1, y = start_y + height - 1, rotation = 270 },
 	}
 
-	local dir = math.random(1, 4)
-	local dir2 = math.random(1, 4)
+	local dir = love.math.random(1, 4)
+	local dir2 = love.math.random(1, 4)
 
 	for i, side in ipairs(sides) do
 		if utils.in_bounds(side.x, side.y, max_x, max_y) then
@@ -128,15 +128,15 @@ function features.make_building(tiles, start_x, start_y, width, height, top_z, m
 	return {
 		x = start_x,
 		y = start_y,
-		width = width,
-		height = height,
+		w = width,
+		h = height,
 	}
 end
 
 function features.scatter(tiles, rect, density, place_fn, max_x, max_y)
 	for y = rect.y, rect.y + rect.h - 1 do
 		for x = rect.x, rect.x + rect.w - 1 do
-			if utils.in_bounds(x, y, max_x, max_y) and math.random() < density then
+			if utils.in_bounds(x, y, max_x, max_y) and love.math.random() < density then
 				place_fn(x, y)
 			end
 		end
@@ -148,8 +148,8 @@ local MAX_SCATTER_ATTEMPTS = 100
 function features.scatter_count(tiles, rect, count, place_fn, max_x, max_y)
 	local placed, attempts = 0, 0
 	while placed < count and attempts < count * MAX_SCATTER_ATTEMPTS do
-		local x = math.random(rect.x, rect.x + rect.w - 1)
-		local y = math.random(rect.y, rect.y + rect.h - 1)
+		local x = love.math.random(rect.x, rect.x + rect.w - 1)
+		local y = love.math.random(rect.y, rect.y + rect.h - 1)
 		if utils.in_bounds(x, y, max_x, max_y) and place_fn(x, y) then
 			placed = placed + 1
 		end

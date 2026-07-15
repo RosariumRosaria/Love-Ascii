@@ -290,8 +290,17 @@ return {
 		type = "prop",
 		combat = { hit_burst = "dust" },
 		appearance = {
-			chars = { "#", "#" },
+			chars = { "[]" },
 			color = { { 0.48, 0.43, 0.30 }, { 0.48, 0.43, 0.30 } },
+		},
+		loot = {
+			count = { min = 1, max = 4 },
+			drops = {
+				{ item = "health_potion", weight = 2 },
+				{ item = "bandages", weight = 10 },
+				{ item = "strength_potion", weight = 1 },
+				{ item = "planks", weight = 5 },
+			},
 		},
 		inventory = {
 			items = {},

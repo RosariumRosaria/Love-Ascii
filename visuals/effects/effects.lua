@@ -41,8 +41,8 @@ function effects:add_from_template(name, x, y, z, overrides)
 	local new_effect = utils.create_instance_from_template(effect_types, name, overrides)
 	local jx, jy = 0, 0
 	if new_effect.params.jitter then
-		jx = -0.5 + math.random()
-		jy = -0.5 + math.random()
+		jx = -0.5 + love.math.random()
+		jy = -0.5 + love.math.random()
 	end
 	new_effect.x = x + jx
 	new_effect.y = y + jy
@@ -82,7 +82,7 @@ local function ring(effect)
 			for dx = -r, r do
 				local dist = math.sqrt(dx * dx + dy * dy)
 				if dist <= front and dist >= inner then
-					local alpha_adjusted = math.max(alpha + (math.random() * p.alpha_variance * alpha), 0)
+					local alpha_adjusted = math.max(alpha + (love.math.random() * p.alpha_variance * alpha), 0)
 
 					rects[#rects + 1] = {
 						ox = dx,

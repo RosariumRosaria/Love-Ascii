@@ -85,9 +85,9 @@ local particle_types = {
 local modes = { rain = "rain", snow = "snow", normal = "normal" }
 
 local function weather_position(cx, cy, draw_dist)
-	return cx + (math.random() * 2 - 1) * draw_dist,
-		cy + (math.random() * 2 - 1) * draw_dist,
-		particles.ceiling - math.random(0, 3)
+	return cx + (love.math.random() * 2 - 1) * draw_dist,
+		cy + (love.math.random() * 2 - 1) * draw_dist,
+		particles.ceiling - love.math.random(0, 3)
 end
 
 local function spawn_particle(x, y, z, ease_in, params, source)
@@ -99,21 +99,21 @@ local function spawn_particle(x, y, z, ease_in, params, source)
 		x = x,
 		y = y,
 		z = z,
-		vz = params.vz_min + math.random() * (params.vz_max - params.vz_min),
-		vx = (math.random() * 2 - 1) * params.drift,
-		vy = (math.random() * 2 - 1) * params.drift,
+		vz = params.vz_min + love.math.random() * (params.vz_max - params.vz_min),
+		vx = (love.math.random() * 2 - 1) * params.drift,
+		vy = (love.math.random() * 2 - 1) * params.drift,
 		linger = params.linger,
 		linger_initial = params.linger,
 		lifespan = params.lifespan,
 		lifespan_initial = params.lifespan,
 		alpha_mult = 1,
-		r_rate = (params.r_rate or 0) * (0.25 + math.random()) * utils.randomize_sign(),
-		r = params.r_rate and math.random() * 2 * math.pi or nil,
+		r_rate = (params.r_rate or 0) * (0.25 + love.math.random()) * utils.randomize_sign(),
+		r = params.r_rate and love.math.random() * 2 * math.pi or nil,
 		char = params.char,
 		color = params.color,
 		gravity = params.gravity,
 		layer = params.layer,
-		delay = ease_in and math.random() * render_cfg.particles.weather_ease_in_duration or 0,
+		delay = ease_in and love.math.random() * render_cfg.particles.weather_ease_in_duration or 0,
 		source = source,
 	}
 end
@@ -125,7 +125,7 @@ function particles:burst(x, y, z, type_name, count, opts)
 	local smax = opts.smax or 16
 	local popup = opts.popup or 1
 	local gravity = opts.gravity or 3
-	local base = dir and math.atan2(dir.dy, dir.dx) or math.random() * 2 * math.pi
+	local base = dir and math.atan2(dir.dy, dir.dx) or love.math.random() * 2 * math.pi
 	local params = particle_types[type_name]
 
 	if not params then
@@ -133,8 +133,8 @@ function particles:burst(x, y, z, type_name, count, opts)
 	end
 	for _ = 1, count do
 		local p = spawn_particle(x, y, z, false, params, "emitter")
-		local a = base + (math.random() * 2 - 1) * spread
-		local speed = smin + math.random() * (smax - smin)
+		local a = base + (love.math.random() * 2 - 1) * spread
+		local speed = smin + love.math.random() * (smax - smin)
 		p.vx, p.vy = math.cos(a) * speed, math.sin(a) * speed
 		p.vz = popup
 		p.gravity = gravity
@@ -182,12 +182,12 @@ function particles:update(dt, cx, cy)
 		end
 		local spawned = 0
 		for _, emitter in ipairs(list) do
-			if math.random() < emitter.rate * dt then
+			if love.math.random() < emitter.rate * dt then
 				local ez = base_z + (emitter.z_offset or default_offset)
 				local jx, jy = 0, 0
 				if emitter.jitter then
-					jx = -0.5 + math.random()
-					jy = -0.5 + math.random()
+					jx = -0.5 + love.math.random()
+					jy = -0.5 + love.math.random()
 				end
 
 				local p = spawn_particle(ex + jx, ey + jy, ez, false, particle_types[emitter.particle], "emitter")
