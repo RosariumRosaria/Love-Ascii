@@ -34,7 +34,7 @@ local function set_state(entity, new)
 	mind.target_pos = nil
 	mind.target_value = 0
 	mind.wander_turns = nil
-
+	mind.investigate_turns = nil
 	mind.search_turns = nil
 end
 
@@ -138,8 +138,10 @@ end
 
 local function start_investigating(entity, x, y, value)
 	set_state(entity, "investigating")
+
 	local mind = entity.mind
 	local tx, ty = map:closest_walkable_neighbor(entity, x, y)
+	mind.investigate_turns = ai_cfg.investigate_turns
 	mind.last_known = { x = x, y = y }
 	mind.target_pos = { x = tx, y = ty }
 	mind.target_value = value
@@ -147,11 +149,11 @@ end
 
 local function idle(entity)
 	local mind = entity.mind
-	local chance = math.random(1, ai_cfg.wander_chance)
+	local chance = love.math.random(1, ai_cfg.wander_chance)
 
 	if chance == 1 then
-		local tar_x = entity.x + math.random(-ai_cfg.wander_range, ai_cfg.wander_range)
-		local tar_y = entity.y + math.random(-ai_cfg.wander_range, ai_cfg.wander_range)
+		local tar_x = entity.x + love.math.random(-ai_cfg.wander_range, ai_cfg.wander_range)
+		local tar_y = entity.y + love.math.random(-ai_cfg.wander_range, ai_cfg.wander_range)
 		local map_max_x, map_max_y = map:get_max_x(), map:get_max_y()
 		tar_x = utils.clamp(tar_x, 1, map_max_x)
 		tar_y = utils.clamp(tar_y, 1, map_max_y)
@@ -163,8 +165,8 @@ local function idle(entity)
 			mind.wander_turns = ai_cfg.wander_turns
 		end
 	elseif chance == 2 or chance == 3 then
-		local axis = math.random(1, 2)
-		local step = (math.random(0, 1) * 2 - 1)
+		local axis = love.math.random(1, 2)
+		local step = (love.math.random(0, 1) * 2 - 1)
 		local dx = (axis == 1) and step or 0
 		local dy = (axis == 2) and step or 0
 		actions:move(entity, dx, dy)
@@ -202,8 +204,8 @@ local function pick_search_target(entity)
 
 	local tx, ty = mind.last_known.x, mind.last_known.y
 	for _ = 1, ai_cfg.search_attempts do
-		local angle = math.random() * 2 * math.pi
-		local radius = spread * math.sqrt(math.random())
+		local angle = love.math.random() * 2 * math.pi
+		local radius = spread * math.sqrt(love.math.random())
 		local rx = math.floor(cx + radius * math.cos(angle) + 0.5)
 		local ry = math.floor(cy + radius * math.sin(angle) + 0.5)
 		if map:walkable(rx, ry, 1) then
@@ -232,6 +234,11 @@ end
 
 local function investigate(entity)
 	local mind = entity.mind
+	if not mind.investigate_turns or mind.investigate_turns <= 0 then
+		set_state(entity, "idle")
+		return
+	end
+	mind.investigate_turns = mind.investigate_turns - 1
 	if mind.target_pos then
 		local had_path = follow_path(entity)
 		if reached_or_stuck(entity, had_path) then

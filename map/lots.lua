@@ -11,7 +11,7 @@ function lots.subdivide(rect, depth, lots_list, road_list)
 
 	local cut = vertical and rect.w or rect.h
 
-	local chance = math.random()
+	local chance = love.math.random()
 	local road_width = math.max(0, math.floor(depth / 2) - 1)
 
 	if
@@ -23,7 +23,7 @@ function lots.subdivide(rect, depth, lots_list, road_list)
 	end
 
 	local a, b
-	local frac = 0.3 + (0.1 * math.random(3))
+	local frac = 0.3 + (0.1 * love.math.random(3))
 
 	if vertical then
 		local sx = math.floor(rect.w * frac)

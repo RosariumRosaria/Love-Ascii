@@ -32,18 +32,12 @@ local function load_default_inventory(player)
 			radius = 10,
 		},
 	})
-
+	inventory.add_from_template(player, "planks")
+	inventory.add_from_template(player, "bandages")
+	inventory.add_from_template(player, "health_potion")
 	inventory.equip(player, player.inventory.items[1])
 	inventory.equip(player, player.inventory.items[3])
 	inventory.equip(player, player.inventory.items[4])
-end
-
-local function load_chest_inventory(entity)
-	inventory.add_from_template(entity, "planks")
-	inventory.add_from_template(entity, "bandages")
-	inventory.add_from_template(entity, "health_potion")
-	inventory.add_from_template(entity, "strength_potion")
-	inventory.add_from_template(entity, "splint")
 end
 
 local function apply_default_statuses(player)
@@ -58,7 +52,7 @@ local function spawn_default_entities()
 	entities.add_from_template_free("barricade", 250, 255, 1)
 	entities.add_from_template_free("campfire", 255, 260, 1)
 	entities.add_from_template_free("crystal", 280, 255, 1)
-	load_chest_inventory(entities.add_from_template_free("chest", 252, 251, 1))
+	entities.add_from_template_free("chest", 252, 251, 1)
 end
 
 function love.load()

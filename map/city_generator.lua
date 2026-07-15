@@ -27,7 +27,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 
 	for y = 1, map_max_y do
 		for x = 1, map_max_x do
-			if math.random(1, gen_cfg.shrub_chance) == gen_cfg.shrub_chance then
+			if love.math.random(1, gen_cfg.shrub_chance) == gen_cfg.shrub_chance then
 				tiles[y][x][1] = types.shrub
 			end
 		end
@@ -35,7 +35,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	for _, road in ipairs(self.roads) do
 		for y = road.y, road.y + road.h - 1 do
 			for x = road.x, road.x + road.w - 1 do
-				if math.random(1, gen_cfg.road_skip_chance) ~= gen_cfg.road_skip_chance then
+				if love.math.random(1, gen_cfg.road_skip_chance) ~= gen_cfg.road_skip_chance then
 					tiles[y][x][1] = types.road
 				end
 			end
@@ -43,8 +43,8 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 		local step = gen_cfg.lamp_step
 		if road.w > road.h then
 			for x = road.x + step, road.x + road.w - 1, step do
-				if math.random() >= gen_cfg.lamp_skip_chance then
-					local ly = math.random() < 0.5 and road.y - 1 or road.y + road.h
+				if love.math.random() >= gen_cfg.lamp_skip_chance then
+					local ly = love.math.random() < 0.5 and road.y - 1 or road.y + road.h
 					if map:is_tile_free(x, ly, 1) then
 						entities.add_from_template("street_lamp", x, ly, 1)
 					end
@@ -52,8 +52,8 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 			end
 		else
 			for y = road.y + step, road.y + road.h - 1, step do
-				if math.random() >= gen_cfg.lamp_skip_chance then
-					local lx = math.random() < 0.5 and road.x - 1 or road.x + road.w
+				if love.math.random() >= gen_cfg.lamp_skip_chance then
+					local lx = love.math.random() < 0.5 and road.x - 1 or road.x + road.w
 					if map:is_tile_free(lx, y, 1) then
 						entities.add_from_template("street_lamp", lx, y, 1)
 					end
@@ -64,17 +64,17 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 
 	for _, lot in ipairs(self.lots) do
 		local ml, mr, mt, mb =
-			math.random(1, gen_cfg.building_margin),
-			math.random(1, gen_cfg.building_margin),
-			math.random(1, gen_cfg.building_margin),
-			math.random(1, gen_cfg.building_margin)
+			love.math.random(1, gen_cfg.building_margin),
+			love.math.random(1, gen_cfg.building_margin),
+			love.math.random(1, gen_cfg.building_margin),
+			love.math.random(1, gen_cfg.building_margin)
 		local bw, bh = lot.w - ml - mr, lot.h - mt - mb
 
 		local inset = { x = lot.x + ml, y = lot.y + mt, w = bw, h = bh }
 		if bw >= gen_cfg.min_building_size and bh >= gen_cfg.min_building_size then
-			local roll = math.random()
+			local roll = love.math.random()
 			if roll < gen_cfg.building_chance then
-				features.make_building(
+				local building = features.make_building(
 					tiles,
 					lot.x + ml,
 					lot.y + mt,
@@ -84,17 +84,17 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 					self.max_x,
 					self.max_y
 				)
-
-				features.scatter_count(tiles, lot, 1, function(x, y)
+				features.scatter_count(tiles, building, love.math.random(3), function(x, y)
 					if not map:is_tile_free(x, y, 1) then
 						return false
 					end
-					entities.add_from_template(utils.pick({ "crate", "barricade" }), x, y, 1)
+
+					entities.add_from_template(utils.pick({ "crate", "barricade", "chest" }), x, y, 1)
 					return true
 				end, self.max_x, self.max_y)
 			elseif roll < gen_cfg.building_chance + gen_cfg.copse_chance then
 				local variance = gen_cfg.copse_density_variance
-				local tree_density_adjusted = gen_cfg.copse_density - variance + (variance * math.random())
+				local tree_density_adjusted = gen_cfg.copse_density - variance + (variance * love.math.random())
 
 				features.scatter(tiles, inset, tree_density_adjusted, function(x, y)
 					features.place("tree", x, y, tiles, self.max_z)

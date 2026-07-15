@@ -47,7 +47,7 @@ end
 
 function utils.shuffle(list)
 	for i = #list, 2, -1 do
-		local j = math.random(1, i)
+		local j = love.math.random(1, i)
 		list[i], list[j] = list[j], list[i]
 	end
 end
@@ -192,7 +192,7 @@ function utils.overlapping_rectangles(r1, r2)
 end
 
 function utils.chance(percent)
-	return math.random() < percent / 100
+	return love.math.random() < percent / 100
 end
 
 function utils.randomize_sign()
@@ -204,7 +204,7 @@ end
 
 function utils.randomize_flicker(light)
 	if light and light.flicker then
-		light.flicker.phase = math.random() * 2 * math.pi
+		light.flicker.phase = love.math.random() * 2 * math.pi
 	end
 end
 
@@ -219,7 +219,7 @@ function utils.remove_from_list(list, target)
 end
 
 function utils.pick(list)
-	return list[math.random(#list)]
+	return list[love.math.random(#list)]
 end
 
 -- TODO: if tags grow behavior (non-boolean values, inheritance, status/equipment-granted

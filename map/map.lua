@@ -254,7 +254,7 @@ function map:get_visibility_grids()
 end
 
 function map:load(max_x, max_y, max_z, min_z, map_type)
-	math.randomseed(os.time())
+	love.math.setRandomSeed(os.time())
 	self.max_x = max_x or 10
 	self.max_y = max_y or 10
 	self.max_z = max_z or 5
