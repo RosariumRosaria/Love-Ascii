@@ -1,43 +1,12 @@
 local config = require("config.runtime")
 local render_config = require("config.render_config")
+local lighting = require("fov.lighting")
 local time = require("engine.time")
 local utils = require("utils")
 local default_font
 local tile_size
 local render_utils = {}
 
-local ambient_cache = { r = 0, g = 0, b = 0 }
-local ambient_cache_t = nil
-
-local function ambient_color()
-	local t = time.time_of_day()
-	if t == ambient_cache_t then
-		return ambient_cache
-	end
-
-	local keys = render_config.lighting.ambient_keys
-	local A, B
-	for i = 1, #keys do
-		if keys[i].at <= t then
-			A, B = keys[i], keys[i + 1]
-		else
-			break
-		end
-	end
-	local span, f
-	if B then
-		span = B.at - A.at
-	else
-		B, span = keys[1], (keys[1].at + 1.0) - A.at
-	end
-	f = span > 0 and (t - A.at) / span or 0
-
-	ambient_cache.r = utils.lerp(A.color.r, B.color.r, f)
-	ambient_cache.g = utils.lerp(A.color.g, B.color.g, f)
-	ambient_cache.b = utils.lerp(A.color.b, B.color.b, f)
-	ambient_cache_t = t
-	return ambient_cache
-end
 function render_utils.height_level_scale(z, max_z, min_z, visible)
 	local range = max_z - min_z
 	local normalized = (z - min_z) / range
@@ -110,13 +79,7 @@ function render_utils.tint_color(color, tint)
 	}
 end
 
-local function clamp_to_unit(r, g, b)
-	local m = math.max(r, g, b)
-	if m > 1 then
-		return r / m, g / m, b / m
-	end
-	return r, g, b
-end
+local clamp_to_unit = lighting.normalize
 
 function render_utils.normalize_light(light)
 	return clamp_to_unit(light.r or 0, light.g or 0, light.b or 0)
@@ -179,7 +142,7 @@ end
 
 function render_utils.get_offset(i, offset_type, offset, x, y, center_x, center_y)
 	if offset_type == 1 then
-		local scale = 0.1
+		local scale = render_config.rendering.z_offset
 		return (i - 1) * offset * (x - center_x) * scale, (i - 1) * offset * (y - center_y) * scale
 	elseif offset_type == 2 then
 		return -(i - 1) * offset, -(i - 1) * offset
@@ -320,14 +283,13 @@ function render_utils.apply_lighting(color, light, emissive_scale)
 	if not color then
 		return { 1, 1, 1, 1 }
 	end
-	local ambient = ambient_color()
 	local emissive = (emissive_scale or render_config.lighting.light_emissive) * render_utils.emissive_by_time()
 
 	local zr = light.r or 0
 	local zg = light.g or 0
 	local zb = light.b or 0
 
-	local fr, fg, fb = clamp_to_unit(ambient.r + zr, ambient.g + zg, ambient.b + zb)
+	local fr, fg, fb = lighting.illumination(light)
 
 	local lr, lg, lb = clamp_to_unit(zr, zg, zb)
 

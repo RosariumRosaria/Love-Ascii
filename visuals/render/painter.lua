@@ -62,6 +62,7 @@ local function emit_char(params)
 		rotation = params.rotation,
 		natural_rotation = params.natural_rotation,
 		size_scale = params.size_scale,
+		mirror_facing = params.mirror_facing,
 	})
 end
 
@@ -469,6 +470,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 				rotation = entity.rotation,
 				natural_rotation = entity.natural_rotation,
 				size_scale = 1 + (utils.render_z(entity) + i - 1) * render_cfg.rendering.z_size_scale_per_level,
+				mirror_facing = entity.mirror_facing,
 			}
 
 			if entity.moused and entity.type == "actor" and not entity.footprint then

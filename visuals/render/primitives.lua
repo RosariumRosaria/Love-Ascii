@@ -51,7 +51,8 @@ function render_primitives.draw_char(
 	outline_color,
 	rotation,
 	natural_rotation,
-	size_scale
+	size_scale,
+	mirror_facing
 )
 	if not text or text == "" then
 		return
@@ -63,19 +64,32 @@ function render_primitives.draw_char(
 	local cx = x_screen + tile_size * 0.5
 	local cy = y_screen + tile_size * 0.5
 
-	local rads = math.rad(((rotation or 0) - (natural_rotation or 0)) % 360)
+	local rot = (rotation or 0) % 360
+	local nat = natural_rotation or 0
+	local rads = math.rad((rot - nat) % 360)
 	local s = size_scale or 1
+	local sx, sy = s, s
+
+	if mirror_facing and (rot - nat) % 360 ~= 0 then
+		if rot == 180 then
+			rads = math.rad(nat % 360)
+			sx = -s
+		elseif rot == 270 then
+			rads = math.rad((nat - 90) % 360)
+			sy = -s
+		end
+	end
 
 	local ox = center_from_left
 	local oy = center_from_top
 
 	if outline_color then
 		love.graphics.setColor(outline_color)
-		love.graphics.print(text, cx + 1, cy + 1, rads, s, s, ox, oy)
+		love.graphics.print(text, cx + 1, cy + 1, rads, sx, sy, ox, oy)
 	end
 
 	love.graphics.setColor(color)
-	love.graphics.print(text, cx, cy, rads, s, s, ox, oy)
+	love.graphics.print(text, cx, cy, rads, sx, sy, ox, oy)
 
 	love.graphics.setColor(1, 1, 1, 1)
 end

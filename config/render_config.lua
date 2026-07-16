@@ -13,7 +13,8 @@ return {
 	rendering = {
 		default_offset_type = 1,
 		offset_amount_factor = 0.4,
-		z_size_scale_per_level = 0.05,
+		z_size_scale_per_level = 0.055,
+		z_offset = 0.125,
 	},
 	lighting = {
 

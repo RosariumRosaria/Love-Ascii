@@ -8,6 +8,7 @@ return {
 		name = "Player",
 		team = "player",
 		natural_rotation = 270,
+		mirror_facing = true,
 		type = "actor",
 		combat = { hit_burst = "blood" },
 		tags = { covers = true, attackable = true, can_hear = true },
@@ -220,6 +221,7 @@ return {
 			moveable = true,
 			covers = true,
 			attackable = true,
+			night_vision = true,
 			can_hear = true,
 		},
 		can_perform = {
@@ -232,7 +234,7 @@ return {
 		name = "Campfire",
 		type = "prop",
 		appearance = {
-			chars = { "%" },
+			chars = { "%", "%" },
 			color = { { 1, 0.35, 0.1, 1 } },
 		},
 		description = "A Campfire",
@@ -275,8 +277,8 @@ return {
 		type = "prop",
 		combat = { hit_burst = "dust" },
 		appearance = {
-			chars = { "#" },
-			color = { { 0.38, 0.33, 0.30 } },
+			chars = { "#", "#" },
+			color = { { 0.38, 0.33, 0.30 }, { 0.38, 0.33, 0.30 } },
 		},
 		default_action = "moveable",
 		stats = {
@@ -297,6 +299,11 @@ return {
 			chars = { "C" },
 			color = { { 0.2, 0.2, 0.2 } },
 		},
+		inventory = {
+			items = {},
+			equipped = { armor = nil, offhand = nil, accessory = nil, mainhand = nil },
+			selected_index = nil,
+		},
 		tags = {
 			walkable = true,
 			container = true,
@@ -312,7 +319,7 @@ return {
 		type = "prop",
 		combat = { hit_burst = "dust" },
 		appearance = {
-			chars = { "[]" },
+			chars = { "[]", "[]" },
 			color = { { 0.48, 0.43, 0.30 }, { 0.48, 0.43, 0.30 } },
 		},
 		loot = {

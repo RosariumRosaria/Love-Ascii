@@ -187,8 +187,16 @@ function map:is_transparent(x, y)
 end
 
 function map:get_lighting_tile(x, y)
+	if not self:in_bounds(x, y) then
+		return ZERO_LIGHT
+	end
 	local cell = self.lighting[y][x]
 	return cell.effective or cell
+end
+
+function map:brightness_at(x, y)
+	local r, g, b = lighting.illumination(self:get_lighting_tile(x, y))
+	return r + g + b
 end
 
 -- TODO: still a hack to keep light off the sides of solid tiles. A more robust

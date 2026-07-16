@@ -10,19 +10,13 @@ function vitals.spawn_damage_numbers(target, amount, opts)
 	local ctx, cty = utils.get_center_of_footprint(target)
 	local tcx, tcy = target.x + ctx, target.y + cty
 
-	local overrides
-	if opts then
-		overrides = {
-			glyph = {
-				char = 0,
-				color = opts.color or { 0.8, 0.1, 0.1, 0.5 },
-				size = opts.size or 0.33,
-			},
-		}
-	end
-
-	local damage_number = effects:add_from_template("damage_number", tcx, tcy, target.z, overrides)
+	local damage_number = effects:add_from_template("damage_number", tcx, tcy, target.z)
 	damage_number.glyph.char = tostring(math.floor(amount))
+	if opts then
+		damage_number.glyph.color = opts.color or damage_number.glyph.color
+		damage_number.glyph.size = opts.size or damage_number.glyph.size
+	end
+	return damage_number
 end
 
 function vitals.apply_damage(target, amount, source_name, delay)
@@ -54,11 +48,12 @@ function vitals.apply_damage(target, amount, source_name, delay)
 					desaturated[4] = 0.5
 					color[i] = desaturated
 				end
-				overrides.footprint = target.footprint
+
+				overrides.footprint = target.footprint and utils.deep_copy(target.footprint)
 				overrides.render_layer = "ground"
 				overrides.natural_rotation = target.natural_rotation
 				overrides.appearance = {
-					chars = target.appearance.chars,
+					chars = utils.deep_copy(target.appearance.chars),
 					color = color,
 				}
 			end

@@ -88,7 +88,8 @@ function draw_buffer:walk()
 				d.outline_color,
 				d.rotation,
 				d.natural_rotation,
-				d.size_scale
+				d.size_scale,
+				d.mirror_facing
 			)
 		else
 			render_primitives.draw_rect(

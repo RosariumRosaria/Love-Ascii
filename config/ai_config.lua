@@ -10,6 +10,8 @@ return {
 	search_attempts = 8,
 	activation_range = 50,
 	investigate_turns = 20,
+	perception_brightness_threshold = 1.5,
+	unlit_sight_scale = 0.5,
 	avoid = {
 		-- packs (x, y) into one key via y + x*stride; must exceed max y to avoid collisions
 		stride = game_cfg.map.max_y + 1,

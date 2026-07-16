@@ -1,8 +1,12 @@
 local utils = require("utils")
 local stats = require("stats.stats")
 local game_cfg = require("config.game_config")
+local render_config = require("config.render_config")
 local event_log = require("engine.event_log")
 local time = {}
+
+local ambient_cache = { r = 0, g = 0, b = 0 }
+local ambient_cache_t = nil
 
 local function get_speed(entity)
 	return stats.get(entity, "speed")
@@ -50,6 +54,36 @@ function time.part_of_day()
 		end
 	end
 	return name
+end
+
+function time.ambient_color()
+	local t = time.time_of_day()
+	if t == ambient_cache_t then
+		return ambient_cache
+	end
+
+	local keys = render_config.lighting.ambient_keys
+	local A, B
+	for i = 1, #keys do
+		if keys[i].at <= t then
+			A, B = keys[i], keys[i + 1]
+		else
+			break
+		end
+	end
+	local span, f
+	if B then
+		span = B.at - A.at
+	else
+		B, span = keys[1], (keys[1].at + 1.0) - A.at
+	end
+	f = span > 0 and (t - A.at) / span or 0
+
+	ambient_cache.r = utils.lerp(A.color.r, B.color.r, f)
+	ambient_cache.g = utils.lerp(A.color.g, B.color.g, f)
+	ambient_cache.b = utils.lerp(A.color.b, B.color.b, f)
+	ambient_cache_t = t
+	return ambient_cache
 end
 
 function time.schedule_turn(entity, cost)
