@@ -19,6 +19,14 @@ local EFFECT_LAYERS = {
 	above_entity = draw_buffer.LAYER.EFFECT_ABOVE_ENTITY,
 }
 
+local ENTITY_LAYERS = {
+	ground = draw_buffer.LAYER.ENTITY_GROUND,
+}
+
+local ENTITY_COVER_LAYERS = {
+	ground = draw_buffer.LAYER.ENTITY_GROUND_COVER,
+}
+
 local tile_size
 local small_tile_size
 local small_font
@@ -411,7 +419,8 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 				cover_color = render_utils.apply_flicker(cover_color, cover_light.sources, time)
 			end
 			cover_color = render_utils.scale_color(cover_color, base)
-			emit_cover_rect(draw_buffer.LAYER.ENTITY_COVER, entity.z, entity_part.y, x_screen, y_screen, cover_color)
+			local cover_layer = ENTITY_COVER_LAYERS[entity.render_layer] or draw_buffer.LAYER.ENTITY_COVER
+			emit_cover_rect(cover_layer, entity.z, entity_part.y, x_screen, y_screen, cover_color)
 		end
 
 		local cell_chars = entity_part.char and { entity_part.char } or entity.appearance.chars
@@ -447,10 +456,11 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 			scaled_color = render_utils.tonemap(scaled_color)
 
 			local dx, dy = get_offset(utils.render_z(entity) + i - 1, entity_part.x, entity_part.y, center_x, center_y)
+
 			local p = {
 				z = entity.z + i - 1,
 				y = entity_part.y,
-				layer = draw_buffer.LAYER.ENTITY_CHAR,
+				layer = ENTITY_LAYERS[entity.render_layer] or draw_buffer.LAYER.ENTITY_CHAR,
 				x_screen = x_screen + dx,
 				y_screen = y_screen + dy,
 				char = char_data,

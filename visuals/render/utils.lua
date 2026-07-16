@@ -256,6 +256,16 @@ function render_utils.to_grayscale(color)
 	return { l, l, l, color[4] }
 end
 
+function render_utils.desaturate(color, amount)
+	local gray = render_utils.to_grayscale(color)
+	return {
+		utils.lerp(color[1], gray[1], amount),
+		utils.lerp(color[2], gray[2], amount),
+		utils.lerp(color[3], gray[3], amount),
+		color[4],
+	}
+end
+
 local keyframe_cache = setmetatable({}, { __mode = "k" })
 local function sample_keyframes(keys, t)
 	local cached = keyframe_cache[keys]

@@ -250,11 +250,12 @@ function actions:pickup(entity, dx, dy, target)
 	return true
 end
 
-local function deal_damage(target, amount, src)
+local function deal_damage(target, amount, src, delay)
 	local leftover = statuses.absorb(target, amount)
 	if leftover > 0 then
-		vitals.apply_damage(target, leftover, src)
+		vitals.apply_damage(target, leftover, src, delay)
 	end
+	return leftover
 end
 
 local function build_hit_sound(attacker, target, weapon)
@@ -297,8 +298,6 @@ local function emit_on_hit_effects(attacker, target, damage)
 		})
 	end
 
-	local damage_number = effects:add_from_template("damage_number", tcx, tcy, target.z)
-	damage_number.glyph.char = tostring(math.floor(damage))
 	animation.add_shake(target)
 	animation.add_flash(target)
 end
@@ -345,7 +344,7 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 	inventory.use_charge(weapon)
 
 	local damage = stats.get(entity, "damage", "ranged")
-	deal_damage(target_entity, damage, entity.name)
+	local dealt = deal_damage(target_entity, damage, entity.name, true)
 	local shot_sound = build_hit_sound(entity, target_entity, weapon)
 	shot_sound.defer_ring = true
 	local player_heard = sounds.emit(shot_sound)
@@ -357,8 +356,11 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 		/ projectile.params.speed
 
 	projectile.params.on_arrive = function()
-		emit_on_hit_effects(entity, target_entity, damage) --TODO: someday I want statuses to trigger some of these, which would require thinking about this
+		emit_on_hit_effects(entity, target_entity, damage)
 		sounds.spawn_ring(build_hit_sound(entity, target_entity, weapon), player_heard)
+		if dealt > 0 then
+			vitals.spawn_damage_numbers(target_entity, dealt)
+		end
 	end
 
 	statuses.on_hit(entity, target_entity) --TODO should on hit effects  apply from ranged attacks
