@@ -39,6 +39,12 @@ return {
 			color = { { 0.3, 0.45, 0.25, 1 } },
 			effect_color = { 0.35, 0.6, 0.3, 0.5 },
 		},
+		loot = {
+			count = { min = 0, max = 1 },
+			drops = {
+				{ item = "bandages", weight = 10 },
+			},
+		},
 		description = "A zombie, try attacking it!",
 		default_action = "attackable",
 		combat = {
@@ -281,6 +287,22 @@ return {
 			tilelike = true,
 			covers = true,
 			attackable = true,
+		},
+	},
+	corpse = {
+		name = "Corpse",
+		description = "A corpse, try interacting with it!",
+		type = "prop",
+		appearance = {
+			chars = { "C" },
+			color = { { 0.2, 0.2, 0.2 } },
+		},
+		tags = {
+			walkable = true,
+			container = true,
+			covers = true,
+			interactable = true,
+			moveable = true,
 		},
 	},
 
