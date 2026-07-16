@@ -99,11 +99,15 @@ end
 local function perceive(entity, target)
 	local mind = entity.mind
 	mind.can_see = false
-	local sight = stats.get(entity, "sight") - stats.get(target, "stealth") --TODO stealth probably shouldn't work this way.
+	local stealth = stats.get(target, "stealth") --TODO stealth probably shouldn't work this way. light too
 
-	if sight <= 0 then
-		return false
+	local brightness = map:brightness_at(target.x, target.y)
+	local light_value = ai_cfg.unlit_sight_scale
+	if entity.tags.night_vision or brightness > ai_cfg.perception_brightness_threshold then
+		light_value = 1
 	end
+
+	local sight = math.max(1, (stats.get(entity, "sight") - stealth) * light_value)
 
 	if utils.distance_between(entity, target) < sight then
 		mind.can_see = fov_handler.refresh(
