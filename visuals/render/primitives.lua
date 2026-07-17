@@ -150,6 +150,14 @@ function render_primitives.draw_grid_cell(x_screen, y_screen)
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
+function render_primitives.draw_sight_ring(x_screen, y_screen, radius_tiles)
+	local cx = x_screen + tile_size * 0.5
+	local cy = y_screen + tile_size * 0.5
+	love.graphics.setColor(render_cfg.debug.sight_color)
+	love.graphics.circle("line", cx, cy, radius_tiles * tile_size)
+	love.graphics.setColor(1, 1, 1, 1)
+end
+
 function render_primitives.load()
 	tile_size = config.tile_size
 end

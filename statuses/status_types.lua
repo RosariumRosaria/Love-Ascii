@@ -69,7 +69,7 @@ return {
 			{ stat = "sight", op = "mul", value = 0.5 },
 			{ stat = "stealth", op = "mul", value = 2 },
 		},
-		visual = { alpha = 0.5 },
+		visual = { alpha = 0.75 },
 	},
 	barricaded = {
 		name = "Barricaded",

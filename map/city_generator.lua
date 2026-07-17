@@ -109,6 +109,12 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 				features.scatter(tiles, lot, 0.001, function(x, y)
 					entities.add_from_template("vampire", x, y, 1)
 				end, self.max_x, self.max_y)
+				features.scatter(tiles, lot, 0.003, function(x, y)
+					entities.add_from_template("rat", x, y, 1)
+				end, self.max_x, self.max_y)
+				features.scatter(tiles, lot, 0.001, function(x, y)
+					entities.add_from_template("ogre", x, y, 1)
+				end, self.max_x, self.max_y)
 			end
 		end
 	end

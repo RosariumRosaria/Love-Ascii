@@ -11,6 +11,7 @@ local camera = require("visuals.camera")
 local painter = require("visuals.render.painter")
 local draw_buffer = require("visuals.render.draw_buffer")
 local weather = require("visuals.particles.particles")
+local debug_panel = require("debug.debug_panel")
 
 local scene = {}
 
@@ -143,6 +144,7 @@ function scene:draw()
 	love.graphics.setShader()
 
 	painter:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
+	debug_panel.draw(camera_x, camera_y)
 
 	for _, panel in ipairs(panels:get_panel_list()) do
 		painter:draw_panel(panel, camera_x, camera_y)

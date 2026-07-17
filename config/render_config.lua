@@ -1,7 +1,7 @@
 return {
 	font = {
 		use_pixel = true,
-		scale = 3.5,
+		scale = 3.4,
 		base_size = 16,
 		ui_scale = 0.875,
 		terminal_scale = 0.75,
@@ -70,6 +70,7 @@ return {
 	debug = {
 		show_grid = false,
 		grid_color = { 0.5, 0.5, 0.5, 0.3 },
+		sight_color = { 1, 0.85, 0.3, 0.5 },
 		bw_mode = 0,
 	},
 	particles = {
