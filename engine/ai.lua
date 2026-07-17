@@ -96,10 +96,8 @@ local function reached_or_stuck(entity, had_path)
 	return reached_target(entity, mind.target_pos) or not had_path
 end
 
-local function perceive(entity, target)
-	local mind = entity.mind
-	mind.can_see = false
-	local stealth = stats.get(target, "stealth") --TODO stealth probably shouldn't work this way. light too
+function ai:effective_sight(entity, target)
+	local stealth = stats.get(target, "stealth")
 
 	local brightness = map:brightness_at(target.x, target.y)
 	local light_value = ai_cfg.unlit_sight_scale
@@ -107,7 +105,14 @@ local function perceive(entity, target)
 		light_value = 1
 	end
 
-	local sight = math.max(1, (stats.get(entity, "sight") - stealth) * light_value)
+	return math.max(1, (stats.get(entity, "sight") - stealth) * light_value)
+end
+
+local function perceive(entity, target)
+	local mind = entity.mind
+	mind.can_see = false
+
+	local sight = ai:effective_sight(entity, target)
 
 	if utils.distance_between(entity, target) < sight then
 		mind.can_see = fov_handler.refresh(

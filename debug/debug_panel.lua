@@ -3,11 +3,16 @@ local debug_state = require("debug.debug_state")
 local panels = require("visuals.panels")
 local effects = require("visuals.effects.effects")
 local ai_cfg = require("config.ai_config")
+local ai = require("engine.ai")
+local entities = require("entities.entities")
+local render_utils = require("visuals.render.utils")
+local render_primitives = require("visuals.render.primitives")
 local debug_panel = {}
 
 local target
 local last_known
 local arrow
+local sight_entity
 
 -- TODO Someday maybe instead this could be a more general debug panel with different debug states (mind, general describe, stats)
 function debug_panel.load()
@@ -35,14 +40,21 @@ function debug_panel.update()
 	if not entity or not entity.mind or not debug_state.show_xray then
 		panel.visible = false
 		panel.anchor = nil
-		target, last_known, arrow = nil, nil, nil
+		target, last_known, arrow, sight_entity = nil, nil, nil, nil
 		return
 	end
+
+	sight_entity = entity
 
 	local mind = entity.mind
 	panel.anchor = entity
 	panel.visible = true
 	panel.texts = {}
+
+	local player = entities.player
+	if player and player ~= entity then
+		panels:add_text_to_panel(panel, string.format("effective_sight = %.1f", ai:effective_sight(entity, player)))
+	end
 	for k, v in pairs(mind) do
 		local key_str = tostring(k)
 		local val_str
@@ -83,6 +95,17 @@ function debug_panel.update()
 		arrow = effects:add_from_template("arrow", mind.last_known.x, mind.last_known.y, entity.z)
 		arrow.panels[1].texts[1] = arrow_chars[mind.last_heading.x .. "," .. mind.last_heading.y]
 	end
+end
+
+function debug_panel.draw(camera_x, camera_y)
+	local entity = sight_entity
+	local player = entities.player
+	if not entity or not player or player == entity then
+		return
+	end
+
+	local x_screen, y_screen = render_utils.get_screen_coords(entity.x, entity.y, camera_x, camera_y)
+	render_primitives.draw_sight_ring(x_screen, y_screen, ai:effective_sight(entity, player))
 end
 
 return debug_panel

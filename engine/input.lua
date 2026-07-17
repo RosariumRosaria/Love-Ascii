@@ -131,23 +131,24 @@ function input:pressed_slot()
 	return nil
 end
 
-function input:debug_spawn_zombie()
+function input:debug_spawn()
 	local mx, my = cursor.get_moused_coords()
+	local entity_type = "rat"
 	if map:is_tile_free(mx, my, 1) then
-		entities.add_from_template("barricade", mx, my, 1)
-		event_log:add({ type = "debug", message = "spawned barricade" })
+		entities.add_from_template(entity_type, mx, my, 1)
+		event_log:add({ type = "debug", message = "spawned " .. entity_type })
 		return
 	end
 	local offsets = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 } }
 	for _, o in ipairs(offsets) do
 		local x, y = mx + o[1], my + o[2]
 		if map:is_tile_free(x, y, 1) then
-			entities.add_from_template("barricade", x, y, 1)
-			event_log:add({ type = "debug", message = "spawned barricade" })
+			entities.add_from_template(entity_type, x, y, 1)
+			event_log:add({ type = "debug", message = "spawned " .. entity_type })
 			return
 		end
 	end
-	event_log:add({ type = "debug", message = "no free cell to spawn barricade" })
+	event_log:add({ type = "debug", message = "no free cell to spawn " .. entity_type })
 end
 
 function input:mouse_over_entity()
@@ -349,7 +350,7 @@ function input:update(dt)
 	end
 
 	if self:pressed("debug_spawn_zombie") then
-		self:debug_spawn_zombie()
+		self:debug_spawn()
 	end
 
 	-- Debug: re-read + re-stamp the configured prefab without restarting (map maker
@@ -381,7 +382,19 @@ function input:update(dt)
 	end
 
 	local slot = self:pressed_slot()
+
 	if slot then
+		local now = love.timer.getTime()
+		if
+			self.mode == modes.normal
+			and slot == self.last_slot
+			and (now - self.last_slot_time) < game_cfg.timing.turn_delay * 1.5
+		then
+			self.last_slot = nil
+			self.pending_slot = slot
+		else
+			self.last_slot, self.last_slot_time = slot, now
+		end
 		local entity = (self.mode == modes.container and container.focus_container and container:get()) or self.actor
 
 		inventory.set_selected_index(entity, slot)
@@ -405,7 +418,9 @@ function input:try_take_turn()
 	end
 
 	local draw_weapon = self.pending_draw
+
 	self.pending_draw = nil
+
 	if draw_weapon then
 		local took_action = actions:handle_action(actor, { type = "equip_item", item = draw_weapon })
 		self:enter_aim()
@@ -413,19 +428,15 @@ function input:try_take_turn()
 	end
 
 	if self.mode == modes.aiming then
+		self.pending_draw = nil
 		return self:handle_aim()
 	elseif self.mode == modes.container then
+		self.pending_draw = nil
 		return self:handle_container()
 	end
 
-	-- Normal mode: resolve against live input first. If nothing was held that
-	-- produced a turn, replay any keys buffered during the cooldown through the
-	-- same body (their existing branches supply precedence + dispatch). Either
-	-- way the buffer is spent once the gate resolves.
 	local took_action = self:_take_normal_turn()
 
-	-- Only fall back to the buffer when nothing live is driving movement, so a
-	-- held direction that merely bumped a wall isn't overridden by a stale tap.
 	local live_moving = #self.move_recency > 0 or love.mouse.isDown(1)
 	if not took_action and not live_moving and #self.buffered_keys > 0 then
 		self.buffer_set = {}
@@ -436,12 +447,13 @@ function input:try_take_turn()
 		took_action = self:_take_normal_turn()
 		self.buffer_reading = false
 	end
-
 	self.buffered_keys = {}
 	return took_action
 end
 
 function input:_take_normal_turn()
+	local use_slot = self.pending_slot
+	self.pending_slot = nil
 	local actor = self.actor
 	local took_action = false
 
@@ -457,7 +469,10 @@ function input:_take_normal_turn()
 	end
 	input:face(actor, move_dir.x, move_dir.y)
 
-	if self:is_down("use_selected") then
+	if use_slot then
+		inventory.set_selected_index(actor, use_slot)
+		return actions:handle_action(actor, { type = "use_selected", dx = move_dir.x, dy = move_dir.y })
+	elseif self:is_down("use_selected") then
 		return actions:handle_action(actor, { type = "use_selected", dx = move_dir.x, dy = move_dir.y })
 	elseif self:is_down("wait") then
 		return actions:handle_action(actor, { type = "wait" })
