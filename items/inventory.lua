@@ -57,6 +57,7 @@ end
 function inventory.add_from_template(entity, name, overrides)
 	local new_item = inventory.create_from_template(name, overrides)
 	inventory.add(entity, new_item)
+	return new_item
 end
 
 function inventory.remove(entity, item)
@@ -92,6 +93,7 @@ function inventory.equip(entity, item)
 	if not entity.inventory or not item.slot then
 		return nil
 	end
+
 	local prev = entity.inventory.equipped[item.slot]
 	entity.inventory.equipped[item.slot] = item
 	return prev

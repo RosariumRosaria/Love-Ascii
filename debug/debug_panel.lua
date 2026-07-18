@@ -7,12 +7,14 @@ local ai = require("engine.ai")
 local entities = require("entities.entities")
 local render_utils = require("visuals.render.utils")
 local render_primitives = require("visuals.render.primitives")
+local utils = require("utils")
 local debug_panel = {}
 
 local target
 local last_known
 local arrow
 local sight_entity
+local last_printed_entity
 
 -- TODO Someday maybe instead this could be a more general debug panel with different debug states (mind, general describe, stats)
 function debug_panel.load()
@@ -37,6 +39,16 @@ function debug_panel.update()
 	effects:remove_effect(arrow)
 	local entity = cursor.get_moused_entity()
 	local panel = panels:get_panel("debug_panel")
+
+	if debug_state.show_xray then
+		if entity and entity ~= last_printed_entity and entity.type == "actor" then
+			utils.deep_print(entity)
+		end
+		last_printed_entity = entity
+	else
+		last_printed_entity = nil
+	end
+
 	if not entity or not entity.mind or not debug_state.show_xray then
 		panel.visible = false
 		panel.anchor = nil

@@ -322,9 +322,13 @@ function actions:attack(entity, dx, dy, target_entity)
 	return true
 end
 
-function actions:ranged_attack(entity, target_x, target_y, target_entity)
+function actions:can_ranged_attack(entity, target_x, target_y, target_entity)
 	local weapon = inventory.get_equipped(entity, "mainhand")
+
 	if not weapon or not weapon.ranged then
+		return false
+	end
+	if not entity.can_perform or not entity.can_perform.attackable then
 		return false
 	end
 
@@ -332,13 +336,28 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity)
 	if not validate_interaction(entity, target_entity, "Ranged_Attack", weapon.range) then
 		return false
 	end
+	if not utils.get_tag(target_entity, "attackable") then
+		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not attackable" })
+		return false
+	end
 	if (weapon.charges or 0) <= 0 then
 		event_log:add({ type = "action_failed", entity = entity.name, reason = "Out of ammo" })
 		return false
 	end
 	if entity.team == target_entity.team then
-		return true
+		event_log:add({ type = "action_failed", entity = entity.name, reason = "Invalid target" })
+		return false
 	end
+	return { weapon = weapon, target_entity = target_entity }
+end
+function actions:ranged_attack(entity, target_x, target_y, target_entity)
+	local attack_ret = self:can_ranged_attack(entity, target_x, target_y, target_entity)
+
+	if not attack_ret then
+		return false
+	end
+	target_entity = attack_ret.target_entity
+	local weapon = attack_ret.weapon
 
 	assign_cost(entity, "ranged_attack")
 	inventory.use_charge(weapon)

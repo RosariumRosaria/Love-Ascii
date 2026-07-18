@@ -133,7 +133,8 @@ end
 
 function input:debug_spawn()
 	local mx, my = cursor.get_moused_coords()
-	local entity_type = "rat"
+	local entity_type = "skeleton"
+
 	if map:is_tile_free(mx, my, 1) then
 		entities.add_from_template(entity_type, mx, my, 1)
 		event_log:add({ type = "debug", message = "spawned " .. entity_type })
@@ -144,6 +145,7 @@ function input:debug_spawn()
 		local x, y = mx + o[1], my + o[2]
 		if map:is_tile_free(x, y, 1) then
 			entities.add_from_template(entity_type, x, y, 1)
+
 			event_log:add({ type = "debug", message = "spawned " .. entity_type })
 			return
 		end
