@@ -230,7 +230,7 @@ return {
 			vaultable = true,
 		},
 	},
-	Skeleton = {
+	skeleton = {
 		name = "skeleton",
 		type = "actor",
 		team = "enemy",
@@ -240,10 +240,11 @@ return {
 			color = { { 0.72, 0.65, 0.6, 1 } },
 			effect_color = { 0.65, 0.61, 0.51, 0.5 },
 		},
-		inventory = {
-			items = {},
-			equipped = { armor = nil, offhand = nil, accessory = nil, mainhand = nil },
-			selected_index = nil,
+		loot = {
+			count = { min = 1, max = 1 },
+			drops = {
+				{ item = "bow", weight = 10, equip = true },
+			},
 		},
 		description = "A skeleton, try attacking it!",
 		default_action = "attackable",
@@ -254,7 +255,7 @@ return {
 		},
 		stats = {
 			health = { base = 7, current = 7 },
-			sight = { base = 30 },
+			sight = { base = 20 },
 			speed = { base = 5 },
 			damage = { base = 2 },
 		},

@@ -29,7 +29,7 @@ local function set_state(entity, new)
 	if not mind.avoid or (new == "idle" and mind.state ~= "idle") then
 		mind.avoid = {}
 	end
-
+	mind.target_entity = nil
 	mind.state = new
 	mind.target_pos = nil
 	mind.target_value = 0
@@ -140,6 +140,7 @@ local function start_chasing(entity, target)
 		mind.last_heading =
 			{ x = utils.sign(target.x - mind.last_known.x), y = utils.sign(target.y - mind.last_known.y) }
 	end
+	mind.target_entity = target
 	mind.last_known = { x = target.x, y = target.y }
 	mind.target_pos = { x = target.x, y = target.y }
 	mind.target_value = ai_cfg.target_value.sight
@@ -261,9 +262,12 @@ end
 
 local function chase(entity)
 	local mind = entity.mind
-	local had_path = follow_path(entity)
-	if not had_path and mind.last_known then
-		start_investigating(entity, mind.last_known.x, mind.last_known.y, ai_cfg.target_value.sight)
+
+	if not actions:ranged_attack(entity, nil, nil, mind.target_entity) then
+		local had_path = follow_path(entity)
+		if not had_path and mind.last_known then
+			start_investigating(entity, mind.last_known.x, mind.last_known.y, ai_cfg.target_value.sight)
+		end
 	end
 end
 

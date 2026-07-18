@@ -204,7 +204,11 @@ function entities.loot_roll(entity, loot)
 			r = r - entry.weight
 
 			if r < 0 then
-				inventory.add_from_template(entity, entry.item)
+				local item = inventory.add_from_template(entity, entry.item)
+
+				if entry.equip then
+					inventory.equip(entity, item)
+				end
 				break
 			end
 		end
