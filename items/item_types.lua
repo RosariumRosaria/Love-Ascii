@@ -32,8 +32,10 @@ return {
 		color = { { 0.8, 0.7, 0.5, 1 } },
 		on_use = { apply_status = "barricaded", target_tag = "barricadeable", targets = true },
 		chars = { "=" },
-		charges = 5,
-		max_charges = 5,
+		charges = 1,
+		tags = {
+			stacks = true,
+		},
 	},
 	bandages = {
 		name = "Bandages",
@@ -41,8 +43,10 @@ return {
 		color = { { 0.7, 0.7, 0.8, 1 } },
 		on_use = { clear_status = "bandageable", burst = { type = "heal", count = 3 } },
 		chars = { "~" },
-		charges = 3,
-		max_charges = 3,
+		charges = 1,
+		tags = {
+			stacks = true,
+		},
 	},
 	splint = {
 		name = "Splint",
