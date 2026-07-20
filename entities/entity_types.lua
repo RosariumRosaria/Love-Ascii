@@ -10,6 +10,7 @@ return {
 		natural_rotation = 270,
 		mirror_facing = true,
 		type = "actor",
+		natural_height = 0.25,
 		combat = { hit_burst = "blood" },
 		tags = { covers = true, attackable = true, can_hear = true },
 		default_action = "attackable",
@@ -33,6 +34,7 @@ return {
 	zombie = {
 		name = "Zombie",
 		type = "actor",
+		natural_height = 0.25,
 		team = "enemy",
 		mind = { state = "idle" },
 
@@ -74,6 +76,7 @@ return {
 	shambler = {
 		name = "Shambler",
 		type = "actor",
+		natural_height = 0.25,
 		team = "enemy",
 		mind = { state = "idle" },
 		appearance = {
@@ -108,6 +111,7 @@ return {
 	ogre = {
 		name = "Ogre",
 		type = "actor",
+		natural_height = 0.25,
 		team = "enemy",
 		mind = { state = "idle" },
 		appearance = {
@@ -150,6 +154,7 @@ return {
 	dragon = {
 		name = "Dragon",
 		type = "actor",
+		natural_height = 0.25,
 		team = "enemy",
 		mind = { state = "idle" },
 		appearance = {
@@ -197,6 +202,7 @@ return {
 	vampire = {
 		name = "Vampire",
 		type = "actor",
+		natural_height = 0.25,
 		team = "enemy",
 		mind = { state = "idle" },
 		appearance = {
@@ -234,6 +240,7 @@ return {
 	skeleton = {
 		name = "skeleton",
 		type = "actor",
+		natural_height = 0.25,
 		team = "enemy",
 		mind = { state = "idle" },
 		appearance = {
@@ -277,6 +284,7 @@ return {
 	rat = {
 		name = "Rat",
 		type = "actor",
+		natural_height = 0.25,
 		team = "enemy",
 		mind = { state = "idle" },
 		appearance = {
