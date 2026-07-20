@@ -1,6 +1,8 @@
 local item_types = require("items.item_types")
 local utils = require("utils")
 
+local game_cfg = require("config.game_config")
+
 local inventory = {}
 local inventory_template = {
 	items = {},
@@ -45,7 +47,25 @@ function inventory.add(entity, item)
 	if not entity.inventory then
 		entity.inventory = utils.deep_copy(inventory_template)
 	end
-	table.insert(entity.inventory.items, item)
+	if utils.get_tag(item, "stacks") and item.charges then
+		local cap = item.max_charges or game_cfg.inventory.max_stack_limit
+		local existing_item = inventory.get_with_name_where_not_full(entity, item.name)
+		while existing_item and item.charges > 0 do
+			item.charges = inventory.merge_stacks(existing_item, item.charges)
+			existing_item = inventory.get_with_name_where_not_full(entity, item.name)
+		end
+		while item.charges > cap do
+			local overflow = utils.deep_copy(item)
+			overflow.charges = cap
+			table.insert(entity.inventory.items, overflow)
+			item.charges = item.charges - cap
+		end
+		if item.charges > 0 then
+			table.insert(entity.inventory.items, item)
+		end
+	else
+		table.insert(entity.inventory.items, item)
+	end
 end
 
 function inventory.create_from_template(name, overrides)
@@ -75,6 +95,22 @@ function inventory.remove(entity, item)
 			return
 		end
 	end
+end
+
+function inventory.get_with_name_where_not_full(entity, name)
+	if not entity.inventory or not name then
+		return nil
+	end
+	for _, i_item in ipairs(entity.inventory.items) do
+		if
+			i_item.name == name
+			and i_item.charges
+			and i_item.charges < (i_item.max_charges or game_cfg.inventory.max_stack_limit)
+		then
+			return i_item
+		end
+	end
+	return nil
 end
 
 function inventory.get_first_with_field(entity, tag)
@@ -135,6 +171,18 @@ function inventory.use_charge(item)
 	return item.charges <= 0
 end
 
+function inventory.merge_stacks(item, count)
+	if not item or not item.charges then
+		return count
+	end
+
+	while count > 0 and item.charges < (item.max_charges or game_cfg.inventory.max_stack_limit) do
+		count = count - 1
+		item.charges = item.charges + 1
+	end
+	return count
+end
+
 function inventory.add_charge(item)
 	if not item or not item.charges then
 		return false
@@ -152,8 +200,10 @@ function inventory.transfer(from, to, item)
 	if not item then
 		return false
 	end
-	inventory.remove(from, item)
 	inventory.add(to, item)
+
+	inventory.remove(from, item)
+
 	return true
 end
 

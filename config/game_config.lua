@@ -50,6 +50,9 @@ return {
 		warn_cooldown = 0.05,
 		worst_frame_window = 5,
 	},
+	inventory = {
+		max_stack_limit = 10,
+	},
 	-- Map maker prefab loading (tools/mapmaker). Absent by default → the loader in
 	-- map/prefab.lua never runs and nothing about the game changes. To stamp a prefab,
 	-- set this table:
