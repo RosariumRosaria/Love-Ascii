@@ -35,6 +35,7 @@ return {
 		type = "actor",
 		team = "enemy",
 		mind = { state = "idle" },
+
 		appearance = {
 			chars = { "Z" },
 			color = { { 0.3, 0.45, 0.25, 1 } },
@@ -312,10 +313,11 @@ return {
 		name = "Campfire",
 		type = "prop",
 		appearance = {
-			chars = { "%", "%" },
+			chars = { "%" },
 			color = { { 1, 0.35, 0.1, 1 } },
 		},
 		description = "A Campfire",
+		natural_height = 0.25,
 		emitters = { { particle = "smoke", rate = 1 }, { particle = "ember", rate = 1.2 } },
 		tags = {
 			tilelike = true,
