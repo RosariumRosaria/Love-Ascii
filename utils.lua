@@ -222,17 +222,22 @@ function utils.pick(list)
 	return list[love.math.random(#list)]
 end
 
-function utils.pick_weighted(entries)
+function utils.total_weight(entries)
 	local sum_weights = 0
 	for _, entry in ipairs(entries) do
 		sum_weights = sum_weights + (entry.weight or 0)
 	end
+	return sum_weights
+end
 
-	if sum_weights <= 0 then
+function utils.pick_weighted(entries, total_weight)
+	total_weight = total_weight or utils.total_weight(entries)
+
+	if total_weight <= 0 then
 		return nil
 	end
 
-	local r = love.math.random() * sum_weights
+	local r = love.math.random() * total_weight
 	for _, entry in ipairs(entries) do
 		r = r - (entry.weight or 0)
 		if r < 0 then
