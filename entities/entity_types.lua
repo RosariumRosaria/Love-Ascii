@@ -256,7 +256,7 @@ return {
 		stats = {
 			health = { base = 7, current = 7 },
 			sight = { base = 25 },
-			speed = { base = 5 },
+			speed = { base = 4 },
 			damage = { base = 2 },
 		},
 		tags = {
