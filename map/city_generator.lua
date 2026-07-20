@@ -30,17 +30,25 @@ function city_generator:nearest_road_side(rect)
 		{ name = "east", x = rect.x + rect.w - 1, y = cy },
 	}
 
-	local best_side, best_dist = nil, math.huge
+	if #self.roads == 0 then
+		return nil
+	end
+
+	local best_dist, tied = math.huge, {}
 	for _, side in ipairs(sides) do
+		local dist = math.huge
 		for _, road in ipairs(self.roads) do
-			local dist = point_to_rect(side.x, side.y, road)
-			if dist < best_dist then
-				best_side, best_dist = side.name, dist
-			end
+			dist = math.min(dist, point_to_rect(side.x, side.y, road))
+		end
+
+		if dist < best_dist then
+			best_dist, tied = dist, { side.name }
+		elseif dist == best_dist then
+			table.insert(tied, side.name)
 		end
 	end
 
-	return best_side
+	return utils.pick(tied)
 end
 
 function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
@@ -51,7 +59,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	self.min_z = map_min_z
 	self.lots = {}
 	self.roads = {}
-	features:load(self.max_x, self.max_y)
+	features.load(self.max_x, self.max_y)
 	local root = { x = 1, y = 1, w = self.max_x, h = self.max_y }
 	lots.subdivide(root, gen_cfg.subdivide_depth, self.lots, self.roads)
 
