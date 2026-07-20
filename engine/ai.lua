@@ -8,6 +8,7 @@ local utils = require("utils")
 local ai_cfg = require("config.ai_config")
 local event_log = require("engine.event_log")
 local stats = require("stats.stats")
+local statuses = require("statuses.statuses")
 
 local ai = {}
 --[[ TODO, At some point the flow should probably be more like
@@ -28,6 +29,9 @@ local function set_state(entity, new)
 	local mind = entity.mind
 	if not mind.avoid or (new == "idle" and mind.state ~= "idle") then
 		mind.avoid = {}
+	end
+	if new ~= "chasing" then
+		mind.has_woundup = nil
 	end
 	mind.target_entity = nil
 	mind.state = new
@@ -105,7 +109,13 @@ function ai:effective_sight(entity, target)
 		light_value = 1
 	end
 
-	return math.max(1, (stats.get(entity, "sight") - stealth) * light_value)
+	local chase_value = 1
+	if entity.mind.state == "chasing" then
+		chase_value = ai_cfg.chase_sight_value
+	end
+	local sight = stats.get(entity, "sight")
+
+	return math.min(math.max(1, (sight - stealth) * light_value * chase_value), sight)
 end
 
 local function perceive(entity, target)
@@ -262,8 +272,17 @@ end
 
 local function chase(entity)
 	local mind = entity.mind
-
-	if not actions:ranged_attack(entity, nil, nil, mind.target_entity) then
+	local woundup = mind.has_woundup
+	mind.has_woundup = false
+	local shot = actions:can_ranged_attack(entity, nil, nil, mind.target_entity, true)
+	if shot then
+		if utils.get_tag(entity, "windup") and not woundup then
+			mind.has_woundup = true
+			statuses.add_from_template(entity, "winding_up", nil, entity)
+		else
+			actions:ranged_attack(entity, nil, nil, mind.target_entity, shot)
+		end
+	else
 		local had_path = follow_path(entity)
 		if not had_path and mind.last_known then
 			start_investigating(entity, mind.last_known.x, mind.last_known.y, ai_cfg.target_value.sight)

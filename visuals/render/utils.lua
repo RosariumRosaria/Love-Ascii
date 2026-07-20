@@ -319,13 +319,17 @@ function render_utils.get_visual_state(entity)
 		for _, status in ipairs(entity.statuses) do
 			local v = status.visual
 			if v then
+				local strength = v.strength or 1
+				if v.pulse then
+					strength = strength * (0.5 + 0.5 * math.sin(love.timer.getTime() * (v.pulse.freq or 4)))
+				end
 				if v.alpha then
-					alpha = alpha * v.alpha
+					alpha = alpha * utils.lerp(1, v.alpha, strength)
 				end
 				if v.tint then
-					tint[1] = tint[1] * (v.tint[1] or 1)
-					tint[2] = tint[2] * (v.tint[2] or 1)
-					tint[3] = tint[3] * (v.tint[3] or 1)
+					tint[1] = tint[1] * utils.lerp(1, v.tint[1] or 1, strength)
+					tint[2] = tint[2] * utils.lerp(1, v.tint[2] or 1, strength)
+					tint[3] = tint[3] * utils.lerp(1, v.tint[3] or 1, strength)
 				end
 			end
 		end

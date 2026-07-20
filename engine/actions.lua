@@ -15,7 +15,7 @@ local actions = {}
 
 --TODO: Someday this should split the validatity and targeting of an action from it's execution, so that it and pathfinder can always be in sync.
 
-local function validate_interaction(actor, target, name, range)
+local function validate_interaction(actor, target, name, range, spam)
 	range = range or 1
 	if not actor then
 		event_log:add({ type = "action_failed", entity = "Unknown", reason = name .. " actor is nil" })
@@ -34,7 +34,7 @@ local function validate_interaction(actor, target, name, range)
 		end
 	end
 
-	event_log:add({ type = "action_failed", entity = target.name, reason = "Too far apart" })
+	event_log:add({ type = "action_failed", entity = target.name, reason = "Too far apart", spam = spam })
 	return false
 end
 
@@ -322,7 +322,7 @@ function actions:attack(entity, dx, dy, target_entity)
 	return true
 end
 
-function actions:can_ranged_attack(entity, target_x, target_y, target_entity)
+function actions:can_ranged_attack(entity, target_x, target_y, target_entity, spam)
 	local weapon = inventory.get_equipped(entity, "mainhand")
 
 	if not weapon or not weapon.ranged then
@@ -333,25 +333,25 @@ function actions:can_ranged_attack(entity, target_x, target_y, target_entity)
 	end
 
 	target_entity = target_entity or entities.get_with_tag(target_x, target_y, entity.z, "attackable")
-	if not validate_interaction(entity, target_entity, "Ranged_Attack", weapon.range) then
+	if not validate_interaction(entity, target_entity, "Ranged_Attack", weapon.range, spam) then
 		return false
 	end
 	if not utils.get_tag(target_entity, "attackable") then
-		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not attackable" })
+		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not attackable", spam = spam })
 		return false
 	end
 	if (weapon.charges or 0) <= 0 then
-		event_log:add({ type = "action_failed", entity = entity.name, reason = "Out of ammo" })
+		event_log:add({ type = "action_failed", entity = entity.name, reason = "Out of ammo", spam = spam })
 		return false
 	end
 	if entity.team == target_entity.team then
-		event_log:add({ type = "action_failed", entity = entity.name, reason = "Invalid target" })
+		event_log:add({ type = "action_failed", entity = entity.name, reason = "Invalid target", spam = spam })
 		return false
 	end
 	return { weapon = weapon, target_entity = target_entity }
 end
-function actions:ranged_attack(entity, target_x, target_y, target_entity)
-	local attack_ret = self:can_ranged_attack(entity, target_x, target_y, target_entity)
+function actions:ranged_attack(entity, target_x, target_y, target_entity, validated)
+	local attack_ret = validated or self:can_ranged_attack(entity, target_x, target_y, target_entity)
 
 	if not attack_ret then
 		return false
