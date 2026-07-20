@@ -255,7 +255,7 @@ return {
 		},
 		stats = {
 			health = { base = 7, current = 7 },
-			sight = { base = 20 },
+			sight = { base = 25 },
 			speed = { base = 5 },
 			damage = { base = 2 },
 		},
@@ -265,6 +265,7 @@ return {
 			attackable = true,
 			night_vision = true,
 			can_hear = true,
+			windup = true,
 		},
 		can_perform = {
 			attackable = true,

@@ -89,6 +89,14 @@ return {
 		tags = { bandageable = true },
 		on_tick = { damage = 1, chance = 25 },
 	},
+	winding_up = {
+		name = "Winding Up",
+		description = "Ready to attack.",
+		color = { 1, 0.3, 0.3 },
+		duration = 2,
+		silent = true,
+		visual = { tint = { 1, 0.2, 0.2 }, strength = 0.5, pulse = { freq = 4 } },
+	},
 	broken_leg = {
 		name = "Broken Leg",
 		description = "Decreased movement speed.",
