@@ -241,7 +241,8 @@ function painter:draw_panel(panel, center_x, center_y)
 		visible_texts,
 		panel.center_text,
 		{ 1, 1, 1, 1 },
-		panel.tile_size or small_tile_size
+		panel.tile_size or small_tile_size,
+		panel.center_vertical
 	)
 end
 

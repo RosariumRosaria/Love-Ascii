@@ -346,6 +346,10 @@ function input:update(dt)
 	if self.mode == modes.container and (self:pressed("move_left") or self:pressed("move_right")) then
 		container:swap_focus()
 	end
+
+	if self:pressed("interact") and self.mode == modes.container then
+		self:set_mode(modes.normal)
+	end
 	if self:pressed("debug") then
 		local item = inventory.get_selected(self.actor)
 		inventory.add_charge(item)

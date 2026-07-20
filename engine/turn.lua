@@ -45,6 +45,7 @@ local function commit_turn(actor)
 		post_turn_update(entities.player)
 	end
 
+	panels:update_vitals(entities.player)
 	panels:update_statuses(entities.player)
 end
 
