@@ -94,18 +94,39 @@ function render_primitives.draw_char(
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
-function render_primitives.draw_text_block(texts, x_screen, y_screen, width, outline, center_text, color, line_height)
+function render_primitives.draw_text_block(
+	texts,
+	x_screen,
+	y_screen,
+	width,
+	outline,
+	center_text,
+	color,
+	line_height,
+	height,
+	center_vertical
+)
 	local font = love.graphics.getFont()
 	line_height = line_height or tile_size
 	if color then
 		love.graphics.setColor(color)
 	end
 
+	local top = outline + outline * 2
+	if center_vertical and height then
+		-- PressStart2P reports descent = 0 and ascent = height, so its glyphs sit
+		-- ~1px high inside a line box that claims to be full. center_nudge_y pushes
+		-- text back down; measured as a fraction of line height so it holds across
+		-- font scales. See config/render_config.lua.
+		local block_height = #texts * line_height
+		top = (height - block_height) / 2 + line_height * (render_cfg.font.center_nudge_y or 0)
+	end
+
 	for i, text in ipairs(texts) do
 		local offset = outline * 2
 		local dx = (center_text and (width - font:getWidth(text)) / 2) or offset
 		local draw_x = x_screen + dx
-		local draw_y = y_screen + outline + offset + ((i - 1) * line_height)
+		local draw_y = y_screen + top + ((i - 1) * line_height)
 
 		love.graphics.print(text, draw_x, draw_y)
 	end
@@ -122,7 +143,8 @@ function render_primitives.draw_panel(
 	texts,
 	center_text,
 	text_color,
-	line_height
+	line_height,
+	center_vertical
 )
 	render_primitives.draw_rect(x_screen, y_screen, width, height, fill_color, outline_width, outline_color)
 	render_primitives.draw_text_block(
@@ -133,7 +155,9 @@ function render_primitives.draw_panel(
 		1,
 		center_text,
 		text_color or { 1, 1, 1, 1 },
-		line_height
+		line_height,
+		height,
+		center_vertical
 	)
 end
 

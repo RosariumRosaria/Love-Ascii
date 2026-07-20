@@ -95,7 +95,7 @@ function panels:add_panel(name, opts)
 		width = width,
 		name = name,
 		color = opts.color or { 0, 0, 0, 0.5 },
-		outline_width = opts.outline_width or (screen_width / 600),
+		outline_width = opts.outline_width or (screen_width / 800),
 		outline_color = opts.outline_color or { 1, 1, 1, 0.5 },
 		texts = {},
 		center_text = opts.center_text or false,
@@ -106,6 +106,7 @@ function panels:add_panel(name, opts)
 		tile_size = tile_size,
 		visible = true,
 		auto_size = opts.auto_size or false,
+		center_vertical = opts.center_vertical or opts.auto_size or false,
 		capacity = math.floor(height / tile_size) * 10,
 	}
 
@@ -152,6 +153,14 @@ function panels:reload_fonts()
 		small = { font = small_font, tile = small_tile_size },
 	}
 end
+local vital_anchor = { x = 25, y = 25 }
+local vitals_panel_opts = {
+	x = vital_anchor.x,
+	y = vital_anchor.y,
+	font = "small",
+	center_text = true,
+	auto_size = true,
+}
 
 function panels:load()
 	local screen_height = love.graphics.getHeight()
@@ -199,6 +208,9 @@ function panels:load()
 	})
 	container_panel.visible = false
 	character_panel.mode = "inventory"
+	local vitals_panel = self:add_panel("vitals", vitals_panel_opts)
+	vitals_panel.texts = { "" }
+	self:measure_auto_size(vitals_panel)
 end
 
 function panels:log_events()
@@ -259,9 +271,18 @@ function panels:measure_auto_size(panel)
 	panel.height = #panel.texts * line_height + pad_y * 2
 end
 
+function panels:update_vitals(entity)
+	local stat_name = "health"
+	local max = stats.get(entity, stat_name)
+	local current = stats.get_current(entity, stat_name)
+	local panel = self:get_panel("vitals")
+	panel.texts = { "Health: " .. current .. " / " .. max }
+end
+
 local status_panels = {}
-local STATUS_ANCHOR = { x = 25, y = 25 }
-local status_panel_opts = { x = STATUS_ANCHOR.x, y = STATUS_ANCHOR.y, font = "very_small", center_text = true }
+local STATUS_GAP = 25
+local status_panel_opts =
+	{ x = vital_anchor.x, y = vital_anchor.y, font = "very_small", center_text = true, center_vertical = true }
 
 function panels:update_statuses(entity)
 	for _, panel in ipairs(status_panels) do
@@ -271,7 +292,6 @@ function panels:update_statuses(entity)
 	if not entity.statuses then
 		return
 	end
-	-- First pass: build each pill and auto-size it to its own text.
 	local max_width = 0
 	for i, status in ipairs(entity.statuses) do
 		local label = status.name or status.key or "?"
@@ -283,8 +303,8 @@ function panels:update_statuses(entity)
 		table.insert(status_panels, panel)
 	end
 
-	-- Second pass: give every pill the widest measured width, and stack them.
-	local y = STATUS_ANCHOR.y
+	local vitals = self:get_panel("vitals")
+	local y = vital_anchor.y + (vitals and vitals.height or 0) + STATUS_GAP
 	for _, panel in ipairs(status_panels) do
 		panel.width = max_width
 		panel.y = y
