@@ -188,29 +188,17 @@ function entities.add(entity)
 end
 
 function entities.loot_roll(entity, loot)
-	local sum_weights = 0
-	for _, entry in ipairs(loot.drops) do
-		sum_weights = sum_weights + entry.weight
-	end
-
-	if sum_weights <= 0 then
-		return
-	end
-
 	local count = love.math.random(loot.count.min, loot.count.max)
 	for _ = 1, count do
-		local r = love.math.random(0, sum_weights - 1)
-		for _, entry in ipairs(loot.drops) do
-			r = r - entry.weight
+		local entry = utils.pick_weighted(loot.drops)
+		if not entry then
+			return
+		end
 
-			if r < 0 then
-				local item = inventory.add_from_template(entity, entry.item)
+		local item = inventory.add_from_template(entity, entry.item)
 
-				if entry.equip then
-					inventory.equip(entity, item)
-				end
-				break
-			end
+		if entry.equip then
+			inventory.equip(entity, item)
 		end
 	end
 end

@@ -306,8 +306,6 @@ return {
 		},
 		can_perform = {
 			attackable = true,
-			interactable = true,
-			vaultable = true,
 		},
 	},
 	campfire = {
@@ -325,7 +323,7 @@ return {
 		},
 		light = {
 			color = { r = 1.0, g = 0.6, b = 0.25 },
-			intensity = 0.87,
+			intensity = 0.7,
 			radius = 10,
 			flicker = { amp = 0.02, freq = 2, phase = 3 },
 		},

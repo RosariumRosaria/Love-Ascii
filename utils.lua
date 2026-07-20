@@ -222,8 +222,27 @@ function utils.pick(list)
 	return list[love.math.random(#list)]
 end
 
--- TODO: if tags grow behavior (non-boolean values, inheritance, status/equipment-granted
--- tags), graduate these helpers out of utils into a dedicated tags module.
+function utils.pick_weighted(entries)
+	local sum_weights = 0
+	for _, entry in ipairs(entries) do
+		sum_weights = sum_weights + (entry.weight or 0)
+	end
+
+	if sum_weights <= 0 then
+		return nil
+	end
+
+	local r = love.math.random() * sum_weights
+	for _, entry in ipairs(entries) do
+		r = r - (entry.weight or 0)
+		if r < 0 then
+			return entry
+		end
+	end
+
+	return entries[#entries]
+end
+
 function utils.get_tag(taggable, tag)
 	return taggable.tags and taggable.tags[tag]
 end

@@ -14,6 +14,35 @@ function city_generator:get_roads()
 	return self.roads
 end
 
+local function point_to_rect(px, py, rect)
+	local dx = math.max(rect.x - px, 0, px - (rect.x + rect.w - 1))
+	local dy = math.max(rect.y - py, 0, py - (rect.y + rect.h - 1))
+	return dx + dy
+end
+
+function city_generator:nearest_road_side(rect)
+	local cx = rect.x + math.floor(rect.w / 2)
+	local cy = rect.y + math.floor(rect.h / 2)
+	local sides = {
+		{ name = "north", x = cx, y = rect.y },
+		{ name = "south", x = cx, y = rect.y + rect.h - 1 },
+		{ name = "west", x = rect.x, y = cy },
+		{ name = "east", x = rect.x + rect.w - 1, y = cy },
+	}
+
+	local best_side, best_dist = nil, math.huge
+	for _, side in ipairs(sides) do
+		for _, road in ipairs(self.roads) do
+			local dist = point_to_rect(side.x, side.y, road)
+			if dist < best_dist then
+				best_side, best_dist = side.name, dist
+			end
+		end
+	end
+
+	return best_side
+end
+
 function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	local map = require("map.map")
 	self.max_y = map_max_y
@@ -22,6 +51,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	self.min_z = map_min_z
 	self.lots = {}
 	self.roads = {}
+	features:load(self.max_x, self.max_y)
 	local root = { x = 1, y = 1, w = self.max_x, h = self.max_y }
 	lots.subdivide(root, gen_cfg.subdivide_depth, self.lots, self.roads)
 
@@ -74,6 +104,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 		if bw >= gen_cfg.min_building_size and bh >= gen_cfg.min_building_size then
 			local roll = love.math.random()
 			if roll < gen_cfg.building_chance then
+				local road_side = self:nearest_road_side(inset)
 				local building = features.make_building(
 					tiles,
 					lot.x + ml,
@@ -81,8 +112,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 					bw,
 					bh,
 					features.roll_height("wall", self.max_z),
-					self.max_x,
-					self.max_y
+					road_side
 				)
 				features.scatter_count(tiles, building, love.math.random(3), function(x, y)
 					if not map:is_tile_free(x, y, 1) then
@@ -91,33 +121,33 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 
 					entities.add_from_template(utils.pick({ "crate", "barricade", "chest" }), x, y, 1)
 					return true
-				end, self.max_x, self.max_y)
+				end)
 			elseif roll < gen_cfg.building_chance + gen_cfg.copse_chance then
 				local variance = gen_cfg.copse_density_variance
 				local tree_density_adjusted = gen_cfg.copse_density - variance + (variance * love.math.random())
 
 				features.scatter(tiles, inset, tree_density_adjusted, function(x, y)
 					features.place("tree", x, y, tiles, self.max_z)
-				end, self.max_x, self.max_y)
+				end)
 			else
 				features.scatter(tiles, lot, 0.002, function(x, y)
 					entities.add_from_template("zombie", x, y, 1)
-				end, self.max_x, self.max_y)
+				end)
 				features.scatter(tiles, lot, 0.002, function(x, y)
 					entities.add_from_template("shambler", x, y, 1)
-				end, self.max_x, self.max_y)
+				end)
 				features.scatter(tiles, lot, 0.001, function(x, y)
 					entities.add_from_template("vampire", x, y, 1)
-				end, self.max_x, self.max_y)
+				end)
 				features.scatter(tiles, lot, 0.002, function(x, y)
 					entities.add_from_template("rat", x, y, 1)
-				end, self.max_x, self.max_y)
+				end)
 				features.scatter(tiles, lot, 0.0001, function(x, y)
 					entities.add_from_template("ogre", x, y, 1)
-				end, self.max_x, self.max_y)
+				end)
 				features.scatter(tiles, lot, 0.0001, function(x, y)
 					entities.add_from_template("skeleton", x, y, 1)
-				end, self.max_x, self.max_y)
+				end)
 			end
 		end
 	end
