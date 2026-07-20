@@ -66,6 +66,24 @@ local function emit_char(params)
 	})
 end
 
+local function emit_shadow(params)
+	local shadow_color = render_utils.scale_color(params.color, render_cfg.lighting.shadow_brightness_scale)
+	shadow_color[4] = (params.color[4] or 1) * render_cfg.lighting.shadow_alpha_scale
+	emit_char({
+		z = params.z,
+		y = params.y,
+		layer = params.layer,
+		x_screen = params.x_screen,
+		y_screen = params.y_screen,
+		char = params.char,
+		color = shadow_color,
+		rotation = params.rotation,
+		natural_rotation = params.natural_rotation,
+		size_scale = params.size_scale,
+		mirror_facing = params.mirror_facing,
+	})
+end
+
 local function emit_name(params, name)
 	for i = 1, #name do
 		local char = name:sub(i, i)
@@ -299,21 +317,17 @@ function painter:emit_tile_at_z(
 	local dx, dy = base_dx, base_dy
 	local size_scale = 1 + (z_eff - 1) * render_cfg.rendering.z_size_scale_per_level
 
-	if tile.natural_height then
+	if natural_height ~= 0 then
 		dx, dy = get_offset(z_eff, x, y, center_x, center_y)
 
-		local shadow_color = render_utils.scale_color(scaled_color, render_cfg.lighting.shadow_brightness_scale)
-
-		shadow_color[4] = (scaled_color[4] or 1) * render_cfg.lighting.shadow_alpha_scale
-
-		emit_char({
+		emit_shadow({
 			z = z,
 			y = y,
 			layer = draw_buffer.LAYER.TILE_SHADOW,
 			x_screen = x_screen + base_dx,
 			y_screen = y_screen + base_dy,
 			char = char,
-			color = shadow_color,
+			color = scaled_color,
 			rotation = tile.rotation,
 			natural_rotation = tile.natural_rotation,
 			size_scale = 1 + (z - 1) * render_cfg.rendering.z_size_scale_per_level,
@@ -403,6 +417,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 	end
 
 	local visuals = render_utils.get_visual_state(entity)
+	local natural_height = entity.natural_height or 0
 	for _, entity_part in ipairs(footprint_cells(entity)) do
 		local light_data = visible and map:get_lighting_tile(entity_part.x, entity_part.y) or nil
 
@@ -433,7 +448,8 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 				base_color = render_utils.get_effective_color(base_color, visible, explored)
 			end
 
-			local scale = render_utils.height_level_scale(entity.z + i - 1, map.max_z, map.min_z, visible)
+			local z_eff = entity.z + i - 1 + natural_height
+			local scale = render_utils.height_level_scale(z_eff, map.max_z, map.min_z, visible)
 			if not tilelike then
 				scale = scale + render_cfg.lighting.entity_brightness_boost
 			end
@@ -457,10 +473,16 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 			scaled_color = render_utils.scale_color(scaled_color, base)
 			scaled_color = render_utils.tonemap(scaled_color)
 
-			local dx, dy = get_offset(utils.render_z(entity) + i - 1, entity_part.x, entity_part.y, center_x, center_y)
+			local dx, dy = get_offset(
+				utils.render_z(entity) + i - 1 + natural_height,
+				entity_part.x,
+				entity_part.y,
+				center_x,
+				center_y
+			)
 
 			local p = {
-				z = entity.z + i - 1,
+				z = z_eff,
 				y = entity_part.y,
 				layer = ENTITY_LAYERS[entity.render_layer] or draw_buffer.LAYER.ENTITY_CHAR,
 				x_screen = x_screen + dx,
@@ -470,7 +492,9 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 				outline_color = outline_color,
 				rotation = entity.rotation,
 				natural_rotation = entity.natural_rotation,
-				size_scale = 1 + (utils.render_z(entity) + i - 1) * render_cfg.rendering.z_size_scale_per_level,
+				size_scale = 1
+					+ (utils.render_z(entity) + i - 1 + natural_height)
+						* render_cfg.rendering.z_size_scale_per_level,
 				mirror_facing = entity.mirror_facing,
 			}
 
@@ -478,6 +502,23 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 				emit_name(p, entity.name)
 				break
 			else
+				if natural_height ~= 0 then
+					local base_dx, base_dy =
+						get_offset(utils.render_z(entity) + i - 1, entity_part.x, entity_part.y, center_x, center_y)
+					emit_shadow({
+						z = z_eff,
+						y = entity_part.y,
+						layer = draw_buffer.LAYER.ENTITY_SHADOW,
+						x_screen = x_screen + base_dx,
+						y_screen = y_screen + base_dy,
+						char = char_data,
+						color = scaled_color,
+						rotation = entity.rotation,
+						natural_rotation = entity.natural_rotation,
+						size_scale = 1 + (utils.render_z(entity) + i - 1) * render_cfg.rendering.z_size_scale_per_level,
+						mirror_facing = entity.mirror_facing,
+					})
+				end
 				emit_char(p)
 			end
 		end
