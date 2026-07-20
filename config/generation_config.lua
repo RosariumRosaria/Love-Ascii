@@ -10,6 +10,8 @@ return {
 	building_margin = 4,
 	min_building_size = 6,
 	building_chance = 0.75,
+	second_door_chance = 0.75,
+	road_side_door_weight = 7,
 	copse_chance = 0.15,
 	copse_density = 0.4,
 	copse_density_variance = 0.25,

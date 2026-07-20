@@ -1,11 +1,17 @@
 local feature_types = require("map.feature_types")
 local tile_types = require("map.tile_types")
 local entities = require("entities.entities")
+local gen_cfg = require("config.generation_config")
 local utils = require("utils")
 
-local features = {}
+local features = { max_x = nil, max_y = nil }
 
 local rotated_wall = setmetatable({ rotation = 90 }, { __index = tile_types.v_wall })
+
+function features:load(max_x, max_y)
+	self.max_x = max_x
+	self.max_y = max_y
+end
 
 function features.fill_column(tiles, x, y, base_z, top_z, tile)
 	for z = base_z, top_z do
@@ -49,11 +55,11 @@ function features.place(name, x, y, tiles, max_z)
 	return true
 end
 
-function features.make_lake(tiles, cx, cy, radius, max_x, max_y)
+function features.make_lake(tiles, cx, cy, radius)
 	for dy = -radius, radius do
 		for dx = -radius, radius do
 			local tx, ty = cx + dx, cy + dy
-			if utils.in_bounds(tx, ty, max_x, max_y) and utils.in_radius(dx, dy, radius) then
+			if utils.in_bounds(tx, ty, features.max_x, features.max_y) and utils.in_radius(dx, dy, radius) then
 				tiles[ty][tx][-1] = tile_types.water
 				tiles[ty][tx][1] = tile_types.air
 			end
@@ -61,18 +67,18 @@ function features.make_lake(tiles, cx, cy, radius, max_x, max_y)
 	end
 
 	for bx = cx - radius - 2, cx + radius + 2 do
-		if utils.in_bounds(bx, cy, max_x, max_y) then
+		if utils.in_bounds(bx, cy, features.max_x, features.max_y) then
 			tiles[cy][bx][1] = tile_types.floor
 		end
 	end
 end
 
-function features.make_building(tiles, start_x, start_y, width, height, top_z, max_x, max_y)
+function features.make_building(tiles, start_x, start_y, width, height, top_z, road_side)
 	for y = 1, height do
 		for x = 1, width do
 			local tile_x = start_x + x - 1
 			local tile_y = start_y + y - 1
-			if utils.in_bounds(tile_x, tile_y, max_x, max_y) then
+			if utils.in_bounds(tile_x, tile_y, features.max_x, features.max_y) then
 				if
 					(x == 1 and y == 1)
 					or (x == width and y == height)
@@ -102,20 +108,50 @@ function features.make_building(tiles, start_x, start_y, width, height, top_z, m
 	local door_x = safe_door_start(width)
 	local door_y = safe_door_start(height)
 
+	-- Cardinals follow the tile grid: -x is west, +x is east, -y is north, +y is south.
+	-- city_generator:nearest_road_side names sides the same way; the two must agree.
 	local sides = {
-		{ x = start_x, y = start_y + door_y - 1, rotation = 0 },
-		{ x = start_x + width - 1, y = start_y + door_y - 1, rotation = 180 },
-		{ x = start_x + door_x - 1, y = start_y, rotation = 90 },
-		{ x = start_x + door_x - 1, y = start_y + height - 1, rotation = 270 },
+		{ x = start_x, y = start_y + door_y - 1, rotation = 0, weight = 1, cardinal = "west" },
+		{
+			x = start_x + width - 1,
+			y = start_y + door_y - 1,
+			rotation = 180,
+			weight = 1,
+			cardinal = "east",
+		},
+		{ x = start_x + door_x - 1, y = start_y, rotation = 90, weight = 1, cardinal = "north" },
+		{
+			x = start_x + door_x - 1,
+			y = start_y + height - 1,
+			rotation = 270,
+			weight = 1,
+			cardinal = "south",
+		},
 	}
 
-	local dir = love.math.random(1, 4)
-	local dir2 = love.math.random(1, 4)
+	for _, side in ipairs(sides) do
+		if side.cardinal == road_side then
+			side.weight = gen_cfg.road_side_door_weight
+		end
+	end
 
-	for i, side in ipairs(sides) do
-		if utils.in_bounds(side.x, side.y, max_x, max_y) then
+	local door_one = utils.pick_weighted(sides)
+	local door_two = nil
+
+	if love.math.random() < gen_cfg.second_door_chance then
+		local remaining = {}
+		for _, side in ipairs(sides) do
+			if side ~= door_one then
+				table.insert(remaining, side)
+			end
+		end
+		door_two = utils.pick(remaining)
+	end
+
+	for _, side in ipairs(sides) do
+		if utils.in_bounds(side.x, side.y, features.max_x, features.max_y) then
 			tiles[side.y][side.x][2] = tile_types.air
-			if dir == i or dir2 == i then
+			if side == door_one or side == door_two then
 				tiles[side.y][side.x][1] = tile_types.floor
 				entities.add_from_template("door", side.x, side.y, 1, { rotation = side.rotation })
 			else
@@ -133,10 +169,10 @@ function features.make_building(tiles, start_x, start_y, width, height, top_z, m
 	}
 end
 
-function features.scatter(tiles, rect, density, place_fn, max_x, max_y)
+function features.scatter(tiles, rect, density, place_fn)
 	for y = rect.y, rect.y + rect.h - 1 do
 		for x = rect.x, rect.x + rect.w - 1 do
-			if utils.in_bounds(x, y, max_x, max_y) and love.math.random() < density then
+			if utils.in_bounds(x, y, features.max_x, features.max_y) and love.math.random() < density then
 				place_fn(x, y)
 			end
 		end
@@ -145,12 +181,12 @@ end
 
 local MAX_SCATTER_ATTEMPTS = 100
 
-function features.scatter_count(tiles, rect, count, place_fn, max_x, max_y)
+function features.scatter_count(tiles, rect, count, place_fn)
 	local placed, attempts = 0, 0
 	while placed < count and attempts < count * MAX_SCATTER_ATTEMPTS do
 		local x = love.math.random(rect.x, rect.x + rect.w - 1)
 		local y = love.math.random(rect.y, rect.y + rect.h - 1)
-		if utils.in_bounds(x, y, max_x, max_y) and place_fn(x, y) then
+		if utils.in_bounds(x, y, features.max_x, features.max_y) and place_fn(x, y) then
 			placed = placed + 1
 		end
 		attempts = attempts + 1
