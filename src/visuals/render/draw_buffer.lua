@@ -1,6 +1,6 @@
-local render_primitives = require("visuals.render.primitives")
-local config = require("config.runtime")
-local game_cfg = require("config.game_config")
+local render_primitives = require("src.visuals.render.primitives")
+local config = require("src.config.runtime")
+local game_cfg = require("src.config.game_config")
 
 local draw_buffer = {
 	PASS = {

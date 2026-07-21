@@ -1,4 +1,4 @@
-local render_cfg = require("config.render_config")
+local render_cfg = require("src.config.render_config")
 
 local debug_state = {
 	show_grid = render_cfg.debug.show_grid,

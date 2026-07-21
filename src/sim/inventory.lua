@@ -1,7 +1,7 @@
-local item_types = require("items.item_types")
-local utils = require("utils")
+local item_types = require("src.sim.item_types")
+local utils = require("src.utils")
 
-local game_cfg = require("config.game_config")
+local game_cfg = require("src.config.game_config")
 
 local inventory = {}
 local inventory_template = {

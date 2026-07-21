@@ -1,4 +1,4 @@
-local shadowcaster = require("fov.shadowcaster")
+local shadowcaster = require("src.fov.shadowcaster")
 
 local fov_handler = {}
 

@@ -1,4 +1,4 @@
-local gen_cfg = require("config.generation_config")
+local gen_cfg = require("src.config.generation_config")
 
 local lots = {}
 

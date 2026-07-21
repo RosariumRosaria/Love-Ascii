@@ -1,7 +1,7 @@
-local status_types = require("statuses.status_types")
-local utils = require("utils")
-local event_log = require("engine.event_log")
-local vitals = require("engine.vitals")
+local status_types = require("src.sim.status_types")
+local utils = require("src.utils")
+local event_log = require("src.engine.event_log")
+local vitals = require("src.engine.vitals")
 local statuses = {}
 
 function statuses.find(entity, key)

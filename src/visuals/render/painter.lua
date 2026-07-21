@@ -1,12 +1,12 @@
-local panels = require("visuals.panels")
-local render_utils = require("visuals.render.utils")
-local utils = require("utils")
-local map = require("map.map")
-local render_primitives = require("visuals.render.primitives")
-local config = require("config.runtime")
-local render_cfg = require("config.render_config")
-local debug_state = require("debug.debug_state")
-local draw_buffer = require("visuals.render.draw_buffer")
+local panels = require("src.visuals.panels")
+local render_utils = require("src.visuals.render.utils")
+local utils = require("src.utils")
+local map = require("src.map.map")
+local render_primitives = require("src.visuals.render.primitives")
+local config = require("src.config.runtime")
+local render_cfg = require("src.config.render_config")
+local debug_state = require("src.debug.debug_state")
+local draw_buffer = require("src.visuals.render.draw_buffer")
 
 local painter = {}
 

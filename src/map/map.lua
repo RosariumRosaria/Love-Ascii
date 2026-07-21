@@ -1,11 +1,11 @@
-local fov_handler = require("fov.visibility")
-local lighting = require("fov.lighting")
-local city_generator = require("map.city_generator")
-local types = require("map.tile_types")
-local utils = require("utils")
-local render_config = require("config.render_config")
-local entities = require("entities.entities")
-local statuses = require("statuses.statuses")
+local fov_handler = require("src.fov.visibility")
+local lighting = require("src.fov.lighting")
+local city_generator = require("src.map.city_generator")
+local types = require("src.map.tile_types")
+local utils = require("src.utils")
+local render_config = require("src.config.render_config")
+local entities = require("src.sim.entities")
+local statuses = require("src.sim.statuses")
 
 local map = {
 	max_x = nil,

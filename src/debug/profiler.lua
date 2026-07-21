@@ -1,4 +1,4 @@
-local debug_state = require("debug.debug_state")
+local debug_state = require("src.debug.debug_state")
 
 local profiler = {
 	mode = "3si1m1",

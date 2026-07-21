@@ -7,9 +7,9 @@
 -- Tiles are shared template references (never deep-copied), so stamping is
 -- `tiles[y][x][z] = types[name]`. Unknown tile/entity names fail loud with position.
 
-local types = require("map.tile_types")
-local map = require("map.map")
-local entities = require("entities.entities")
+local types = require("src.map.tile_types")
+local map = require("src.map.map")
+local entities = require("src.sim.entities")
 
 local prefab = {}
 

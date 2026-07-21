@@ -1,9 +1,9 @@
-local game_cfg = require("config.game_config")
-local render_cfg = require("config.render_config")
-local entities = require("entities.entities")
-local effects = require("visuals.effects.effects")
-local animation_types = require("visuals.render.animation_types")
-local utils = require("utils")
+local game_cfg = require("src.config.game_config")
+local render_cfg = require("src.config.render_config")
+local entities = require("src.sim.entities")
+local effects = require("src.visuals.effects.effects")
+local animation_types = require("src.visuals.render.animation_types")
+local utils = require("src.utils")
 
 local animation = {}
 local base_duration = (game_cfg.timing.turn_delay + render_cfg.animation.tween_slack) * render_cfg.animation.tween_time

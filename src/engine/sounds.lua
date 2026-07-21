@@ -1,6 +1,6 @@
-local entities = require("entities.entities")
-local utils = require("utils")
-local effects = require("visuals.effects.effects")
+local entities = require("src.sim.entities")
+local utils = require("src.utils")
+local effects = require("src.visuals.effects.effects")
 local sounds = {}
 
 function sounds.perceived(entity, sound)

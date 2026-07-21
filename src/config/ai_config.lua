@@ -1,4 +1,4 @@
-local game_cfg = require("config.game_config")
+local game_cfg = require("src.config.game_config")
 
 return {
 	wander_chance = 5,

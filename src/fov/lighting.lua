@@ -1,6 +1,6 @@
-local shadowcaster = require("fov.shadowcaster")
-local entities = require("entities.entities")
-local time = require("engine.time")
+local shadowcaster = require("src.fov.shadowcaster")
+local entities = require("src.sim.entities")
+local time = require("src.engine.time")
 local lighting = {}
 
 local prev_lit = {}

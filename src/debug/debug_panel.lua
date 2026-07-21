@@ -1,13 +1,13 @@
-local cursor = require("engine.cursor")
-local debug_state = require("debug.debug_state")
-local panels = require("visuals.panels")
-local effects = require("visuals.effects.effects")
-local ai_cfg = require("config.ai_config")
-local ai = require("engine.ai")
-local entities = require("entities.entities")
-local render_utils = require("visuals.render.utils")
-local render_primitives = require("visuals.render.primitives")
-local utils = require("utils")
+local cursor = require("src.engine.cursor")
+local debug_state = require("src.debug.debug_state")
+local panels = require("src.visuals.panels")
+local effects = require("src.visuals.effects.effects")
+local ai_cfg = require("src.config.ai_config")
+local ai = require("src.engine.ai")
+local entities = require("src.sim.entities")
+local render_utils = require("src.visuals.render.utils")
+local render_primitives = require("src.visuals.render.primitives")
+local utils = require("src.utils")
 local debug_panel = {}
 
 local target
