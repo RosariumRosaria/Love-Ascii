@@ -177,6 +177,11 @@ function actions:unequip_item(entity, item)
 end
 
 function actions:use_item(entity, item, dx, dy)
+	if item.charges and item.charges <= 0 then
+		event_log:add({ type = "action_failed", entity = entity.name, reason = "Out of charges" })
+		return false
+	end
+
 	local target = entity
 	if item.on_use.targets then
 		target = entities.get_with_tag(entity.x + dx, entity.y + dy, entity.z, item.on_use.target_tag)
@@ -339,11 +344,7 @@ function actions:can_ranged_attack(entity, target_x, target_y, target_entity, sp
 		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not attackable", spam = spam })
 		return false
 	end
-	if weapon.charges and weapon.charges <= 0 then
-		event_log:add({ type = "action_failed", entity = entity.name, reason = "Out of charges", spam = spam })
-		return false
-	end
-	if utils.get_tag(weapon, "requires_ammo") and not inventory.has_ammo(entity, weapon) then
+	if utils.get_tag(weapon, "requires_ammo") and not inventory.get_ammo(entity) then
 		event_log:add({ type = "action_failed", entity = entity.name, reason = "Out of ammo", spam = spam })
 		return false
 	end
@@ -365,13 +366,11 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity, valida
 
 	assign_cost(entity, "ranged_attack")
 
+	local ammo = inventory.equip_ammo(entity, weapon)
 	local damage = stats.get(entity, "damage", "ranged")
 
-	if weapon.charges then
-		inventory.use_charge(entity, weapon)
-	end
-	if utils.get_tag(weapon, "requires_ammo") then
-		inventory.use_ammo(entity, weapon)
+	if ammo then
+		inventory.use_charge(entity, ammo)
 	end
 
 	local dealt = deal_damage(target_entity, damage, entity.name, true)

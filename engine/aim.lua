@@ -88,6 +88,8 @@ function aim.enter(entity, x, y)
 		return false
 	end
 
+	inventory.equip_ammo(entity, weapon)
+
 	aim.active = true
 	aim.entity = entity
 	aim.weapon = weapon

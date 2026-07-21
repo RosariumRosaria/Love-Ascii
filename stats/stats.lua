@@ -2,6 +2,19 @@ local event_log = require("engine.event_log")
 
 local stats = {}
 
+local function applies_in(mod, context)
+	return mod.context == nil or mod.context == context
+end
+
+local function apply_mod(mod, add, mul)
+	if mod.op == "add" then
+		return add + mod.value, mul
+	elseif mod.op == "mul" then
+		return add, mul * mod.value
+	end
+	return add, mul
+end
+
 function stats.get(entity, name, context)
 	local stat = entity.stats and entity.stats[name]
 	if not stat then
@@ -52,12 +65,8 @@ function stats.sum_modifiers(entity, stat_name, context)
 		for _, status in ipairs(entity.statuses) do
 			if status.modifiers then
 				for _, mod in ipairs(status.modifiers) do
-					if mod.stat == stat_name then
-						if mod.op == "add" then
-							add = add + mod.value
-						elseif mod.op == "mul" then
-							mul = mul * mod.value
-						end
+					if mod.stat == stat_name and applies_in(mod, context) then
+						add, mul = apply_mod(mod, add, mul)
 					end
 				end
 			end
@@ -66,15 +75,10 @@ function stats.sum_modifiers(entity, stat_name, context)
 
 	if entity.inventory and entity.inventory.equipped then
 		for _, item in pairs(entity.inventory.equipped) do
-			local skip = context == "melee" and (item.ranged or item.slot == "ammo")
-			if not skip and item.modifiers then
+			if item.modifiers then
 				for _, mod in ipairs(item.modifiers) do
-					if mod.stat == stat_name then
-						if mod.op == "add" then
-							add = add + mod.value
-						elseif mod.op == "mul" then
-							mul = mul * mod.value
-						end
+					if mod.stat == stat_name and applies_in(mod, context) then
+						add, mul = apply_mod(mod, add, mul)
 					end
 				end
 			end

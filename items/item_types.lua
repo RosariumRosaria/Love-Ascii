@@ -7,7 +7,7 @@ return {
 		chars = { "/" },
 		volume = 6,
 		modifiers = {
-			{ stat = "damage", op = "add", value = 3 },
+			{ stat = "damage", op = "add", value = 3, context = "melee" },
 		},
 	},
 	bow = {
@@ -17,7 +17,7 @@ return {
 		slot = "mainhand",
 		chars = { "D" },
 		modifiers = {
-			{ stat = "damage", op = "add", value = 2 },
+			{ stat = "damage", op = "add", value = 2, context = "ranged" },
 		},
 		ranged = true,
 		volume = 6,
@@ -33,10 +33,11 @@ return {
 		slot = "ammo",
 		charges = 1,
 		modifiers = {
-			{ stat = "damage", op = "add", value = 1 },
+			{ stat = "damage", op = "add", value = 1, context = "ranged" },
 		},
 		tags = {
 			stacks = true,
+			consumable = true,
 		},
 	},
 	plank = {
@@ -48,6 +49,7 @@ return {
 		charges = 1,
 		tags = {
 			stacks = true,
+			consumable = true,
 		},
 	},
 	bandage = {
@@ -59,6 +61,7 @@ return {
 		charges = 1,
 		tags = {
 			stacks = true,
+			consumable = true,
 		},
 	},
 	splint = {
@@ -68,6 +71,9 @@ return {
 		on_use = { clear_status = "splintable", burst = { type = "heal", count = 3 } },
 		chars = { "/" },
 		charges = 1,
+		tags = {
+			consumable = true,
+		},
 	},
 	health_potion = {
 		name = "Health Potion",
@@ -77,6 +83,9 @@ return {
 		on_use = { apply_status = "regen" },
 		charges = 3,
 		max_charges = 3,
+		tags = {
+			consumable = true,
+		},
 	},
 	strength_potion = {
 		name = "Strength Potion",
@@ -85,6 +94,9 @@ return {
 		chars = { "&" },
 		on_use = { apply_status = "strength" },
 		charges = 1,
+		tags = {
+			consumable = true,
+		},
 	},
 	leather_armor = {
 		name = "Leather Armor",

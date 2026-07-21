@@ -154,7 +154,7 @@ function pathfinder.traversal(actor, from_x, from_y, x, y, z, goal, player_nav) 
 	local land_x, land_reason = actions.vault_landing(actor, from_x, from_y, x, y, z)
 	local landing = land_x and "free" or land_reason
 
-	local damage = actor.can_perform and actor.can_perform.attackable and stats.get_current(actor, "damage") or 0
+	local damage = actor.can_perform and actor.can_perform.attackable and stats.get(actor, "damage", "melee") or 0
 	local ret_kind, ret_cost, ret_target = "walk", 1, nil
 	local blocked = false
 	for _, c in ipairs(utils.footprint_offsets(actor)) do
