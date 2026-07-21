@@ -280,8 +280,6 @@ return {
 		},
 		can_perform = {
 			attackable = true,
-			interactable = true,
-			vaultable = true,
 		},
 	},
 	rat = {
@@ -357,8 +355,8 @@ return {
 		},
 		light = {
 			color = { r = 0.7, g = 0.9, b = 1 },
-			intensity = 0.8,
-			radius = 7,
+			intensity = 0.5,
+			radius = 8,
 			flicker = { amp = 0.05, freq = 4, phase = 0 },
 		},
 	},
