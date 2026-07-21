@@ -32,11 +32,19 @@ function inventory.increment_selected_index(entity)
 	end
 end
 
+function inventory.check_index(entity, index)
+	if not entity.inventory then
+		return false
+	end
+	return index > 0 and #entity.inventory.items >= index
+end
+
 function inventory.set_selected_index(entity, index)
-	if not entity.inventory or index < 1 or #entity.inventory.items < index then
-		return
+	if not inventory.check_index(entity, index) then
+		return false
 	end
 	entity.inventory.selected_index = index
+	return true
 end
 
 function inventory.add(entity, item)
