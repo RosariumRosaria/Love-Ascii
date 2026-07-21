@@ -186,6 +186,8 @@ function input:set_mode(new_mode)
 	end
 	exit_mode(self.mode)
 	self.mode = new_mode
+	self.pending_slot = nil
+	self.last_slot = nil
 	self.buffered_keys = {}
 end
 
@@ -245,24 +247,39 @@ function input:handle_aim()
 	return took_action
 end
 
+function input:transfer_selected()
+	local from, to
+	if container.focus_container then
+		from, to = container:get(), self.actor
+	else
+		from, to = self.actor, container:get()
+	end
+	return actions:handle_action(self.actor, {
+		type = "transfer_item",
+		from = from,
+		to = to,
+	})
+end
+
 function input:handle_container()
 	local took_action = false
 	local move_dir = self:get_direction()
 
+	local use_slot = self.pending_slot
+	self.pending_slot = nil
+
+	if use_slot then
+		local focused = (container.focus_container and container:get()) or self.actor
+		if not inventory.set_selected_index(focused, use_slot) then
+			return false
+		end
+		return self:transfer_selected()
+	end
+
 	if move_dir.y ~= 0 then
 		self:set_mode(modes.normal)
 	elseif self:is_down("use_selected") then
-		local from, to
-		if container.focus_container then
-			from, to = container:get(), self.actor
-		else
-			from, to = self.actor, container:get()
-		end
-		took_action = actions:handle_action(self.actor, {
-			type = "transfer_item",
-			from = from,
-			to = to,
-		})
+		took_action = self:transfer_selected()
 	end
 
 	return took_action
@@ -393,7 +410,7 @@ function input:update(dt)
 	if slot and inventory.check_index(slot_entity, slot) then
 		local now = love.timer.getTime()
 		if
-			self.mode == modes.normal
+			(self.mode == modes.normal or self.mode == modes.container)
 			and slot == self.last_slot
 			and (now - self.last_slot_time) < game_cfg.timing.turn_delay * 1.5
 		then
