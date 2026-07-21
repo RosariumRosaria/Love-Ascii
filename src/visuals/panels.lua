@@ -1,9 +1,9 @@
-local config = require("config.runtime")
-local stats = require("stats.stats")
-local inventory = require("items.inventory")
-local container = require("engine.container")
-local event_log = require("engine.event_log")
-local render_utils = require("visuals.render.utils")
+local config = require("src.config.runtime")
+local stats = require("src.sim.stats")
+local inventory = require("src.sim.inventory")
+local container = require("src.engine.container")
+local event_log = require("src.engine.event_log")
+local render_utils = require("src.visuals.render.utils")
 local small_tile_size
 local small_font
 local very_small_tile_size

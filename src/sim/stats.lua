@@ -1,4 +1,4 @@
-local event_log = require("engine.event_log")
+local event_log = require("src.engine.event_log")
 
 local stats = {}
 

@@ -1,8 +1,8 @@
-local effects = require("visuals.effects.effects")
-local map = require("map.map")
-local inventory = require("items.inventory")
-local utils = require("utils")
-local entities = require("entities.entities")
+local effects = require("src.visuals.effects.effects")
+local map = require("src.map.map")
+local inventory = require("src.sim.inventory")
+local utils = require("src.utils")
+local entities = require("src.sim.entities")
 
 local aim = {
 	active = false,

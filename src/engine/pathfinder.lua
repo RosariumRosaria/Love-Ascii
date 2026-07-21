@@ -1,12 +1,12 @@
 --NOTE Based off of Redbob
-local map = require("map.map")
-local entities = require("entities.entities")
-local utils = require("utils")
-local game_cfg = require("config.game_config")
-local ai_cfg = require("config.ai_config")
-local stats = require("stats.stats")
-local statuses = require("statuses.statuses")
-local actions = require("engine.actions")
+local map = require("src.map.map")
+local entities = require("src.sim.entities")
+local utils = require("src.utils")
+local game_cfg = require("src.config.game_config")
+local ai_cfg = require("src.config.ai_config")
+local stats = require("src.sim.stats")
+local statuses = require("src.sim.statuses")
+local actions = require("src.engine.actions")
 
 local pathfinder = {}
 local max_checks = game_cfg.pathfinding.max_iterations

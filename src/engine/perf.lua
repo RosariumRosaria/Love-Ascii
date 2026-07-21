@@ -1,7 +1,7 @@
-local game_cfg = require("config.game_config")
-local debug_state = require("debug.debug_state")
-local config = require("config.runtime")
-local time = require("engine.time")
+local game_cfg = require("src.config.game_config")
+local debug_state = require("src.debug.debug_state")
+local config = require("src.config.runtime")
+local time = require("src.engine.time")
 
 local perf = {
 	frame_start = 0,

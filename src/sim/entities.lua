@@ -1,11 +1,11 @@
-local entity_types = require("entities.entity_types")
-local event_log = require("engine.event_log")
-local inventory = require("items.inventory")
-local container = require("engine.container")
+local entity_types = require("src.sim.entity_types")
+local event_log = require("src.engine.event_log")
+local inventory = require("src.sim.inventory")
+local container = require("src.engine.container")
 
-local utils = require("utils")
-local time = require("engine.time")
-local game_config = require("config.game_config")
+local utils = require("src.utils")
+local time = require("src.engine.time")
+local game_config = require("src.config.game_config")
 
 local entities = {
 	entity_list = {},
@@ -244,7 +244,7 @@ function entities.add_from_template(name, x, y, z, overrides)
 end
 
 function entities.add_from_template_free(name, x, y, z, overrides)
-	local map = require("map.map")
+	local map = require("src.map.map")
 	x, y, z = x or 1, y or 1, z or 1
 	local fx, fy = map:closest_free_cell(x, y, z, entity_types[name])
 	return entities.add_from_template(name, fx or x, fy or y, z, overrides)

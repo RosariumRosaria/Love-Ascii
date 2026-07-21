@@ -1,8 +1,8 @@
-local config = require("config.runtime")
-local render_config = require("config.render_config")
-local lighting = require("fov.lighting")
-local time = require("engine.time")
-local utils = require("utils")
+local config = require("src.config.runtime")
+local render_config = require("src.config.render_config")
+local lighting = require("src.fov.lighting")
+local time = require("src.engine.time")
+local utils = require("src.utils")
 local default_font
 local tile_size
 local render_utils = {}

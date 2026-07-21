@@ -1,8 +1,8 @@
-local feature_types = require("map.feature_types")
-local tile_types = require("map.tile_types")
-local entities = require("entities.entities")
-local gen_cfg = require("config.generation_config")
-local utils = require("utils")
+local feature_types = require("src.map.feature_types")
+local tile_types = require("src.map.tile_types")
+local entities = require("src.sim.entities")
+local gen_cfg = require("src.config.generation_config")
+local utils = require("src.utils")
 
 local features = { max_x = nil, max_y = nil }
 

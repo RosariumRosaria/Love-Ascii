@@ -1,6 +1,6 @@
-local map = require("map.map")
-local entities = require("entities.entities")
-local city_generator = require("map.city_generator")
+local map = require("src.map.map")
+local entities = require("src.sim.entities")
+local city_generator = require("src.map.city_generator")
 
 local visualizer = {
 	visible = false,

@@ -1,8 +1,8 @@
-local utils = require("utils")
-local stats = require("stats.stats")
-local game_cfg = require("config.game_config")
-local render_config = require("config.render_config")
-local event_log = require("engine.event_log")
+local utils = require("src.utils")
+local stats = require("src.sim.stats")
+local game_cfg = require("src.config.game_config")
+local render_config = require("src.config.render_config")
+local event_log = require("src.engine.event_log")
 local time = {}
 
 local ambient_cache = { r = 0, g = 0, b = 0 }

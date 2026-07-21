@@ -1,5 +1,5 @@
-local render_cfg = require("config.render_config")
-local game_cfg = require("config.game_config")
+local render_cfg = require("src.config.render_config")
+local game_cfg = require("src.config.game_config")
 local runtime = {}
 
 function runtime:load()

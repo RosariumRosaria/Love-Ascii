@@ -1,5 +1,5 @@
-local utils = require("utils")
-local inventory = require("items.inventory")
+local utils = require("src.utils")
+local inventory = require("src.sim.inventory")
 local container = {
 	active_container = nil,
 	is_open = false,

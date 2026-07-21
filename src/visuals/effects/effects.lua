@@ -1,5 +1,5 @@
-local effect_types = require("visuals.effects.effect_types")
-local utils = require("utils")
+local effect_types = require("src.visuals.effects.effect_types")
+local utils = require("src.utils")
 
 local effects = {
 	effect_list = {},

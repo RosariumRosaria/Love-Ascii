@@ -1,8 +1,8 @@
-local map = require("map.map")
-local render_cfg = require("config.render_config")
-local types = require("map.tile_types")
-local entities = require("entities.entities")
-local utils = require("utils")
+local map = require("src.map.map")
+local render_cfg = require("src.config.render_config")
+local types = require("src.map.tile_types")
+local entities = require("src.sim.entities")
+local utils = require("src.utils")
 
 local particles = {
 	mode = "normal",

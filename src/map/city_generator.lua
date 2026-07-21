@@ -1,9 +1,9 @@
-local types = require("map.tile_types")
-local gen_cfg = require("config.generation_config")
-local lots = require("map.lots")
-local features = require("map.features")
-local entities = require("entities.entities")
-local utils = require("utils")
+local types = require("src.map.tile_types")
+local gen_cfg = require("src.config.generation_config")
+local lots = require("src.map.lots")
+local features = require("src.map.features")
+local entities = require("src.sim.entities")
+local utils = require("src.utils")
 local city_generator = { max_x = nil, max_y = nil, max_z = nil, lots = {}, roads = {} }
 
 function city_generator:get_lots()
@@ -52,7 +52,7 @@ function city_generator:nearest_road_side(rect)
 end
 
 function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
-	local map = require("map.map")
+	local map = require("src.map.map")
 	self.max_y = map_max_y
 	self.max_x = map_max_x
 	self.max_z = map_max_z

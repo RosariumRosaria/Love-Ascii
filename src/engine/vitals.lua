@@ -1,9 +1,9 @@
-local entities = require("entities.entities")
-local event_log = require("engine.event_log")
-local stats = require("stats.stats")
-local effects = require("visuals.effects.effects")
-local utils = require("utils")
-local render_utils = require("visuals.render.utils")
+local entities = require("src.sim.entities")
+local event_log = require("src.engine.event_log")
+local stats = require("src.sim.stats")
+local effects = require("src.visuals.effects.effects")
+local utils = require("src.utils")
+local render_utils = require("src.visuals.render.utils")
 local vitals = {}
 
 function vitals.spawn_damage_numbers(target, amount, opts)
