@@ -31,6 +31,7 @@ local input = {
 	buffered_keys = {},
 	mode = "normal",
 	last_turn = { x = 0, y = 0 },
+	interact_consumed = false,
 	grabbed = nil,
 }
 
@@ -187,7 +188,6 @@ function input:set_mode(new_mode)
 	end
 	exit_mode(self.mode)
 	self.mode = new_mode
-	self.last_turn = { x = 0, y = 0 }
 	self.buffered_keys = {}
 end
 
@@ -349,6 +349,7 @@ function input:update(dt)
 
 	if self:pressed("interact") and self.mode == modes.container then
 		self:set_mode(modes.normal)
+		self.interact_consumed = true
 	end
 	if self:pressed("debug") then
 		local item = inventory.get_selected(self.actor)
@@ -499,7 +500,7 @@ function input:_take_normal_turn()
 				dy = move_dir.y,
 			})
 		end
-	elseif self:is_down("interact") then
+	elseif self:is_down("interact") and not self.interact_consumed then
 		took_action = actions:handle_action(actor, {
 			type = "interact",
 			dx = move_dir.x,
@@ -558,6 +559,7 @@ end
 function input:end_frame()
 	self.pressed_keys = {}
 	self.released_keys = {}
+	self.interact_consumed = false
 end
 
 function love.wheelmoved(_, y)

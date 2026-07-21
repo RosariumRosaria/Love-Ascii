@@ -11,6 +11,8 @@ local entities = {
 	entity_list = {},
 	player = nil,
 	by_cell = {},
+	by_id = {},
+	id_num = 0,
 }
 
 function entities.set_player(p)
@@ -171,6 +173,7 @@ end
 
 function entities.remove(target)
 	utils.remove_from_list(entities.entity_list, target)
+	entities.by_id[target.id] = nil
 	index_remove(target)
 end
 
@@ -178,9 +181,18 @@ function entities.get_list()
 	return entities.entity_list
 end
 
+function entities.get_by_id(id)
+	return entities.by_id[id]
+end
+
 function entities.add(entity)
 	table.insert(entities.entity_list, entity)
 	index_add(entity)
+
+	local new_id = entities.id_num + 1
+	entity.id = new_id
+	entities.id_num = new_id
+	entities.by_id[new_id] = entity
 
 	if entity.type == "actor" then
 		time.schedule_turn(entity)
