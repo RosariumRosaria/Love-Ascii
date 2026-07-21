@@ -220,8 +220,7 @@ function actions:use_item(entity, item, dx, dy)
 		})
 	end
 
-	if inventory.use_charge(item) then
-		inventory.remove(entity, item)
+	if inventory.use_charge(entity, item) then
 		event_log:add({ type = "item_consumed", entity = entity.name, item = item.name })
 	end
 	return true
@@ -340,7 +339,11 @@ function actions:can_ranged_attack(entity, target_x, target_y, target_entity, sp
 		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not attackable", spam = spam })
 		return false
 	end
-	if (weapon.charges or 0) <= 0 then
+	if weapon.charges and weapon.charges <= 0 then
+		event_log:add({ type = "action_failed", entity = entity.name, reason = "Out of charges", spam = spam })
+		return false
+	end
+	if utils.get_tag(weapon, "requires_ammo") and not inventory.has_ammo(entity, weapon) then
 		event_log:add({ type = "action_failed", entity = entity.name, reason = "Out of ammo", spam = spam })
 		return false
 	end
@@ -356,13 +359,21 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity, valida
 	if not attack_ret then
 		return false
 	end
+
 	target_entity = attack_ret.target_entity
 	local weapon = attack_ret.weapon
 
 	assign_cost(entity, "ranged_attack")
-	inventory.use_charge(weapon)
 
 	local damage = stats.get(entity, "damage", "ranged")
+
+	if weapon.charges then
+		inventory.use_charge(entity, weapon)
+	end
+	if utils.get_tag(weapon, "requires_ammo") then
+		inventory.use_ammo(entity, weapon)
+	end
+
 	local dealt = deal_damage(target_entity, damage, entity.name, true)
 	local shot_sound = build_hit_sound(entity, target_entity, weapon)
 	shot_sound.defer_ring = true

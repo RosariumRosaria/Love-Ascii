@@ -46,7 +46,7 @@ return {
 		loot = {
 			count = { min = 0, max = 1 },
 			drops = {
-				{ item = "bandages", weight = 10 },
+				{ item = "bandage", weight = 10 },
 			},
 		},
 		description = "A zombie, try attacking it!",
@@ -249,9 +249,12 @@ return {
 			effect_color = { 0.65, 0.61, 0.51, 0.5 },
 		},
 		loot = {
-			count = { min = 1, max = 1 },
+			guaranteed = {
+				{ item = "bow", equip = true },
+			},
+			count = { min = 1, max = 5 },
 			drops = {
-				{ item = "bow", weight = 10, equip = true },
+				{ item = "arrow", equip = true, weight = 10 },
 			},
 		},
 		description = "A skeleton, try attacking it!",
@@ -262,10 +265,10 @@ return {
 			hit_burst = "dust",
 		},
 		stats = {
-			health = { base = 7, current = 7 },
+			health = { base = 6, current = 6 },
 			sight = { base = 25 },
 			speed = { base = 4 },
-			damage = { base = 2 },
+			damage = { base = 1 },
 		},
 		tags = {
 			moveable = true,
@@ -414,9 +417,9 @@ return {
 			count = { min = 1, max = 4 },
 			drops = {
 				{ item = "health_potion", weight = 2 },
-				{ item = "bandages", weight = 10 },
+				{ item = "bandage", weight = 10 },
 				{ item = "strength_potion", weight = 1 },
-				{ item = "planks", weight = 5 },
+				{ item = "plank", weight = 5 },
 			},
 		},
 		inventory = {

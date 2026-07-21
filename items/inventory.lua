@@ -49,23 +49,29 @@ function inventory.add(entity, item)
 	end
 	if utils.get_tag(item, "stacks") and item.charges then
 		local cap = item.max_charges or game_cfg.inventory.max_stack_limit
+		local stored = nil
 		local existing_item = inventory.get_with_name_where_not_full(entity, item.name)
 		while existing_item and item.charges > 0 do
 			item.charges = inventory.merge_stacks(existing_item, item.charges)
+			stored = stored or existing_item
 			existing_item = inventory.get_with_name_where_not_full(entity, item.name)
 		end
 		while item.charges > cap do
 			local overflow = utils.deep_copy(item)
 			overflow.charges = cap
 			table.insert(entity.inventory.items, overflow)
+			stored = stored or overflow
 			item.charges = item.charges - cap
 		end
 		if item.charges > 0 then
 			table.insert(entity.inventory.items, item)
+			stored = stored or item
 		end
-	else
-		table.insert(entity.inventory.items, item)
+		return stored
 	end
+
+	table.insert(entity.inventory.items, item)
+	return item
 end
 
 function inventory.create_from_template(name, overrides)
@@ -74,10 +80,17 @@ function inventory.create_from_template(name, overrides)
 	return new_item
 end
 
+function inventory.add_count_from_template(entity, name, overrides, count)
+	local ret = {}
+	for i = 1, count, 1 do
+		table.insert(ret, inventory.add_from_template(entity, name, overrides))
+	end
+	return ret
+end
+
 function inventory.add_from_template(entity, name, overrides)
 	local new_item = inventory.create_from_template(name, overrides)
-	inventory.add(entity, new_item)
-	return new_item
+	return inventory.add(entity, new_item)
 end
 
 function inventory.remove(entity, item)
@@ -86,7 +99,9 @@ function inventory.remove(entity, item)
 	end
 	for i, i_item in ipairs(entity.inventory.items) do
 		if i_item == item then
-			inventory.unequip(entity, item.slot)
+			if inventory.is_equipped(entity, entity.item) then
+				inventory.unequip(entity, item.slot)
+			end
 
 			table.remove(entity.inventory.items, i)
 			if not inventory.get_selected(entity) then
@@ -113,12 +128,24 @@ function inventory.get_with_name_where_not_full(entity, name)
 	return nil
 end
 
-function inventory.get_first_with_field(entity, tag)
-	if not entity.inventory or not tag then
+function inventory.get_first_with_field(entity, field)
+	if not entity.inventory or not field then
 		return nil
 	end
 	for _, i_item in ipairs(entity.inventory.items) do
-		if i_item[tag] then
+		if i_item[field] then
+			return i_item
+		end
+	end
+	return nil
+end
+
+function inventory.get_first_with_field_equals(entity, field, value)
+	if not entity.inventory or not field then
+		return nil
+	end
+	for _, i_item in ipairs(entity.inventory.items) do
+		if i_item[field] == value then
 			return i_item
 		end
 	end
@@ -163,12 +190,50 @@ function inventory.get_selected(entity)
 	return entity.inventory.items[entity.inventory.selected_index]
 end
 
-function inventory.use_charge(item)
+function inventory.use_charge(entity, item)
 	if not item.charges then
 		return false
 	end
 	item.charges = item.charges - 1
+	if item.charges <= 0 then
+		inventory.remove(entity, item)
+	end
 	return item.charges <= 0
+end
+
+function inventory.get_ammo(entity)
+	local ammo = inventory.get_equipped(entity, "ammo")
+	if ammo and (ammo.charges or 0) > 0 then
+		return ammo
+	end
+	return inventory.get_first_with_field_equals(entity, "slot", "ammo")
+end
+
+function inventory.has_ammo(entity, item)
+	if not utils.get_tag(item, "requires_ammo") then
+		return false
+	end
+	local ammo = inventory.get_ammo(entity)
+	return ammo ~= nil and (ammo.charges or 0) > 0
+end
+
+function inventory.use_ammo(entity, item)
+	if not utils.get_tag(item, "requires_ammo") then
+		return false
+	end
+	local ammo = inventory.get_ammo(entity)
+	if not ammo or (ammo.charges or 0) <= 0 then
+		return false
+	end
+	if inventory.get_equipped(entity, "ammo") ~= ammo then
+		inventory.equip(entity, ammo)
+	end
+	ammo.charges = ammo.charges - 1
+
+	if ammo.charges <= 0 then
+		inventory.remove(entity, ammo)
+	end
+	return ammo
 end
 
 function inventory.merge_stacks(item, count)

@@ -113,8 +113,6 @@ function input:_has(action, state_table)
 end
 
 function input:is_down(action)
-	-- During the buffered-input fallback pass, reads resolve against the keys
-	-- captured during the blackout instead of what's physically held now.
 	local source = self.buffer_reading and self.buffer_set or self.down_keys
 	return self:_has(action, source)
 end
@@ -134,7 +132,7 @@ end
 
 function input:debug_spawn()
 	local mx, my = cursor.get_moused_coords()
-	local entity_type = "shambler"
+	local entity_type = "skeleton"
 
 	if map:is_tile_free(mx, my, 1) then
 		entities.add_from_template(entity_type, mx, my, 1)

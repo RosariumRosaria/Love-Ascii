@@ -66,7 +66,7 @@ function stats.sum_modifiers(entity, stat_name, context)
 
 	if entity.inventory and entity.inventory.equipped then
 		for _, item in pairs(entity.inventory.equipped) do
-			local skip = context == "melee" and item.ranged
+			local skip = context == "melee" and (item.ranged or item.slot == "ammo")
 			if not skip and item.modifiers then
 				for _, mod in ipairs(item.modifiers) do
 					if mod.stat == stat_name then

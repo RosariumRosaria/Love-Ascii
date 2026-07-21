@@ -17,17 +17,30 @@ return {
 		slot = "mainhand",
 		chars = { "D" },
 		modifiers = {
-			{ stat = "damage", op = "add", value = 3 },
+			{ stat = "damage", op = "add", value = 2 },
 		},
 		ranged = true,
-		charges = 10,
 		volume = 6,
 		reach = 8,
-		max_charges = 10, --TODO: Some kind of quiver
+		tags = { requires_ammo = true },
 		range = 15,
 	},
-	planks = {
-		name = "Planks",
+	arrow = {
+		name = "Arrow",
+		description = "Sharp arrows for combat.",
+		color = { { 0.8, 0.8, 0.8, 1 } },
+		chars = { "/" },
+		slot = "ammo",
+		charges = 1,
+		modifiers = {
+			{ stat = "damage", op = "add", value = 1 },
+		},
+		tags = {
+			stacks = true,
+		},
+	},
+	plank = {
+		name = "Plank",
 		description = "Can be used to barricade walls and windows.",
 		color = { { 0.8, 0.7, 0.5, 1 } },
 		on_use = { apply_status = "barricaded", target_tag = "barricadeable", targets = true },
@@ -37,7 +50,7 @@ return {
 			stacks = true,
 		},
 	},
-	bandages = {
+	bandage = {
 		name = "Bandages",
 		description = "Can be used to bandage wounds.",
 		color = { { 0.7, 0.7, 0.8, 1 } },
