@@ -1,7 +1,7 @@
 local entity_types = require("src.sim.entity_types")
 local event_log = require("src.engine.event_log")
 local inventory = require("src.sim.inventory")
-local container = require("src.engine.container")
+local container = require("src.engine.interaction.container")
 
 local utils = require("src.utils")
 local time = require("src.engine.time")

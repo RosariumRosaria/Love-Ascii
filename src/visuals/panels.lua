@@ -1,7 +1,7 @@
 local config = require("src.config.runtime")
 local stats = require("src.sim.stats")
 local inventory = require("src.sim.inventory")
-local container = require("src.engine.container")
+local container = require("src.engine.interaction.container")
 local event_log = require("src.engine.event_log")
 local render_utils = require("src.visuals.render.utils")
 local small_tile_size

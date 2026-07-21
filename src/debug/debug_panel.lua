@@ -1,4 +1,4 @@
-local cursor = require("src.engine.cursor")
+local cursor = require("src.engine.interaction.cursor")
 local debug_state = require("src.debug.debug_state")
 local panels = require("src.visuals.panels")
 local effects = require("src.visuals.effects.effects")
