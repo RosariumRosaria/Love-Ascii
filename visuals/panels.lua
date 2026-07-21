@@ -365,8 +365,10 @@ function panels:update_character(entity)
 			end
 		end
 	elseif character_panel.mode == "stats" and entity.stats then
+		local weapon = inventory.get_equipped(entity, "mainhand")
+		local attack_context = weapon and weapon.ranged and "ranged" or "melee"
 		for stat_name, stat in pairs(entity.stats) do
-			local max = stats.get(entity, stat_name)
+			local max = stats.get(entity, stat_name, attack_context)
 			if stat.current ~= nil then
 				local current = stats.get_current(entity, stat_name)
 				self:add_text_to_panel_by_name("character", stat_name .. ": " .. current .. " / " .. max)

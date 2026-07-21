@@ -324,7 +324,7 @@ function input:update(dt)
 	end
 
 	if self:pressed("quit") then
-		if self.mode == modes.container then
+		if self.mode ~= modes.normal then
 			self:set_mode(modes.normal)
 		else
 			love.event.quit()

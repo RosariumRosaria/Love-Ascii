@@ -35,7 +35,7 @@ local function load_default_inventory(player)
 	inventory.add_from_template(player, "plank")
 	inventory.add_from_template(player, "bandage")
 	inventory.add_from_template(player, "health_potion")
-	inventory.add_count_from_template(player, "arrow", nil, 3)
+	inventory.add_from_template(player, "arrow", { charges = 3 })
 
 	inventory.equip(player, player.inventory.items[1])
 	inventory.equip(player, player.inventory.items[3])

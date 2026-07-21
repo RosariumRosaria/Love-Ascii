@@ -199,29 +199,29 @@ function entities.add(entity)
 	end
 end
 
+local function grant(entity, entry)
+	if entry then
+		local item = inventory.add_from_template(entity, entry.item)
+
+		if item and entry.equip then
+			inventory.equip(entity, item)
+		end
+	end
+end
+
 function entities.loot_roll(entity, loot)
 	if loot.drops then
 		local total_weight = utils.total_weight(loot.drops)
-		local count = love.math.random(loot.count.min, loot.count.max)
+		local count = loot.count and love.math.random(loot.count.min, loot.count.max) or 1
 		for _ = 1, count do
 			local entry = utils.pick_weighted(loot.drops, total_weight)
-			if entry then
-				local item = inventory.add_from_template(entity, entry.item)
-
-				if entry.equip then
-					inventory.equip(entity, item)
-				end
-			end
+			grant(entity, entry)
 		end
 	end
 
 	if loot.guaranteed then
 		for _, entry in ipairs(loot.guaranteed) do
-			local item = inventory.add_from_template(entity, entry.item)
-
-			if entry.equip then
-				inventory.equip(entity, item)
-			end
+			grant(entity, entry)
 		end
 	end
 end
