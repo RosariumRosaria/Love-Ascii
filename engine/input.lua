@@ -133,7 +133,7 @@ end
 
 function input:debug_spawn()
 	local mx, my = cursor.get_moused_coords()
-	local entity_type = "skeleton"
+	local entity_type = "shambler"
 
 	if map:is_tile_free(mx, my, 1) then
 		entities.add_from_template(entity_type, mx, my, 1)

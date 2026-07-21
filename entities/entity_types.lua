@@ -81,8 +81,8 @@ return {
 		mind = { state = "idle" },
 		appearance = {
 			chars = { "S" },
-			color = { { 0.45, 0.45, 0.23, 1 } },
-			effect_color = { 0.45, 0.55, 0.3, 0.5 },
+			color = { { 0.4, 0.48, 0.38, 1 } },
+			effect_color = { 0.48, 0.56, 0.45, 0.5 },
 		},
 		description = "A shambler, try attacking it!",
 		default_action = "attackable",
@@ -116,8 +116,8 @@ return {
 		mind = { state = "idle" },
 		appearance = {
 			chars = { "O" },
-			color = { { 0.5, 0.45, 0.25, 1 } },
-			effect_color = { 0.5, 0.45, 0.25, 0.5 },
+			color = { { 0.72, 0.55, 0.2, 1 } },
+			effect_color = { 0.8, 0.62, 0.23, 0.5 },
 		},
 
 		footprint = {
