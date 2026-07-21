@@ -8,8 +8,8 @@ local game_cfg = require("src.config.game_config")
 local statuses = require("src.sim.statuses")
 local stats = require("src.sim.stats")
 local event_log = require("src.engine.event_log")
-local aim = require("src.engine.aim")
-local container = require("src.engine.container")
+local aim = require("src.engine.interaction.aim")
+local container = require("src.engine.interaction.container")
 
 local turn = {
 	time_since_last_tick = 0,
