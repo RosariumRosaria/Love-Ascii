@@ -7,3 +7,5 @@ plans/
 # prefab loader (map/prefab.lua) is inert unless config/game_config.lua names a prefab.
 tools/
 prefabs/
+.claude/*
+.gitignore

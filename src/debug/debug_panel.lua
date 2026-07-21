@@ -1,6 +1,6 @@
 local cursor = require("src.engine.interaction.cursor")
 local debug_state = require("src.debug.debug_state")
-local panels = require("src.visuals.panels")
+local panels = require("src.visuals.ui.panels")
 local effects = require("src.visuals.effects.effects")
 local ai_cfg = require("src.config.ai_config")
 local ai = require("src.engine.ai")

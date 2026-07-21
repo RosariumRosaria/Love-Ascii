@@ -1,4 +1,4 @@
-local panels = require("src.visuals.panels")
+local panels = require("src.visuals.ui.panels")
 local render_utils = require("src.visuals.render.utils")
 local utils = require("src.utils")
 local map = require("src.map.map")
