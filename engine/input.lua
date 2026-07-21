@@ -388,7 +388,9 @@ function input:update(dt)
 
 	local slot = self:pressed_slot()
 
-	if slot then
+	local slot_entity = (self.mode == modes.container and container.focus_container and container:get()) or self.actor
+
+	if slot and inventory.check_index(slot_entity, slot) then
 		local now = love.timer.getTime()
 		if
 			self.mode == modes.normal
@@ -400,9 +402,7 @@ function input:update(dt)
 		else
 			self.last_slot, self.last_slot_time = slot, now
 		end
-		local entity = (self.mode == modes.container and container.focus_container and container:get()) or self.actor
-
-		inventory.set_selected_index(entity, slot)
+		inventory.set_selected_index(slot_entity, slot)
 	end
 
 	panels:log_events()
@@ -475,7 +475,9 @@ function input:_take_normal_turn()
 	input:face(actor, move_dir.x, move_dir.y)
 
 	if use_slot then
-		inventory.set_selected_index(actor, use_slot)
+		if not inventory.set_selected_index(actor, use_slot) then
+			return false
+		end
 		return actions:handle_action(actor, { type = "use_selected", dx = move_dir.x, dy = move_dir.y })
 	elseif self:is_down("use_selected") then
 		return actions:handle_action(actor, { type = "use_selected", dx = move_dir.x, dy = move_dir.y })
