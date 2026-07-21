@@ -369,7 +369,7 @@ return {
 		combat = { hit_burst = "dust" },
 		appearance = {
 			chars = { "#", "#" },
-			color = { { 0.38, 0.33, 0.30 }, { 0.38, 0.33, 0.30 } },
+			color = { { 0.15, 0.12, 0.06 }, { 0.38, 0.33, 0.30 } },
 		},
 		default_action = "moveable",
 		stats = {
@@ -395,12 +395,16 @@ return {
 			equipped = { armor = nil, offhand = nil, accessory = nil, mainhand = nil },
 			selected_index = nil,
 		},
+		stats = {
+			health = { base = 1, current = 1 },
+		},
 		tags = {
 			walkable = true,
 			container = true,
 			covers = true,
 			interactable = true,
 			moveable = true,
+			attackable = true,
 		},
 	},
 
@@ -411,7 +415,7 @@ return {
 		combat = { hit_burst = "dust" },
 		appearance = {
 			chars = { "[]", "[]" },
-			color = { { 0.48, 0.43, 0.30 }, { 0.48, 0.43, 0.30 } },
+			color = { { 0.23, 0.21, 0.14 }, { 0.48, 0.43, 0.30 } },
 		},
 		loot = {
 			count = { min = 1, max = 4 },
@@ -462,7 +466,7 @@ return {
 		combat = { hit_burst = "dust" },
 		appearance = {
 			chars = { "[]", "[]" },
-			color = { { 0.47, 0.23, 0.23, 1 } },
+			color = { { 0.30, 0.09, 0.09, 1 }, { 0.47, 0.23, 0.23, 1 } },
 		},
 		default_action = "moveable",
 		stats = {
