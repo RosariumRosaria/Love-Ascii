@@ -559,7 +559,10 @@ end
 function input:end_frame()
 	self.pressed_keys = {}
 	self.released_keys = {}
-	self.interact_consumed = false
+
+	if not self:is_down("interact") then
+		self.interact_consumed = false
+	end
 end
 
 function love.wheelmoved(_, y)
