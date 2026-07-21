@@ -80,7 +80,7 @@ end
 function statuses.add_from_template(entity, name, overrides, source)
 	local new_status = utils.create_instance_from_template(status_types, name, overrides)
 
-	new_status.source = source or { name = "Unknown" }
+	new_status.source_name = (source and source.name) or "Unknown"
 
 	if not entity.statuses then
 		entity.statuses = {}
@@ -100,7 +100,7 @@ function statuses.add_from_template(entity, name, overrides, source)
 		type = "status_applied",
 		entity = entity.name,
 		status = new_status.name,
-		source = new_status.source.name,
+		source = new_status.source_name,
 		silent = new_status.silent,
 	})
 	table.insert(entity.statuses, new_status)

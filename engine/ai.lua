@@ -33,7 +33,7 @@ local function set_state(entity, new)
 	if new ~= "chasing" then
 		mind.has_woundup = nil
 	end
-	mind.target_entity = nil
+	mind.target_id = nil
 	mind.state = new
 	mind.target_pos = nil
 	mind.target_value = 0
@@ -150,7 +150,7 @@ local function start_chasing(entity, target)
 		mind.last_heading =
 			{ x = utils.sign(target.x - mind.last_known.x), y = utils.sign(target.y - mind.last_known.y) }
 	end
-	mind.target_entity = target
+	mind.target_id = target.id
 	mind.last_known = { x = target.x, y = target.y }
 	mind.target_pos = { x = target.x, y = target.y }
 	mind.target_value = ai_cfg.target_value.sight
@@ -272,15 +272,16 @@ end
 
 local function chase(entity)
 	local mind = entity.mind
+	local target = entities.get_by_id(mind.target_id)
 	local woundup = mind.has_woundup
 	mind.has_woundup = false
-	local shot = actions:can_ranged_attack(entity, nil, nil, mind.target_entity, true)
+	local shot = actions:can_ranged_attack(entity, nil, nil, target, true)
 	if shot then
 		if utils.get_tag(entity, "windup") and not woundup then
 			mind.has_woundup = true
 			statuses.add_from_template(entity, "winding_up", nil, entity)
 		else
-			actions:ranged_attack(entity, nil, nil, mind.target_entity, shot)
+			actions:ranged_attack(entity, nil, nil, target, shot)
 		end
 	else
 		local had_path = follow_path(entity)
