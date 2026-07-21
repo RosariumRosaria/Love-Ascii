@@ -1,5 +1,5 @@
 local effects = require("src.visuals.effects.effects")
-local panels = require("src.visuals.panels")
+local panels = require("src.visuals.ui.panels")
 local entities = require("src.sim.entities")
 local animation = require("src.visuals.render.animation")
 local render_utils = require("src.visuals.render.utils")

@@ -2,7 +2,8 @@ local config = require("src.config.runtime")
 local actions = require("src.engine.actions")
 local scene = require("src.visuals.render.scene")
 local debug_state = require("src.debug.debug_state")
-local panels = require("src.visuals.panels")
+local panels = require("src.visuals.ui.panels")
+local hud = require("src.visuals.ui.hud")
 local visualizer = require("src.debug.visualizer")
 local profiler = require("src.debug.profiler")
 local bindings = require("src.config.bindings")
@@ -337,7 +338,7 @@ function input:update(dt)
 	end
 
 	if self:pressed("switch_character") then
-		panels:switch_character()
+		hud:switch_character()
 	end
 
 	if self:pressed("quit") then
@@ -422,7 +423,7 @@ function input:update(dt)
 		inventory.set_selected_index(slot_entity, slot)
 	end
 
-	panels:log_events()
+	hud:log_events()
 end
 
 function input:face(actor, dx, dy)

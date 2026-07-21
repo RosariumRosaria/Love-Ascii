@@ -1,7 +1,8 @@
 local input = require("src.engine.input")
 local ai = require("src.engine.ai")
 local map = require("src.map.map")
-local panels = require("src.visuals.panels")
+local panels = require("src.visuals.ui.panels")
+local hud = require("src.visuals.ui.hud")
 local entities = require("src.sim.entities")
 local time = require("src.engine.time")
 local game_cfg = require("src.config.game_config")
@@ -18,7 +19,7 @@ local turn = {
 
 local function update_character_panel()
 	local entity = entities.player
-	panels:update_character(entity)
+	hud:update_character(entity)
 end
 
 local function post_turn_update(player)
@@ -37,7 +38,7 @@ local function commit_turn(actor)
 		time.schedule_turn(popped, actor.action_cost)
 		actor.action_cost = nil
 	end
-	panels:log_events()
+	hud:log_events()
 	if aim.active then
 		aim.refresh()
 	end
@@ -45,8 +46,8 @@ local function commit_turn(actor)
 		post_turn_update(entities.player)
 	end
 
-	panels:update_vitals(entities.player)
-	panels:update_statuses(entities.player)
+	hud:update_vitals(entities.player)
+	hud:update_statuses(entities.player)
 end
 
 function turn:update(dt)

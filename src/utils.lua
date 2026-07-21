@@ -150,7 +150,7 @@ function utils.deep_print(tbl, indent, visited)
 		return
 	end
 	visited[tbl] = true
-	local panels = require("src.visuals.panels")
+	local panels = require("src.visuals.ui.panels")
 	for k, v in pairs(tbl) do
 		local key_str = tostring(k)
 		if type(v) == "table" then
