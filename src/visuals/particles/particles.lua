@@ -118,6 +118,14 @@ local function spawn_particle(x, y, z, ease_in, params, source)
 	}
 end
 
+function particles:reset()
+	self.mode = "normal"
+	self.particles = {}
+	self.screen_w = 0
+	self.screen_h = 0
+	self.ceiling = 0
+end
+
 function particles:burst(x, y, z, type_name, count, opts)
 	local dir = opts.dir
 	local spread = opts.spread or 0.2

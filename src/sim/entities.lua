@@ -15,6 +15,14 @@ local entities = {
 	id_num = 0,
 }
 
+function entities.reset()
+	entities.entity_list = {}
+	entities.player = nil
+	entities.by_cell = {}
+	entities.by_id = {}
+	entities.id_num = 0
+end
+
 function entities.set_player(p)
 	entities.player = p
 	for _, e in ipairs(entities.entity_list) do

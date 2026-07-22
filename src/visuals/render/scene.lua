@@ -3,14 +3,13 @@ local panels = require("src.visuals.ui.panels")
 local entities = require("src.sim.entities")
 local animation = require("src.visuals.render.animation")
 local render_utils = require("src.visuals.render.utils")
-local utils = require("src.utils")
 local map = require("src.map.map")
 local render_primitives = require("src.visuals.render.primitives")
 local render_cfg = require("src.config.render_config")
 local camera = require("src.visuals.camera")
 local painter = require("src.visuals.render.painter")
 local draw_buffer = require("src.visuals.render.draw_buffer")
-local weather = require("src.visuals.particles.particles")
+local particles = require("src.visuals.particles.particles")
 local debug_panel = require("src.debug.debug_panel")
 
 local scene = {}
@@ -122,7 +121,7 @@ function scene:draw()
 		)
 	end
 
-	for _, p in ipairs(weather:get_particles()) do
+	for _, p in ipairs(particles:get_particles()) do
 		painter:emit_particle(p, camera_x, camera_y, time)
 	end
 
@@ -161,7 +160,7 @@ end
 function scene:load(player_x, player_y)
 	camera:load(player_x, player_y)
 	local cx, cy = camera:get_position()
-	weather:load(cx, cy)
+	particles:load(cx, cy)
 	self:_ensure_canvas()
 	self:_build_post_shader()
 end
@@ -174,7 +173,7 @@ function scene:update(dt)
 	local ty = (pa and pa.tween_y) or player.y
 	camera:update(tx, ty, dt)
 	local cx, cy = camera:get_position()
-	weather:update(dt, cx, cy)
+	particles:update(dt, cx, cy)
 end
 
 return scene

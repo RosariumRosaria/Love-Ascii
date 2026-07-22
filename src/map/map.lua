@@ -20,6 +20,18 @@ local map = {
 	prev_visible = {},
 }
 
+function map:reset()
+	self.max_x = nil
+	self.max_y = nil
+	self.max_z = nil
+	self.min_z = nil
+	self.tiles = {}
+	self.visible = {}
+	self.lighting = {}
+	self.explored = {}
+	self.prev_visible = {}
+end
+
 local ZERO_LIGHT = { r = 0, g = 0, b = 0 }
 
 function map:closest_walkable_neighbor(entity, x, y, z)
@@ -263,7 +275,6 @@ function map:get_visibility_grids()
 end
 
 function map:load(max_x, max_y, max_z, min_z, map_type)
-	love.math.setRandomSeed(os.time())
 	self.max_x = max_x or 10
 	self.max_y = max_y or 10
 	self.max_z = max_z or 5

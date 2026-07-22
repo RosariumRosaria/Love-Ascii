@@ -21,11 +21,11 @@ local game_cfg = require("src.config.game_config")
 local utils = require("src.utils")
 local pathfinder = require("src.engine.pathfinder")
 local state = require("src.engine.state")
-local session = require("src.engine.session")
 
 local input = {
 	actor = nil,
-
+	pending_draw = nil,
+	pending_slot = nil,
 	down_keys = {},
 	pressed_keys = {},
 	released_keys = {},
@@ -73,6 +73,24 @@ local function set_mouse_tile()
 	local cx, cy = camera:get_position()
 	local x, y = render_utils.get_map_coords(mx, my, cx, cy)
 	cursor.set_moused_coords(x, y)
+end
+
+function input:reset()
+	-- Through set_mode, not a direct assignment, so aim/container get torn down.
+	self:set_mode(modes.normal)
+
+	self.actor = nil
+	self.down_keys = {}
+	self.pressed_keys = {}
+	self.released_keys = {}
+	self.move_recency = {}
+	self.buffered_keys = {}
+	self.pending_slot = nil
+	self.pending_draw = nil
+	self.last_slot = nil
+	self.last_turn = { x = 0, y = 0 }
+	self.interact_consumed = false
+	self.grabbed = nil
 end
 
 function love.keypressed(key)
@@ -337,17 +355,7 @@ function input:update(dt)
 		end
 	end
 
-	if self:pressed("respawn") and state:get() == "dead" then
-		session.respawn()
-		self:set_mode("normal")
-		input:set_actor(entities.player)
-	end
-
 	if state:get() == "normal" then
-		-- Accumulate this frame's presses so a tap during the post-turn cooldown
-		-- (when try_take_turn isn't reached) survives to the next open gate. Same
-		-- recency dance as move_recency, but it does NOT forget on key-up — that's
-		-- what lets a released tap still register. Cleared when a turn resolves.
 		if self.mode == modes.normal then
 			for key in pairs(self.pressed_keys) do
 				remove_from_recency(self.buffered_keys, key)
