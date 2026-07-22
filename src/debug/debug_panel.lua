@@ -13,12 +13,17 @@ local debug_panel = {}
 local target
 local last_known
 local arrow
-local sight_entity
-local last_printed_entity
+local sight_entity_id
+local last_printed_entity_id
 
 -- TODO Someday maybe instead this could be a more general debug panel with different debug states (mind, general describe, stats)
 function debug_panel.load()
 	panels:add_panel("debug_panel", { x = 25, y = 25, font = "very_small", offset_y = 1.5, auto_size = true })
+end
+
+function debug_panel.reset()
+	target, last_known, arrow = nil, nil, nil
+	sight_entity_id, last_printed_entity_id = nil, nil
 end
 
 local arrow_chars = {
@@ -41,22 +46,22 @@ function debug_panel.update()
 	local panel = panels:get_panel("debug_panel")
 
 	if debug_state.show_xray then
-		if entity and entity ~= last_printed_entity and entity.type == "actor" then
+		if entity and entity.id ~= last_printed_entity_id and entity.type == "actor" then
 			utils.deep_print(entity)
 		end
-		last_printed_entity = entity
+		last_printed_entity_id = entity and entity.id or nil
 	else
-		last_printed_entity = nil
+		last_printed_entity_id = nil
 	end
 
 	if not entity or not entity.mind or not debug_state.show_xray then
 		panel.visible = false
 		panel.anchor = nil
-		target, last_known, arrow, sight_entity = nil, nil, nil, nil
+		target, last_known, arrow, sight_entity_id = nil, nil, nil, nil
 		return
 	end
 
-	sight_entity = entity
+	sight_entity_id = entity.id
 
 	local mind = entity.mind
 	panel.anchor = entity
@@ -110,7 +115,7 @@ function debug_panel.update()
 end
 
 function debug_panel.draw(camera_x, camera_y)
-	local entity = sight_entity
+	local entity = sight_entity_id and entities.get_by_id(sight_entity_id)
 	local player = entities.player
 	if not entity or not player or player == entity then
 		return

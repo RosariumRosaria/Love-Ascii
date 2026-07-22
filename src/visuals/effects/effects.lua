@@ -3,8 +3,11 @@ local utils = require("src.utils")
 
 local effects = {
 	effect_list = {},
-	effect_type_dict = {},
 }
+
+function effects:reset()
+	self.effect_list = {}
+end
 
 function effects:get_effects(x, y, z)
 	local ret = {}

@@ -1,5 +1,9 @@
 local event_log = { current = {} }
 
+function event_log:reset()
+	self.current = {}
+end
+
 function event_log:add(ev)
 	if not ev.spam then
 		table.insert(event_log.current, ev)

@@ -2,21 +2,28 @@ local utils = require("src.utils")
 local stats = require("src.sim.stats")
 local game_cfg = require("src.config.game_config")
 local render_config = require("src.config.render_config")
-local event_log = require("src.engine.event_log")
 local time = {}
 
 local ambient_cache = { r = 0, g = 0, b = 0 }
 local ambient_cache_t = nil
 
+local queue = {}
+local current_time = 0
+
 local function get_speed(entity)
 	return stats.get(entity, "speed")
 end
 
-local queue = {}
-local current_time = 0
-
 local function convert_speed_to_turns(speed)
 	return 100 / speed
+end
+
+function time.reset()
+	ambient_cache = { r = 0, g = 0, b = 0 }
+	ambient_cache_t = nil
+
+	queue = {}
+	current_time = 0
 end
 
 function time.peek()

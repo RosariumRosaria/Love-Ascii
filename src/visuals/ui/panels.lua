@@ -13,6 +13,10 @@ local panels = {
 
 local FONTS = {}
 
+function panels:reset()
+	self.panel_list = {}
+end
+
 function panels:add_text_to_panel(panel, text)
 	if not panel then
 		return false
@@ -100,24 +104,35 @@ function panels:add_panel(name, opts)
 		text_offset_y = opts.text_offset_y or 0,
 	}
 
-	table.insert(self.panel_list, panel)
+	local idx = self:find_index(name)
+	if idx then
+		self.panel_list[idx] = panel
+	else
+		table.insert(self.panel_list, panel)
+	end
 
 	return panel
 end
 
-function panels:get_panel(name)
-	for _, panel in ipairs(self.panel_list) do
+function panels:find_index(name)
+	for i, panel in ipairs(self.panel_list) do
 		if panel.name == name then
-			return panel
+			return i
 		end
 	end
 end
+
+function panels:get_panel(name)
+	local idx = self:find_index(name)
+	if idx then
+		return self.panel_list[idx]
+	end
+end
+
 function panels:remove_panel(name)
-	for i, panel in ipairs(self.panel_list) do
-		if panel.name == name then
-			table.remove(self.panel_list, i)
-			return
-		end
+	local idx = self:find_index(name)
+	if idx then
+		table.remove(self.panel_list, idx)
 	end
 end
 
