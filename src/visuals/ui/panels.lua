@@ -94,13 +94,10 @@ function panels:add_panel(name, opts)
 		visible = true,
 		auto_size = opts.auto_size or false,
 		center_vertical = opts.center_vertical or opts.auto_size or false,
-		-- Where the panel box sits on screen, independent of how its text is
-		-- justified inside it. See painter:draw_panel -- resolved every frame from
-		-- the live window size, so anchored panels survive a resize. Per axis:
-		-- "start" / "center" / "end", each with an optional margin; an axis left nil
-		-- keeps the explicit x/y above.
 		screen_anchor = opts.screen_anchor,
 		capacity = math.floor(height / tile_size) * 10,
+		text_offset_x = opts.text_offset_x or 0,
+		text_offset_y = opts.text_offset_y or 0,
 	}
 
 	table.insert(self.panel_list, panel)

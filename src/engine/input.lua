@@ -421,7 +421,7 @@ function input:update(dt)
 			inventory.set_selected_index(slot_entity, slot)
 		end
 
-		if self:pressed("switch_character") then
+		if self:pressed("switch_character") and self.mode == modes.normal then
 			hud:switch_character()
 		end
 

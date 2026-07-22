@@ -41,6 +41,7 @@ function session.respawn()
 	entities.set_player(player)
 	state:set("normal")
 	panels:get_panel("dead").visible = false
+	panels:get_panel("death_reason").visible = false
 	map:update_visibility(entities.player)
 end
 return session
