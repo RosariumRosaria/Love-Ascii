@@ -8,16 +8,14 @@ local session = require("src.engine.session")
 local input = require("src.engine.input")
 local perf = require("src.engine.perf")
 local state = require("src.engine.state")
-local hud = require("src.visuals.ui.hud")
+local screens = require("src.engine.screens")
 local debug_panel = require("src.debug.debug_panel")
 local debug_input = require("src.debug.debug_input")
 
 function love.load()
 	config:load()
 	config:setup_window()
-
 	scene:reload_fonts()
-
 	session.load()
 end
 
@@ -35,37 +33,7 @@ function love.update(dt)
 		turn:update(dt)
 	end
 
-	if input:pressed("respawn") and game_state == "dead" then
-		session.respawn()
-	end
-
-	if game_state == "paused" then
-		if input:pressed("pause") then
-			state:set("normal")
-			hud:set_pause_visible(false)
-		end
-
-		if input:pressed("menu_interact") then
-			local command = hud:get_pause_option()
-			if command == "RESUME" then
-				state:set("normal")
-				hud:set_pause_visible(false)
-			elseif command == "RESTART" then
-				session.reset()
-				session.load()
-			elseif command == "QUIT" then
-				love.event.quit()
-			end
-		end
-
-		if input:pressed("move_up") then
-			hud:update_pause_menu(-1)
-		end
-		if input:pressed("move_down") then
-			hud:update_pause_menu(1)
-		end
-	end
-
+	screens:update(game_state)
 	scene:update(dt)
 	effects:update(dt)
 	debug_panel.update()

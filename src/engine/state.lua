@@ -1,8 +1,8 @@
 local state = {
-	game_state = "normal",
+	game_state = "start",
 }
 
-local states = { normal = "normal", paused = "paused", dead = "dead" }
+local states = { normal = "normal", paused = "paused", dead = "dead", start = "start" }
 
 function state:get()
 	return self.game_state
