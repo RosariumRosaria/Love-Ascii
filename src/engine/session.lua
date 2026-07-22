@@ -106,6 +106,7 @@ function session.reset()
 	event_log:reset()
 	particles:reset()
 	panels:reset()
+	menu:reset()
 end
 
 return session

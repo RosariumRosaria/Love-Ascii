@@ -2,14 +2,19 @@ local panels = require("src.visuals.ui.panels")
 local config = require("src.config.runtime")
 local menu = {}
 
-local pause_position = 1
-local pause_options = { "RESUME", "RESTART", "QUIT" }
-
-local start_position = 1
-local start_options = { "START", "QUIT" }
-
-local dead_position = 1
-local dead_options = { "RESPAWN", "RESTART", "QUIT" }
+local menus = {
+	pause = {
+		options = { "RESUME", "RESTART", "QUIT" },
+		position = 1,
+		panels = { main = "pause", options = "pause_options" },
+	},
+	start = { options = { "START", "QUIT" }, position = 1, panels = { main = "start", options = "start_options" } },
+	dead = {
+		options = { "RESPAWN", "RESTART", "QUIT" },
+		position = 1,
+		panels = { main = "dead", options = "dead_options", extra = "death_reason" },
+	},
+}
 
 local function build_texts(options, position)
 	local texts = {}
@@ -22,166 +27,86 @@ local function build_texts(options, position)
 	return texts
 end
 
-function menu:update_pause_menu(dir)
-	pause_position = ((pause_position - 1 + (dir or 0)) % #pause_options) + 1
-	panels:get_panel("pause_options").texts = build_texts(pause_options, pause_position)
+function menu:navigate(name, dir)
+	local position = menus[name].position
+	local options = menus[name].options
+	local menu_panels = menus[name].panels
+	menus[name].position = ((position - 1 + (dir or 0)) % #options) + 1
+	panels:get_panel(menu_panels.options).texts = build_texts(options, menus[name].position)
+end
+function menu:get_option(name)
+	return menus[name].options[menus[name].position]
 end
 
-function menu:get_pause_option()
-	return pause_options[pause_position]
+function menu:set_death_reason(text)
+	panels:get_panel("death_reason").texts = { text }
 end
 
-function menu:set_pause_visible(visible)
-	local panel = panels:get_panel("pause")
+function menu:reset()
+	for _, entry in pairs(menus) do
+		entry.position = 1
+	end
+end
+function menu:set_visible(name, visible)
+	local menu_panels = menus[name].panels
+	local panel = panels:get_panel(menu_panels.main)
 	if panel.visible == visible then
 		return
 	end
 	if visible then
-		pause_position = 1
-		self:update_pause_menu(0)
+		menus[name].position = 1
+		self:navigate(name, 0)
 	end
-	panel.visible = visible
-	panels:get_panel("pause_options").visible = visible
-end
 
-function menu:set_start_visible(visible)
-	local panel = panels:get_panel("start")
-	if panel.visible == visible then
-		return
+	for _, menu_name in pairs(menu_panels) do
+		panels:get_panel(menu_name).visible = visible
 	end
-	if visible then
-		start_position = 1
-		self:update_start_menu(0)
-	end
-	panel.visible = visible
-	panels:get_panel("start_options").visible = visible
 end
 
-function menu:update_start_menu(dir)
-	start_position = ((start_position - 1 + (dir or 0)) % #start_options) + 1
-	panels:get_panel("start_options").texts = build_texts(start_options, start_position)
-end
-
-function menu:get_start_option()
-	return start_options[start_position]
-end
-
-function menu:set_dead_visible(visible)
-	local panel = panels:get_panel("dead")
-	if panel.visible == visible then
-		return
-	end
-	if visible then
-		dead_position = 1
-		self:update_dead_menu(0)
-	end
-	panel.visible = visible
-	panels:get_panel("dead_options").visible = visible
-	panels:get_panel("death_reason").visible = visible
-end
-
-function menu:update_dead_menu(dir)
-	dead_position = ((dead_position - 1 + (dir or 0)) % #dead_options) + 1
-	panels:get_panel("dead_options").texts = build_texts(dead_options, dead_position)
-end
-
-function menu:get_dead_option()
-	return dead_options[dead_position]
+local function add_menu_panel(name, font, offset)
+	return panels:add_panel(name, {
+		color = { 0, 0, 0, 0.5 },
+		outline_width = love.graphics.getWidth() / 400,
+		outline_color = { 1, 1, 1, 0.5 },
+		center_text = true,
+		center_vertical = true,
+		auto_size = true,
+		font = font,
+		screen_anchor = {
+			x = "center",
+			y = "center",
+			margin_y = offset and config.very_big_tile_size * offset or nil,
+		},
+	})
 end
 
 function menu:load()
-	local screen_width = love.graphics.getWidth()
-	local outline_width = screen_width / 400
-	local black = { 0, 0, 0, 0.5 }
-	local white = { 1, 1, 1, 0.5 }
-	local paused_panel = panels:add_panel("pause", {
-		color = black,
-		outline_width = outline_width,
-		outline_color = white,
-		center_text = true,
-		center_vertical = true,
-		auto_size = true,
-		font = "very_big",
-		screen_anchor = { x = "center", y = "center" },
-	})
+	local paused_panel = add_menu_panel("pause", "very_big")
 	paused_panel.texts = { "PAUSED" }
 	paused_panel.visible = false
 
-	local paused_options_panel = panels:add_panel("pause_options", {
-		color = black,
-		outline_width = outline_width,
-		outline_color = white,
-		center_text = true,
-		center_vertical = true,
-		auto_size = true,
-		font = "big",
-		screen_anchor = { x = "center", y = "center", margin_y = config.very_big_tile_size * 3 },
-	})
-	self:update_pause_menu(0)
-
+	local paused_options_panel = add_menu_panel("pause_options", "big", 3)
+	self:navigate("pause", 0)
 	paused_options_panel.visible = false
 
-	local start_panel = panels:add_panel("start", {
-		color = black,
-		outline_width = outline_width,
-		outline_color = white,
-		center_text = true,
-		center_vertical = true,
-		auto_size = true,
-		font = "very_big",
-		screen_anchor = { x = "center", y = "center" },
-	})
+	local start_panel = add_menu_panel("start", "very_big")
 	start_panel.texts = { "START" }
 	start_panel.visible = true
 
-	local start_options_panel = panels:add_panel("start_options", {
-		color = black,
-		outline_width = outline_width,
-		outline_color = white,
-		center_text = true,
-		center_vertical = true,
-		auto_size = true,
-		font = "big",
-		screen_anchor = { x = "center", y = "center", margin_y = config.very_big_tile_size * 3 },
-	})
-	self:update_start_menu(0)
+	local start_options_panel = add_menu_panel("start_options", "big", 3)
+	self:navigate("start", 0)
 	start_options_panel.visible = true
 
-	local dead_panel = panels:add_panel("dead", {
-		color = black,
-		outline_width = outline_width,
-		outline_color = white,
-		center_text = true,
-		center_vertical = true,
-		auto_size = true,
-		font = "very_big",
-		screen_anchor = { x = "center", y = "center" },
-	})
+	local dead_panel = add_menu_panel("dead", "very_big")
 	dead_panel.texts = { "DEAD" }
 	dead_panel.visible = false
 
-	local death_reason_panel = panels:add_panel("death_reason", {
-		color = black,
-		outline_width = outline_width,
-		outline_color = white,
-		center_text = true,
-		center_vertical = true,
-		auto_size = true,
-		screen_anchor = { x = "center", y = "center", margin_y = config.very_big_tile_size * 1.5 },
-	})
+	local death_reason_panel = add_menu_panel("death_reason", nil, 1.5)
 	death_reason_panel.texts = { "" }
 	death_reason_panel.visible = false
-	local dead_options_panel = panels:add_panel("dead_options", {
-		color = black,
-		outline_width = outline_width,
-		outline_color = white,
-		center_text = true,
-		center_vertical = true,
-		auto_size = true,
-		font = "big",
-		screen_anchor = { x = "center", y = "center", margin_y = config.very_big_tile_size * 4.5 },
-	})
-	self:update_dead_menu(0)
+
+	local dead_options_panel = add_menu_panel("dead_options", "big", 4.5)
+	self:navigate("dead", 0)
 	dead_options_panel.visible = false
 end
 

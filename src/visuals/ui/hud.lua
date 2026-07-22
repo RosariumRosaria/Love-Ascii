@@ -15,6 +15,7 @@ function hud:set_visible(visible)
 	panels:get_panel("vitals").visible = visible
 	panels:get_panel("terminal").visible = visible
 	panels:get_panel("character").visible = visible
+	panels:get_panel("container").visible = (visible and container.is_open) or false
 end
 
 function hud:switch_character()
