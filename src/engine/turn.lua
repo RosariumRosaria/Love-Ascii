@@ -29,10 +29,6 @@ end
 local function check_player_death()
 	if entities.player.dead and state:get() ~= "dead" then
 		state:set("dead")
-		panels:get_panel("dead").visible = true
-		local death_reason_panel = panels:get_panel("death_reason")
-		death_reason_panel.visible = true
-		death_reason_panel.texts = { "Killed by a " .. entities.player.death_source }
 	end
 end
 

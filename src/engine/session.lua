@@ -6,6 +6,7 @@ local cursor = require("src.engine.interaction.cursor")
 local event_log = require("src.engine.event_log")
 local input = require("src.engine.input")
 local scene = require("src.visuals.render.scene")
+local menu = require("src.visuals.ui.menu")
 local hud = require("src.visuals.ui.hud")
 local debug_panel = require("src.debug.debug_panel")
 local effects = require("src.visuals.effects.effects")
@@ -63,7 +64,7 @@ function session.load(seed)
 	inventory.equip(player, player.inventory.items[1])
 	inventory.equip(player, player.inventory.items[3])
 	inventory.equip(player, player.inventory.items[4])
-	state:set("normal")
+	state:set("start")
 	input:set_actor(entities.player)
 
 	-- Prefab stamp (inert unless game_cfg.prefab is set — see config/game_config.lua).
@@ -82,14 +83,13 @@ function session.load(seed)
 	hud:update_character(entities.player)
 	scene:load(entities.player.x, entities.player.y)
 	debug_panel.load()
+	menu:load()
 end
 
 function session.respawn()
 	local player = entities.add_from_template_free("player", 250, 250, 1)
 	entities.set_player(player)
 	state:set("normal")
-	panels:get_panel("dead").visible = false
-	panels:get_panel("death_reason").visible = false
 	map:update_visibility(entities.player)
 	input:set_actor(entities.player)
 	input:set_mode("normal")

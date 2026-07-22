@@ -11,38 +11,16 @@ local character_position = 1
 local character_panel
 local container_panel
 
-local pause_options = { "RESUME", "RESTART", "QUIT" }
-local paused_options_panel
-local pause_position = 1
+function hud:set_visible(visible)
+	panels:get_panel("vitals").visible = visible
+	panels:get_panel("terminal").visible = visible
+	panels:get_panel("character").visible = visible
+end
 
 function hud:switch_character()
 	character_position = (character_position % #character_modes) + 1
 	character_panel.mode = character_modes[character_position]
 	self:update_character(character_panel.entity)
-end
-
-function hud:update_pause_menu(dir)
-	pause_position = ((pause_position - 1 + (dir or 0)) % #pause_options) + 1
-	local texts = {}
-	for i, label in ipairs(pause_options) do
-		if i > 1 then
-			table.insert(texts, " ")
-		end
-		table.insert(texts, "  " .. label .. (i == pause_position and " <" or "  "))
-	end
-	paused_options_panel.texts = texts
-end
-
-function hud:get_pause_option()
-	return pause_options[pause_position]
-end
-
-function hud:set_pause_visible(visible)
-	if visible then
-		self:update_pause_menu(1 - pause_position)
-	end
-	panels:get_panel("pause").visible = visible
-	paused_options_panel.visible = visible
 end
 
 local vital_anchor = { x = 25, y = 25 }
@@ -66,7 +44,7 @@ function hud:load()
 
 	panels:reload_fonts()
 
-	panels:add_panel("terminal", {
+	local terminal_panel = panels:add_panel("terminal", {
 		width = width,
 		height = height,
 		screen_anchor = { x = "end", y = "start", margin_x = buffer, margin_y = buffer },
@@ -77,6 +55,7 @@ function hud:load()
 		text_offset_x = config.terminal_tile_size * 0.5,
 		text_offset_y = config.terminal_tile_size * 0.5,
 	})
+	terminal_panel.visible = false
 	character_panel = panels:add_panel("character", {
 		width = width,
 		height = screen_height - height - (4 * buffer),
@@ -88,6 +67,7 @@ function hud:load()
 		text_offset_x = config.small_tile_size * 0.5,
 		text_offset_y = config.small_tile_size * 0.5,
 	})
+	character_panel.visible = false
 	container_panel = panels:add_panel("container", {
 		width = width,
 		height = screen_height - height - (4 * buffer),
@@ -102,57 +82,7 @@ function hud:load()
 	local vitals_panel = panels:add_panel("vitals", vitals_panel_opts)
 	vitals_panel.texts = { "" }
 	panels:measure_auto_size(vitals_panel)
-
-	local paused_panel = panels:add_panel("pause", {
-		color = black,
-		outline_width = outline_width,
-		outline_color = white,
-		center_text = true,
-		center_vertical = true,
-		auto_size = true,
-		font = "very_big",
-		screen_anchor = { x = "center", y = "center" },
-	})
-	paused_panel.texts = { "PAUSED" }
-	paused_panel.visible = false
-
-	paused_options_panel = panels:add_panel("pause_options", {
-		color = black,
-		outline_width = outline_width,
-		outline_color = white,
-		center_text = true,
-		center_vertical = true,
-		auto_size = true,
-		font = "big",
-		screen_anchor = { x = "center", y = "center", margin_y = config.very_big_tile_size * 3 },
-	})
-	self:update_pause_menu(0)
-	paused_options_panel.visible = false
-
-	local dead_panel = panels:add_panel("dead", {
-		color = black,
-		outline_width = outline_width,
-		outline_color = white,
-		center_text = true,
-		center_vertical = true,
-		auto_size = true,
-		font = "very_big",
-		screen_anchor = { x = "center", y = "center" },
-	})
-	dead_panel.texts = { "DEAD" }
-	dead_panel.visible = false
-
-	local death_reason_panel = panels:add_panel("death_reason", {
-		color = black,
-		outline_width = outline_width,
-		outline_color = white,
-		center_text = true,
-		center_vertical = true,
-		auto_size = true,
-		screen_anchor = { x = "center", y = "center", margin_y = config.very_big_tile_size * 1.5 },
-	})
-	death_reason_panel.texts = { "" }
-	death_reason_panel.visible = false
+	vitals_panel.visible = false
 end
 
 function hud:log_events()
@@ -211,11 +141,16 @@ function hud:log_events()
 end
 
 function hud:update_vitals(entity)
-	local stat_name = "health"
-	local max = stats.get(entity, stat_name)
-	local current = stats.get_current(entity, stat_name)
 	local panel = panels:get_panel("vitals")
-	panel.texts = { "Health: " .. current .. " / " .. max }
+	if entity then
+		local stat_name = "health"
+		local max = stats.get(entity, stat_name)
+		local current = stats.get_current(entity, stat_name)
+		panel.visible = true
+		panel.texts = { "Health: " .. current .. " / " .. max }
+	else
+		panel.visible = false
+	end
 end
 
 local status_panels = {}
