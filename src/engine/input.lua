@@ -1,11 +1,7 @@
-local config = require("src.config.runtime")
 local actions = require("src.engine.actions")
-local scene = require("src.visuals.render.scene")
-local debug_state = require("src.debug.debug_state")
 local panels = require("src.visuals.ui.panels")
 local hud = require("src.visuals.ui.hud")
-local visualizer = require("src.debug.visualizer")
-local profiler = require("src.debug.profiler")
+local debug_input = require("src.debug.debug_input")
 local bindings = require("src.config.bindings")
 local event_log = require("src.engine.event_log")
 local inventory = require("src.sim.inventory")
@@ -16,7 +12,6 @@ local camera = require("src.visuals.camera")
 local render_utils = require("src.visuals.render.utils")
 local container = require("src.engine.interaction.container")
 local cursor = require("src.engine.interaction.cursor")
-local prefab = require("src.map.prefab")
 local game_cfg = require("src.config.game_config")
 local utils = require("src.utils")
 local pathfinder = require("src.engine.pathfinder")
@@ -148,28 +143,6 @@ function input:pressed_slot()
 		end
 	end
 	return nil
-end
-
-function input:debug_spawn()
-	local mx, my = cursor.get_moused_coords()
-	local entity_type = "skeleton"
-
-	if map:is_tile_free(mx, my, 1) then
-		entities.add_from_template(entity_type, mx, my, 1)
-		event_log:add({ type = "debug", message = "spawned " .. entity_type })
-		return
-	end
-	local offsets = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 } }
-	for _, o in ipairs(offsets) do
-		local x, y = mx + o[1], my + o[2]
-		if map:is_tile_free(x, y, 1) then
-			entities.add_from_template(entity_type, x, y, 1)
-
-			event_log:add({ type = "debug", message = "spawned " .. entity_type })
-			return
-		end
-	end
-	event_log:add({ type = "debug", message = "no free cell to spawn " .. entity_type })
 end
 
 function input:mouse_over_entity()
@@ -306,70 +279,27 @@ function input:handle_container()
 end
 function input:update(dt)
 	set_mouse_tile()
-	self:mouse_over_entity()
 
-	if self:pressed("toggle_grid") then
-		debug_state.toggle_grid()
-	end
-
-	if self:pressed("toggle_bw") then
-		debug_state.toggle_bw()
-	end
-
-	if self:pressed("toggle_profiler") then
-		profiler:toggle()
-	end
-
-	if self:pressed("toggle_perf") then
-		debug_state.toggle_perf()
-	end
-
-	if self:pressed("toggle_xray") then
-		debug_state.toggle_xray()
-	end
-
-	if self:pressed("toggle_visualizer") then
-		visualizer:toggle()
-	end
-
-	if self:pressed("toggle_font") then
-		config:toggle_font()
-		scene:reload_fonts()
-	end
-
-	if self:pressed("switch_offset") then
-		debug_state.switch_offset()
-	end
+	local game_state = state:get()
 
 	if not self.actor then
 		return
 	end
 
-	if self:pressed("pause") then
-		if state:get() == "paused" then
-			state:set("normal")
-			panels:get_panel("pause").visible = false
-		elseif state:get() == "normal" then
-			state:set("paused")
-			panels:get_panel("pause").visible = true
-		end
-	end
-
-	if state:get() == "normal" then
+	if game_state == "normal" then
+		self:mouse_over_entity()
 		if self.mode == modes.normal then
 			for key in pairs(self.pressed_keys) do
 				remove_from_recency(self.buffered_keys, key)
 				table.insert(self.buffered_keys, key)
 			end
 		end
-		-- Debug: re-read + re-stamp the configured prefab without restarting (map maker
-		-- edit→save→tap-key loop). No-op unless game_config.prefab is set.
-		if self:pressed("reload_prefab") and game_cfg.prefab then
-			prefab.clear_last()
-			prefab.stamp(game_cfg.prefab.file, game_cfg.prefab.ox, game_cfg.prefab.oy)
-			map:update_visibility(self.actor)
-			event_log:add({ type = "debug", message = "reloaded prefab" })
+
+		if self:pressed("pause") then
+			state:set("paused")
+			hud:set_pause_visible(true)
 		end
+		debug_input:update_actor(self, self.actor)
 
 		if self:pressed("cycle_next") then
 			if self.mode == modes.aiming then
@@ -431,15 +361,6 @@ function input:update(dt)
 
 		if self:pressed("switch_character") and self.mode == modes.normal then
 			hud:switch_character()
-		end
-
-		if self:pressed("debug") then
-			local item = inventory.get_selected(self.actor)
-			inventory.add_charge(item)
-		end
-
-		if self:pressed("debug_spawn_zombie") then
-			self:debug_spawn()
 		end
 	end
 

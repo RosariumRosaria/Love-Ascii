@@ -521,7 +521,7 @@ return {
 		description = "A window, try opening it!",
 		type = "prop",
 		appearance = {
-			chars = { " ", "--", "--" },
+			chars = { " ", "-", "-" },
 			color = { { 0.55, 0.35, 0.1, 1 }, { 0.30, 0.16, 0.06, 1 }, { 0.30, 0.16, 0.06, 1 } },
 		},
 		default_action = "interactable",
