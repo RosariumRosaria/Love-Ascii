@@ -6,6 +6,8 @@ local very_small_tile_size
 local very_small_font
 local big_tile_size
 local big_font
+local very_big_tile_size
+local very_big_font
 
 local panels = {
 	panel_list = {},
@@ -155,10 +157,13 @@ function panels:reload_fonts()
 	very_small_font = config.terminal_font
 	big_tile_size = config.big_tile_size
 	big_font = config.big_font
+	very_big_tile_size = config.very_big_tile_size
+	very_big_font = config.very_big_font
 	FONTS = {
 		very_small = { font = very_small_font, tile = very_small_tile_size },
 		small = { font = small_font, tile = small_tile_size },
 		big = { font = big_font, tile = big_tile_size },
+		very_big = { font = very_big_font, tile = very_big_tile_size },
 	}
 end
 

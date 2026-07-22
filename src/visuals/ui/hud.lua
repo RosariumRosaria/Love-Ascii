@@ -11,10 +11,38 @@ local character_position = 1
 local character_panel
 local container_panel
 
+local pause_options = { "RESUME", "RESTART", "QUIT" }
+local paused_options_panel
+local pause_position = 1
+
 function hud:switch_character()
 	character_position = (character_position % #character_modes) + 1
 	character_panel.mode = character_modes[character_position]
 	self:update_character(character_panel.entity)
+end
+
+function hud:update_pause_menu(dir)
+	pause_position = ((pause_position - 1 + (dir or 0)) % #pause_options) + 1
+	local texts = {}
+	for i, label in ipairs(pause_options) do
+		if i > 1 then
+			table.insert(texts, " ")
+		end
+		table.insert(texts, "  " .. label .. (i == pause_position and " <" or "  "))
+	end
+	paused_options_panel.texts = texts
+end
+
+function hud:get_pause_option()
+	return pause_options[pause_position]
+end
+
+function hud:set_pause_visible(visible)
+	if visible then
+		self:update_pause_menu(1 - pause_position)
+	end
+	panels:get_panel("pause").visible = visible
+	paused_options_panel.visible = visible
 end
 
 local vital_anchor = { x = 25, y = 25 }
@@ -82,11 +110,24 @@ function hud:load()
 		center_text = true,
 		center_vertical = true,
 		auto_size = true,
-		font = "big",
+		font = "very_big",
 		screen_anchor = { x = "center", y = "center" },
 	})
 	paused_panel.texts = { "PAUSED" }
 	paused_panel.visible = false
+
+	paused_options_panel = panels:add_panel("pause_options", {
+		color = black,
+		outline_width = outline_width,
+		outline_color = white,
+		center_text = true,
+		center_vertical = true,
+		auto_size = true,
+		font = "big",
+		screen_anchor = { x = "center", y = "center", margin_y = config.very_big_tile_size * 3 },
+	})
+	self:update_pause_menu(0)
+	paused_options_panel.visible = false
 
 	local dead_panel = panels:add_panel("dead", {
 		color = black,
@@ -95,7 +136,7 @@ function hud:load()
 		center_text = true,
 		center_vertical = true,
 		auto_size = true,
-		font = "big",
+		font = "very_big",
 		screen_anchor = { x = "center", y = "center" },
 	})
 	dead_panel.texts = { "DEAD" }
@@ -108,7 +149,7 @@ function hud:load()
 		center_text = true,
 		center_vertical = true,
 		auto_size = true,
-		screen_anchor = { x = "center", y = "center", margin_y = config.big_tile_size * 1.5 },
+		screen_anchor = { x = "center", y = "center", margin_y = config.very_big_tile_size * 1.5 },
 	})
 	death_reason_panel.texts = { "" }
 	death_reason_panel.visible = false

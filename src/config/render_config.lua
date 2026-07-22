@@ -5,7 +5,8 @@ return {
 		base_size = 16,
 		ui_scale = 0.875,
 		terminal_scale = 0.75,
-		big_scale = 3.5,
+		big_scale = 2,
+		very_big_scale = 3.5,
 		center_nudge_y = 0.075,
 	},
 	camera = {
