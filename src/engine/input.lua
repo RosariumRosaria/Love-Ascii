@@ -1,7 +1,6 @@
 local actions = require("src.engine.actions")
 local panels = require("src.visuals.ui.panels")
 local hud = require("src.visuals.ui.hud")
-local menu = require("src.visuals.ui.menu")
 local debug_input = require("src.debug.debug_input")
 local bindings = require("src.config.bindings")
 local event_log = require("src.engine.event_log")
@@ -296,10 +295,6 @@ function input:update(dt)
 			end
 		end
 
-		if self:pressed("pause") then
-			state:set("paused")
-			menu:set_pause_visible(true)
-		end
 		debug_input:update_actor(self, self.actor)
 
 		if self:pressed("cycle_next") then
