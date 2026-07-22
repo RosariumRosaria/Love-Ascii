@@ -6,25 +6,31 @@ function runtime:load()
 	local scale = render_cfg.font.scale
 	local ui_scale = render_cfg.font.ui_scale or 1
 	local terminal_scale = render_cfg.font.terminal_scale or ui_scale
+	local big_scale = render_cfg.font.big_scale or (ui_scale * 4)
 	local small_size = math.max(1, math.floor(render_cfg.font.base_size * ui_scale + 0.5))
 	local terminal_size = math.max(1, math.floor(render_cfg.font.base_size * terminal_scale + 0.5))
+	local big_size = math.max(1, math.floor(render_cfg.font.base_size * big_scale + 0.5))
 	if render_cfg.font.use_pixel then
 		local font_path = "/assets/fonts/PressStart2P-Regular.ttf"
 		self.font = love.graphics.newFont(font_path, render_cfg.font.base_size * scale)
 		self.small_font = love.graphics.newFont(font_path, small_size)
 		self.terminal_font = love.graphics.newFont(font_path, terminal_size)
+		self.big_font = love.graphics.newFont(font_path, big_size)
 		self.font:setFilter("nearest", "nearest")
 		self.small_font:setFilter("nearest", "nearest")
 		self.terminal_font:setFilter("nearest", "nearest")
+		self.big_font:setFilter("nearest", "nearest")
 	else
 		self.font = love.graphics.newFont(render_cfg.font.base_size * scale)
 		self.small_font = love.graphics.newFont(small_size)
 		self.terminal_font = love.graphics.newFont(terminal_size)
+		self.big_font = love.graphics.newFont(big_size)
 	end
 	love.graphics.setFont(self.font)
 	self.tile_size = self.font:getHeight()
 	self.small_tile_size = self.small_font:getHeight()
 	self.terminal_tile_size = self.terminal_font:getHeight()
+	self.big_tile_size = self.big_font:getHeight()
 end
 
 function runtime:toggle_font()

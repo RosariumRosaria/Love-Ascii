@@ -17,10 +17,11 @@ local render_utils = require("src.visuals.render.utils")
 local container = require("src.engine.interaction.container")
 local cursor = require("src.engine.interaction.cursor")
 local prefab = require("src.map.prefab")
-local stats = require("src.sim.stats")
 local game_cfg = require("src.config.game_config")
 local utils = require("src.utils")
 local pathfinder = require("src.engine.pathfinder")
+local state = require("src.engine.state")
+local session = require("src.engine.session")
 
 local input = {
 	actor = nil,
@@ -289,21 +290,6 @@ function input:update(dt)
 	set_mouse_tile()
 	self:mouse_over_entity()
 
-	if not self.actor then
-		return
-	end
-
-	-- Accumulate this frame's presses so a tap during the post-turn cooldown
-	-- (when try_take_turn isn't reached) survives to the next open gate. Same
-	-- recency dance as move_recency, but it does NOT forget on key-up — that's
-	-- what lets a released tap still register. Cleared when a turn resolves.
-	if self.mode == modes.normal then
-		for key in pairs(self.pressed_keys) do
-			remove_from_recency(self.buffered_keys, key)
-			table.insert(self.buffered_keys, key)
-		end
-	end
-
 	if self:pressed("toggle_grid") then
 		debug_state.toggle_grid()
 	end
@@ -337,90 +323,116 @@ function input:update(dt)
 		debug_state.switch_offset()
 	end
 
-	if self:pressed("switch_character") then
-		hud:switch_character()
+	if not self.actor then
+		return
 	end
 
-	if self:pressed("quit") then
-		if self.mode ~= modes.normal then
-			self:set_mode(modes.normal)
-		else
-			love.event.quit()
+	if self:pressed("pause") then
+		if state:get() == "paused" then
+			state:set("normal")
+			panels:get_panel("pause").visible = false
+		elseif state:get() == "normal" then
+			state:set("paused")
+			panels:get_panel("pause").visible = true
 		end
 	end
 
-	if self:pressed("cycle_next") then
-		if self.mode == modes.aiming then
-			aim.cycle_target()
-		else
-			local entity = (self.mode == modes.container and container.focus_container and container:get())
-				or self.actor
-			inventory.increment_selected_index(entity)
-		end
+	if self:pressed("respawn") and state:get() == "dead" then
+		session.respawn()
+		self:set_mode("normal")
+		input:set_actor(entities.player)
 	end
 
-	if self.mode == modes.container and (self:pressed("move_left") or self:pressed("move_right")) then
-		container:swap_focus()
-	end
-
-	if self:pressed("interact") and self.mode == modes.container then
-		self:set_mode(modes.normal)
-		self.interact_consumed = true
-	end
-	if self:pressed("debug") then
-		local item = inventory.get_selected(self.actor)
-		inventory.add_charge(item)
-	end
-
-	if self:pressed("debug_spawn_zombie") then
-		self:debug_spawn()
-	end
-
-	-- Debug: re-read + re-stamp the configured prefab without restarting (map maker
-	-- edit→save→tap-key loop). No-op unless game_config.prefab is set.
-	if self:pressed("reload_prefab") and game_cfg.prefab then
-		prefab.clear_last()
-		prefab.stamp(game_cfg.prefab.file, game_cfg.prefab.ox, game_cfg.prefab.oy)
-		map:update_visibility(self.actor.x, self.actor.y, stats.get(self.actor, "sight"))
-		event_log:add({ type = "debug", message = "reloaded prefab" })
-	end
-
-	if self:pressed("aim") then
-		if self.mode == modes.aiming then
-			self:set_mode(modes.normal)
-		else
-			local weapon = inventory.get_equipped(self.actor, "mainhand")
-			local possible_weapon = inventory.get_first_with_field(self.actor, "ranged")
-
-			if (not weapon or not weapon.ranged) and possible_weapon then
-				self.pending_draw = possible_weapon
-			elseif not weapon then
-				event_log:add({ type = "action_failed", entity = self.actor.name, reason = "no weapon" })
-			elseif not weapon.ranged then
-				event_log:add({ type = "action_failed", entity = self.actor.name, reason = "no ranged weapon" })
-			else
-				self:enter_aim()
+	if state:get() == "normal" then
+		-- Accumulate this frame's presses so a tap during the post-turn cooldown
+		-- (when try_take_turn isn't reached) survives to the next open gate. Same
+		-- recency dance as move_recency, but it does NOT forget on key-up — that's
+		-- what lets a released tap still register. Cleared when a turn resolves.
+		if self.mode == modes.normal then
+			for key in pairs(self.pressed_keys) do
+				remove_from_recency(self.buffered_keys, key)
+				table.insert(self.buffered_keys, key)
 			end
 		end
-	end
-
-	local slot = self:pressed_slot()
-
-	local slot_entity = (self.mode == modes.container and container.focus_container and container:get()) or self.actor
-
-	if slot and inventory.check_index(slot_entity, slot) then
-		local now = love.timer.getTime()
-		if
-			(self.mode == modes.normal or self.mode == modes.container)
-			and slot == self.last_slot
-			and (now - self.last_slot_time) < game_cfg.timing.turn_delay * 1.5
-		then
-			self.last_slot = nil
-			self.pending_slot = slot
-		else
-			self.last_slot, self.last_slot_time = slot, now
+		-- Debug: re-read + re-stamp the configured prefab without restarting (map maker
+		-- edit→save→tap-key loop). No-op unless game_config.prefab is set.
+		if self:pressed("reload_prefab") and game_cfg.prefab then
+			prefab.clear_last()
+			prefab.stamp(game_cfg.prefab.file, game_cfg.prefab.ox, game_cfg.prefab.oy)
+			map:update_visibility(self.actor)
+			event_log:add({ type = "debug", message = "reloaded prefab" })
 		end
-		inventory.set_selected_index(slot_entity, slot)
+
+		if self:pressed("cycle_next") then
+			if self.mode == modes.aiming then
+				aim.cycle_target()
+			else
+				local entity = (self.mode == modes.container and container.focus_container and container:get())
+					or self.actor
+				inventory.increment_selected_index(entity)
+			end
+		end
+
+		if self.mode == modes.container and (self:pressed("move_left") or self:pressed("move_right")) then
+			container:swap_focus()
+		end
+
+		if self:pressed("interact") and self.mode == modes.container then
+			self:set_mode(modes.normal)
+			self.interact_consumed = true
+		end
+
+		if self:pressed("aim") then
+			if self.mode == modes.aiming then
+				self:set_mode(modes.normal)
+			else
+				local weapon = inventory.get_equipped(self.actor, "mainhand")
+				local possible_weapon = inventory.get_first_with_field(self.actor, "ranged")
+
+				if (not weapon or not weapon.ranged) and possible_weapon then
+					self.pending_draw = possible_weapon
+				elseif not weapon then
+					event_log:add({ type = "action_failed", entity = self.actor.name, reason = "no weapon" })
+				elseif not weapon.ranged then
+					event_log:add({ type = "action_failed", entity = self.actor.name, reason = "no ranged weapon" })
+				else
+					self:enter_aim()
+				end
+			end
+		end
+
+		local slot = self:pressed_slot()
+
+		local slot_entity = (self.mode == modes.container and container.focus_container and container:get())
+			or self.actor
+
+		if slot and inventory.check_index(slot_entity, slot) then
+			local now = love.timer.getTime()
+			if
+				(self.mode == modes.normal or self.mode == modes.container)
+				and slot == self.last_slot
+				and (now - self.last_slot_time) < game_cfg.timing.turn_delay * 1.5
+			then
+				self.last_slot = nil
+				self.pending_slot = slot
+			else
+				self.last_slot, self.last_slot_time = slot, now
+			end
+			inventory.set_selected_index(slot_entity, slot)
+		end
+
+		if self:pressed("switch_character") then
+			hud:switch_character()
+		end
+
+		if self:pressed("debug") then
+			local item = inventory.get_selected(self.actor)
+			inventory.add_charge(item)
+		end
+
+		if self:pressed("debug_spawn_zombie") then
+			self:debug_spawn()
+		end
 	end
 
 	hud:log_events()

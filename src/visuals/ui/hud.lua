@@ -75,6 +75,32 @@ function hud:load()
 	local vitals_panel = panels:add_panel("vitals", vitals_panel_opts)
 	vitals_panel.texts = { "" }
 	panels:measure_auto_size(vitals_panel)
+
+	local paused_panel = panels:add_panel("pause", {
+		color = black,
+		outline_width = outline_width,
+		outline_color = white,
+		center_text = true,
+		center_vertical = true,
+		auto_size = true,
+		font = "big",
+	})
+	paused_panel.texts = { "PAUSED" }
+	paused_panel.visible = false
+	panels:center_on_screen(paused_panel)
+
+	local dead_panel = panels:add_panel("dead", {
+		color = black,
+		outline_width = outline_width,
+		outline_color = white,
+		center_text = true,
+		center_vertical = true,
+		auto_size = true,
+		font = "big",
+	})
+	dead_panel.texts = { "DEAD" }
+	dead_panel.visible = false
+	panels:center_on_screen(dead_panel)
 end
 
 function hud:log_events()
@@ -83,7 +109,10 @@ function hud:log_events()
 			if ev.type == "damage" then
 				panels:add_text_to_panel_by_name("terminal", ev.source .. " hit " .. ev.entity .. " for " .. ev.amount)
 			elseif ev.type == "heal" then
-				panels:add_text_to_panel_by_name("terminal", ev.source .. " healed " .. ev.entity .. " for " .. ev.amount)
+				panels:add_text_to_panel_by_name(
+					"terminal",
+					ev.source .. " healed " .. ev.entity .. " for " .. ev.amount
+				)
 			elseif ev.type == "status_expired" then
 				panels:add_text_to_panel_by_name("terminal", ev.status .. " wore off " .. ev.entity)
 			elseif ev.type == "status_applied" then

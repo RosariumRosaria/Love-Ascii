@@ -31,5 +31,7 @@ return {
 	debug = { "f11" },
 	debug_spawn_zombie = { "f12" },
 
-	quit = { "escape" },
+	respawn = { "return", "kpenter" },
+
+	pause = { "escape" },
 }

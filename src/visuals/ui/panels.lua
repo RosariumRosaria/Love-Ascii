@@ -4,6 +4,8 @@ local small_tile_size
 local small_font
 local very_small_tile_size
 local very_small_font
+local big_tile_size
+local big_font
 
 local panels = {
 	panel_list = {},
@@ -133,9 +135,12 @@ function panels:reload_fonts()
 	small_font = config.small_font
 	very_small_tile_size = config.terminal_tile_size
 	very_small_font = config.terminal_font
+	big_tile_size = config.big_tile_size
+	big_font = config.big_font
 	FONTS = {
 		very_small = { font = very_small_font, tile = very_small_tile_size },
 		small = { font = small_font, tile = small_tile_size },
+		big = { font = big_font, tile = big_tile_size },
 	}
 end
 
@@ -146,6 +151,14 @@ function panels:measure_auto_size(panel)
 	local pad_y = line_height * 0.2
 	panel.width = render_utils.get_max_text_width(panel.texts, panel.font) + pad_x * 2
 	panel.height = #panel.texts * line_height + pad_y * 2
+end
+
+-- panel.x/y are the top-left corner, so centering has to wait until the panel
+-- has been measured.
+function panels:center_on_screen(panel)
+	self:measure_auto_size(panel)
+	panel.x = (love.graphics.getWidth() - panel.width) / 2
+	panel.y = (love.graphics.getHeight() - panel.height) / 2
 end
 
 return panels

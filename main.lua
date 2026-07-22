@@ -5,48 +5,16 @@ local scene = require("src.visuals.render.scene")
 local effects = require("src.visuals.effects.effects")
 local panels = require("src.visuals.ui.panels")
 local hud = require("src.visuals.ui.hud")
-local input = require("src.engine.input")
 local visualizer = require("src.debug.visualizer")
 local entities = require("src.sim.entities")
 local turn = require("src.engine.turn")
-local inventory = require("src.sim.inventory")
-local stats = require("src.sim.stats")
+local session = require("src.engine.session")
+local input = require("src.engine.input")
 local perf = require("src.engine.perf")
-local statuses = require("src.sim.statuses")
 local prefab = require("src.map.prefab")
+local state = require("src.engine.state")
 
 local debug_panel = require("src.debug.debug_panel")
-
-local function load_default_inventory(player)
-	inventory.add_from_template(player, "sword")
-	inventory.add_from_template(player, "bow")
-	inventory.add_from_template(player, "leather_armor")
-	inventory.add_from_template(player, "torch", {
-		name = "Lantern",
-		key = "Lantern",
-		chars = { "8" },
-		color = { { 1, 0.8, 0.6, 1 } },
-		light = {
-			color = { r = 1.0, g = 0.85, b = 0.65 },
-			flicker = { amp = 0.1, freq = 2, phase = 6 },
-			intensity = 0.5,
-			radius = 10,
-		},
-	})
-	inventory.add_from_template(player, "plank")
-	inventory.add_from_template(player, "bandage")
-	inventory.add_from_template(player, "health_potion")
-	inventory.add_from_template(player, "arrow", { charges = 3 })
-
-	inventory.equip(player, player.inventory.items[1])
-	inventory.equip(player, player.inventory.items[3])
-	inventory.equip(player, player.inventory.items[4])
-end
-
-local function apply_default_statuses(player)
-	statuses.add_from_template(player, "bleeding")
-	--	statuses.add_from_template(player, "broken_leg")
-end
 
 local function spawn_default_entities()
 	entities.add_from_template_free("ogre", 262, 253, 1)
@@ -55,7 +23,6 @@ local function spawn_default_entities()
 	entities.add_from_template_free("barricade", 250, 255, 1)
 	entities.add_from_template_free("campfire", 255, 260, 1)
 	entities.add_from_template_free("crystal", 280, 255, 1)
-	entities.add_from_template_free("chest", 252, 251, 1)
 end
 
 function love.load()
@@ -69,11 +36,8 @@ function love.load()
 	local map_max_z = game_cfg.map.max_z
 	local map_min_z = game_cfg.map.min_z
 
-	local player = entities.add_from_template("player", 250, 250, 1)
-	entities.set_player(player)
-	input:set_actor(player)
-	apply_default_statuses(player)
-	load_default_inventory(player)
+	session.load()
+	input:set_actor(entities.player)
 
 	local prefab_cfg = game_cfg.prefab
 	local map_type = (prefab_cfg and prefab_cfg.map_type) or "town"
@@ -83,14 +47,14 @@ function love.load()
 	if prefab_cfg then
 		local start = prefab.stamp(prefab_cfg.file, prefab_cfg.ox, prefab_cfg.oy)
 		if start and prefab_cfg.move_player ~= false then
-			entities.move_to(player, start.x, start.y, start.z)
+			entities.move_to(entities.player, start.x, start.y, start.z)
 		end
 	end
 
 	-- After the map (and any prefab) exist, so free-cell checks see real geometry.
 	spawn_default_entities()
 
-	map:update_visibility(entities.player.x, entities.player.y, stats.get(entities.player, "sight"))
+	map:update_visibility(entities.player)
 	hud:load()
 	hud:update_character(entities.player)
 	scene:load(entities.player.x, entities.player.y)
@@ -103,10 +67,14 @@ end
 
 function love.update(dt)
 	perf:begin_frame()
-	turn:update(dt)
+	input:update(dt)
+	if state:get() == "normal" then
+		turn:update(dt)
+	end
 	scene:update(dt)
 	effects:update(dt)
 	debug_panel.update()
+	input:end_frame()
 end
 
 function love.draw()

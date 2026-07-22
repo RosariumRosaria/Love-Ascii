@@ -5,6 +5,7 @@ return {
 		base_size = 16,
 		ui_scale = 0.875,
 		terminal_scale = 0.75,
+		big_scale = 3.5,
 		center_nudge_y = 0.075,
 	},
 	camera = {
@@ -71,6 +72,8 @@ return {
 	debug = {
 		show_grid = false,
 		grid_color = { 0.5, 0.5, 0.5, 0.3 },
+		grid_center_color = { 0.9, 0.3, 0.3, 0.6 },
+		grid_center_width = 3,
 		sight_color = { 1, 0.85, 0.3, 0.5 },
 		bw_mode = 0,
 	},

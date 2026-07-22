@@ -7,10 +7,10 @@ local entities = require("src.sim.entities")
 local time = require("src.engine.time")
 local game_cfg = require("src.config.game_config")
 local statuses = require("src.sim.statuses")
-local stats = require("src.sim.stats")
 local event_log = require("src.engine.event_log")
 local aim = require("src.engine.interaction.aim")
 local container = require("src.engine.interaction.container")
+local state = require("src.engine.state")
 
 local turn = {
 	time_since_last_tick = 0,
@@ -23,7 +23,17 @@ local function update_character_panel()
 end
 
 local function post_turn_update(player)
-	map:update_visibility(player.x, player.y, stats.get(player, "sight"))
+	map:update_visibility(player)
+end
+
+-- The player can die on their own turn (status tick) or on an AI actor's turn,
+-- so this hangs off commit_turn rather than either caller. Guarded so the
+-- transition fires once, not on every subsequent commit.
+local function check_player_death()
+	if entities.player.dead and state:get() ~= "dead" then
+		state:set("dead")
+		panels:get_panel("dead").visible = true
+	end
 end
 
 local function commit_turn(actor)
@@ -48,64 +58,58 @@ local function commit_turn(actor)
 
 	hud:update_vitals(entities.player)
 	hud:update_statuses(entities.player)
+	check_player_death()
 end
 
 function turn:update(dt)
-	input:update(dt)
-	if not entities.player.dead then
-		self.time_since_last_tick = self.time_since_last_tick + dt
-		update_character_panel()
-		local actor
-		local start = love.timer.getTime()
-		while true do
-			actor = time.peek()
-			if not actor or actor == input:get_actor() then
-				break
-			end -- player is up
-			if actor.dead then
-				time.pop()
-			else
-				if statuses.can_act(actor) then
-					ai:take_turn(actor)
-				end
-				commit_turn(actor)
-			end
-			if (love.timer.getTime() - start) * 1000 > game_cfg.timing.frame_ai_budget then
-				input:end_frame()
-				return -- resume next frame
-			end
-		end
-
-		if not actor then
-			input:end_frame()
-			return
-		end
-
-		if self.time_since_last_tick < self.time_between_ticks then
-			input:end_frame()
-			return
-		end
-
-		self.time_since_last_tick = 0
-
-		if not statuses.can_act(actor) then
-			commit_turn(actor)
+	self.time_since_last_tick = self.time_since_last_tick + dt
+	update_character_panel()
+	local actor
+	local start = love.timer.getTime()
+	while true do
+		actor = time.peek()
+		if not actor or actor == input:get_actor() then
+			break
+		end -- player is up
+		if actor.dead then
+			time.pop()
 		else
-			if actor.mind and actor.mind.heard_sounds then
-				for _, heard in ipairs(actor.mind.heard_sounds) do
-					event_log:add({
-						type = "sound",
-						description = heard.sound.description,
-					})
-				end
-				actor.mind.heard_sounds = {}
+			if statuses.can_act(actor) then
+				ai:take_turn(actor)
 			end
-			if input:try_take_turn() then
-				commit_turn(actor)
-			end
+			commit_turn(actor)
+		end
+		if (love.timer.getTime() - start) * 1000 > game_cfg.timing.frame_ai_budget then
+			return -- resume next frame
 		end
 	end
-	input:end_frame()
+
+	if not actor then
+		return
+	end
+
+	if self.time_since_last_tick < self.time_between_ticks then
+		return
+	end
+
+	self.time_since_last_tick = 0
+
+	if not statuses.can_act(actor) then
+		commit_turn(actor)
+	else
+		if actor.mind and actor.mind.heard_sounds then
+			for _, heard in ipairs(actor.mind.heard_sounds) do
+				event_log:add({
+					type = "sound",
+					description = heard.sound.description,
+				})
+			end
+			actor.mind.heard_sounds = {}
+		end
+		if input:try_take_turn() then
+			commit_turn(actor)
+		end
+	end
 end
 
 return turn

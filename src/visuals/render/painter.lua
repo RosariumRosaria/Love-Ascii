@@ -536,6 +536,8 @@ function painter:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, cam
 			render_primitives.draw_grid_cell(screen_x, screen_y)
 		end
 	end
+
+	render_primitives.draw_screen_center_lines()
 end
 
 function painter:reload_fonts()
