@@ -9,8 +9,8 @@ local game_cfg = require("src.config.game_config")
 local statuses = require("src.sim.statuses")
 local event_log = require("src.engine.event_log")
 local aim = require("src.engine.interaction.aim")
-local container = require("src.engine.interaction.container")
 local state = require("src.engine.state")
+local flow = require("src.engine.flow")
 
 local turn = {
 	time_since_last_tick = 0,
@@ -28,7 +28,7 @@ end
 
 local function check_player_death()
 	if entities.player.dead and state:get() ~= "dead" then
-		state:set("dead")
+		flow:set_state("dead")
 	end
 end
 

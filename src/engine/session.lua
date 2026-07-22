@@ -1,6 +1,5 @@
 local entities = require("src.sim.entities")
 local inventory = require("src.sim.inventory")
-local state = require("src.engine.state")
 local time = require("src.engine.time")
 local cursor = require("src.engine.interaction.cursor")
 local event_log = require("src.engine.event_log")
@@ -64,7 +63,6 @@ function session.load(seed)
 	inventory.equip(player, player.inventory.items[1])
 	inventory.equip(player, player.inventory.items[3])
 	inventory.equip(player, player.inventory.items[4])
-	state:set("start")
 	input:set_actor(entities.player)
 
 	-- Prefab stamp (inert unless game_cfg.prefab is set — see config/game_config.lua).
@@ -89,7 +87,6 @@ end
 function session.respawn()
 	local player = entities.add_from_template_free("player", 250, 250, 1)
 	entities.set_player(player)
-	state:set("normal")
 	map:update_visibility(entities.player)
 	input:set_actor(entities.player)
 	input:set_mode("normal")
