@@ -228,6 +228,15 @@ function painter:emit_effect(effect, center_x, center_y, visible)
 	end
 end
 
+local function resolve_screen_anchor(mode, screen_size, panel_size, margin)
+	if mode == "center" then
+		return (screen_size - panel_size) / 2
+	elseif mode == "end" then
+		return screen_size - panel_size - (margin or 0)
+	end
+	return margin or 0
+end
+
 function painter:draw_panel(panel, center_x, center_y)
 	if not panel.visible then
 		return
@@ -241,6 +250,16 @@ function painter:draw_panel(panel, center_x, center_y)
 	local visible_texts = panels:get_visible_texts(panel)
 
 	local px, py = panel.x, panel.y
+
+	local screen_anchor = panel.screen_anchor
+	if screen_anchor then
+		if screen_anchor.x then
+			px = resolve_screen_anchor(screen_anchor.x, love.graphics.getWidth(), panel.width, screen_anchor.margin_x)
+		end
+		if screen_anchor.y then
+			py = resolve_screen_anchor(screen_anchor.y, love.graphics.getHeight(), panel.height, screen_anchor.margin_y)
+		end
+	end
 
 	local anchor_anim = panel.anchor and panel.anchor.anim
 	if anchor_anim and anchor_anim.render_x and anchor_anim.render_y then

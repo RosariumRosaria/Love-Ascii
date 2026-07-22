@@ -94,6 +94,12 @@ function panels:add_panel(name, opts)
 		visible = true,
 		auto_size = opts.auto_size or false,
 		center_vertical = opts.center_vertical or opts.auto_size or false,
+		-- Where the panel box sits on screen, independent of how its text is
+		-- justified inside it. See painter:draw_panel -- resolved every frame from
+		-- the live window size, so anchored panels survive a resize. Per axis:
+		-- "start" / "center" / "end", each with an optional margin; an axis left nil
+		-- keeps the explicit x/y above.
+		screen_anchor = opts.screen_anchor,
 		capacity = math.floor(height / tile_size) * 10,
 	}
 
@@ -151,14 +157,6 @@ function panels:measure_auto_size(panel)
 	local pad_y = line_height * 0.2
 	panel.width = render_utils.get_max_text_width(panel.texts, panel.font) + pad_x * 2
 	panel.height = #panel.texts * line_height + pad_y * 2
-end
-
--- panel.x/y are the top-left corner, so centering has to wait until the panel
--- has been measured.
-function panels:center_on_screen(panel)
-	self:measure_auto_size(panel)
-	panel.x = (love.graphics.getWidth() - panel.width) / 2
-	panel.y = (love.graphics.getHeight() - panel.height) / 2
 end
 
 return panels

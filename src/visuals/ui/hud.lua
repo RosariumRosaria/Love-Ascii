@@ -32,39 +32,34 @@ function hud:load()
 	local outline_width = screen_width / 400
 	local buffer = 4 * outline_width
 	local width = screen_width / 6
-	local start_x = screen_width - width - buffer
 	local height = (screen_height * 4 / 6) - buffer
-	local start_y = height + (2 * buffer)
 	local black = { 0, 0, 0, 0.5 }
 	local white = { 1, 1, 1, 0.5 }
 
 	panels:reload_fonts()
 
 	panels:add_panel("terminal", {
-		x = start_x,
-		y = buffer,
 		width = width,
 		height = height,
+		screen_anchor = { x = "end", y = "start", margin_x = buffer, margin_y = buffer },
 		color = black,
 		outline_width = outline_width,
 		outline_color = white,
 		font = "very_small",
 	})
 	character_panel = panels:add_panel("character", {
-		x = start_x,
-		y = start_y,
 		width = width,
 		height = screen_height - height - (4 * buffer),
+		screen_anchor = { x = "end", y = "end", margin_x = buffer, margin_y = 2 * buffer },
 		color = black,
 		outline_width = outline_width,
 		outline_color = white,
 		font = "small",
 	})
 	container_panel = panels:add_panel("container", {
-		x = start_x - width - (2 * buffer),
-		y = start_y,
 		width = width,
 		height = screen_height - height - (4 * buffer),
+		screen_anchor = { x = "end", y = "end", margin_x = width + (3 * buffer), margin_y = 2 * buffer },
 		color = black,
 		outline_width = outline_width,
 		outline_color = white,
@@ -84,10 +79,10 @@ function hud:load()
 		center_vertical = true,
 		auto_size = true,
 		font = "big",
+		screen_anchor = { x = "center", y = "center" },
 	})
 	paused_panel.texts = { "PAUSED" }
 	paused_panel.visible = false
-	panels:center_on_screen(paused_panel)
 
 	local dead_panel = panels:add_panel("dead", {
 		color = black,
@@ -97,10 +92,10 @@ function hud:load()
 		center_vertical = true,
 		auto_size = true,
 		font = "big",
+		screen_anchor = { x = "center", y = "center" },
 	})
 	dead_panel.texts = { "DEAD" }
 	dead_panel.visible = false
-	panels:center_on_screen(dead_panel)
 end
 
 function hud:log_events()
