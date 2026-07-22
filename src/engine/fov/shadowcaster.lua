@@ -1,8 +1,8 @@
 --NOTE Recursive shadowcasting walker shared by fov.visibility and fov.lighting.
 --     Algorithm: https://journal.stuffwithstuff.com/2015/09/07/what-the-hero-sees/
 
-local shadow_line = require("src.fov.shadow_line")
-local shadow = require("src.fov.shadow")
+local shadow_line = require("src.engine.fov.shadow_line")
+local shadow = require("src.engine.fov.shadow")
 local entities = require("src.sim.entities")
 local utils = require("src.utils")
 

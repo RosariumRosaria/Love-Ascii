@@ -114,17 +114,16 @@ function render_primitives.draw_text_block(
 
 	local top = outline + outline * 2
 	if center_vertical and height then
-		-- PressStart2P reports descent = 0 and ascent = height, so its glyphs sit
-		-- ~1px high inside a line box that claims to be full. center_nudge_y pushes
-		-- text back down; measured as a fraction of line height so it holds across
-		-- font scales. See config/render_config.lua.
 		local block_height = #texts * line_height
 		top = (height - block_height) / 2 + line_height * (render_cfg.font.center_nudge_y or 0)
 	end
 
 	for i, text in ipairs(texts) do
 		local offset = outline * 2
-		local dx = (center_text and (width - font:getWidth(text)) / 2) or offset
+		local dx = offset
+		if center_text then
+			dx = (width - font:getWidth(text)) / 2 + render_utils.get_center_offset_x(font)
+		end
 		local draw_x = x_screen + dx
 		local draw_y = y_screen + top + ((i - 1) * line_height)
 
@@ -171,6 +170,20 @@ function render_primitives.draw_grid_cell(x_screen, y_screen)
 		love.graphics.line(cx, y_screen + i * dash, cx, y_screen + (i + 1) * dash)
 	end
 
+	love.graphics.setColor(1, 1, 1, 1)
+end
+
+function render_primitives.draw_screen_center_lines()
+	local w, h = love.graphics.getDimensions()
+	local cx, cy = w * 0.5, h * 0.5
+	local prev_width = love.graphics.getLineWidth()
+
+	love.graphics.setColor(render_cfg.debug.grid_center_color)
+	love.graphics.setLineWidth(render_cfg.debug.grid_center_width)
+	love.graphics.line(cx, 0, cx, h)
+	love.graphics.line(0, cy, w, cy)
+
+	love.graphics.setLineWidth(prev_width)
 	love.graphics.setColor(1, 1, 1, 1)
 end
 

@@ -1,11 +1,12 @@
-local fov_handler = require("src.fov.visibility")
-local lighting = require("src.fov.lighting")
+local fov_handler = require("src.engine.fov.visibility")
+local lighting = require("src.engine.fov.lighting")
 local city_generator = require("src.map.city_generator")
 local types = require("src.map.tile_types")
 local utils = require("src.utils")
 local render_config = require("src.config.render_config")
 local entities = require("src.sim.entities")
 local statuses = require("src.sim.statuses")
+local stats = require("src.sim.stats")
 
 local map = {
 	max_x = nil,
@@ -285,7 +286,10 @@ function map:load(max_x, max_y, max_z, min_z, map_type)
 	end
 end
 
-function map:update_visibility(center_x, center_y, radius)
+function map:update_visibility(viewer)
+	local center_x, center_y = viewer.x, viewer.y
+	local radius = stats.get(viewer, "sight")
+
 	for _, pos in ipairs(self.prev_visible) do
 		self.visible[pos[2]][pos[1]] = false
 	end

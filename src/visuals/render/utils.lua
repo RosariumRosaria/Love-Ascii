@@ -1,6 +1,6 @@
 local config = require("src.config.runtime")
 local render_config = require("src.config.render_config")
-local lighting = require("src.fov.lighting")
+local lighting = require("src.engine.fov.lighting")
 local time = require("src.engine.time")
 local utils = require("src.utils")
 local default_font
@@ -212,6 +212,61 @@ function render_utils.get_visual_center(font, ch)
 
 	per_font[ch] = { center_from_left, center_from_top }
 	return center_from_left, center_from_top
+end
+
+local center_offset_x_cache = setmetatable({}, { __mode = "k" })
+
+-- A glyph's advance width includes its side bearings, and PressStart2P's are
+-- lopsided: ink starts ~3px left of the pen origin and ~4px of spacing is left
+-- over on the right. So centering a string by its advance width parks the ink
+-- left of centre. The correction is half the difference between the two
+-- bearings -- one number per font, measured once off a representative glyph.
+function render_utils.get_center_offset_x(font)
+	local cached = center_offset_x_cache[font]
+	if cached then
+		return cached
+	end
+
+	local ch = "M"
+	local pad = 4
+	local advance = font:getWidth(ch)
+	local w = math.ceil(advance) + pad * 2
+	local h = font:getHeight() + pad * 2
+
+	local canvas = love.graphics.newCanvas(w, h)
+	love.graphics.push("all")
+	love.graphics.setCanvas(canvas)
+	love.graphics.clear(0, 0, 0, 0)
+	love.graphics.setFont(font)
+	love.graphics.print(ch, pad, pad)
+	love.graphics.setCanvas()
+	love.graphics.pop()
+
+	local img = canvas:newImageData()
+	local left, right = w, -1
+	for y = 0, h - 1 do
+		for x = 0, w - 1 do
+			local _, _, _, a = img:getPixel(x, y)
+			if a > 0 then
+				if x < left then
+					left = x
+				end
+				if x > right then
+					right = x
+				end
+			end
+		end
+	end
+
+	local offset = 0
+	if right >= left then
+		local bearing_left = left - pad
+		local bearing_right = advance - (right + 1 - pad)
+		offset = (bearing_right - bearing_left) * 0.5
+	end
+
+	center_offset_x_cache[font] = offset
+	return offset
 end
 
 function render_utils.to_grayscale(color)
