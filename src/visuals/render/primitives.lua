@@ -104,7 +104,9 @@ function render_primitives.draw_text_block(
 	color,
 	line_height,
 	height,
-	center_vertical
+	center_vertical,
+	text_offset_x,
+	text_offset_y
 )
 	local font = love.graphics.getFont()
 	line_height = line_height or tile_size
@@ -112,10 +114,10 @@ function render_primitives.draw_text_block(
 		love.graphics.setColor(color)
 	end
 
-	local top = outline + outline * 2
+	local top = outline + outline * 2 + (text_offset_y or 0)
 	if center_vertical and height then
 		local block_height = #texts * line_height
-		top = (height - block_height) / 2 + line_height * (render_cfg.font.center_nudge_y or 0)
+		top = (height - block_height) / 2 + line_height * (render_cfg.font.center_nudge_y or 0) + (text_offset_y or 0)
 	end
 
 	for i, text in ipairs(texts) do
@@ -124,7 +126,7 @@ function render_primitives.draw_text_block(
 		if center_text then
 			dx = (width - font:getWidth(text)) / 2 + render_utils.get_center_offset_x(font)
 		end
-		local draw_x = x_screen + dx
+		local draw_x = x_screen + dx + (text_offset_x or 0)
 		local draw_y = y_screen + top + ((i - 1) * line_height)
 
 		love.graphics.print(text, draw_x, draw_y)
@@ -143,7 +145,9 @@ function render_primitives.draw_panel(
 	center_text,
 	text_color,
 	line_height,
-	center_vertical
+	center_vertical,
+	text_offset_x,
+	text_offset_y
 )
 	render_primitives.draw_rect(x_screen, y_screen, width, height, fill_color, outline_width, outline_color)
 	render_primitives.draw_text_block(
@@ -156,7 +160,9 @@ function render_primitives.draw_panel(
 		text_color or { 1, 1, 1, 1 },
 		line_height,
 		height,
-		center_vertical
+		center_vertical,
+		text_offset_x,
+		text_offset_y
 	)
 end
 

@@ -230,7 +230,7 @@ end
 
 local function resolve_screen_anchor(mode, screen_size, panel_size, margin)
 	if mode == "center" then
-		return (screen_size - panel_size) / 2
+		return (screen_size - panel_size) / 2 + (margin or 0)
 	elseif mode == "end" then
 		return screen_size - panel_size - (margin or 0)
 	end
@@ -279,7 +279,9 @@ function painter:draw_panel(panel, center_x, center_y)
 		panel.center_text,
 		{ 1, 1, 1, 1 },
 		panel.tile_size or small_tile_size,
-		panel.center_vertical
+		panel.center_vertical,
+		panel.text_offset_x,
+		panel.text_offset_y
 	)
 end
 

@@ -26,13 +26,13 @@ local function post_turn_update(player)
 	map:update_visibility(player)
 end
 
--- The player can die on their own turn (status tick) or on an AI actor's turn,
--- so this hangs off commit_turn rather than either caller. Guarded so the
--- transition fires once, not on every subsequent commit.
 local function check_player_death()
 	if entities.player.dead and state:get() ~= "dead" then
 		state:set("dead")
 		panels:get_panel("dead").visible = true
+		local death_reason_panel = panels:get_panel("death_reason")
+		death_reason_panel.visible = true
+		death_reason_panel.texts = { "Killed by a " .. entities.player.death_source }
 	end
 end
 

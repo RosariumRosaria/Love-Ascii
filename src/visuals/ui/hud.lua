@@ -3,7 +3,7 @@ local inventory = require("src.sim.inventory")
 local container = require("src.engine.interaction.container")
 local event_log = require("src.engine.event_log")
 local panels = require("src.visuals.ui.panels")
-
+local config = require("src.config.runtime")
 local hud = {}
 
 local character_modes = { "stats", "inventory" }
@@ -46,6 +46,8 @@ function hud:load()
 		outline_width = outline_width,
 		outline_color = white,
 		font = "very_small",
+		text_offset_x = config.terminal_tile_size * 0.5,
+		text_offset_y = config.terminal_tile_size * 0.5,
 	})
 	character_panel = panels:add_panel("character", {
 		width = width,
@@ -55,6 +57,8 @@ function hud:load()
 		outline_width = outline_width,
 		outline_color = white,
 		font = "small",
+		text_offset_x = config.small_tile_size * 0.5,
+		text_offset_y = config.small_tile_size * 0.5,
 	})
 	container_panel = panels:add_panel("container", {
 		width = width,
@@ -96,6 +100,18 @@ function hud:load()
 	})
 	dead_panel.texts = { "DEAD" }
 	dead_panel.visible = false
+
+	local death_reason_panel = panels:add_panel("death_reason", {
+		color = black,
+		outline_width = outline_width,
+		outline_color = white,
+		center_text = true,
+		center_vertical = true,
+		auto_size = true,
+		screen_anchor = { x = "center", y = "center", margin_y = config.big_tile_size * 1.5 },
+	})
+	death_reason_panel.texts = { "" }
+	death_reason_panel.visible = false
 end
 
 function hud:log_events()
@@ -198,27 +214,29 @@ function hud:update_character(entity)
 	character_panel.texts = {}
 	character_panel.entity = entity
 
-	if (character_panel.mode == "inventory" or container.is_open) and entity.inventory then
-		for i, item in ipairs(entity.inventory.items) do
-			local label = item.name or item.key or "?"
+	if character_panel.mode == "inventory" or container.is_open then
+		if entity.inventory then
+			for i, item in ipairs(entity.inventory.items) do
+				local label = item.name or item.key or "?"
 
-			local equipped = inventory.is_equipped(entity, item) and " (equipped)" or ""
+				local equipped = inventory.is_equipped(entity, item) and " (equipped)" or ""
 
-			local charges = ""
-			if item.charges then
-				charges = " [" .. item.charges
-				if item.max_charges then
-					charges = charges .. "/" .. item.max_charges
+				local charges = ""
+				if item.charges then
+					charges = " [" .. item.charges
+					if item.max_charges then
+						charges = charges .. "/" .. item.max_charges
+					end
+					charges = charges .. "]"
 				end
-				charges = charges .. "]"
-			end
 
-			local selected = not container.focus_container
-					and inventory.get_selected(entity)
-					and inventory.get_selected(entity) == item
-					and " <"
-				or ""
-			panels:add_text_to_panel_by_name("character", i .. " - " .. label .. equipped .. charges .. selected)
+				local selected = not container.focus_container
+						and inventory.get_selected(entity)
+						and inventory.get_selected(entity) == item
+						and " <"
+					or ""
+				panels:add_text_to_panel_by_name("character", i .. " - " .. label .. equipped .. charges .. selected)
+			end
 		end
 		container_panel.visible = container.is_open
 		if container.is_open then

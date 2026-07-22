@@ -34,6 +34,7 @@ function vitals.apply_damage(target, amount, source_name, delay)
 
 	if killed then
 		target.dead = true
+		target.death_source = source_name
 		event_log:add({ type = "entity_died", entity = target.name, source = source_name })
 		entities.remove(target)
 		if target.type == "actor" or target.corpse then
