@@ -8,7 +8,7 @@ local session = require("src.engine.session")
 local input = require("src.engine.input")
 local perf = require("src.engine.perf")
 local state = require("src.engine.state")
-local screens = require("src.engine.screens")
+local flow = require("src.engine.flow")
 local debug_panel = require("src.debug.debug_panel")
 local debug_input = require("src.debug.debug_input")
 
@@ -17,6 +17,7 @@ function love.load()
 	config:setup_window()
 	scene:reload_fonts()
 	session.load()
+	flow:set_state("start")
 end
 
 function love.resize()
@@ -33,7 +34,7 @@ function love.update(dt)
 		turn:update(dt)
 	end
 
-	screens:update(game_state)
+	flow:update(game_state)
 	scene:update(dt)
 	effects:update(dt)
 	debug_panel.update()

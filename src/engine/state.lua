@@ -11,9 +11,10 @@ end
 function state:set(game_state)
 	local new_state = states[game_state]
 	if not game_state or not new_state then
-		return
+		return false
 	end
 	self.game_state = new_state
+	return true
 end
 
 return state
