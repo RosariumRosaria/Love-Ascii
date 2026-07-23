@@ -20,7 +20,7 @@ return {
 		z_offset = 0.125,
 	},
 	lighting = {
-
+		brightness = 0,
 		ambient_keys = {
 			{ at = 0.00, color = { r = 0.125, g = 0.173, b = 0.372 } }, -- night
 			{ at = 0.22, color = { r = 0.125, g = 0.173, b = 0.372 } }, -- night
