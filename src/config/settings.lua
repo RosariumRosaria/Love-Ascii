@@ -174,7 +174,7 @@ function settings:load()
 		if descriptor then
 			local value = parse_value(descriptor, raw)
 			if value ~= nil then
-				settings:set(id, value)
+				write(descriptor, value)
 			end
 		end
 	end

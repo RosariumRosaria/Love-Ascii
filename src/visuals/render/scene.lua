@@ -53,9 +53,13 @@ end
 
 function scene:resize()
 	self:_ensure_canvas()
-end
-
-function scene:draw()
+	-- TODO(resize-polish): re-anchor the HUD here. hud panels are built once in
+	-- hud:load and never re-laid out, so a resolution change (e.g. the settings
+	-- FULLSCREEN toggle) leaves them at the old anchor. Menus survive because
+	-- flow calls menu:refresh after an adjust, but the HUD has no such path.
+	-- TODO(resize-polish): panel/hud outline_width is baked from screen_width at
+	-- creation (panels.lua / hud.lua) and isn't recomputed on resize, so outlines
+	-- render at the old thickness after a resolution change. Cosmetic.a
 	local draw_dist = render_cfg.camera.draw_distance
 	local camera_x, camera_y = camera:get_position()
 
