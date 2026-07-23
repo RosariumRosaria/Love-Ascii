@@ -53,6 +53,9 @@ end
 
 function scene:resize()
 	self:_ensure_canvas()
+end
+
+function scene:draw()
 	-- TODO(resize-polish): re-anchor the HUD here. hud panels are built once in
 	-- hud:load and never re-laid out, so a resolution change (e.g. the settings
 	-- FULLSCREEN toggle) leaves them at the old anchor. Menus survive because
