@@ -88,6 +88,47 @@ function visualizer:draw_roads()
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
+function visualizer:draw_buildings()
+	local buildings = city_generator:get_buildings()
+	if not buildings then
+		return
+	end
+	love.graphics.setColor(1, 0, 1, 1)
+	for _, r in ipairs(buildings) do
+		love.graphics.rectangle(
+			"line",
+			self.start_x + (r.x - 1) * self.scale,
+			self.start_y + (r.y - 1) * self.scale,
+			r.w * self.scale,
+			r.h * self.scale
+		)
+	end
+	love.graphics.setColor(1, 1, 1, 1)
+end
+
+function visualizer:draw_distance()
+	local distance = city_generator:get_dist()
+	if not distance then
+		return
+	end
+
+	-- the grid is already normalized 0-1 by city_generator:find_dist
+	for y, row in pairs(distance) do
+		for x, t in pairs(row) do
+			-- hot (on the road) to cold (deep wilderness)
+			love.graphics.setColor(1 - t, 0.35 * (1 - t), t, 0.75)
+			love.graphics.rectangle(
+				"fill",
+				self.start_x + (x - 1) * self.scale,
+				self.start_y + (y - 1) * self.scale,
+				self.scale,
+				self.scale
+			)
+		end
+	end
+	love.graphics.setColor(1, 1, 1, 1)
+end
+
 function visualizer:draw()
 	if not self.visible then
 		return
@@ -100,6 +141,9 @@ function visualizer:draw()
 	self.start_x = (self.screen_width - self.map_max_x * self.scale) / 2
 	self.start_y = (self.screen_height - self.map_max_y * self.scale) / 2
 	self:draw_map()
+	self:draw_distance()
+	self:draw_roads()
+	self:draw_buildings()
 	self:draw_player()
 end
 
