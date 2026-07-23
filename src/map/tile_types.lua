@@ -34,7 +34,7 @@ return {
 		transparent = true,
 		covers = true,
 		applies_status = { "obscured", silent = true },
-		natural_height = 0.4,
+		natural_height = 0.35,
 	},
 	road = {
 		name = "Road",
