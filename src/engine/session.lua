@@ -49,9 +49,9 @@ function session.load(seed)
 		chars = { "8" },
 		color = { { 1, 0.8, 0.6, 1 } },
 		light = {
-			color = { r = 1.0, g = 0.85, b = 0.65 },
+			color = { r = 1.0, g = 0.85, b = 0.6 },
 			flicker = { amp = 0.1, freq = 2, phase = 6 },
-			intensity = 0.5,
+			intensity = 0.45,
 			radius = 10,
 		},
 	})
