@@ -331,7 +331,7 @@ function render_utils.emissive_by_time()
 end
 
 function render_utils.get_gamma()
-	return brighten_gamma
+	return 1 / (brighten_gamma + render_config.lighting.brightness)
 end
 
 function render_utils.apply_lighting(color, light, emissive_scale)

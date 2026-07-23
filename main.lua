@@ -11,12 +11,15 @@ local state = require("src.engine.state")
 local flow = require("src.engine.flow")
 local debug_panel = require("src.debug.debug_panel")
 local debug_input = require("src.debug.debug_input")
+local settings = require("src.config.settings")
 
 function love.load()
+	settings:load()
 	config:load()
 	config:setup_window()
 	scene:reload_fonts()
 	session.load()
+
 	flow:set_state("start")
 end
 
