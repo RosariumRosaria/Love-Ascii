@@ -118,27 +118,28 @@ function ai:effective_sight(entity, target)
 	return math.min(math.max(1, (sight - stealth) * light_value * chase_value), sight)
 end
 
+local function has_line_of_sight(entity, target, sight)
+	if utils.distance_between(entity, target) >= sight then
+		return false
+	end
+	return fov_handler.refresh(
+		entity.x,
+		entity.y,
+		sight,
+		map:get_max_x(),
+		map:get_max_y(),
+		map:get_tiles(),
+		nil,
+		false,
+		target.x,
+		target.y
+	)
+end
+
 local function perceive(entity, target)
 	local mind = entity.mind
-	mind.can_see = false
-
 	local sight = ai:effective_sight(entity, target)
-
-	if utils.distance_between(entity, target) < sight then
-		mind.can_see = fov_handler.refresh(
-			entity.x,
-			entity.y,
-			sight,
-			map:get_max_x(),
-			map:get_max_y(),
-			map:get_tiles(),
-			nil,
-			false,
-			target.x,
-			target.y
-		)
-	end
-
+	mind.can_see = has_line_of_sight(entity, target, sight)
 	return mind.can_see
 end
 
@@ -291,12 +292,21 @@ local function chase(entity)
 	end
 end
 
+local function ignore_heard_sound(entity, heard)
+	local source = heard.sound.source
+	if not source or source.team ~= entity.team then
+		return false
+	end
+	local sight = ai:effective_sight(entity, source)
+	return has_line_of_sight(entity, source, sight)
+end
+
 local function process_hearing(entity)
 	local mind = entity.mind
 	if mind.heard_sounds and #mind.heard_sounds > 0 then
 		local loudest = nil
 		for _, heard in ipairs(mind.heard_sounds) do
-			if not loudest or loudest.loudness < heard.loudness then
+			if not ignore_heard_sound(entity, heard) and (not loudest or loudest.loudness < heard.loudness) then
 				loudest = heard
 			end
 		end

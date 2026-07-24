@@ -80,6 +80,10 @@ function statuses.with_tag(entity, tag)
 end
 
 function statuses.add_from_template(entity, name, overrides, source)
+	if entity.type ~= "actor" then
+		return --TODO someday this should be better, like gating depending on status type.
+	end
+
 	local new_status = utils.create_instance_from_template(status_types, name, overrides)
 
 	new_status.source_name = (source and source.name) or "Unknown"

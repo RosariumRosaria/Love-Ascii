@@ -33,7 +33,7 @@ local vital_anchor = { x = 25, y = 25 }
 local vitals_panel_opts = {
 	x = vital_anchor.x,
 	y = vital_anchor.y,
-	font = "small",
+	font = "medium",
 	center_text = true,
 	auto_size = true,
 }
@@ -179,7 +179,7 @@ end
 local status_panels = {}
 local STATUS_GAP = 25
 local status_panel_opts =
-	{ x = vital_anchor.x, y = vital_anchor.y, font = "very_small", center_text = true, center_vertical = true }
+	{ x = vital_anchor.x, y = vital_anchor.y, font = "small", center_text = true, center_vertical = true }
 
 function hud:update_statuses(entity)
 	for _, panel in ipairs(status_panels) do
