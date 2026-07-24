@@ -106,27 +106,43 @@ function visualizer:draw_buildings()
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
-function visualizer:draw_distance()
+-- One pixel per tile, baked once and redrawn as a single quad. The field only changes
+-- when the map regenerates, which shows up as a fresh table from city_generator:find_dist.
+function visualizer:distance_image()
 	local distance = city_generator:get_dist()
-	if not distance then
-		return
+	if not distance or not distance[1] then
+		return nil
+	end
+	if self.distance_source == distance then
+		return self.distance_cache
 	end
 
-	-- the grid is already normalized 0-1 by city_generator:find_dist
-	for y, row in pairs(distance) do
-		for x, t in pairs(row) do
+	local h, w = #distance, #distance[1]
+	local data = love.image.newImageData(w, h)
+	for y = 1, h do
+		local row = distance[y]
+		for x = 1, w do
+			-- the grid is already normalized 0-1 by city_generator:find_dist
 			-- hot (on the road) to cold (deep wilderness)
-			love.graphics.setColor(1 - t, 0.35 * (1 - t), t, 0.75)
-			love.graphics.rectangle(
-				"fill",
-				self.start_x + (x - 1) * self.scale,
-				self.start_y + (y - 1) * self.scale,
-				self.scale,
-				self.scale
-			)
+			local t = row[x] or 1
+			data:setPixel(x - 1, y - 1, 1 - t, 0.35 * (1 - t), t, 0.75)
 		end
 	end
+
+	local image = love.graphics.newImage(data)
+	image:setFilter("nearest", "nearest")
+	self.distance_source = distance
+	self.distance_cache = image
+	return image
+end
+
+function visualizer:draw_distance()
+	local image = self:distance_image()
+	if not image then
+		return
+	end
 	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.draw(image, self.start_x, self.start_y, 0, self.scale, self.scale)
 end
 
 function visualizer:draw()

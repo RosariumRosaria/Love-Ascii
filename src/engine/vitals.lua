@@ -60,7 +60,7 @@ function vitals.apply_damage(target, amount, source_name, delay)
 			end
 
 			local corpse =
-				entities.add_from_template(target.corpse or "corpse", target.x, target.y, target.z, overrides)
+				entities.add_from_template_free(target.corpse or "corpse", target.x, target.y, target.z, overrides)
 
 			if target.inventory then
 				corpse.inventory = target.inventory
