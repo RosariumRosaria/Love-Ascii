@@ -36,6 +36,27 @@ return {
 		applies_status = { "obscured", silent = true },
 		natural_height = 0.35,
 	},
+
+	tall_shrub = {
+		name = "Shrub",
+		chars = { "*" },
+		walkable = true,
+		color = { 0.4, 0.85, 0.3, 1 },
+		transparent = true,
+		covers = true,
+		applies_status = { "obscured", silent = true },
+		natural_height = 0.45,
+	},
+	short_shrub = {
+		name = "Shrub",
+		chars = { "*" },
+		walkable = true,
+		color = { 0.4, 0.85, 0.3, 1 },
+		transparent = true,
+		covers = true,
+		applies_status = { "obscured", silent = true },
+		natural_height = 0.25,
+	},
 	road = {
 		name = "Road",
 		chars = { "%" },

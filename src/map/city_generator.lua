@@ -68,22 +68,23 @@ function city_generator:nearest_road_side(rect)
 	return utils.pick(tied)
 end
 
+local SHRUBS = { types.shrub, types.short_shrub, types.tall_shrub } --TODO someday I'd like a system to be able to jitter color and natural height, but being considerate for perf
 function city_generator:wild(start_x, start_y, end_x, end_y, tiles)
 	local map = require("src.map.map")
 	for y = start_y, end_y do
 		for x = start_x, end_x do
 			if tiles[y][x][1] == types.grass then
-				local noise = love.math.noise(x * gen_cfg.scale, y * gen_cfg.scale)
-				local n = self.distance[y][x] + (noise - 0.5)
+				local noise = love.math.noise(x * gen_cfg.scale + self.noise_ox, y * gen_cfg.scale + self.noise_oy)
+				local n = self.distance[y][x] + (noise - 0.5) * gen_cfg.noise_strength
 				local v = n + ((love.math.random() - 0.5) * gen_cfg.jitter)
-				if v >= gen_cfg.shrub_threshold and love.math.random() >= gen_cfg.skip then
-					if v >= gen_cfg.tree_threshold then
-						if map:is_tile_free(x, y, 1) then
-							features.place("tree", x, y, tiles, self.max_z)
-						end
-					else
-						tiles[y][x][1] = types.shrub
-					end
+				local tree_strength = ((v - gen_cfg.tree_threshold) / gen_cfg.tree_ramp) * gen_cfg.canopy_density
+				local shrub_strength = (v - gen_cfg.shrub_threshold) / gen_cfg.shrub_ramp
+				if love.math.random() < tree_strength and map:is_tile_free(x, y, 1) then
+					features.place("tree", x, y, tiles, self.max_z)
+				elseif love.math.random() < shrub_strength then
+					local t = math.ceil(utils.clamp(shrub_strength, 0, 1) * #SHRUBS)
+					local shrub_type = SHRUBS[t]
+					tiles[y][x][1] = shrub_type
 				end
 			end
 		end
@@ -162,6 +163,10 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	self.lots = {}
 	self.roads = {}
 	self.buildings = {}
+	-- love.math.noise is a pure function of position and ignores the RNG seed, so the
+	-- vegetation field is identical every run unless it is sampled from a rolled origin
+	self.noise_ox = love.math.random() * 1000
+	self.noise_oy = love.math.random() * 1000
 	features.load(self.max_x, self.max_y)
 	local root = { x = 1, y = 1, w = self.max_x, h = self.max_y }
 	lots.subdivide(root, gen_cfg.subdivide_depth, self.lots, self.roads)
@@ -227,12 +232,25 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 					entities.add_from_template(utils.pick({ "crate", "barricade", "chest" }), x, y, 1)
 					return true
 				end)
+			else
+				features.scatter(tiles, lot, gen_cfg.monster_chance, function(x, y)
+					local monster = utils.pick_weighted(gen_cfg.monsters)
+					if monster then
+						entities.add_from_template(monster.name, x, y, 1)
+					end
+				end)
 			end
 		end
 	end
 
 	self:find_dist()
 	self:wild(1, 1, map_max_x, map_max_y, tiles)
+
+	features.scatter(tiles, root, gen_cfg.shrub_chance, function(x, y)
+		if tiles[y][x][1] == types.grass then
+			tiles[y][x][1] = types.shrub
+		end
+	end)
 end
 
 return city_generator
