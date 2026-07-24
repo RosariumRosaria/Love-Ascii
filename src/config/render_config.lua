@@ -4,7 +4,8 @@ return {
 		scale = 3.4,
 		base_size = 16,
 		ui_scale = 0.875,
-		terminal_scale = 0.75,
+		terminal_scale = 0.875,
+		medium_scale = 1.1,
 		big_scale = 2,
 		very_big_scale = 3.5,
 		center_nudge_y = 0.075,
@@ -61,7 +62,7 @@ return {
 		distance_drama = 0.5,
 		shadow_brightness_scale = 0.25,
 		shadow_alpha_scale = 0.7,
-		explored_color = { 0.21, 0.271, 0.762, 0.15 },
+		explored_color = { 0.21, 0.271, 0.762, 0.25 },
 	},
 
 	vignette = {

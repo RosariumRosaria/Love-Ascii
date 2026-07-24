@@ -30,9 +30,6 @@ end
 
 local RING_MIN_VOLUME = 5
 
--- Spawns the visual "you heard something" ring for a sound. Split out from
--- sounds.emit so callers (e.g. a projectile) can defer the ring to a later
--- moment than the propagation. player_heard is emit's return value.
 function sounds.spawn_ring(s, player_heard)
 	if not player_heard then
 		return

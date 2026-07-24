@@ -63,6 +63,8 @@ function statuses.remove(entity, key)
 				entity = entity.name,
 				status = status.name,
 				silent = status.silent,
+				x = entity.x,
+				y = entity.y,
 			})
 			return
 		end
@@ -102,6 +104,8 @@ function statuses.add_from_template(entity, name, overrides, source)
 		status = new_status.name,
 		source = new_status.source_name,
 		silent = new_status.silent,
+		x = entity.x,
+		y = entity.y,
 	})
 	table.insert(entity.statuses, new_status)
 end

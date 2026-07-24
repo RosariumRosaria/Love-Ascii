@@ -166,6 +166,10 @@ function utils.deep_print(tbl, indent, visited)
 	end
 end
 
+function utils.capitalize(str)
+	return str:sub(1, 1):upper() .. str:sub(2)
+end
+
 function utils.sign(n)
 	return n > 0 and 1 or (n < 0 and -1 or 0)
 end

@@ -3,11 +3,11 @@ return {
 	road_skip_chance = 15,
 
 	lot_min_size = 10,
-	lot_max_size = 20,
+	lot_max_size = 17,
 	lot_stop_chance = 0.55,
 
-	subdivide_depth = 10,
-	building_margin = 4,
+	subdivide_depth = 11,
+	building_margin = 5,
 	min_building_size = 6,
 	building_chance = 0.75,
 	second_door_chance = 0.75,

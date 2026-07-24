@@ -26,7 +26,7 @@ return {
 		range = 15,
 	},
 	arrow = {
-		name = "Arrow",
+		name = "Arrows",
 		description = "Sharp arrows for combat.",
 		color = { { 0.8, 0.8, 0.8, 1 } },
 		chars = { "/" },

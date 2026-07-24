@@ -1,5 +1,6 @@
 local stats = require("src.sim.stats")
 local inventory = require("src.sim.inventory")
+local utils = require("src.utils")
 local container = require("src.engine.interaction.container")
 local event_log = require("src.engine.event_log")
 local panels = require("src.visuals.ui.panels")
@@ -10,11 +11,15 @@ local character_modes = { "stats", "inventory" }
 local character_position = 1
 local character_panel
 local container_panel
+local equipment_panel
+
+local EQUIP_SLOTS = { "mainhand", "offhand", "armor", "accessory", "ammo" }
 
 function hud:set_visible(visible)
 	panels:get_panel("vitals").visible = visible
 	panels:get_panel("terminal").visible = visible
 	panels:get_panel("character").visible = visible
+	panels:get_panel("equipment").visible = visible
 	panels:get_panel("container").visible = (visible and container.is_open) or false
 end
 
@@ -39,15 +44,19 @@ function hud:load()
 	local outline_width = screen_width / 400
 	local buffer = 4 * outline_width
 	local width = screen_width / 6
-	local height = (screen_height * 4 / 6) - buffer
 	local black = { 0, 0, 0, 0.5 }
 	local white = { 1, 1, 1, 0.5 }
 
 	panels:reload_fonts()
 
+	local terminal_height = (screen_height / 3) - (2 * buffer)
+	local equipment_height = (#EQUIP_SLOTS * config.medium_tile_size) + (4 * buffer)
+	local character_margin_y = (3 * buffer) + terminal_height + equipment_height
+	local character_height = screen_height - character_margin_y - buffer
+
 	local terminal_panel = panels:add_panel("terminal", {
 		width = width,
-		height = height,
+		height = terminal_height,
 		screen_anchor = { x = "end", y = "start", margin_x = buffer, margin_y = buffer },
 		color = black,
 		outline_width = outline_width,
@@ -57,26 +66,38 @@ function hud:load()
 		text_offset_y = config.terminal_tile_size * 0.5,
 	})
 	terminal_panel.visible = false
-	character_panel = panels:add_panel("character", {
+	equipment_panel = panels:add_panel("equipment", {
 		width = width,
-		height = screen_height - height - (4 * buffer),
-		screen_anchor = { x = "end", y = "end", margin_x = buffer, margin_y = 2 * buffer },
+		height = equipment_height,
+		screen_anchor = { x = "end", y = "start", margin_x = buffer, margin_y = (2 * buffer) + terminal_height },
 		color = black,
 		outline_width = outline_width,
 		outline_color = white,
-		font = "small",
+		font = "medium",
+		text_offset_x = config.small_tile_size * 0.5,
+		text_offset_y = config.small_tile_size * 0.5,
+	})
+	equipment_panel.visible = false
+	character_panel = panels:add_panel("character", {
+		width = width,
+		height = character_height,
+		screen_anchor = { x = "end", y = "start", margin_x = buffer, margin_y = character_margin_y },
+		color = black,
+		outline_width = outline_width,
+		outline_color = white,
+		font = "medium",
 		text_offset_x = config.small_tile_size * 0.5,
 		text_offset_y = config.small_tile_size * 0.5,
 	})
 	character_panel.visible = false
 	container_panel = panels:add_panel("container", {
 		width = width,
-		height = screen_height - height - (4 * buffer),
-		screen_anchor = { x = "end", y = "end", margin_x = width + (3 * buffer), margin_y = 2 * buffer },
+		height = character_height,
+		screen_anchor = { x = "end", y = "start", margin_x = width + (3 * buffer), margin_y = character_margin_y },
 		color = black,
 		outline_width = outline_width,
 		outline_color = white,
-		font = "small",
+		font = "medium",
 	})
 	container_panel.visible = false
 	character_panel.mode = "inventory"
@@ -137,6 +158,7 @@ function hud:log_events()
 			elseif ev.type == "entity_waited" then
 				panels:add_text_to_panel_by_name("terminal", ev.entity .. " waited")
 			end
+			panels:add_text_to_panel_by_name("terminal", "")
 		end
 	end
 end
@@ -187,16 +209,30 @@ function hud:update_statuses(entity)
 	end
 end
 
+function hud:update_equipment(entity)
+	equipment_panel.texts = {}
+	if not entity or not entity.inventory then
+		return
+	end
+	for _, slot in ipairs(EQUIP_SLOTS) do
+		local item = inventory.get_equipped(entity, slot)
+		local label = item and (item.name or item.key or "?") or "-"
+		panels:add_text_to_panel_by_name("equipment", utils.capitalize(slot) .. ": " .. label)
+		panels:add_text_to_panel_by_name("equipment", " ")
+	end
+end
+
 function hud:update_character(entity)
 	character_panel.texts = {}
 	character_panel.entity = entity
+	self:update_equipment(entity)
 
 	if character_panel.mode == "inventory" or container.is_open then
 		if entity.inventory then
 			for i, item in ipairs(entity.inventory.items) do
 				local label = item.name or item.key or "?"
 
-				local equipped = inventory.is_equipped(entity, item) and " (equipped)" or ""
+				local equipped = inventory.is_equipped(entity, item) and " [E]" or ""
 
 				local charges = ""
 				if item.charges then
@@ -212,7 +248,8 @@ function hud:update_character(entity)
 						and inventory.get_selected(entity) == item
 						and " <"
 					or ""
-				panels:add_text_to_panel_by_name("character", i .. " - " .. label .. equipped .. charges .. selected)
+				panels:add_text_to_panel_by_name("character", i .. "-" .. label .. equipped .. charges .. selected)
+				panels:add_text_to_panel_by_name("character", "")
 			end
 		end
 		container_panel.visible = container.is_open
@@ -237,7 +274,7 @@ function hud:update_character(entity)
 							and inventory.get_selected(container_entity) == item
 							and " <"
 						or ""
-					panels:add_text_to_panel_by_name("container", i .. " - " .. label .. charges .. selected)
+					panels:add_text_to_panel_by_name("container", i .. "-" .. label .. charges .. selected)
 				end
 			end
 		end

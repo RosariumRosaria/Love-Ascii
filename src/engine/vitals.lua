@@ -26,7 +26,14 @@ function vitals.apply_damage(target, amount, source_name, delay)
 
 	stats.change_current(target, "health", -amount)
 	local after = stats.get_current(target, "health")
-	event_log:add({ type = "damage", entity = target.name, source = source_name, amount = amount })
+	event_log:add({
+		type = "damage",
+		entity = target.name,
+		source = source_name,
+		amount = amount,
+		x = target.x,
+		y = target.y,
+	})
 	if not delay then
 		vitals.spawn_damage_numbers(target, amount)
 	end
@@ -35,7 +42,7 @@ function vitals.apply_damage(target, amount, source_name, delay)
 	if killed then
 		target.dead = true
 		target.death_source = source_name
-		event_log:add({ type = "entity_died", entity = target.name, source = source_name })
+		event_log:add({ type = "entity_died", entity = target.name, source = source_name, x = target.x, y = target.y })
 		entities.remove(target)
 		if target.type == "actor" or target.corpse then
 			local overrides = {
@@ -59,10 +66,15 @@ function vitals.apply_damage(target, amount, source_name, delay)
 				}
 			end
 
-			local corpse =
-				entities.add_from_template_free(target.corpse or "corpse", target.x, target.y, target.z, overrides)
+			local corpse = nil
 
-			if target.inventory then
+			if target.type == "actor" then
+				entities.add_from_template_free(target.corpse or "corpse", target.x, target.y, target.z, overrides)
+			else
+				entities.add_from_template(target.corpse or "corpse", target.x, target.y, target.z, overrides)
+			end
+
+			if corpse and target.inventory then
 				corpse.inventory = target.inventory
 			end
 		end
@@ -77,7 +89,14 @@ function vitals.apply_heal(target, amount, source_name, delay)
 	if not delay then
 		vitals.spawn_damage_numbers(target, amount, { color = { 0.1, 0.8, 0.2, 0.5 } })
 	end
-	event_log:add({ type = "heal", entity = target.name, source = source_name, amount = amount })
+	event_log:add({
+		type = "heal",
+		entity = target.name,
+		source = source_name,
+		amount = amount,
+		x = target.x,
+		y = target.y,
+	})
 end
 
 return vitals

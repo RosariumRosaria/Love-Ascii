@@ -33,7 +33,7 @@ local function check_player_death()
 end
 
 local function commit_turn(actor)
-	if actor == entities.player then
+	if actor == entities.player and statuses.can_act(actor) then
 		panels:clear_panel_by_name("terminal")
 	end
 	statuses.tick_entity(actor)
@@ -95,10 +95,9 @@ function turn:update(dt)
 	else
 		if actor.mind and actor.mind.heard_sounds then
 			for _, heard in ipairs(actor.mind.heard_sounds) do
-				event_log:add({
-					type = "sound",
-					description = heard.sound.description,
-				})
+				if not map:is_visible(math.floor(heard.sound.x), math.floor(heard.sound.y)) or heard.loudness > 4 then
+					event_log:add({ type = "sound", description = heard.sound.description })
+				end
 			end
 			actor.mind.heard_sounds = {}
 		end

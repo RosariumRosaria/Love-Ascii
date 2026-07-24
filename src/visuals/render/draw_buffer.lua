@@ -26,15 +26,12 @@ local buf = {}
 local keys = {}
 local count = 0
 
--- Entries sort by a single packed double: pass | z | layer | y | insertion order.
--- The field widths multiplied together must stay within 2^53 (the exact-integer
--- range of a double) or table.sort and the % decode in walk stop being exact.
 local Z_MIN = game_cfg.map.min_z
-local Z_SLOTS = 4096 -- z - Z_MIN in 1/64 steps: z must stay in [Z_MIN, Z_MIN + 64)
+local Z_SLOTS = 4096
 local LAYER_SLOTS = 16
 local Y_MIN = -2
-local Y_SLOTS = 2 ^ 18 -- y - Y_MIN in 1/256 steps: y must stay in [Y_MIN, Y_MIN + 1024)
-local ORDER_W = 2 ^ 17 -- max draw entries per frame
+local Y_SLOTS = 2 ^ 18
+local ORDER_W = 2 ^ 17
 assert(2 * Z_SLOTS * LAYER_SLOTS * Y_SLOTS * ORDER_W <= 2 ^ 53, "draw_buffer: packed sort key exceeds double precision")
 
 local floor = math.floor
@@ -46,8 +43,6 @@ function draw_buffer:emit(entry)
 	end
 	count = n
 	buf[n] = entry
-	-- Out-of-range coords (e.g. effect fringes past the map edge) clamp to the
-	-- band edge so they mis-sort locally instead of corrupting adjacent fields.
 	local zq = floor((entry.z - Z_MIN) * 64)
 	if zq < 0 then
 		zq = 0
@@ -68,8 +63,6 @@ function draw_buffer:clear()
 end
 
 function draw_buffer:sort()
-	-- Trim last frame's key tail so #keys matches this frame; buf slots past
-	-- count are left in place and overwritten by future emits.
 	for i = #keys, count + 1, -1 do
 		keys[i] = nil
 	end
