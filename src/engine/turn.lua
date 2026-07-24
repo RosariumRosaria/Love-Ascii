@@ -11,6 +11,7 @@ local event_log = require("src.engine.event_log")
 local aim = require("src.engine.interaction.aim")
 local state = require("src.engine.state")
 local flow = require("src.engine.flow")
+local stats = require("src.sim.stats")
 
 local turn = {
 	time_since_last_tick = 0,
@@ -35,7 +36,8 @@ end
 local function commit_turn(actor)
 	local seen
 	if actor == entities.player and statuses.can_act(actor) then
-		local gather = map:gather(actor, 30)
+		local vision = stats.get_current(actor, "sight")
+		local gather = map:gather(actor)
 		seen = {}
 		if gather then
 			local by_key = {}
@@ -48,7 +50,9 @@ local function commit_turn(actor)
 			for _, ent in pairs(by_key) do
 				table.insert(seen, ent)
 			end
-			table.sort(seen, function(a, b) return a.key < b.key end)
+			table.sort(seen, function(a, b)
+				return a.key < b.key
+			end)
 		end
 		panels:clear_panel_by_name("terminal")
 	end
