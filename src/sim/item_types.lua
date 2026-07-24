@@ -10,6 +10,39 @@ return {
 			{ stat = "damage", op = "add", value = 3, context = "melee" },
 		},
 	},
+	axe = {
+		name = "Sword",
+		description = "A sharp heavy, dully, blade for combat.",
+		color = { { 0.8, 0.8, 0.8, 1 } },
+		slot = "mainhand",
+		chars = { "P" },
+		volume = 9,
+		modifiers = {
+			{ stat = "damage", op = "add", value = 4, context = "melee" },
+		},
+	},
+	dagger = {
+		name = "Dagger",
+		description = "A quick blade for combat.",
+		color = { { 0.8, 0.8, 0.8, 1 } },
+		slot = "mainhand",
+		chars = { "-" },
+		volume = 3,
+		modifiers = {
+			{ stat = "damage", op = "add", value = 2, context = "melee" },
+		},
+	},
+	spear = {
+		name = "Spear",
+		description = "A sharp spear for combat.",
+		color = { { 0.8, 0.8, 0.8, 1 } },
+		slot = "mainhand",
+		chars = { "|" },
+		volume = 5,
+		modifiers = {
+			{ stat = "damage", op = "add", value = 3, context = "melee" },
+		},
+	},
 	bow = {
 		name = "Bow",
 		description = "A keen bow for combat.",
@@ -106,6 +139,26 @@ return {
 		slot = "armor",
 		modifiers = {
 			{ stat = "health", op = "add", value = 5 },
+		},
+	},
+	chainmail = {
+		name = "Chainmail",
+		description = "Provides protection against attacks.",
+		color = { { 0.5, 0.5, 0.7, 1 } },
+		chars = { "A" },
+		slot = "armor",
+		modifiers = {
+			{ stat = "health", op = "add", value = 10 },
+		},
+	},
+	platemail = {
+		name = "Platemail",
+		description = "Provides protection against attacks.",
+		color = { { 0.5, 0.5, 0.7, 1 } },
+		chars = { "A" },
+		slot = "armor",
+		modifiers = {
+			{ stat = "health", op = "add", value = 15 },
 		},
 	},
 	torch = {

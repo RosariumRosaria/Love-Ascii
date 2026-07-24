@@ -38,14 +38,18 @@ local function commit_turn(actor)
 		local gather = map:gather(actor, 30)
 		seen = {}
 		if gather then
+			local by_key = {}
 			for _, entry in ipairs(gather) do
 				local ent = entry.entity
 				if map:is_visible(ent.x, ent.y) then
-					seen[ent.key] = ent
+					by_key[ent.key] = ent
 				end
 			end
+			for _, ent in pairs(by_key) do
+				table.insert(seen, ent)
+			end
+			table.sort(seen, function(a, b) return a.key < b.key end)
 		end
-		table.sort(seen)
 		panels:clear_panel_by_name("terminal")
 	end
 	statuses.tick_entity(actor)

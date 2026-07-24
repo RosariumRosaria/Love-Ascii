@@ -222,9 +222,7 @@ function hud:update_nearby_entities(seen)
 		return
 	end
 	local max_width = 0
-	local i = 0
-	for _, entity in pairs(seen) do
-		i = i + 1
+	for i, entity in ipairs(seen) do
 		local label = entity.name or entity.key or "?"
 		local char = "?"
 		if entity.appearance and entity.appearance.chars then
@@ -292,7 +290,7 @@ function hud:update_character(entity)
 						and inventory.get_selected(entity) == item
 						and " <"
 					or ""
-				panels:add_text_to_panel_by_name("character", i .. "-" .. label .. equipped .. charges .. selected)
+				panels:add_text_to_panel_by_name("character", i .. " " .. label .. equipped .. charges .. selected)
 				panels:add_text_to_panel_by_name("character", "")
 			end
 		end
