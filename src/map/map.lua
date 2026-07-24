@@ -91,11 +91,11 @@ function map:closest_free_cell(x, y, z, entity, max_radius, skip_entities)
 	return nil
 end
 
-function map:find_targets_in_range(actor, range) -- TODO: Someday support other predicates
+function map:gather(actor, range, teams_only)
 	local targets = {}
 
 	for _, entity in ipairs(entities.get_list()) do
-		if entity.team and entity.team ~= actor.team and not entity.dead and entity ~= actor then
+		if (not teams_only or (entity.team and entity.team ~= actor.team)) and not entity.dead and entity ~= actor then
 			local distance = utils.distance_between(actor, entity)
 
 			if distance <= range then
@@ -113,6 +113,22 @@ function map:find_targets_in_range(actor, range) -- TODO: Someday support other 
 
 	if #targets > 0 then
 		return targets
+	end
+
+	return nil
+end
+
+function map:find_targets_in_range(actor, range) -- TODO: Someday support other predicates
+	local targets = map:gather(actor, range, true)
+
+	if targets then
+		table.sort(targets, function(a, b)
+			return a.distance < b.distance
+		end)
+
+		if #targets > 0 then
+			return targets
+		end
 	end
 
 	return nil

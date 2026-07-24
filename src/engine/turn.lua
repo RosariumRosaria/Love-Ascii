@@ -33,7 +33,19 @@ local function check_player_death()
 end
 
 local function commit_turn(actor)
+	local seen
 	if actor == entities.player and statuses.can_act(actor) then
+		local gather = map:gather(actor, 30)
+		seen = {}
+		if gather then
+			for _, entry in ipairs(gather) do
+				local ent = entry.entity
+				if map:is_visible(ent.x, ent.y) then
+					seen[ent.key] = ent
+				end
+			end
+		end
+		table.sort(seen)
 		panels:clear_panel_by_name("terminal")
 	end
 	statuses.tick_entity(actor)
@@ -54,6 +66,9 @@ local function commit_turn(actor)
 
 	hud:update_vitals(entities.player)
 	hud:update_statuses(entities.player)
+	if seen then
+		hud:update_nearby_entities(seen)
+	end
 	check_player_death()
 end
 

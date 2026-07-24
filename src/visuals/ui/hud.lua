@@ -209,6 +209,50 @@ function hud:update_statuses(entity)
 	end
 end
 
+local nearby_panels = {}
+local nearby_anchor = { x = vital_anchor.x }
+local nearby_panel_opts = { x = nearby_anchor.x, font = "small", center_text = true, center_vertical = true }
+
+function hud:update_nearby_entities(seen)
+	for _, panel in ipairs(nearby_panels) do
+		panels:remove_panel(panel.name)
+	end
+	nearby_panels = {}
+	if not seen then
+		return
+	end
+	local max_width = 0
+	local i = 0
+	for _, entity in pairs(seen) do
+		i = i + 1
+		local label = entity.name or entity.key or "?"
+		local char = "?"
+		if entity.appearance and entity.appearance.chars then
+			for _, c in ipairs(entity.appearance.chars) do
+				if c and c ~= "" and c ~= " " then
+					char = c
+					break
+				end
+			end
+		end
+		local panel = panels:add_panel("nearby" .. i, nearby_panel_opts)
+		panels:add_text_to_panel_by_name("nearby" .. i, char .. " " .. label)
+		panels:measure_auto_size(panel)
+		max_width = math.max(max_width, panel.width)
+		table.insert(nearby_panels, panel)
+	end
+
+	local y = love.graphics.getHeight() - vital_anchor.y
+	for i = #nearby_panels, 1, -1 do
+		local panel = nearby_panels[i]
+		y = y - panel.height
+		panel.x = nearby_anchor.x
+		panel.width = max_width
+		panel.y = y
+		y = y - 4 * panel.outline_width
+	end
+end
+
 function hud:update_equipment(entity)
 	equipment_panel.texts = {}
 	if not entity or not entity.inventory then
