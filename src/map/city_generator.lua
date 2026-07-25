@@ -69,7 +69,7 @@ function city_generator:nearest_road_side(rect)
 end
 
 local SHRUBS = { types.shrub, types.short_shrub, types.tall_shrub } --TODO someday I'd like a system to be able to jitter color and natural height, but being considerate for perf
-function city_generator:wild(start_x, start_y, end_x, end_y, tiles)
+function city_generator:wild(start_x, start_y, end_x, end_y, tiles, root)
 	local map = require("src.map.map")
 	for y = start_y, end_y do
 		for x = start_x, end_x do
@@ -89,6 +89,11 @@ function city_generator:wild(start_x, start_y, end_x, end_y, tiles)
 			end
 		end
 	end
+	features.scatter(tiles, root, gen_cfg.shrub_chance, function(x, y)
+		if tiles[y][x][1] == types.grass then
+			tiles[y][x][1] = types.shrub
+		end
+	end)
 end
 
 local NEIGHBOR_OFFSETS = {
@@ -154,8 +159,83 @@ function city_generator:find_dist()
 	end
 end
 
-function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
+function city_generator:make_road(tiles, road)
 	local map = require("src.map.map")
+
+	for y = road.y, road.y + road.h - 1 do
+		for x = road.x, road.x + road.w - 1 do
+			if love.math.random(1, gen_cfg.road_skip_chance) ~= gen_cfg.road_skip_chance then
+				tiles[y][x][1] = types.road
+			end
+		end
+	end
+	local step = gen_cfg.lamp_step
+	if road.w > road.h then
+		for x = road.x + step, road.x + road.w - 1, step do
+			if love.math.random() >= gen_cfg.lamp_skip_chance then
+				local ly = love.math.random() < 0.5 and road.y - 1 or road.y + road.h
+				if map:is_tile_free(x, ly, 1) then
+					entities.add_from_template("street_lamp", x, ly, 1)
+				end
+			end
+		end
+	else
+		for y = road.y + step, road.y + road.h - 1, step do
+			if love.math.random() >= gen_cfg.lamp_skip_chance then
+				local lx = love.math.random() < 0.5 and road.x - 1 or road.x + road.w
+				if map:is_tile_free(lx, y, 1) then
+					entities.add_from_template("street_lamp", lx, y, 1)
+				end
+			end
+		end
+	end
+end
+
+function city_generator:build_building(tiles, lot)
+	local map = require("src.map.map")
+
+	local ml, mr, mt, mb =
+		love.math.random(1, gen_cfg.building_margin),
+		love.math.random(1, gen_cfg.building_margin),
+		love.math.random(1, gen_cfg.building_margin),
+		love.math.random(1, gen_cfg.building_margin)
+	local bw, bh = lot.w - ml - mr, lot.h - mt - mb
+
+	local inset = { x = lot.x + ml, y = lot.y + mt, w = bw, h = bh }
+	if bw >= gen_cfg.min_building_size and bh >= gen_cfg.min_building_size then
+		local roll = love.math.random()
+		if roll < gen_cfg.building_chance then
+			local road_side = self:nearest_road_side(inset)
+			local building = features.make_building(
+				tiles,
+				lot.x + ml,
+				lot.y + mt,
+				bw,
+				bh,
+				features.roll_height("wall", self.max_z),
+				road_side
+			)
+			table.insert(self.buildings, building)
+			features.scatter_count(tiles, building, love.math.random(3), function(x, y)
+				if not map:is_tile_free(x, y, 1) then
+					return false
+				end
+
+				entities.add_from_template(utils.pick({ "crate", "barricade", "chest" }), x, y, 1)
+				return true
+			end)
+		else
+			features.scatter(tiles, lot, gen_cfg.monster_chance, function(x, y)
+				local monster = utils.pick_weighted(gen_cfg.monsters)
+				if monster then
+					entities.add_from_template(monster.name, x, y, 1)
+				end
+			end)
+		end
+	end
+end
+
+function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	self.max_y = map_max_y
 	self.max_x = map_max_x
 	self.max_z = map_max_z
@@ -163,94 +243,21 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	self.lots = {}
 	self.roads = {}
 	self.buildings = {}
-	-- love.math.noise is a pure function of position and ignores the RNG seed, so the
-	-- vegetation field is identical every run unless it is sampled from a rolled origin
+	local root = { x = 1, y = 1, w = self.max_x, h = self.max_y }
 	self.noise_ox = love.math.random() * 1000
 	self.noise_oy = love.math.random() * 1000
 	features.load(self.max_x, self.max_y)
-	local root = { x = 1, y = 1, w = self.max_x, h = self.max_y }
+
 	lots.subdivide(root, gen_cfg.subdivide_depth, self.lots, self.roads)
 
 	for _, road in ipairs(self.roads) do
-		for y = road.y, road.y + road.h - 1 do
-			for x = road.x, road.x + road.w - 1 do
-				if love.math.random(1, gen_cfg.road_skip_chance) ~= gen_cfg.road_skip_chance then
-					tiles[y][x][1] = types.road
-				end
-			end
-		end
-		local step = gen_cfg.lamp_step
-		if road.w > road.h then
-			for x = road.x + step, road.x + road.w - 1, step do
-				if love.math.random() >= gen_cfg.lamp_skip_chance then
-					local ly = love.math.random() < 0.5 and road.y - 1 or road.y + road.h
-					if map:is_tile_free(x, ly, 1) then
-						entities.add_from_template("street_lamp", x, ly, 1)
-					end
-				end
-			end
-		else
-			for y = road.y + step, road.y + road.h - 1, step do
-				if love.math.random() >= gen_cfg.lamp_skip_chance then
-					local lx = love.math.random() < 0.5 and road.x - 1 or road.x + road.w
-					if map:is_tile_free(lx, y, 1) then
-						entities.add_from_template("street_lamp", lx, y, 1)
-					end
-				end
-			end
-		end
+		self:make_road(tiles, road)
 	end
-
 	for _, lot in ipairs(self.lots) do
-		local ml, mr, mt, mb =
-			love.math.random(1, gen_cfg.building_margin),
-			love.math.random(1, gen_cfg.building_margin),
-			love.math.random(1, gen_cfg.building_margin),
-			love.math.random(1, gen_cfg.building_margin)
-		local bw, bh = lot.w - ml - mr, lot.h - mt - mb
-
-		local inset = { x = lot.x + ml, y = lot.y + mt, w = bw, h = bh }
-		if bw >= gen_cfg.min_building_size and bh >= gen_cfg.min_building_size then
-			local roll = love.math.random()
-			if roll < gen_cfg.building_chance then
-				local road_side = self:nearest_road_side(inset)
-				local building = features.make_building(
-					tiles,
-					lot.x + ml,
-					lot.y + mt,
-					bw,
-					bh,
-					features.roll_height("wall", self.max_z),
-					road_side
-				)
-				table.insert(self.buildings, building)
-				features.scatter_count(tiles, building, love.math.random(3), function(x, y)
-					if not map:is_tile_free(x, y, 1) then
-						return false
-					end
-
-					entities.add_from_template(utils.pick({ "crate", "barricade", "chest" }), x, y, 1)
-					return true
-				end)
-			else
-				features.scatter(tiles, lot, gen_cfg.monster_chance, function(x, y)
-					local monster = utils.pick_weighted(gen_cfg.monsters)
-					if monster then
-						entities.add_from_template(monster.name, x, y, 1)
-					end
-				end)
-			end
-		end
+		self:build_building(tiles, lot)
 	end
-
 	self:find_dist()
-	self:wild(1, 1, map_max_x, map_max_y, tiles)
-
-	features.scatter(tiles, root, gen_cfg.shrub_chance, function(x, y)
-		if tiles[y][x][1] == types.grass then
-			tiles[y][x][1] = types.shrub
-		end
-	end)
+	self:wild(1, 1, map_max_x, map_max_y, tiles, root)
 end
 
 return city_generator

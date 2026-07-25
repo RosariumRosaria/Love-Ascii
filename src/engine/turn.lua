@@ -37,7 +37,7 @@ local function commit_turn(actor)
 	local seen
 	if actor == entities.player and statuses.can_act(actor) then
 		local vision = stats.get_current(actor, "sight")
-		local gather = map:gather(actor)
+		local gather = map:gather(actor, vision)
 		seen = {}
 		if gather then
 			local by_key = {}

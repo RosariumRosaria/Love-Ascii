@@ -80,25 +80,52 @@ function features.make_lake(tiles, cx, cy, radius)
 	end
 end
 
+local function make_building_mask(width, height)
+	local mask = {}
+	for y = 0, height + 1 do
+		mask[y] = {}
+		for x = 0, width + 1 do
+			mask[y][x] = 1
+			if x == 0 or y == 0 or x == width + 1 or y == height + 1 then
+				mask[y][x] = 0
+			end
+		end
+	end
+	return mask
+end
+
+local function is_boundary(region, x, y)
+	local id = region[y][x]
+	local horizontal = region[y][x - 1] ~= id or region[y][x + 1] ~= id
+	local vertical = region[y - 1][x] ~= id or region[y + 1][x] ~= id
+
+	local orientation = "internal"
+	if horizontal and vertical then
+		orientation = "corner"
+	elseif horizontal then
+		orientation = "horizontal"
+	elseif vertical then
+		orientation = "vertical"
+	end
+	return orientation
+end
+
 function features.make_building(tiles, start_x, start_y, width, height, top_z, road_side)
+	local mask = make_building_mask(width, height)
 	for y = 1, height do
 		for x = 1, width do
 			local tile_x = start_x + x - 1
 			local tile_y = start_y + y - 1
-			if in_bounds(tile_x, tile_y) then
-				if
-					(x == 1 and y == 1)
-					or (x == width and y == height)
-					or (x == 1 and y == height)
-					or (x == width and y == 1)
-				then
-					features.fill_column(tiles, tile_x, tile_y, 1, top_z, tile_types.c_wall)
-				elseif x == 1 or x == width then
-					features.fill_column(tiles, tile_x, tile_y, 1, top_z, rotated_wall)
-				elseif y == 1 or y == height then
-					features.fill_column(tiles, tile_x, tile_y, 1, top_z, tile_types.v_wall)
-				else
+			if mask[y][x] == 1 and in_bounds(tile_x, tile_y) then
+				local orientation = is_boundary(mask, x, y)
+				if orientation == "internal" then
 					tiles[tile_y][tile_x][1] = tile_types.floor
+				elseif orientation == "vertical" then
+					features.fill_column(tiles, tile_x, tile_y, 1, top_z, tile_types.v_wall)
+				elseif orientation == "horizontal" then
+					features.fill_column(tiles, tile_x, tile_y, 1, top_z, rotated_wall)
+				elseif orientation == "corner" then
+					features.fill_column(tiles, tile_x, tile_y, 1, top_z, tile_types.c_wall)
 				end
 			end
 		end
