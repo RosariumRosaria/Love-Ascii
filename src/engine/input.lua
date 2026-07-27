@@ -499,11 +499,13 @@ function input:_take_normal_turn()
 			end
 		else
 			self.grabbed = nil
-			took_action = actions:handle_action(actor, {
-				type = "move",
-				dx = move_dir.x,
-				dy = move_dir.y,
-			})
+			if not self:is_down("hold_position") then
+				took_action = actions:handle_action(actor, {
+					type = "move",
+					dx = move_dir.x,
+					dy = move_dir.y,
+				})
+			end
 		end
 	end
 

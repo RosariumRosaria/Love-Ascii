@@ -10,6 +10,7 @@ return {
 	move_left = { "left", "a" },
 	move_right = { "right", "d" },
 	wait = { "space" },
+	hold_position = { "lctrl" },
 
 	cycle_next = { "tab" },
 	use_selected = { "u" },
