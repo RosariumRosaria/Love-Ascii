@@ -148,8 +148,10 @@ function effects:update(dt)
 	for i = #self.effect_list, 1, -1 do
 		local effect = self.effect_list[i]
 		local params = effect.params
-
-		if effect.generate then
+		if effect.anchor and effect.anchor.dead then
+			effect.dead = true
+			table.remove(self.effect_list, i)
+		elseif effect.generate then
 			params.age = (params.age or 0) + dt
 
 			if params.age >= params.duration then
