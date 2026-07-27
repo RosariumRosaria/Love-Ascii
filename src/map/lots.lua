@@ -16,8 +16,8 @@ function lots.subdivide(rect, depth, lots_list, road_list)
 	local road_width = math.max(0, math.floor(depth / 2) - 1)
 
 	if
-		cut < gen_cfg.lot_min_size * 2 + road_width
-		or (chance > gen_cfg.lot_stop_chance and cut < gen_cfg.lot_max_size)
+		cut < gen_cfg.lots.min_size * 2 + road_width
+		or (chance > gen_cfg.lots.stop_chance and cut < gen_cfg.lots.max_size)
 	then
 		table.insert(lots_list, rect)
 		return

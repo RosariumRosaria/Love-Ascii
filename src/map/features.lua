@@ -330,12 +330,12 @@ function features.make_building(tiles, rects, top_z, road_side)
 	end
 
 	if road_side and by_cardinal[road_side] then
-		by_cardinal[road_side].weight = gen_cfg.road_side_door_weight
+		by_cardinal[road_side].weight = gen_cfg.doors.road_side_weight
 	end
 
 	utils.pick_weighted(by_cardinal).door = true
 
-	if love.math.random() < gen_cfg.second_door_chance then
+	if love.math.random() < gen_cfg.doors.second_chance then
 		local remaining = {}
 		for _, side in ipairs(by_cardinal) do
 			if not side.door then
@@ -368,7 +368,7 @@ function features.make_building(tiles, rects, top_z, road_side)
 
 	for _, wall in ipairs(internal_walls) do
 		local pos = utils.pick(wall.candidates)
-		if love.math.random() < gen_cfg.open_internal_door_chance then
+		if love.math.random() < gen_cfg.doors.open_internal_chance then
 			stamp_door(pos.x, pos.y, pos.rotation, tiles)
 		else
 			tiles[pos.y][pos.x][2] = tile_types.air

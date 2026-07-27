@@ -74,11 +74,11 @@ function city_generator:wild(start_x, start_y, end_x, end_y, tiles, root)
 	for y = start_y, end_y do
 		for x = start_x, end_x do
 			if tiles[y][x][1] == types.grass then
-				local noise = love.math.noise(x * gen_cfg.scale + self.noise_ox, y * gen_cfg.scale + self.noise_oy)
-				local n = self.distance[y][x] + (noise - 0.5) * gen_cfg.noise_strength
-				local v = n + ((love.math.random() - 0.5) * gen_cfg.jitter)
-				local tree_strength = ((v - gen_cfg.tree_threshold) / gen_cfg.tree_ramp) * gen_cfg.canopy_density
-				local shrub_strength = (v - gen_cfg.shrub_threshold) / gen_cfg.shrub_ramp
+				local noise = love.math.noise(x * gen_cfg.noise.scale + self.noise_ox, y * gen_cfg.noise.scale + self.noise_oy)
+				local n = self.distance[y][x] + (noise - 0.5) * gen_cfg.noise.strength
+				local v = n + ((love.math.random() - 0.5) * gen_cfg.noise.jitter)
+				local tree_strength = ((v - gen_cfg.flora.tree_threshold) / gen_cfg.flora.tree_ramp) * gen_cfg.flora.canopy_density
+				local shrub_strength = (v - gen_cfg.flora.shrub_threshold) / gen_cfg.flora.shrub_ramp
 				if love.math.random() < tree_strength and map:is_tile_free(x, y, 1) then
 					features.place("tree", x, y, tiles, self.max_z)
 				elseif love.math.random() < shrub_strength then
@@ -89,7 +89,7 @@ function city_generator:wild(start_x, start_y, end_x, end_y, tiles, root)
 			end
 		end
 	end
-	features.scatter(tiles, root, gen_cfg.shrub_chance, function(x, y)
+	features.scatter(tiles, root, gen_cfg.flora.shrub_chance, function(x, y)
 		if tiles[y][x][1] == types.grass then
 			tiles[y][x][1] = types.shrub
 		end
@@ -108,7 +108,7 @@ local NEIGHBOR_OFFSETS = {
 }
 
 function city_generator:find_dist()
-	local falloff = gen_cfg.civ_falloff
+	local falloff = gen_cfg.noise.civ_falloff
 	local steps = {}
 	for y = 1, self.max_y do
 		steps[y] = {}
@@ -164,15 +164,15 @@ function city_generator:make_road(tiles, road)
 
 	for y = road.y, road.y + road.h - 1 do
 		for x = road.x, road.x + road.w - 1 do
-			if love.math.random(1, gen_cfg.road_skip_chance) ~= gen_cfg.road_skip_chance then
+			if love.math.random(1, gen_cfg.roads.skip_chance) ~= gen_cfg.roads.skip_chance then
 				tiles[y][x][1] = types.road
 			end
 		end
 	end
-	local step = gen_cfg.lamp_step
+	local step = gen_cfg.roads.lamp_step
 	if road.w > road.h then
 		for x = road.x + step, road.x + road.w - 1, step do
-			if love.math.random() >= gen_cfg.lamp_skip_chance then
+			if love.math.random() >= gen_cfg.roads.lamp_skip_chance then
 				local ly = love.math.random() < 0.5 and road.y - 1 or road.y + road.h
 				if map:is_tile_free(x, ly, 1) then
 					entities.add_from_template("street_lamp", x, ly, 1)
@@ -181,7 +181,7 @@ function city_generator:make_road(tiles, road)
 		end
 	else
 		for y = road.y + step, road.y + road.h - 1, step do
-			if love.math.random() >= gen_cfg.lamp_skip_chance then
+			if love.math.random() >= gen_cfg.roads.lamp_skip_chance then
 				local lx = love.math.random() < 0.5 and road.x - 1 or road.x + road.w
 				if map:is_tile_free(lx, y, 1) then
 					entities.add_from_template("street_lamp", lx, y, 1)
@@ -192,8 +192,8 @@ function city_generator:make_road(tiles, road)
 end
 
 local function shape_footprint(inset, road_side)
-	local cap_w = math.max(gen_cfg.min_building_size, math.floor(inset.h * gen_cfg.max_building_aspect))
-	local cap_h = math.max(gen_cfg.min_building_size, math.floor(inset.w * gen_cfg.max_building_aspect))
+	local cap_w = math.max(gen_cfg.buildings.min_size, math.floor(inset.h * gen_cfg.buildings.max_aspect))
+	local cap_h = math.max(gen_cfg.buildings.min_size, math.floor(inset.w * gen_cfg.buildings.max_aspect))
 	local w = math.min(inset.w, cap_w)
 	local h = math.min(inset.h, cap_h)
 
@@ -221,13 +221,13 @@ local function make_wing(rect)
 	local vertical = rect.w >= rect.h
 	local split_span = vertical and rect.w or rect.h
 	local wing_span = vertical and rect.h or rect.w
-	local min_span = 2 * gen_cfg.min_room_thickness
+	local min_span = 2 * gen_cfg.rooms.min_thickness
 	if split_span < min_span or wing_span < min_span then
 		return { rect }
 	end
 
-	local offset = love.math.random(gen_cfg.min_room_thickness, split_span - gen_cfg.min_room_thickness)
-	local wing_size = love.math.random(gen_cfg.min_room_thickness, wing_span - gen_cfg.min_room_thickness)
+	local offset = love.math.random(gen_cfg.rooms.min_thickness, split_span - gen_cfg.rooms.min_thickness)
+	local wing_size = love.math.random(gen_cfg.rooms.min_thickness, wing_span - gen_cfg.rooms.min_thickness)
 	local a, b, _ = utils.split_rect(rect, vertical, offset, -1)
 	if love.math.random() < 0.5 then
 		a, b = b, a
@@ -245,13 +245,13 @@ local function make_room(rects, depth)
 		local vertical = rect.w >= rect.h
 		local split_span = vertical and rect.w or rect.h
 		if
-			split_span >= 2 * gen_cfg.min_room_thickness
-			and (split_span >= gen_cfg.max_room_size or love.math.random() < gen_cfg.room_split_chance)
+			split_span >= 2 * gen_cfg.rooms.min_thickness
+			and (split_span >= gen_cfg.rooms.max_size or love.math.random() < gen_cfg.rooms.split_chance)
 		then
-			local offset = love.math.random(gen_cfg.min_room_thickness, split_span - gen_cfg.min_room_thickness)
+			local offset = love.math.random(gen_cfg.rooms.min_thickness, split_span - gen_cfg.rooms.min_thickness)
 			local a, b, _ = utils.split_rect(rect, vertical, offset, -1)
 			local pieces = { a, b }
-			if depth < gen_cfg.max_room_split_depth then
+			if depth < gen_cfg.rooms.max_split_depth then
 				pieces = make_room(pieces, depth + 1)
 			end
 			for _, piece in ipairs(pieces) do
@@ -268,21 +268,21 @@ function city_generator:build_building(tiles, lot)
 	local map = require("src.map.map")
 
 	local ml, mr, mt, mb =
-		love.math.random(1, gen_cfg.building_margin),
-		love.math.random(1, gen_cfg.building_margin),
-		love.math.random(1, gen_cfg.building_margin),
-		love.math.random(1, gen_cfg.building_margin)
+		love.math.random(1, gen_cfg.buildings.margin),
+		love.math.random(1, gen_cfg.buildings.margin),
+		love.math.random(1, gen_cfg.buildings.margin),
+		love.math.random(1, gen_cfg.buildings.margin)
 	local bw, bh = lot.w - ml - mr, lot.h - mt - mb
 
 	local inset = { x = lot.x + ml, y = lot.y + mt, w = bw, h = bh }
-	if bw >= gen_cfg.min_building_size and bh >= gen_cfg.min_building_size then
+	if bw >= gen_cfg.buildings.min_size and bh >= gen_cfg.buildings.min_size then
 		local roll = love.math.random()
-		if roll < gen_cfg.building_chance then
+		if roll < gen_cfg.buildings.chance then
 			local road_side = self:nearest_road_side(inset)
 			local footprint = shape_footprint(inset, road_side)
 			local rects = { footprint }
 			roll = love.math.random()
-			if roll < gen_cfg.wing_chance then
+			if roll < gen_cfg.buildings.wing_chance then
 				rects = make_wing(footprint)
 			end
 			rects = make_room(rects)
@@ -300,8 +300,8 @@ function city_generator:build_building(tiles, lot)
 				end)
 			end
 		else
-			features.scatter(tiles, lot, gen_cfg.monster_chance, function(x, y)
-				local monster = utils.pick_weighted(gen_cfg.monsters)
+			features.scatter(tiles, lot, gen_cfg.monsters.chance, function(x, y)
+				local monster = utils.pick_weighted(gen_cfg.monsters.types)
 				if monster then
 					entities.add_from_template(monster.name, x, y, 1)
 				end
@@ -323,7 +323,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	self.noise_oy = love.math.random() * 1000
 	features.load(self.max_x, self.max_y)
 
-	lots.subdivide(root, gen_cfg.subdivide_depth, self.lots, self.roads)
+	lots.subdivide(root, gen_cfg.lots.subdivide_depth, self.lots, self.roads)
 
 	for _, road in ipairs(self.roads) do
 		self:make_road(tiles, road)
