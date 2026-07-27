@@ -9,7 +9,7 @@ return {
 	},
 
 	roads = {
-		skip_chance = 0.067,
+		skip_chance = 0.1,
 		lamp_step = 30,
 		lamp_skip_chance = 0.85,
 	},
