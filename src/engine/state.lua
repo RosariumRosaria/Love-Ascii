@@ -2,7 +2,14 @@ local state = {
 	game_state = "start",
 }
 
-local states = { normal = "normal", paused = "paused", dead = "dead", start = "start", settings = "settings" }
+local states = {
+	normal = "normal",
+	paused = "paused",
+	dead = "dead",
+	start = "start",
+	settings = "settings",
+	keybinds = "keybinds",
+}
 
 function state:get()
 	return self.game_state

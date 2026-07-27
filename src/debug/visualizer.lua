@@ -107,9 +107,9 @@ function visualizer:draw_buildings()
 end
 
 -- One pixel per tile, baked once and redrawn as a single quad. The field only changes
--- when the map regenerates, which shows up as a fresh table from city_generator:find_dist.
+-- when the map regenerates, which shows up as a fresh table from city_generator:find_civ_distance.
 function visualizer:distance_image()
-	local distance = city_generator:get_dist()
+	local distance = city_generator:get_civ_distance()
 	if not distance or not distance[1] then
 		return nil
 	end
@@ -122,7 +122,7 @@ function visualizer:distance_image()
 	for y = 1, h do
 		local row = distance[y]
 		for x = 1, w do
-			-- the grid is already normalized 0-1 by city_generator:find_dist
+			-- the grid is already normalized 0-1 by city_generator:find_civ_distance
 			-- hot (on the road) to cold (deep wilderness)
 			local t = row[x] or 1
 			data:setPixel(x - 1, y - 1, 1 - t, 0.35 * (1 - t), t, 0.75)

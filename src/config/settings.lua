@@ -1,6 +1,8 @@
 local render_cfg = require("src.config.render_config")
+local bindings = require("src.config.bindings")
 local game_cfg = require("src.config.game_config")
 local debug_state = require("src.debug.debug_state")
+local utils = require("src.utils")
 local settings = {}
 
 local function apply_fonts()
@@ -92,6 +94,70 @@ local function index_of(descriptor, value)
 		end
 	end
 	return 1
+end
+
+local EMPTY = ""
+
+local function is_rebindable(binding)
+	return binding.category ~= "debug" and binding[1] ~= "select_slot"
+end
+
+local function binding_of(action)
+	for _, binding in ipairs(bindings) do
+		if is_rebindable(binding) and binding[1] == action then
+			return binding
+		end
+	end
+	return nil
+end
+
+function settings:get_keybinds()
+	local ret = {}
+	for _, binding in ipairs(bindings) do
+		if is_rebindable(binding) then
+			table.insert(ret, binding)
+		end
+	end
+	return ret
+end
+
+function settings:binding_texts(action)
+	local binding = binding_of(action)
+	if not binding then
+		return nil
+	end
+	local ret = {}
+	for i = 2, #binding do
+		table.insert(ret, binding[i])
+	end
+	if #ret < 2 then
+		table.insert(ret, EMPTY)
+	end
+	return ret
+end
+
+local reserved = { "escape", "return", "kpenter" }
+function settings:rebind(action, slot, key)
+	if utils.contains(reserved, key) then
+		return false
+	end
+	local target = binding_of(action)
+	if not target then
+		return false
+	end
+
+	for _, binding in ipairs(bindings) do
+		if is_rebindable(binding) then
+			for i = 2, #binding do
+				if binding[i] == key and not (binding == target and i == slot + 1) then
+					binding[i] = EMPTY
+				end
+			end
+		end
+	end
+
+	target[slot + 1] = key
+	return true
 end
 
 function settings:get(id)

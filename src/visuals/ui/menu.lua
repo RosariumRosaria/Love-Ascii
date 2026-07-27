@@ -35,6 +35,7 @@ local menus = {
 	settings = {
 		options = {
 			{ label = "BACK", kind = "action" },
+			{ label = "KEYBINDS", kind = "action" },
 			{ label = "GAMMA", kind = "number" },
 			{ label = "FULLSCREEN", kind = "enum" },
 			{ label = "FONT", kind = "enum" },
@@ -43,6 +44,11 @@ local menus = {
 		},
 		position = 1,
 		panels = { main = "settings", options = "settings_options" },
+	},
+	keybinds = {
+		options = {},
+		position = 1,
+		panels = { main = "keybinds", options = "keybinds_options" },
 	},
 }
 
@@ -70,7 +76,7 @@ local function layout_menu(name)
 	end
 end
 
-local function build_texts(options, position)
+local function build_texts(options, position, slot_position)
 	local texts = {}
 	for i, option in ipairs(options) do
 		if i > 1 then
@@ -82,7 +88,24 @@ local function build_texts(options, position)
 		if option.kind == "number" or option.kind == "enum" then
 			settings_value = ": " .. tostring(settings:value_text(label)) .. " "
 		end
-		table.insert(texts, "  " .. label .. settings_value .. (i == position and " <" or "  "))
+
+		if option.kind == "keybind" then
+			local id = option.id
+			local slots = settings:binding_texts(id)
+			settings_value = ":"
+			if slots then
+				for ii, slot in ipairs(slots) do
+					settings_value = settings_value
+						.. " ["
+						.. tostring(slot)
+						.. "]"
+						.. ((i == position and ii == slot_position) and " <" or "  ")
+				end
+			end
+			table.insert(texts, "  " .. label .. settings_value)
+		else
+			table.insert(texts, "  " .. label .. settings_value .. (i == position and " <" or "  "))
+		end
 	end
 	return texts
 end
@@ -90,18 +113,37 @@ end
 function menu:refresh(name)
 	local options = menus[name].options
 	local menu_panels = menus[name].panels
-	panels:get_panel(menu_panels.options).texts = build_texts(options, menus[name].position)
+	panels:get_panel(menu_panels.options).texts =
+		build_texts(options, menus[name].position, menus[name].slot or 1)
 	layout_menu(name)
 end
 
 function menu:navigate(name, dir)
 	local position = menus[name].position
 	local options = menus[name].options
-	menus[name].position = ((position - 1 + (dir or 0)) % #options) + 1
+	menus[name].position = ((position - 1 + dir) % #options) + 1
+	if options[menus[name].position].kind == "category" then
+		self:navigate(name, dir)
+	end
 	menu:refresh(name)
 end
+
+function menu:navigate_slot(name, dir)
+	local options = menus[name].options
+	if options[menus[name].position].kind ~= "keybind" then
+		return nil
+	end
+	local slot = menus[name].slot or 1
+	menus[name].slot = ((slot - 1 + dir) % 2) + 1
+	menu:refresh(name)
+end
+
 function menu:get_option(name)
 	return menus[name].options[menus[name].position]
+end
+
+function menu:get_slot(name)
+	return menus[name].slot
 end
 
 function menu:set_death_reason(text)
@@ -180,6 +222,27 @@ function menu:load()
 	local settings_options_panel = add_menu_panel("settings_options", "big")
 	self:refresh("settings")
 	settings_options_panel.visible = false
+
+	local keybinds_panel = add_menu_panel("keybinds", "very_big")
+	keybinds_panel.texts = { "KEYBINDS" }
+	keybinds_panel.visible = false
+
+	local keybinds_options_panel = add_menu_panel("keybinds_options", "medium")
+
+	local bindings = settings:get_keybinds()
+	table.insert(menus["keybinds"].options, { label = "BACK", kind = "action" })
+	local category = nil
+	for _, binding in ipairs(bindings) do
+		if not category or category ~= binding.category then
+			category = binding.category
+			local label = string.upper(category):gsub("_", " ")
+			table.insert(menus["keybinds"].options, { label = label, kind = "category" })
+		end
+		local label = string.upper(binding[1]):gsub("_", " ")
+		table.insert(menus["keybinds"].options, { id = binding[1], label = label, kind = "keybind" })
+	end
+	self:refresh("keybinds")
+	keybinds_options_panel.visible = false
 end
 
 return menu

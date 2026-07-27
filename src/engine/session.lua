@@ -18,10 +18,6 @@ local particles = require("src.visuals.particles.particles")
 local session = {}
 
 local function spawn_default_entities()
-	entities.add_from_template_free("ogre", 262, 253, 1)
-	entities.add_from_template_free("zombie", 256, 256, 1)
-	entities.add_from_template_free("crate", 250, 260, 1)
-	entities.add_from_template_free("barricade", 250, 255, 1)
 	entities.add_from_template_free("campfire", 255, 260, 1)
 	entities.add_from_template_free("crystal", 280, 255, 1)
 end
@@ -82,6 +78,7 @@ function session.load(seed)
 	scene:load(entities.player.x, entities.player.y)
 	debug_panel.load()
 	menu:load()
+	input:reload_keys()
 end
 
 function session.respawn()

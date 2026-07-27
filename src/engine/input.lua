@@ -34,20 +34,22 @@ local input = {
 
 local modes = { normal = "normal", aiming = "aiming", container = "container" }
 
+local keys_of = {}
+
 local move_axis_of_key
 local function get_move_of_key(key)
 	if not move_axis_of_key then
 		move_axis_of_key = {}
-		for _, k in ipairs(bindings.move_left or {}) do
+		for _, k in ipairs(keys_of.move_left or {}) do
 			move_axis_of_key[k] = { axis = "x", dir = -1 }
 		end
-		for _, k in ipairs(bindings.move_right or {}) do
+		for _, k in ipairs(keys_of.move_right or {}) do
 			move_axis_of_key[k] = { axis = "x", dir = 1 }
 		end
-		for _, k in ipairs(bindings.move_up or {}) do
+		for _, k in ipairs(keys_of.move_up or {}) do
 			move_axis_of_key[k] = { axis = "y", dir = -1 }
 		end
-		for _, k in ipairs(bindings.move_down or {}) do
+		for _, k in ipairs(keys_of.move_down or {}) do
 			move_axis_of_key[k] = { axis = "y", dir = 1 }
 		end
 	end
@@ -70,6 +72,17 @@ local function set_mouse_tile()
 	cursor.set_moused_coords(x, y)
 end
 
+function input:reload_keys()
+	for _, binding in ipairs(bindings) do
+		local keys = {}
+		for i = 2, #binding do
+			keys[i - 1] = binding[i]
+		end
+		keys_of[binding[1]] = keys
+	end
+	move_axis_of_key = nil
+end
+
 function input:reset()
 	-- Through set_mode, not a direct assignment, so aim/container get torn down.
 	self:set_mode(modes.normal)
@@ -80,17 +93,19 @@ function input:reset()
 	self.released_keys = {}
 	self.move_recency = {}
 	self.buffered_keys = {}
-	self.pending_slot = nil
 	self.pending_draw = nil
 	self.last_slot = nil
 	self.last_turn = { x = 0, y = 0 }
 	self.interact_consumed = false
 	self.grabbed = nil
+	self.last_key = nil
+	self:reload_keys()
 end
 
 function love.keypressed(key)
 	input.down_keys[key] = true
 	input.pressed_keys[key] = true
+	input.last_key = key
 	if get_move_of_key(key) then
 		remove_from_recency(input.move_recency, key)
 		table.insert(input.move_recency, key)
@@ -114,7 +129,7 @@ function input:get_actor()
 end
 
 function input:_has(action, state_table)
-	local keys = bindings[action]
+	local keys = keys_of[action]
 	if not keys then
 		return false
 	end
@@ -127,6 +142,10 @@ function input:_has(action, state_table)
 	return false
 end
 
+function input:get_keys(action)
+	return keys_of[action]
+end
+
 function input:is_down(action)
 	local source = self.buffer_reading and self.buffer_set or self.down_keys
 	return self:_has(action, source)
@@ -137,7 +156,7 @@ function input:pressed(action)
 end
 
 function input:pressed_slot()
-	for index, key in ipairs(bindings.select_slot or {}) do
+	for index, key in ipairs(keys_of.select_slot or {}) do
 		if self.pressed_keys[key] then
 			return index
 		end
@@ -516,7 +535,7 @@ end
 function input:end_frame()
 	self.pressed_keys = {}
 	self.released_keys = {}
-
+	self.last_key = nil
 	if not self:is_down("interact") then
 		self.interact_consumed = false
 	end
