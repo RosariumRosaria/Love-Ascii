@@ -166,6 +166,67 @@ function utils.deep_print(tbl, indent, visited)
 	end
 end
 
+function utils.print_grid(grid, format)
+	format = format
+		or function(v)
+			if v == nil or v == false then
+				return "."
+			elseif v == true then
+				return "#"
+			end
+			return tostring(v)
+		end
+
+	local function key_range(tbl)
+		local min_k, max_k
+		for k in pairs(tbl) do
+			if type(k) == "number" then
+				min_k = (not min_k or k < min_k) and k or min_k
+				max_k = (not max_k or k > max_k) and k or max_k
+			end
+		end
+		return min_k, max_k
+	end
+
+	local min_y, max_y = key_range(grid)
+	if not min_y then
+		return
+	end
+
+	local min_x, max_x
+	for y = min_y, max_y do
+		if grid[y] then
+			local lo, hi = key_range(grid[y])
+			if lo then
+				min_x = (not min_x or lo < min_x) and lo or min_x
+				max_x = (not max_x or hi > max_x) and hi or max_x
+			end
+		end
+	end
+	if not min_x then
+		return
+	end
+
+	local rows, width = {}, 0
+	for y = min_y, max_y do
+		local cells = {}
+		for x = min_x, max_x do
+			local s = format(grid[y] and grid[y][x], x, y)
+			cells[x] = s
+			width = math.max(width, #s)
+		end
+		rows[y] = cells
+	end
+
+	for y = min_y, max_y do
+		local parts = {}
+		for x = min_x, max_x do
+			parts[#parts + 1] = string.rep(" ", width - #rows[y][x]) .. rows[y][x]
+		end
+		print(table.concat(parts, width > 1 and " " or ""))
+	end
+end
+
 function utils.capitalize(str)
 	return str:sub(1, 1):upper() .. str:sub(2)
 end
@@ -193,6 +254,20 @@ function utils.overlapping_rectangles(r1, r2)
 		or r1.y + r1.height <= r2.y
 		or r2.y + r2.height <= r1.y
 	)
+end
+
+function utils.split_rect(rect, vertical, offset, gap)
+	gap = gap or 0
+
+	if vertical then
+		return { x = rect.x, y = rect.y, w = offset, h = rect.h },
+			{ x = rect.x + offset + gap, y = rect.y, w = rect.w - offset - gap, h = rect.h },
+			gap > 0 and { x = rect.x + offset, y = rect.y, w = gap, h = rect.h } or nil
+	end
+
+	return { x = rect.x, y = rect.y, w = rect.w, h = offset },
+		{ x = rect.x, y = rect.y + offset + gap, w = rect.w, h = rect.h - offset - gap },
+		gap > 0 and { x = rect.x, y = rect.y + offset, w = rect.w, h = gap } or nil
 end
 
 function utils.chance(percent)

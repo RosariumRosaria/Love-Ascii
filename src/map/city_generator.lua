@@ -191,6 +191,79 @@ function city_generator:make_road(tiles, road)
 	end
 end
 
+local function shape_footprint(inset, road_side)
+	local cap_w = math.max(gen_cfg.min_building_size, math.floor(inset.h * gen_cfg.max_building_aspect))
+	local cap_h = math.max(gen_cfg.min_building_size, math.floor(inset.w * gen_cfg.max_building_aspect))
+	local w = math.min(inset.w, cap_w)
+	local h = math.min(inset.h, cap_h)
+
+	local slack_x, slack_y = inset.w - w, inset.h - h
+	local dx, dy
+	if road_side == "west" then
+		dx = 0
+	elseif road_side == "east" then
+		dx = slack_x
+	else
+		dx = love.math.random(0, slack_x)
+	end
+	if road_side == "north" then
+		dy = 0
+	elseif road_side == "south" then
+		dy = slack_y
+	else
+		dy = love.math.random(0, slack_y)
+	end
+
+	return { x = inset.x + dx, y = inset.y + dy, w = w, h = h }
+end
+
+local function make_wing(rect)
+	local vertical = rect.w >= rect.h
+	local split_span = vertical and rect.w or rect.h
+	local wing_span = vertical and rect.h or rect.w
+	local min_span = 2 * gen_cfg.min_room_thickness
+	if split_span < min_span or wing_span < min_span then
+		return { rect }
+	end
+
+	local offset = love.math.random(gen_cfg.min_room_thickness, split_span - gen_cfg.min_room_thickness)
+	local wing_size = love.math.random(gen_cfg.min_room_thickness, wing_span - gen_cfg.min_room_thickness)
+	local a, b, _ = utils.split_rect(rect, vertical, offset, -1)
+	if love.math.random() < 0.5 then
+		a, b = b, a
+	end
+	local near, far = utils.split_rect(b, not vertical, wing_size)
+	local wing = love.math.random() < 0.5 and near or far
+
+	return { a, wing }
+end
+
+local function make_room(rects, depth)
+	depth = depth or 1
+	local new_rects = {}
+	for _, rect in ipairs(rects) do
+		local vertical = rect.w >= rect.h
+		local split_span = vertical and rect.w or rect.h
+		if
+			split_span >= 2 * gen_cfg.min_room_thickness
+			and (split_span >= gen_cfg.max_room_size or love.math.random() < gen_cfg.room_split_chance)
+		then
+			local offset = love.math.random(gen_cfg.min_room_thickness, split_span - gen_cfg.min_room_thickness)
+			local a, b, _ = utils.split_rect(rect, vertical, offset, -1)
+			local pieces = { a, b }
+			if depth < gen_cfg.max_room_split_depth then
+				pieces = make_room(pieces, depth + 1)
+			end
+			for _, piece in ipairs(pieces) do
+				table.insert(new_rects, piece)
+			end
+		else
+			table.insert(new_rects, rect)
+		end
+	end
+	return new_rects
+end
+
 function city_generator:build_building(tiles, lot)
 	local map = require("src.map.map")
 
@@ -206,24 +279,26 @@ function city_generator:build_building(tiles, lot)
 		local roll = love.math.random()
 		if roll < gen_cfg.building_chance then
 			local road_side = self:nearest_road_side(inset)
-			local building = features.make_building(
-				tiles,
-				lot.x + ml,
-				lot.y + mt,
-				bw,
-				bh,
-				features.roll_height("wall", self.max_z),
-				road_side
-			)
+			local footprint = shape_footprint(inset, road_side)
+			local rects = { footprint }
+			roll = love.math.random()
+			if roll < gen_cfg.wing_chance then
+				rects = make_wing(footprint)
+			end
+			rects = make_room(rects)
+			local building, parts =
+				features.make_building(tiles, rects, features.roll_height("wall", self.max_z), road_side)
 			table.insert(self.buildings, building)
-			features.scatter_count(tiles, building, love.math.random(3), function(x, y)
-				if not map:is_tile_free(x, y, 1) then
-					return false
-				end
+			for _, part in ipairs(parts) do
+				features.scatter_count(tiles, part, love.math.random(2), function(x, y)
+					if not map:is_tile_free(x, y, 1) then
+						return false
+					end
 
-				entities.add_from_template(utils.pick({ "crate", "barricade", "chest" }), x, y, 1)
-				return true
-			end)
+					entities.add_from_template(utils.pick({ "crate", "barricade", "chest" }), x, y, 1)
+					return true
+				end)
+			end
 		else
 			features.scatter(tiles, lot, gen_cfg.monster_chance, function(x, y)
 				local monster = utils.pick_weighted(gen_cfg.monsters)

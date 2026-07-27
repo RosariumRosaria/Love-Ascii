@@ -2,32 +2,38 @@ return {
 
 	road_skip_chance = 15,
 
-	lot_min_size = 10,
+	lot_min_size = 12,
 	lot_max_size = 17,
 	lot_stop_chance = 0.55,
 
 	subdivide_depth = 11,
-	building_margin = 5,
-	min_building_size = 6,
+	building_margin = 4,
+
+	min_room_thickness = 5,
+	min_building_size = 10,
+	max_building_aspect = 1.5,
+	max_room_split_depth = 2,
+
+	open_internal_door_chance = 0.5,
+	max_room_size = 12,
+	wing_chance = 0.5,
 	building_chance = 0.75,
 	second_door_chance = 0.75,
 	road_side_door_weight = 7,
-
+	room_split_chance = 0.5,
 	shrub_chance = 0.02,
 
 	scale = 0.125,
 	jitter = 0.15,
-	-- how far the noise field pushes the treeline in and out, in wildness units
+
 	noise_strength = 1,
-	-- where each band starts, and how much wildness above that it takes to reach
-	-- full density: wider ramp = softer, patchier fade from the band's centre to its edge
+
 	shrub_threshold = 0.7,
 	shrub_ramp = 0.5,
 	tree_threshold = 0.9,
 	tree_ramp = 0.4,
 	canopy_density = 0.67,
 
-	-- tiles from the nearest road/building at which wildness saturates at 1
 	civ_falloff = 12,
 
 	monster_chance = 0.002,
