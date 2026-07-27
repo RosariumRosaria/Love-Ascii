@@ -76,6 +76,16 @@ return {
 		natural_rotation = 90,
 	},
 
+	h_wall = {
+		name = "Wall",
+		chars = { "|" },
+		walkable = false,
+		color = { 0.65, 0.65, 0.7, 1 },
+		transparent = false,
+		natural_rotation = 90,
+		rotation = 90,
+	},
+
 	c_wall = {
 		name = "Pillar",
 		chars = { "+" },

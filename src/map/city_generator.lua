@@ -4,10 +4,10 @@ local lots = require("src.map.lots")
 local features = require("src.map.features")
 local entities = require("src.sim.entities")
 local utils = require("src.utils")
-local city_generator = { max_x = nil, max_y = nil, max_z = nil, lots = {}, roads = {}, buildings = {}, distance = {} }
+local city_generator = { max_x = nil, max_y = nil, max_z = nil, lots = {}, roads = {}, buildings = {}, civ_distance = {} }
 
-function city_generator:get_dist()
-	return self.distance
+function city_generator:get_civ_distance()
+	return self.civ_distance
 end
 
 function city_generator:get_lots()
@@ -41,6 +41,10 @@ function city_generator:distance_to_road(x, y)
 end
 
 function city_generator:nearest_road_side(rect)
+	if #self.roads == 0 then
+		return nil
+	end
+
 	local cx = rect.x + math.floor(rect.w / 2)
 	local cy = rect.y + math.floor(rect.h / 2)
 	local sides = {
@@ -49,10 +53,6 @@ function city_generator:nearest_road_side(rect)
 		{ name = "west", x = rect.x, y = cy },
 		{ name = "east", x = rect.x + rect.w - 1, y = cy },
 	}
-
-	if #self.roads == 0 then
-		return nil
-	end
 
 	local best_dist, tied = math.huge, {}
 	for _, side in ipairs(sides) do
@@ -75,7 +75,7 @@ function city_generator:wild(start_x, start_y, end_x, end_y, tiles, root)
 		for x = start_x, end_x do
 			if tiles[y][x][1] == types.grass then
 				local noise = love.math.noise(x * gen_cfg.noise.scale + self.noise_ox, y * gen_cfg.noise.scale + self.noise_oy)
-				local n = self.distance[y][x] + (noise - 0.5) * gen_cfg.noise.strength
+				local n = self.civ_distance[y][x] + (noise - 0.5) * gen_cfg.noise.strength
 				local v = n + ((love.math.random() - 0.5) * gen_cfg.noise.jitter)
 				local tree_strength = ((v - gen_cfg.flora.tree_threshold) / gen_cfg.flora.tree_ramp) * gen_cfg.flora.canopy_density
 				local shrub_strength = (v - gen_cfg.flora.shrub_threshold) / gen_cfg.flora.shrub_ramp
@@ -107,7 +107,7 @@ local NEIGHBOR_OFFSETS = {
 	{ 1, 1 },
 }
 
-function city_generator:find_dist()
+function city_generator:find_civ_distance()
 	local falloff = gen_cfg.noise.civ_falloff
 	local steps = {}
 	for y = 1, self.max_y do
@@ -148,14 +148,14 @@ function city_generator:find_dist()
 		frontier, next_frontier = next_frontier, {}
 	end
 
-	self.distance = {}
+	self.civ_distance = {}
 	for y = 1, self.max_y do
 		local row, step_row = {}, steps[y]
 		for x = 1, self.max_x do
 			local step = step_row[x]
 			row[x] = step and step / falloff or 1
 		end
-		self.distance[y] = row
+		self.civ_distance[y] = row
 	end
 end
 
@@ -164,7 +164,7 @@ function city_generator:make_road(tiles, road)
 
 	for y = road.y, road.y + road.h - 1 do
 		for x = road.x, road.x + road.w - 1 do
-			if love.math.random(1, gen_cfg.roads.skip_chance) ~= gen_cfg.roads.skip_chance then
+			if love.math.random() >= gen_cfg.roads.skip_chance then
 				tiles[y][x][1] = types.road
 			end
 		end
@@ -276,13 +276,11 @@ function city_generator:build_building(tiles, lot)
 
 	local inset = { x = lot.x + ml, y = lot.y + mt, w = bw, h = bh }
 	if bw >= gen_cfg.buildings.min_size and bh >= gen_cfg.buildings.min_size then
-		local roll = love.math.random()
-		if roll < gen_cfg.buildings.chance then
+		if love.math.random() < gen_cfg.buildings.chance then
 			local road_side = self:nearest_road_side(inset)
 			local footprint = shape_footprint(inset, road_side)
 			local rects = { footprint }
-			roll = love.math.random()
-			if roll < gen_cfg.buildings.wing_chance then
+			if love.math.random() < gen_cfg.buildings.wing_chance then
 				rects = make_wing(footprint)
 			end
 			rects = make_room(rects)
@@ -331,7 +329,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	for _, lot in ipairs(self.lots) do
 		self:build_building(tiles, lot)
 	end
-	self:find_dist()
+	self:find_civ_distance()
 	self:wild(1, 1, map_max_x, map_max_y, tiles, root)
 end
 

@@ -7,6 +7,8 @@ local debug_state = {
 	show_perf = false,
 	show_xray = false,
 	profiling = false,
+	-- prints map-generation warnings (sealed rooms, …) to the launching terminal
+	log_generation = true,
 }
 
 function debug_state.toggle_grid()

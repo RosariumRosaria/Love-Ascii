@@ -1,12 +1,11 @@
 local feature_types = require("src.map.feature_types")
 local tile_types = require("src.map.tile_types")
 local entities = require("src.sim.entities")
+local generation_report = require("src.debug.generation_report")
 local gen_cfg = require("src.config.generation_config")
 local utils = require("src.utils")
 
 local features = { max_x = nil, max_y = nil }
-
-local rotated_wall = setmetatable({ rotation = 90 }, { __index = tile_types.v_wall })
 
 function features.load(max_x, max_y)
 	features.max_x = max_x
@@ -142,11 +141,8 @@ local function is_corner_cell(mask, x, y, width, height)
 	return is_boundary(mask, x, y) == "corner"
 end
 
-local function touches_corner(mask, x, y, orientation, width, height)
-	local dx, dy = 1, 0
-	if orientation == "horizontal" then
-		dx, dy = 0, 1
-	end
+local function touches_corner(mask, x, y, axis, width, height)
+	local dx, dy = axis.along_x, axis.along_y
 	return is_corner_cell(mask, x - dx, y - dy, width, height) or is_corner_cell(mask, x + dx, y + dy, width, height)
 end
 
@@ -217,11 +213,38 @@ end
 local NORTH_SOUTH_FACING = { 90, 270 }
 local WEST_EAST_FACING = { 0, 180 }
 
+local WALL_AXES = {
+	vertical = {
+		tile = tile_types.v_wall,
+		along_x = 1,
+		along_y = 0,
+		across_x = 0,
+		across_y = 1,
+		low = "north",
+		high = "south",
+		facing = NORTH_SOUTH_FACING,
+	},
+	horizontal = {
+		tile = tile_types.h_wall,
+		along_x = 0,
+		along_y = 1,
+		across_x = 1,
+		across_y = 0,
+		low = "west",
+		high = "east",
+		facing = WEST_EAST_FACING,
+	},
+}
+
 local function room_pair_key(a, b)
 	if a > b then
 		a, b = b, a
 	end
 	return a .. ":" .. b
+end
+
+local function add_candidate(candidates, x, y, rotation, near_corner)
+	candidates[#candidates + 1] = { x = x, y = y, rotation = rotation, near_corner = near_corner }
 end
 
 local function add_internal_door(walls, a_id, b_id, x, y, facing, near_corner)
@@ -237,7 +260,7 @@ local function add_internal_door(walls, a_id, b_id, x, y, facing, near_corner)
 		wall = { key = key, candidates = {} }
 		walls[#walls + 1] = wall
 	end
-	table.insert(wall.candidates, { x = x, y = y, rotation = utils.pick(facing), near_corner = near_corner })
+	add_candidate(wall.candidates, x, y, utils.pick(facing), near_corner)
 end
 
 -- kind of hacky but I wanted to reuse some of my utils that needed pairs
@@ -259,70 +282,6 @@ local function make_cardinal_buckets()
 	}
 end
 
-local FLOOD_OFFSETS = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }
-
-local function report_sealed_rooms(mask, width, height, doors, ox, oy)
-	local stride = width + 2
-	local open, present = {}, {}
-	for _, door in ipairs(doors) do
-		open[door.y * stride + door.x] = true
-	end
-
-	local start_x, start_y
-	for y = 1, height do
-		for x = 1, width do
-			local id = mask[y][x]
-			if id > 0 then
-				present[id] = true
-				start_x = start_x or x
-				start_y = start_y or y
-			end
-		end
-	end
-	if not start_x then
-		return
-	end
-
-	local seen = { [start_y * stride + start_x] = true }
-	local reached = { [mask[start_y][start_x]] = true }
-	local frontier = { { start_x, start_y } }
-	while #frontier > 0 do
-		local cell = table.remove(frontier)
-		for _, offset in ipairs(FLOOD_OFFSETS) do
-			local nx, ny = cell[1] + offset[1], cell[2] + offset[2]
-			if nx >= 1 and nx <= width and ny >= 1 and ny <= height then
-				local key = ny * stride + nx
-				local id = mask[ny][nx]
-				if not seen[key] and (id > 0 or open[key]) then
-					seen[key] = true
-					if id > 0 then
-						reached[id] = true
-					end
-					frontier[#frontier + 1] = { nx, ny }
-				end
-			end
-		end
-	end
-
-	local sealed = {}
-	for id in pairs(present) do
-		if not reached[id] then
-			sealed[#sealed + 1] = id
-		end
-	end
-	if #sealed > 0 then
-		table.sort(sealed)
-		print(
-			("features.make_building: %d sealed room(s) [%s] in building at %d,%d"):format(
-				#sealed,
-				table.concat(sealed, ", "),
-				ox + 1,
-				oy + 1
-			)
-		)
-	end
-end
-
 function features.make_building(tiles, rects, top_z, road_side)
 	local bounding_box = get_bounding_box(rects)
 	local ox, oy = bounding_box.x - 1, bounding_box.y - 1
@@ -338,60 +297,26 @@ function features.make_building(tiles, rects, top_z, road_side)
 			local tile_y = oy + y
 			if mask[y][x] ~= 0 and in_bounds(tile_x, tile_y) then
 				local orientation = is_boundary(mask, x, y)
+				local axis = WALL_AXES[orientation]
 				if orientation == "internal" then
 					tiles[tile_y][tile_x][1] = tile_types.floor
-				elseif orientation == "vertical" then
-					features.fill_column(tiles, tile_x, tile_y, 1, top_z, tile_types.v_wall)
-					local up_id = mask[y - 1][x]
-					local down_id = mask[y + 1][x]
-					local near_corner = touches_corner(mask, x, y, orientation, width, height)
-					if up_id == 0 and down_id > 0 then
-						table.insert(
-							by_cardinal.north.candidates,
-							{ x = tile_x, y = tile_y, near_corner = near_corner }
-						)
-					end
-					if down_id == 0 and up_id > 0 then
-						table.insert(
-							by_cardinal.south.candidates,
-							{ x = tile_x, y = tile_y, near_corner = near_corner }
-						)
-					end
-					if up_id ~= down_id and up_id > 0 and down_id > 0 then
-						add_internal_door(
-							internal_walls,
-							up_id,
-							down_id,
-							tile_x,
-							tile_y,
-							NORTH_SOUTH_FACING,
-							near_corner
-						)
-					end
-				elseif orientation == "horizontal" then
-					local left_id = mask[y][x - 1]
-					local right_id = mask[y][x + 1]
-					features.fill_column(tiles, tile_x, tile_y, 1, top_z, rotated_wall)
-					local near_corner = touches_corner(mask, x, y, orientation, width, height)
-					if left_id == 0 and right_id > 0 then
-						table.insert(by_cardinal.west.candidates, { x = tile_x, y = tile_y, near_corner = near_corner })
-					end
-					if right_id == 0 and left_id > 0 then
-						table.insert(by_cardinal.east.candidates, { x = tile_x, y = tile_y, near_corner = near_corner })
-					end
-					if left_id ~= right_id and left_id > 0 and right_id > 0 then
-						add_internal_door(
-							internal_walls,
-							left_id,
-							right_id,
-							tile_x,
-							tile_y,
-							WEST_EAST_FACING,
-							near_corner
-						)
-					end
 				elseif orientation == "corner" then
 					features.fill_column(tiles, tile_x, tile_y, 1, top_z, tile_types.c_wall)
+				elseif axis then
+					features.fill_column(tiles, tile_x, tile_y, 1, top_z, axis.tile)
+					local low_id = mask[y - axis.across_y][x - axis.across_x]
+					local high_id = mask[y + axis.across_y][x + axis.across_x]
+					local near_corner = touches_corner(mask, x, y, axis, width, height)
+					local low, high = by_cardinal[axis.low], by_cardinal[axis.high]
+					if low_id == 0 and high_id > 0 then
+						add_candidate(low.candidates, tile_x, tile_y, low.rotation, near_corner)
+					end
+					if high_id == 0 and low_id > 0 then
+						add_candidate(high.candidates, tile_x, tile_y, high.rotation, near_corner)
+					end
+					if low_id ~= high_id and low_id > 0 and high_id > 0 then
+						add_internal_door(internal_walls, low_id, high_id, tile_x, tile_y, axis.facing, near_corner)
+					end
 				end
 			end
 		end
@@ -416,18 +341,15 @@ function features.make_building(tiles, rects, top_z, road_side)
 		utils.pick(remaining).door = true
 	end
 
-	local doors = {}
-	local door_positions = {}
+	local doorways = {}
 
-	-- every door is placed before any window, so windows can steer clear of all of them
 	for _, side in ipairs(by_cardinal) do
 		if side.door then
 			local pool = prefer_non_corner(side.candidates)
 			local pos = #pool > 0 and utils.pick(pool) or nil
 			if pos and in_bounds(pos.x, pos.y) then
-				stamp_door(pos.x, pos.y, side.rotation, tiles)
-				doors[#doors + 1] = { x = pos.x - ox, y = pos.y - oy }
-				door_positions[#door_positions + 1] = pos
+				stamp_door(pos.x, pos.y, pos.rotation, tiles)
+				doorways[#doorways + 1] = pos
 				utils.remove_from_list(side.candidates, pos)
 			end
 		end
@@ -441,25 +363,24 @@ function features.make_building(tiles, rects, top_z, road_side)
 			tiles[pos.y][pos.x][2] = tile_types.air
 			tiles[pos.y][pos.x][1] = tile_types.floor
 		end
-		doors[#doors + 1] = { x = pos.x - ox, y = pos.y - oy }
-		door_positions[#door_positions + 1] = pos
+		doorways[#doorways + 1] = pos
 	end
 
 	for _, side in ipairs(by_cardinal) do
 		local window_count = side.door and 1 or 2
 		for _ = 1, window_count do
-			local pool = prefer_away_from_doors(side.candidates, door_positions)
+			local pool = prefer_away_from_doors(side.candidates, doorways)
 			local pos = #pool > 0 and utils.pick(pool) or nil
-			if pos and in_bounds(pos.x, pos.y) then
-				stamp_window(pos.x, pos.y, side.rotation, tiles)
-			end
 			if pos then
+				if in_bounds(pos.x, pos.y) then
+					stamp_window(pos.x, pos.y, pos.rotation, tiles)
+				end
 				utils.remove_from_list(side.candidates, pos)
 			end
 		end
 	end
 
-	report_sealed_rooms(mask, width, height, doors, ox, oy)
+	generation_report.check_sealed_rooms(mask, width, height, doorways, ox, oy)
 
 	return bounding_box, rects
 end
