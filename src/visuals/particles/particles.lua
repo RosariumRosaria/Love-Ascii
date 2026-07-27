@@ -44,7 +44,7 @@ local particle_types = {
 		vz_min = 0,
 		vz_max = 0,
 		drift = 0.0,
-		color = { 0.9, 0.3, 0.35, 0.7 },
+		color = { 1, 0.3, 0.35, 0.9 },
 		linger = 2,
 		lifespan = 3,
 		layer = "below_entity",
@@ -90,6 +90,34 @@ local function weather_position(cx, cy, draw_dist)
 		particles.ceiling - love.math.random(0, 3)
 end
 
+local function surface_at(tx, ty, level)
+	local tile = map:get_tile(tx, ty, level)
+	return tile and tile ~= types.air and tile or nil
+end
+
+local function blocked_at(tx, ty, level)
+	local tile = surface_at(tx, ty, level)
+	return tile ~= nil and not tile.walkable
+end
+
+local function surface_crossed_falling(tx, ty, from_z, to_z)
+	for level = math.ceil(from_z) - 1, math.ceil(to_z), -1 do
+		if surface_at(tx, ty, level) then
+			return level
+		end
+	end
+	return nil
+end
+
+local function surface_crossed_rising(tx, ty, from_z, to_z)
+	for level = math.floor(from_z) + 1, math.floor(to_z) do
+		if surface_at(tx, ty, level) then
+			return level
+		end
+	end
+	return nil
+end
+
 local function spawn_particle(x, y, z, ease_in, params, source)
 	if not params then
 		return
@@ -132,15 +160,16 @@ function particles:burst(x, y, z, type_name, count, opts)
 	local smin = opts.smin or 10
 	local smax = opts.smax or 16
 	local popup = opts.popup or 1
-	local gravity = opts.gravity or 3
+	local gravity = opts.gravity or 7
 	local base = dir and math.atan2(dir.dy, dir.dx) or love.math.random() * 2 * math.pi
 	local params = particle_types[type_name]
+	local spawn_z = z + (opts.height or render_cfg.particles.burst_height)
 
 	if not params then
 		return
 	end
 	for _ = 1, count do
-		local p = spawn_particle(x, y, z, false, params, "emitter")
+		local p = spawn_particle(x, y, spawn_z, false, params, "emitter")
 		local a = base + (love.math.random() * 2 - 1) * spread
 		local speed = smin + love.math.random() * (smax - smin)
 		p.vx, p.vy = math.cos(a) * speed, math.sin(a) * speed
@@ -236,16 +265,26 @@ function particles:update(dt, cx, cy)
 		else
 			p.x = p.x + p.vx * dt
 			p.y = p.y + p.vy * dt
+			local prev_z = p.z
 			p.z = p.z + p.vz * dt
 			p.vz = p.vz - ((p.gravity or 0) * dt)
 			p.r = (p.r or 0) + ((p.r_rate or 0) * dt)
 			local tx, ty = math.floor(p.x), math.floor(p.y)
-			local hit = false
-			if map:in_bounds(tx, ty) then
-				local tile = map:get_tile(tx, ty, math.floor(p.z))
-				if tile and tile ~= types.air then
+			local hit = p.landed or false
+			if not hit and map:in_bounds(tx, ty) then
+				local surface = nil
+				if p.z < prev_z then
+					surface = surface_crossed_falling(tx, ty, prev_z, p.z)
+				elseif p.z > prev_z then
+					surface = surface_crossed_rising(tx, ty, prev_z, p.z)
+				end
+				if surface then
+					p.z = surface
+					hit = true
+				elseif blocked_at(tx, ty, math.floor(p.z)) then
 					hit = true
 				end
+				p.landed = hit
 			end
 			local out_x = math.abs(p.x - cx) > draw_dist
 			local out_y = math.abs(p.y - cy) > draw_dist

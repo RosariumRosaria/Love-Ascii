@@ -59,7 +59,7 @@ end
 
 local function spawn_burst(entity, type_name, count, opts)
 	local cx, cy = utils.get_center_of_footprint(entity)
-	particles:burst(entity.x + cx, entity.y + cy, entity.z + 1, type_name, count, opts)
+	particles:burst(entity.x + cx, entity.y + cy, entity.z, type_name, count, opts)
 end
 
 local function resolve_target(actor, dx, dy, tag, name, target)
@@ -287,7 +287,7 @@ local function emit_on_hit_effects(attacker, target, damage)
 		spawn_burst(target, hit_burst, 4, { -- TODO: someday this and things like ths shake could be based on damage
 			dir = { dx = tcx - acx, dy = tcy - acy },
 			spread = 1,
-			smin = 3,
+			smin = 4,
 			smax = 10,
 		})
 	end
@@ -297,7 +297,7 @@ local function emit_on_hit_effects(attacker, target, damage)
 		spawn_burst(target, attack_burst, 4, {
 			dir = { dx = tcx - acx, dy = tcy - acy },
 			spread = 1,
-			smin = 3,
+			smin = 4,
 			smax = 10,
 		})
 	end
