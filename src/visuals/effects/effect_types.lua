@@ -116,7 +116,7 @@ return {
 			speed = 25,
 			age = 0,
 		},
-		glyph = { char = "#->", color = { 0.40, 0.3, 0.216, 1 }, size = 0.33 },
+		glyph = { char = "#->", color = { 0.45, 0.4, 0.4, 1 }, size = 0.33 },
 	},
 
 	arrow = {
