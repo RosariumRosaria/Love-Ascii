@@ -84,7 +84,7 @@ return {
 		weather_ease_in_duration = 2.0,
 		size_scale = 0.5,
 		weather_proportion = 0.5,
-		burst_height = 0.6,
+		burst_height = 0.5,
 	},
 	animation = {
 		tween_slack = 0.02,
