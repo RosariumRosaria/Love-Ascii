@@ -37,6 +37,10 @@ return {
 		open_internal_chance = 0.5,
 	},
 
+	windows = {
+		door_gap = 1,
+	},
+
 	-- Distance-from-civilization field + noise that drives wild growth
 	noise = {
 		scale = 0.125,

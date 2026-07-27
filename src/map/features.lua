@@ -160,6 +160,28 @@ local function prefer_non_corner(candidates)
 	return #filtered > 0 and filtered or candidates
 end
 
+local function prefer_away_from_doors(candidates, door_positions)
+	if #door_positions == 0 then
+		return candidates
+	end
+
+	local gap = gen_cfg.windows.door_gap
+	local filtered = {}
+	for _, candidate in ipairs(candidates) do
+		local clear = true
+		for _, door in ipairs(door_positions) do
+			if math.abs(candidate.x - door.x) <= gap and math.abs(candidate.y - door.y) <= gap then
+				clear = false
+				break
+			end
+		end
+		if clear then
+			filtered[#filtered + 1] = candidate
+		end
+	end
+	return #filtered > 0 and filtered or candidates
+end
+
 local function get_bounding_box(rects)
 	local min_x, min_y, max_x, max_y
 	for _, rect in ipairs(rects) do
@@ -395,24 +417,19 @@ function features.make_building(tiles, rects, top_z, road_side)
 	end
 
 	local doors = {}
+	local door_positions = {}
 
+	-- every door is placed before any window, so windows can steer clear of all of them
 	for _, side in ipairs(by_cardinal) do
-		local pool = side.door and prefer_non_corner(side.candidates) or side.candidates
-		local pos = #pool > 0 and utils.pick(pool) or nil
-		if pos and in_bounds(pos.x, pos.y) then
-			if side.door then
+		if side.door then
+			local pool = prefer_non_corner(side.candidates)
+			local pos = #pool > 0 and utils.pick(pool) or nil
+			if pos and in_bounds(pos.x, pos.y) then
 				stamp_door(pos.x, pos.y, side.rotation, tiles)
 				doors[#doors + 1] = { x = pos.x - ox, y = pos.y - oy }
-				utils.remove_from_list(side.candidates, pos)
-			else
-				stamp_window(pos.x, pos.y, side.rotation, tiles)
+				door_positions[#door_positions + 1] = pos
 				utils.remove_from_list(side.candidates, pos)
 			end
-		end
-
-		pos = #side.candidates > 0 and utils.pick(side.candidates) or nil
-		if pos and in_bounds(pos.x, pos.y) then
-			stamp_window(pos.x, pos.y, side.rotation, tiles)
 		end
 	end
 
@@ -425,6 +442,21 @@ function features.make_building(tiles, rects, top_z, road_side)
 			tiles[pos.y][pos.x][1] = tile_types.floor
 		end
 		doors[#doors + 1] = { x = pos.x - ox, y = pos.y - oy }
+		door_positions[#door_positions + 1] = pos
+	end
+
+	for _, side in ipairs(by_cardinal) do
+		local window_count = side.door and 1 or 2
+		for _ = 1, window_count do
+			local pool = prefer_away_from_doors(side.candidates, door_positions)
+			local pos = #pool > 0 and utils.pick(pool) or nil
+			if pos and in_bounds(pos.x, pos.y) then
+				stamp_window(pos.x, pos.y, side.rotation, tiles)
+			end
+			if pos then
+				utils.remove_from_list(side.candidates, pos)
+			end
+		end
 	end
 
 	report_sealed_rooms(mask, width, height, doors, ox, oy)
