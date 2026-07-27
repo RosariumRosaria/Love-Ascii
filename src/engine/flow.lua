@@ -27,6 +27,7 @@ local function go_back()
 	local previous = pop()
 	flow:set_state(previous, true)
 	settings:save()
+	settings:save_keybinds()
 end
 
 function flow:set_state(new_state, going_back)
@@ -92,6 +93,14 @@ local function handle_menu(self, name)
 					love.event.quit()
 				elseif command == "BACK" then
 					go_back()
+				elseif command == "RESET" then
+					if name == "keybinds" then
+						settings:reset_keybinds()
+						input:reload_keys()
+					else
+						settings:reset()
+					end
+					menu:refresh(name)
 				end
 			end
 		end

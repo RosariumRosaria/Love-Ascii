@@ -35,6 +35,7 @@ local menus = {
 	settings = {
 		options = {
 			{ label = "BACK", kind = "action" },
+			{ label = "RESET", kind = "action" },
 			{ label = "KEYBINDS", kind = "action" },
 			{ label = "GAMMA", kind = "number" },
 			{ label = "FULLSCREEN", kind = "enum" },
@@ -231,6 +232,7 @@ function menu:load()
 
 	local bindings = settings:get_keybinds()
 	table.insert(menus["keybinds"].options, { label = "BACK", kind = "action" })
+	table.insert(menus["keybinds"].options, { label = "RESET", kind = "action" })
 	local category = nil
 	for _, binding in ipairs(bindings) do
 		if not category or category ~= binding.category then

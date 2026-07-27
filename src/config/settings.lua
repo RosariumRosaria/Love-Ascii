@@ -86,6 +86,10 @@ local function write(descriptor, value)
 	end
 	node[path[#path]] = value
 end
+local default_values = {}
+for _, descriptor in ipairs(descriptors) do
+	default_values[descriptor.id] = read(descriptor)
+end
 
 local function index_of(descriptor, value)
 	for i, candidate in ipairs(descriptor.values) do
@@ -97,6 +101,26 @@ local function index_of(descriptor, value)
 end
 
 local EMPTY = ""
+
+local default_keys = {}
+for _, binding in ipairs(bindings) do
+	local keys = {}
+	for i = 2, #binding do
+		keys[i - 1] = binding[i]
+	end
+	default_keys[binding[1]] = keys
+end
+
+local MAX_SLOTS = 2
+
+local function set_keys(binding, keys)
+	for i = #binding, 2, -1 do
+		binding[i] = nil
+	end
+	for i = 1, math.min(#keys, MAX_SLOTS) do
+		binding[i + 1] = keys[i]
+	end
+end
 
 local function is_rebindable(binding)
 	return binding.category ~= "debug" and binding[1] ~= "select_slot"
@@ -160,6 +184,12 @@ function settings:rebind(action, slot, key)
 	return true
 end
 
+function settings:reset_keybinds()
+	for _, binding in ipairs(bindings) do
+		set_keys(binding, default_keys[binding[1]])
+	end
+end
+
 function settings:get(id)
 	return read(by_id[id])
 end
@@ -196,18 +226,63 @@ function settings:value_text(id)
 	return descriptor.labels[index_of(descriptor, read(descriptor))]
 end
 
+function settings:reset()
+	for _, descriptor in ipairs(descriptors) do
+		self:set(descriptor.id, default_values[descriptor.id])
+	end
+end
+
 function settings:each()
 	return ipairs(descriptors)
 end
 
-local SAVE_FILE = "settings.cfg"
+local SETTINGS_SAVE_FILE = "settings.cfg"
 
 function settings:save()
 	local lines = {}
 	for _, d in settings:each() do
 		table.insert(lines, d.id .. "=" .. tostring(settings:get(d.id)))
 	end
-	love.filesystem.write(SAVE_FILE, table.concat(lines, "\n"))
+	love.filesystem.write(SETTINGS_SAVE_FILE, table.concat(lines, "\n"))
+end
+
+local KEYBINDS_SAVE_FILE = "keybinds.cfg"
+
+local function split_keys(raw)
+	local keys = {}
+	for field in (raw .. ","):gmatch("([^,]*),") do
+		table.insert(keys, field)
+	end
+	return keys
+end
+
+function settings:save_keybinds()
+	local lines = {}
+	for _, binding in ipairs(self:get_keybinds()) do
+		local keys = {}
+		for i = 2, #binding do
+			table.insert(keys, binding[i])
+		end
+		table.insert(lines, binding[1] .. "=" .. table.concat(keys, ","))
+	end
+	love.filesystem.write(KEYBINDS_SAVE_FILE, table.concat(lines, "\n"))
+end
+
+function settings:load_keybinds()
+	if not love.filesystem.getInfo(KEYBINDS_SAVE_FILE) then
+		return
+	end
+	local contents = love.filesystem.read(KEYBINDS_SAVE_FILE)
+	if not contents then
+		return
+	end
+	for line in contents:gmatch("[^\n]+") do
+		local action, raw = line:match("^(.-)=(.*)$")
+		local binding = action and binding_of(action)
+		if binding then
+			set_keys(binding, split_keys(raw))
+		end
+	end
 end
 
 local function parse_value(descriptor, raw)
@@ -227,10 +302,10 @@ local function parse_value(descriptor, raw)
 end
 
 function settings:load()
-	if not love.filesystem.getInfo(SAVE_FILE) then
+	if not love.filesystem.getInfo(SETTINGS_SAVE_FILE) then
 		return
 	end
-	local contents = love.filesystem.read(SAVE_FILE)
+	local contents = love.filesystem.read(SETTINGS_SAVE_FILE)
 	if not contents then
 		return
 	end

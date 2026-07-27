@@ -15,6 +15,7 @@ local settings = require("src.config.settings")
 
 function love.load()
 	settings:load()
+	settings:load_keybinds()
 	config:load()
 	config:setup_window()
 	scene:reload_fonts()
