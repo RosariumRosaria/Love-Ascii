@@ -30,15 +30,16 @@ local function commit_turn(actor)
 	end
 end
 
-function turn:update(dt)
-	self.time_since_last_tick = self.time_since_last_tick + dt
-	local actor
+local function advance_to_player()
 	local start = love.timer.getTime()
 	while true do
-		actor = time.peek()
-		if not actor or actor == input:get_actor() then
-			break
-		end -- player is up
+		local actor = time.peek()
+		if not actor then
+			return nil
+		end
+		if actor == input:get_actor() then
+			return actor
+		end
 		if actor.dead then
 			time.pop()
 		else
@@ -48,35 +49,48 @@ function turn:update(dt)
 			commit_turn(actor)
 		end
 		if (love.timer.getTime() - start) * 1000 > game_cfg.timing.frame_ai_budget then
-			return -- resume next frame
+			return nil
 		end
 	end
+end
 
-	if not actor then
+local function log_heard_sounds(player)
+	if not (player.mind and player.mind.heard_sounds) then
+		return
+	end
+	for _, heard in ipairs(player.mind.heard_sounds) do
+		if not map:is_visible(math.floor(heard.sound.x), math.floor(heard.sound.y)) or heard.loudness > 4 then
+			event_log:add({ type = "sound", description = heard.sound.description })
+		end
+	end
+	player.mind.heard_sounds = {}
+end
+
+local function try_player_turn(player)
+	if not statuses.can_act(player) then
+		commit_turn(player)
+		return
+	end
+	log_heard_sounds(player)
+	if input:try_take_turn() then
+		commit_turn(player)
+	end
+end
+
+function turn:update(dt)
+	self.time_since_last_tick = self.time_since_last_tick + dt
+
+	local player = advance_to_player()
+	if not player then
 		return
 	end
 
 	if self.time_since_last_tick < self.time_between_ticks then
 		return
 	end
-
 	self.time_since_last_tick = 0
 
-	if not statuses.can_act(actor) then
-		commit_turn(actor)
-	else
-		if actor.mind and actor.mind.heard_sounds then
-			for _, heard in ipairs(actor.mind.heard_sounds) do
-				if not map:is_visible(math.floor(heard.sound.x), math.floor(heard.sound.y)) or heard.loudness > 4 then
-					event_log:add({ type = "sound", description = heard.sound.description })
-				end
-			end
-			actor.mind.heard_sounds = {}
-		end
-		if input:try_take_turn() then
-			commit_turn(actor)
-		end
-	end
+	try_player_turn(player)
 end
 
 return turn
