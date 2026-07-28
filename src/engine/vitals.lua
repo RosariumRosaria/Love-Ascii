@@ -69,13 +69,14 @@ function vitals.apply_damage(target, amount, source_name, delay)
 			local corpse = nil
 
 			if target.type == "actor" then
-				entities.add_from_template_free(target.corpse or "corpse", target.x, target.y, target.z, overrides)
+				corpse =
+					entities.add_from_template_free(target.corpse or "corpse", target.x, target.y, target.z, overrides)
 			else
-				entities.add_from_template(target.corpse or "corpse", target.x, target.y, target.z, overrides)
+				corpse = entities.add_from_template(target.corpse or "corpse", target.x, target.y, target.z, overrides)
 			end
-
 			if corpse and target.inventory then
 				corpse.inventory = target.inventory
+				utils.deep_print(corpse.inventory)
 			end
 		end
 	end
