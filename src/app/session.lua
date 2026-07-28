@@ -35,9 +35,9 @@ function session.load(seed)
 	local player = entities.add_from_template_free("player", 250, 250, 1)
 	entities.set_player(player)
 
-	inventory.add_from_template(player, "sword")
+	inventory.add_from_template(player, "dull_sword")
 	inventory.add_from_template(player, "bow")
-	inventory.add_from_template(player, "leather_armor")
+	inventory.add_from_template(player, "tunic")
 	inventory.add_from_template(player, "torch", {
 		name = "Lantern",
 		key = "Lantern",

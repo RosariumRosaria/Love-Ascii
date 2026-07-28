@@ -1,4 +1,15 @@
 return {
+	dull_sword = {
+		name = "Dull Sword",
+		description = "A dull blade for combat.",
+		color = { { 0.9, 0.8, 0.8, 1 } },
+		slot = "mainhand",
+		chars = { "/" },
+		volume = 7,
+		modifiers = {
+			{ stat = "damage", op = "add", value = 1, context = "melee" },
+		},
+	},
 	sword = {
 		name = "Sword",
 		description = "A sharp blade for combat.",
@@ -129,6 +140,16 @@ return {
 		charges = 1,
 		tags = {
 			consumable = true,
+		},
+	},
+	tunic = {
+		name = "Tunic",
+		description = "Whatever you died in.",
+		color = { { 0.7, 0.7, 0.5, 1 } },
+		chars = { "A" },
+		slot = "armor",
+		modifiers = {
+			{ stat = "health", op = "add", value = 2 },
 		},
 	},
 	leather_armor = {
