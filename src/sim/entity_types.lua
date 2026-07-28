@@ -22,7 +22,7 @@ return {
 			vaultable = true,
 		},
 		stats = {
-			health = { base = 35, current = 35 },
+			health = { base = 20, current = 20 },
 			stamina = { base = 10, current = 10 },
 			hunger = { base = 10, current = 10 },
 			sight = { base = 30 },
