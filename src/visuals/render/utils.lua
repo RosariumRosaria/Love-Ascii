@@ -3,6 +3,7 @@ local render_config = require("src.config.render_config")
 local lighting = require("src.engine.fov.lighting")
 local time = require("src.engine.time")
 local utils = require("src.utils")
+local debug_state = require("src.debug.debug_state")
 local default_font
 local tile_size
 local render_utils = {}
@@ -45,7 +46,8 @@ function render_utils.get_effective_color(color, visible, explored)
 			return { 1, 1, 1, 1 }
 		end
 	elseif explored then
-		local e = render_config.lighting.explored_color
+		local e = debug_state.show_xray >= 2 and render_config.debug.xray_explored_color
+			or render_config.lighting.explored_color
 		return { e[1], e[2], e[3], e[4] }
 	end
 	return nil

@@ -12,13 +12,14 @@ return {
 	},
 	camera = {
 		speed = 2,
-		draw_distance = 24,
+		draw_distance = 22,
 	},
 	rendering = {
 		default_offset_type = 1,
 		offset_amount_factor = 0.4,
 		z_size_scale_per_level = 0.055,
 		z_offset = 0.125,
+		entity_cull_margin = 4,
 	},
 	lighting = {
 		brightness = 0,
@@ -78,6 +79,7 @@ return {
 		grid_center_width = 3,
 		sight_color = { 1, 0.85, 0.3, 0.5 },
 		bw_mode = 0,
+		xray_explored_color = { 0.35, 0.42, 0.9, 0.7 },
 	},
 	particles = {
 		count = 400,

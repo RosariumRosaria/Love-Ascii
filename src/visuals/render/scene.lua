@@ -119,15 +119,23 @@ function scene:draw()
 		end
 	end
 
+	local ent_margin = render_cfg.rendering.entity_cull_margin
 	for _, entity in ipairs(entities.get_list()) do
-		painter:emit_entity(
-			entity,
-			camera_x,
-			camera_y,
-			map:is_visible(entity.x, entity.y),
-			map:is_explored(entity.x, entity.y),
-			time
-		)
+		if
+			entity.x >= start_x - ent_margin
+			and entity.x <= end_x + ent_margin
+			and entity.y >= start_y - ent_margin
+			and entity.y <= end_y + ent_margin
+		then
+			painter:emit_entity(
+				entity,
+				camera_x,
+				camera_y,
+				map:is_visible(entity.x, entity.y),
+				map:is_explored(entity.x, entity.y),
+				time
+			)
+		end
 	end
 
 	for _, p in ipairs(particles:get_particles()) do
