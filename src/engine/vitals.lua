@@ -76,7 +76,6 @@ function vitals.apply_damage(target, amount, source_name, delay)
 			end
 			if corpse and target.inventory then
 				corpse.inventory = target.inventory
-				utils.deep_print(corpse.inventory)
 			end
 		end
 	end
