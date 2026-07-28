@@ -5,7 +5,7 @@ local features = require("src.map.features")
 local entities = require("src.sim.entities")
 local utils = require("src.utils")
 local city_generator =
-	{ max_x = nil, max_y = nil, max_z = nil, lots = {}, roads = {}, buildings = {}, civ_distance = {} }
+	{ max_x = nil, max_y = nil, max_z = nil, lots = {}, roads = {}, buildings = {}, empty_lots = {}, civ_distance = {} }
 
 function city_generator:get_civ_distance()
 	return self.civ_distance
@@ -331,13 +331,24 @@ function city_generator:build_building(tiles, lot)
 				end)
 			end
 		else
-			features.scatter(tiles, lot, gen_cfg.monsters.chance, function(x, y)
-				local monster = utils.pick_weighted(gen_cfg.monsters.types)
-				if monster then
-					entities.add_from_template(monster.name, x, y, 1)
-				end
-			end)
+			table.insert(self.empty_lots, lot)
 		end
+	end
+end
+
+function city_generator:populate_empty_lots(tiles)
+	local map = require("src.map.map")
+
+	for _, lot in ipairs(self.empty_lots) do
+		features.scatter(tiles, lot, gen_cfg.monsters.chance, function(x, y)
+			if not map:is_tile_free(x, y, 1) then
+				return
+			end
+			local monster = utils.pick_weighted(gen_cfg.monsters.types)
+			if monster then
+				entities.add_from_template(monster.name, x, y, 1)
+			end
+		end)
 	end
 end
 
@@ -349,6 +360,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	self.lots = {}
 	self.roads = {}
 	self.buildings = {}
+	self.empty_lots = {}
 	local root = { x = 1, y = 1, w = self.max_x, h = self.max_y }
 	self.noise_ox = love.math.random() * 1000
 	self.noise_oy = love.math.random() * 1000
@@ -364,6 +376,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 	end
 	self:find_civ_distance()
 	self:wild(1, 1, map_max_x, map_max_y, tiles, root)
+	self:populate_empty_lots(tiles)
 end
 
 return city_generator
