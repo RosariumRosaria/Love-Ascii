@@ -5,7 +5,7 @@ return {
 		min_size = 12,
 		max_size = 17,
 		stop_chance = 0.55,
-		subdivide_depth = 13,
+		subdivide_depth = 12,
 	},
 
 	roads = {
@@ -20,7 +20,7 @@ return {
 	-- Building footprint carved out of a lot
 	buildings = {
 		chance = 0.75,
-		margin = 4,
+		margin = 5,
 		min_size = 10,
 		max_aspect = 1.5,
 		wing_chance = 0.5,

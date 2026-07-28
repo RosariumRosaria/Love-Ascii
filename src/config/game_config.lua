@@ -7,8 +7,8 @@ return {
 		resizable = true,
 	},
 	map = {
-		max_x = 1000,
-		max_y = 1000,
+		max_x = 750,
+		max_y = 750,
 		max_z = 10,
 		min_z = -4,
 	},
