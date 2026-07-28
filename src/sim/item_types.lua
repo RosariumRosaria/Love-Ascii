@@ -1,7 +1,7 @@
 return {
 	dull_sword = {
 		name = "Dull Blade", --TODO: someday this should be the ritual weapon used to kill you
-		description = "A dull blade for combat.",
+		description = "A dull blade, stained with your blood.",
 		color = { { 0.9, 0.8, 0.8, 1 } },
 		slot = "mainhand",
 		chars = { "/" },
@@ -23,7 +23,7 @@ return {
 	},
 	axe = {
 		name = "Sword",
-		description = "A sharp heavy, dully, blade for combat.",
+		description = "A heavy, dull, blade for combat.",
 		color = { { 0.8, 0.8, 0.8, 1 } },
 		slot = "mainhand",
 		chars = { "P" },
@@ -143,8 +143,8 @@ return {
 		},
 	},
 	tunic = {
-		name = "Tunic",
-		description = "Whatever you died in.",
+		name = "Tattered Tunic",
+		description = "What you died in.",
 		color = { { 0.7, 0.7, 0.5, 1 } },
 		chars = { "A" },
 		slot = "armor",
