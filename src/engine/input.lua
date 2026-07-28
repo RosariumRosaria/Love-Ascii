@@ -352,8 +352,7 @@ function input:update(dt)
 
 	local slot = self:pressed_slot()
 
-	local slot_entity = (self.mode == modes.container and container.focus_container and container:get())
-		or self.actor
+	local slot_entity = (self.mode == modes.container and container.focus_container and container:get()) or self.actor
 
 	if slot and inventory.check_index(slot_entity, slot) then
 		local now = love.timer.getTime()
