@@ -46,6 +46,25 @@ local action_order = {
 	interactable = 1,
 }
 
+local function target_priority(entity)
+	return entity.interact_priority or 0
+end
+
+local function pick_target(x, y, z, tag)
+	local candidates = entities.get_list_at(x, y, z)
+	if not candidates then
+		return nil
+	end
+
+	local best
+	for _, candidate in ipairs(candidates) do
+		if utils.get_tag(candidate, tag) and (not best or target_priority(candidate) > target_priority(best)) then
+			best = candidate
+		end
+	end
+	return best
+end
+
 local action_cost = game_cfg.action_cost
 
 local function assign_cost(entity, action_type)
@@ -63,7 +82,7 @@ local function spawn_burst(entity, type_name, count, opts)
 end
 
 local function resolve_target(actor, dx, dy, tag, name, target)
-	target = target or entities.get_with_tag(actor.x + dx, actor.y + dy, actor.z, tag)
+	target = target or pick_target(actor.x + dx, actor.y + dy, actor.z, tag)
 	if not validate_interaction(actor, target, name) then
 		return nil
 	end
@@ -82,12 +101,16 @@ function actions:default_interact(entity, dx, dy)
 
 	local target
 	for _, tar in ipairs(targets) do
-		if
-			tar.default_action
-			and (entity.can_perform and entity.can_perform[tar.default_action])
-			and (not target or (action_order[tar.default_action] > action_order[target.default_action]))
-		then
-			target = tar
+		if tar.default_action and (entity.can_perform and entity.can_perform[tar.default_action]) then
+			local rank = action_order[tar.default_action]
+			local best_rank = target and action_order[target.default_action]
+			if
+				not target
+				or rank > best_rank
+				or (rank == best_rank and target_priority(tar) > target_priority(target))
+			then
+				target = tar
+			end
 		end
 	end
 

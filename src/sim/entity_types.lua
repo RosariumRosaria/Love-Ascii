@@ -384,6 +384,7 @@ return {
 		name = "Corpse",
 		description = "A corpse, try interacting with it!",
 		type = "prop",
+		interact_priority = 1, -- outranks a door/window it happens to be lying on
 		appearance = {
 			chars = { "C" },
 			color = { { 0.2, 0.2, 0.2 } },
@@ -410,6 +411,7 @@ return {
 		name = "Chest",
 		description = "A chest, try interacting with it!",
 		type = "prop",
+		interact_priority = 1,
 		combat = { hit_burst = "dust" },
 		appearance = {
 			chars = { "[]", "[]" },
