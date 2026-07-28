@@ -15,7 +15,7 @@ local cursor = require("src.engine.interaction.cursor")
 local game_cfg = require("src.config.game_config")
 local utils = require("src.utils")
 local pathfinder = require("src.engine.pathfinder")
-local state = require("src.engine.state")
+local state = require("src.app.state")
 
 local input = {
 	actor = nil,

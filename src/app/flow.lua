@@ -1,7 +1,7 @@
 local input = require("src.engine.input")
-local state = require("src.engine.state")
+local state = require("src.app.state")
 local menu = require("src.visuals.ui.menu")
-local session = require("src.engine.session")
+local session = require("src.app.session")
 local settings = require("src.config.settings")
 local entities = require("src.sim.entities")
 local hud = require("src.visuals.ui.hud")
@@ -151,6 +151,10 @@ end
 
 function flow:update(game_state)
 	if game_state == "normal" then
+		if entities.player and entities.player.dead then
+			self:set_state("dead")
+			return
+		end
 		if input:pressed("pause") then
 			self:set_state("paused")
 		end

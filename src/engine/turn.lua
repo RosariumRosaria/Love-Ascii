@@ -1,61 +1,19 @@
 local input = require("src.engine.input")
 local ai = require("src.engine.ai")
 local map = require("src.map.map")
-local panels = require("src.visuals.ui.panels")
-local hud = require("src.visuals.ui.hud")
 local entities = require("src.sim.entities")
 local time = require("src.engine.time")
 local game_cfg = require("src.config.game_config")
 local statuses = require("src.sim.statuses")
 local event_log = require("src.engine.event_log")
 local aim = require("src.engine.interaction.aim")
-local state = require("src.engine.state")
-local flow = require("src.engine.flow")
-local stats = require("src.sim.stats")
 
 local turn = {
 	time_since_last_tick = 0,
 	time_between_ticks = game_cfg.timing.turn_delay,
 }
 
-local function update_character_panel()
-	local entity = entities.player
-	hud:update_character(entity)
-end
-
-local function post_turn_update(player)
-	map:update_visibility(player)
-end
-
-local function check_player_death()
-	if entities.player.dead and state:get() ~= "dead" then
-		flow:set_state("dead")
-	end
-end
-
 local function commit_turn(actor)
-	local seen
-	if actor == entities.player and statuses.can_act(actor) then
-		local vision = stats.get_current(actor, "sight")
-		local gather = map:gather(actor, vision)
-		seen = {}
-		if gather then
-			local by_key = {}
-			for _, entry in ipairs(gather) do
-				local ent = entry.entity
-				if map:is_visible(ent.x, ent.y) then
-					by_key[ent.key] = ent
-				end
-			end
-			for _, ent in pairs(by_key) do
-				table.insert(seen, ent)
-			end
-			table.sort(seen, function(a, b)
-				return a.key < b.key
-			end)
-		end
-		panels:clear_panel_by_name("terminal")
-	end
 	statuses.tick_entity(actor)
 	map:apply_on_step(actor)
 
@@ -64,25 +22,16 @@ local function commit_turn(actor)
 		time.schedule_turn(popped, actor.action_cost)
 		actor.action_cost = nil
 	end
-	hud:log_events()
 	if aim.active then
 		aim.refresh()
 	end
 	if actor == entities.player then
-		post_turn_update(entities.player)
+		map:update_visibility(entities.player)
 	end
-
-	hud:update_vitals(entities.player)
-	hud:update_statuses(entities.player)
-	if seen then
-		hud:update_nearby_entities(seen)
-	end
-	check_player_death()
 end
 
 function turn:update(dt)
 	self.time_since_last_tick = self.time_since_last_tick + dt
-	update_character_panel()
 	local actor
 	local start = love.timer.getTime()
 	while true do

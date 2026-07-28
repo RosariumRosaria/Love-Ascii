@@ -5,6 +5,8 @@ local container = require("src.engine.interaction.container")
 local event_log = require("src.engine.event_log")
 local panels = require("src.visuals.ui.panels")
 local config = require("src.config.runtime")
+local entities = require("src.sim.entities")
+local map = require("src.map.map")
 local hud = {}
 
 local character_modes = { "stats", "inventory" }
@@ -249,6 +251,46 @@ function hud:update_nearby_entities(seen)
 		panel.y = y
 		y = y - 4 * panel.outline_width
 	end
+end
+
+local function gather_nearby(player)
+	local gather = map:gather(player, stats.get_current(player, "sight"))
+	if not gather then
+		return {}
+	end
+	local by_key = {}
+	for _, entry in ipairs(gather) do
+		local ent = entry.entity
+		if map:is_visible(ent.x, ent.y) then
+			by_key[ent.key] = ent
+		end
+	end
+	local seen = {}
+	for _, ent in pairs(by_key) do
+		table.insert(seen, ent)
+	end
+	table.sort(seen, function(a, b)
+		return a.key < b.key
+	end)
+	return seen
+end
+
+function hud:update()
+	local player = entities.player
+	if not player then
+		return
+	end
+
+	if player.next_turn ~= self.last_player_turn then
+		self.last_player_turn = player.next_turn
+		panels:clear_panel_by_name("terminal")
+		self:update_nearby_entities(gather_nearby(player))
+	end
+
+	self:log_events()
+	self:update_character(player)
+	self:update_vitals(player)
+	self:update_statuses(player)
 end
 
 function hud:update_equipment(entity)
