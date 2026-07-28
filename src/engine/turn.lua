@@ -7,6 +7,7 @@ local game_cfg = require("src.config.game_config")
 local statuses = require("src.sim.statuses")
 local event_log = require("src.engine.event_log")
 local aim = require("src.engine.interaction.aim")
+local director = require("src.engine.director")
 
 local turn = {
 	time_since_last_tick = 0,
@@ -27,6 +28,7 @@ local function commit_turn(actor)
 	end
 	if actor == entities.player then
 		map:update_visibility(entities.player)
+		director:tick()
 	end
 end
 

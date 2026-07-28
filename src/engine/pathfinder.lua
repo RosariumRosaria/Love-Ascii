@@ -224,7 +224,7 @@ local function reconstruct_path(came_from, start, goal)
 	return path
 end
 
-function pathfinder.a_star(start, goal, actor, player_nav)
+function pathfinder.a_star(start, goal, actor, player_nav, quiet)
 	local frontier = {}
 	local arrival = nil
 	utils.priority_queue_put(frontier, start, 0)
@@ -263,7 +263,7 @@ function pathfinder.a_star(start, goal, actor, player_nav)
 	end
 
 	if not arrival then
-		if debug_state.log_pathfinding and i >= max_checks then
+		if not quiet and debug_state.log_pathfinding and i >= max_checks then
 			event_log:add({
 				type = "debug",
 				message = string.format(
@@ -281,6 +281,10 @@ function pathfinder.a_star(start, goal, actor, player_nav)
 	end
 
 	return reconstruct_path(came_from, start, arrival)
+end
+
+function pathfinder.can_reach(actor, from, to)
+	return pathfinder.a_star(from, to, actor, false, true) ~= nil
 end
 
 return pathfinder

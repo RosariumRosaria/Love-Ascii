@@ -12,6 +12,8 @@ local debug_state = {
 	log_generation = true,
 	-- pushes a debug event when a_star gives up at its iteration cap
 	log_pathfinding = true,
+	-- pushes a debug event naming each pack the director spawns
+	log_director = true,
 }
 
 function debug_state.toggle_grid()

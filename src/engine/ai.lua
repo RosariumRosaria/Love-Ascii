@@ -168,6 +168,55 @@ local function start_investigating(entity, x, y, value)
 	mind.target_value = value
 end
 
+function ai:set_goal(entity_id, goal)
+	local entity = entities.get_by_id(entity_id)
+	if not entity or entity.dead or not entity.mind or not goal then
+		return false
+	end
+	local mind = entity.mind
+
+	if goal.kind == "chase" then
+		local target = entities.get_by_id(goal.target_id)
+		if not target or target.dead then
+			return false
+		end
+		start_chasing(entity, target)
+		if goal.value then
+			mind.target_value = goal.value
+		end
+		return true
+	elseif goal.kind == "investigate" then
+		if not goal.x or not goal.y then
+			return false
+		end
+		start_investigating(entity, goal.x, goal.y, goal.value or ai_cfg.target_value.sight)
+		if goal.turns then
+			mind.investigate_turns = goal.turns
+		end
+		return true
+	elseif goal.kind == "wander" then
+		if not goal.x or not goal.y then
+			return false
+		end
+		local tar_x = utils.clamp(goal.x, 1, map:get_max_x())
+		local tar_y = utils.clamp(goal.y, 1, map:get_max_y())
+		tar_x, tar_y = map:closest_walkable_neighbor(entity, tar_x, tar_y)
+		if tar_x == entity.x and tar_y == entity.y then
+			return false
+		end
+		set_state(entity, "wandering")
+		mind.target_pos = { x = tar_x, y = tar_y }
+		mind.target_value = goal.value or ai_cfg.target_value.wander
+		mind.wander_turns = goal.turns or ai_cfg.wander_turns
+		return true
+	elseif goal.kind == "idle" then
+		set_state(entity, "idle")
+		return true
+	end
+
+	return false
+end
+
 local function idle(entity)
 	local mind = entity.mind
 	local chance = love.math.random(1, ai_cfg.wander_chance)
