@@ -109,7 +109,7 @@ return {
 		},
 	},
 	health_potion = {
-		name = "Health Potion",
+		name = "Poultice",
 		description = "Restores health when consumed.",
 		color = { { 1, 0.5, 0.5, 1 } },
 		chars = { "&" },
