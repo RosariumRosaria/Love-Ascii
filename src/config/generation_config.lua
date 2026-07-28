@@ -12,6 +12,9 @@ return {
 		skip_chance = 0.1,
 		lamp_step = 30,
 		lamp_skip_chance = 0.85,
+		wave_amp = 1.5,
+		wave_scale = 0.06,
+		envelope = 5,
 	},
 
 	-- Building footprint carved out of a lot

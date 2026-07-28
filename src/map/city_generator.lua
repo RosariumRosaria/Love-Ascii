@@ -4,7 +4,8 @@ local lots = require("src.map.lots")
 local features = require("src.map.features")
 local entities = require("src.sim.entities")
 local utils = require("src.utils")
-local city_generator = { max_x = nil, max_y = nil, max_z = nil, lots = {}, roads = {}, buildings = {}, civ_distance = {} }
+local city_generator =
+	{ max_x = nil, max_y = nil, max_z = nil, lots = {}, roads = {}, buildings = {}, civ_distance = {} }
 
 function city_generator:get_civ_distance()
 	return self.civ_distance
@@ -74,10 +75,12 @@ function city_generator:wild(start_x, start_y, end_x, end_y, tiles, root)
 	for y = start_y, end_y do
 		for x = start_x, end_x do
 			if tiles[y][x][1] == types.grass then
-				local noise = love.math.noise(x * gen_cfg.noise.scale + self.noise_ox, y * gen_cfg.noise.scale + self.noise_oy)
+				local noise =
+					love.math.noise(x * gen_cfg.noise.scale + self.noise_ox, y * gen_cfg.noise.scale + self.noise_oy)
 				local n = self.civ_distance[y][x] + (noise - 0.5) * gen_cfg.noise.strength
 				local v = n + ((love.math.random() - 0.5) * gen_cfg.noise.jitter)
-				local tree_strength = ((v - gen_cfg.flora.tree_threshold) / gen_cfg.flora.tree_ramp) * gen_cfg.flora.canopy_density
+				local tree_strength = ((v - gen_cfg.flora.tree_threshold) / gen_cfg.flora.tree_ramp)
+					* gen_cfg.flora.canopy_density
 				local shrub_strength = (v - gen_cfg.flora.shrub_threshold) / gen_cfg.flora.shrub_ramp
 				if love.math.random() < tree_strength and map:is_tile_free(x, y, 1) then
 					features.place("tree", x, y, tiles, self.max_z)
@@ -159,23 +162,52 @@ function city_generator:find_civ_distance()
 	end
 end
 
-function city_generator:make_road(tiles, road)
+-- Perpendicular wobble along a road's long axis, tapered to zero at both ends so junctions still meet.
+local function wave_offsets(start, span, index, noise_ox)
+	local cfg = gen_cfg.roads
+	local last = start + span - 1
+	local offsets = {}
+	for i = start, last do
+		local raw = love.math.noise(i * cfg.wave_scale + noise_ox, index * 7.3)
+		local offset = (raw - 0.5) * 2 * cfg.wave_amp
+		local steps = math.min(i - start, last - i)
+		if steps < cfg.envelope then
+			offset = offset * (steps / cfg.envelope)
+		end
+		offsets[i] = math.floor(offset + 0.5)
+	end
+	return offsets
+end
+
+function city_generator:make_road(tiles, road, index)
 	local map = require("src.map.map")
+
+	local offsets_y = {}
+	local offsets_x = {}
+	local horizontal = road.w > road.h
+	if horizontal then
+		offsets_y = wave_offsets(road.x, road.w, index, self.noise_ox)
+	else
+		offsets_x = wave_offsets(road.y, road.h, index, self.noise_ox)
+	end
 
 	for y = road.y, road.y + road.h - 1 do
 		for x = road.x, road.x + road.w - 1 do
 			if love.math.random() >= gen_cfg.roads.skip_chance then
-				tiles[y][x][1] = types.road
+				local offset_y = offsets_y[x] or 0
+				local offset_x = offsets_x[y] or 0
+				tiles[y + offset_y][x + offset_x][1] = types.road
 			end
 		end
 	end
 	local step = gen_cfg.roads.lamp_step
-	if road.w > road.h then
+	if horizontal then
 		for x = road.x + step, road.x + road.w - 1, step do
 			if love.math.random() >= gen_cfg.roads.lamp_skip_chance then
 				local ly = love.math.random() < 0.5 and road.y - 1 or road.y + road.h
+				ly = ly + (offsets_y[x] or 0)
 				if map:is_tile_free(x, ly, 1) then
-					entities.add_from_template("street_lamp", x, ly, 1)
+					entities.add_from_template(utils.pick({ "campfire", "street_lamp" }), x, ly, 1)
 				end
 			end
 		end
@@ -183,8 +215,9 @@ function city_generator:make_road(tiles, road)
 		for y = road.y + step, road.y + road.h - 1, step do
 			if love.math.random() >= gen_cfg.roads.lamp_skip_chance then
 				local lx = love.math.random() < 0.5 and road.x - 1 or road.x + road.w
+				lx = lx + (offsets_x[y] or 0)
 				if map:is_tile_free(lx, y, 1) then
-					entities.add_from_template("street_lamp", lx, y, 1)
+					entities.add_from_template(utils.pick({ "campfire", "street_lamp" }), lx, y, 1)
 				end
 			end
 		end
@@ -323,8 +356,8 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 
 	lots.subdivide(root, gen_cfg.lots.subdivide_depth, self.lots, self.roads)
 
-	for _, road in ipairs(self.roads) do
-		self:make_road(tiles, road)
+	for i, road in ipairs(self.roads) do
+		self:make_road(tiles, road, i)
 	end
 	for _, lot in ipairs(self.lots) do
 		self:build_building(tiles, lot)
