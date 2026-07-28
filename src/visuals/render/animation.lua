@@ -110,8 +110,7 @@ function animation.add_shake(entity)
 	anim(entity).shake = shake
 end
 
-local function ensure_init(entity)
-	local a = anim(entity)
+local function ensure_init(entity, a)
 	if not a.tween_x or not a.tween_y then
 		a.tween_x = entity.x
 		a.tween_y = entity.y
@@ -146,42 +145,64 @@ local function advance_and_write(entity, dt)
 	a.render_z = entity.z
 end
 
-function animation.update(dt)
+local function settle(entity, a)
+	local queue = a.move_queue
+	if queue then
+		for i = #queue, 1, -1 do
+			queue[i] = nil
+		end
+	end
+	a.tween_x, a.tween_y = entity.x, entity.y
+	a.tween_from_x, a.tween_from_y = entity.x, entity.y
+	a.tween_target_x, a.tween_target_y = entity.x, entity.y
+	a.tween_elapsed, a.tween_duration = base_duration, base_duration
+	a.render_x, a.render_y, a.render_z = entity.x, entity.y, entity.z
+	a.pending_trail, a.bump, a.shake, a.flash = nil, nil, nil, nil
+end
+
+function animation.update(dt, center_x, center_y)
+	local cull = render_cfg.camera.draw_distance + render_cfg.animation.cull_slack
 	for _, entity in ipairs(entities.get_list()) do
-		ensure_init(entity)
 		local a = entity.anim
-		local move_queue_length = a.move_queue and #a.move_queue or 0
+		if a then
+			if math.abs(entity.x - center_x) > cull or math.abs(entity.y - center_y) > cull then
+				settle(entity, a)
+			else
+				ensure_init(entity, a)
+				local move_queue_length = a.move_queue and #a.move_queue or 0
 
-		if a.tween_elapsed >= a.tween_duration and move_queue_length > 0 then
-			start_tween_to(entity, table.remove(a.move_queue, 1))
-		end
-		advance_and_write(entity, dt)
+				if a.tween_elapsed >= a.tween_duration and move_queue_length > 0 then
+					start_tween_to(entity, table.remove(a.move_queue, 1))
+				end
+				advance_and_write(entity, dt)
 
-		if a.pending_trail and a.tween_elapsed >= 0.8 * a.tween_duration then
-			animation.spawn_pending_trail(entity)
-		end
+				if a.pending_trail and a.tween_elapsed >= 0.8 * a.tween_duration then
+					animation.spawn_pending_trail(entity)
+				end
 
-		for key, aa in pairs(a) do
-			if type(aa) == "table" and aa.elapsed then --TODO brittle. move elapsed anims to subtable
-				aa.elapsed = aa.elapsed + dt
-				if aa.elapsed >= aa.duration then
-					a[key] = nil
+				for key, aa in pairs(a) do
+					if type(aa) == "table" and aa.elapsed then --TODO brittle. move elapsed anims to subtable
+						aa.elapsed = aa.elapsed + dt
+						if aa.elapsed >= aa.duration then
+							a[key] = nil
+						end
+					end
+				end
+
+				if a.bump then -- TODO, someday anims should be more generic
+					local p = a.bump.elapsed / a.bump.duration
+					local curve = math.sin(p * math.pi)
+					a.render_x = a.render_x + (a.bump.dx or 0) * curve
+					a.render_y = a.render_y + (a.bump.dy or 0) * curve
+					a.render_z = a.render_z + (a.bump.dz or 0) * curve
+				end
+
+				if a.shake then
+					local p = a.shake.elapsed / a.shake.duration
+					a.render_x = a.render_x + (utils.randomize_sign() * a.shake.amount * (1 - p))
+					a.render_y = a.render_y + (utils.randomize_sign() * a.shake.amount * (1 - p))
 				end
 			end
-		end
-
-		if a.bump then -- TODO, someday anims should be more generic
-			local p = a.bump.elapsed / a.bump.duration
-			local curve = math.sin(p * math.pi)
-			a.render_x = a.render_x + (a.bump.dx or 0) * curve
-			a.render_y = a.render_y + (a.bump.dy or 0) * curve
-			a.render_z = a.render_z + (a.bump.dz or 0) * curve
-		end
-
-		if a.shake then
-			local p = a.shake.elapsed / a.shake.duration
-			a.render_x = a.render_x + (utils.randomize_sign() * a.shake.amount * (1 - p))
-			a.render_y = a.render_y + (utils.randomize_sign() * a.shake.amount * (1 - p))
 		end
 	end
 end

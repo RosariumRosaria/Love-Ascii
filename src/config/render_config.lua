@@ -91,5 +91,6 @@ return {
 	animation = {
 		tween_slack = 0.02,
 		tween_time = 0.5,
+		cull_slack = 6,
 	},
 }

@@ -5,7 +5,7 @@ return {
 		min_size = 12,
 		max_size = 17,
 		stop_chance = 0.55,
-		subdivide_depth = 11,
+		subdivide_depth = 13,
 	},
 
 	roads = {

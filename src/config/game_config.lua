@@ -7,8 +7,8 @@ return {
 		resizable = true,
 	},
 	map = {
-		max_x = 500,
-		max_y = 500,
+		max_x = 1000,
+		max_y = 1000,
 		max_z = 10,
 		min_z = -4,
 	},
@@ -16,7 +16,7 @@ return {
 		frame_ai_budget = 2,
 		turn_delay = 0.175,
 		base_turn_cost = 100,
-		day_length = 100000,
+		day_length = 50000,
 		time_keyframes = {
 			{ at = 0.00, "night" },
 			{ at = 0.25, "dawn" },

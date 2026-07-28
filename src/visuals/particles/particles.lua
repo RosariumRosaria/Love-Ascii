@@ -238,10 +238,13 @@ function particles:update(dt, cx, cy)
 	end
 
 	for _, entity in ipairs(entities.get_list()) do
-		if emitter_count < emitter_cap then
-			local ex = utils.render_x(entity)
-			local ey = utils.render_y(entity)
-			if math.abs(ex - cx) <= draw_dist and math.abs(ey - cy) <= draw_dist then
+		if emitter_count >= emitter_cap then
+			break
+		end
+		if entity.emitters or entity.statuses or (entity.inventory and entity.inventory.equipped) then
+			if math.abs(entity.x - cx) <= draw_dist and math.abs(entity.y - cy) <= draw_dist then
+				local ex = utils.render_x(entity)
+				local ey = utils.render_y(entity)
 				local top_offset = entity.appearance and entity.appearance.chars and #entity.appearance.chars or 1
 				emitter_count = emitter_count + run_emitters(entity.emitters, ex, ey, entity.z, top_offset)
 				if entity.statuses then

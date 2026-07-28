@@ -183,13 +183,14 @@ function scene:load(player_x, player_y)
 end
 
 function scene:update(dt)
-	animation.update(dt)
+	local cx, cy = camera:get_position()
+	animation.update(dt, cx, cy)
 	local player = entities.player
 	local pa = player.anim
 	local tx = (pa and pa.tween_x) or player.x
 	local ty = (pa and pa.tween_y) or player.y
 	camera:update(tx, ty, dt)
-	local cx, cy = camera:get_position()
+	cx, cy = camera:get_position()
 	particles:update(dt, cx, cy)
 end
 
