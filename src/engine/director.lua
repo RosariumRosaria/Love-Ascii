@@ -120,13 +120,15 @@ local function spawn_member(origin, entity, modifier, min_range, max_range)
 		if modifier == "hunter" then
 			local player = entities.player
 			ai:set_goal(ent.id, { kind = "investigate", x = player.x, y = player.y })
+
+			ent.mind.hunter = true
 		end
 		return ent
 	end
 end
 
 local min_spawn_range = 20
-local max_spawn_range = 60
+local max_spawn_range = 50
 local min_pack_spawn_range = 1
 local max_pack_spawn_range = 10
 
