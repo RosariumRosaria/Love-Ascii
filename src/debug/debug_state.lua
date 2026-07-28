@@ -9,6 +9,8 @@ local debug_state = {
 	profiling = false,
 	-- prints map-generation warnings (sealed rooms, …) to the launching terminal
 	log_generation = true,
+	-- pushes a debug event when a_star gives up at its iteration cap
+	log_pathfinding = true,
 }
 
 function debug_state.toggle_grid()

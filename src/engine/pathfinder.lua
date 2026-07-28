@@ -7,6 +7,8 @@ local ai_cfg = require("src.config.ai_config")
 local stats = require("src.sim.stats")
 local statuses = require("src.sim.statuses")
 local actions = require("src.engine.actions")
+local event_log = require("src.engine.event_log")
+local debug_state = require("src.debug.debug_state")
 
 local pathfinder = {}
 local max_checks = game_cfg.pathfinding.max_iterations
@@ -261,6 +263,20 @@ function pathfinder.a_star(start, goal, actor, player_nav)
 	end
 
 	if not arrival then
+		if debug_state.log_pathfinding and i >= max_checks then
+			event_log:add({
+				type = "debug",
+				message = string.format(
+					"%s hit the %d-check pathfinding cap: (%d,%d) -> (%d,%d)",
+					actor and actor.name or "unknown",
+					max_checks,
+					start.x,
+					start.y,
+					goal.x,
+					goal.y
+				),
+			})
+		end
 		return nil
 	end
 
