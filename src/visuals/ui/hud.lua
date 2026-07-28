@@ -17,6 +17,9 @@ local equipment_panel
 
 local EQUIP_SLOTS = { "mainhand", "offhand", "armor", "accessory", "ammo" }
 
+local POOLED_STATS = { "health", "stamina", "hunger" }
+local FLAT_STATS = { "damage", "speed", "sight", "stealth" }
+
 function hud:set_visible(visible)
 	panels:get_panel("vitals").visible = visible
 	panels:get_panel("terminal").visible = visible
@@ -365,13 +368,37 @@ function hud:update_character(entity)
 	elseif character_panel.mode == "stats" and entity.stats then
 		local weapon = inventory.get_equipped(entity, "mainhand")
 		local attack_context = weapon and weapon.ranged and "ranged" or "melee"
-		for stat_name, stat in pairs(entity.stats) do
+		local function add_stat(stat_name)
+			local stat = entity.stats[stat_name]
+			if not stat then
+				return
+			end
+
 			local max = stats.get(entity, stat_name, attack_context)
+
+			local value = tostring(max)
 			if stat.current ~= nil then
-				local current = stats.get_current(entity, stat_name)
-				panels:add_text_to_panel_by_name("character", stat_name .. ": " .. current .. " / " .. max)
-			else
-				panels:add_text_to_panel_by_name("character", stat_name .. ": " .. max)
+				value = stats.get_current(entity, stat_name) .. " / " .. max
+			end
+
+			panels:add_text_to_panel_by_name("character", stat_name .. ": " .. value)
+			panels:add_text_to_panel_by_name("character", "")
+		end
+
+		for _, stat_name in ipairs(POOLED_STATS) do
+			add_stat(stat_name)
+		end
+
+		panels:add_text_to_panel_by_name("character", "---")
+		panels:add_text_to_panel_by_name("character", "")
+
+		for _, stat_name in ipairs(FLAT_STATS) do
+			add_stat(stat_name)
+		end
+
+		for stat_name in pairs(entity.stats) do
+			if not utils.contains(POOLED_STATS, stat_name) and not utils.contains(FLAT_STATS, stat_name) then
+				add_stat(stat_name)
 			end
 		end
 	end
