@@ -11,6 +11,7 @@ local painter = require("src.visuals.render.painter")
 local draw_buffer = require("src.visuals.render.draw_buffer")
 local particles = require("src.visuals.particles.particles")
 local debug_panel = require("src.debug.debug_panel")
+local debug_state = require("src.debug.debug_state")
 
 local scene = {}
 
@@ -76,6 +77,7 @@ function scene:draw()
 	local end_z = map.max_z
 	local tiles = map:get_tiles()
 	local visible_grid, explored_grid = map:get_visibility_grids()
+	local xray_tiles = debug_state.show_xray >= 2
 	local time = love.timer.getTime()
 	render_utils.refresh_frame_cache()
 	self.vignette_shader:send("gamma", render_utils.get_gamma())
@@ -87,7 +89,7 @@ function scene:draw()
 		local tile_row = tiles[y]
 		for x = start_x, end_x do
 			local visible = vis_row[x]
-			local explored = exp_row[x]
+			local explored = exp_row[x] or xray_tiles
 			if visible or explored then
 				local stack = tile_row[x]
 				local x_screen, y_screen = render_utils.get_screen_coords(x, y, camera_x, camera_y)

@@ -5,7 +5,8 @@ local debug_state = {
 	bw_mode = render_cfg.debug.bw_mode,
 	offset_type = render_cfg.rendering.default_offset_type,
 	show_perf = false,
-	show_xray = false,
+	-- 0 = off, 1 = entities, 2 = entities + tiles
+	show_xray = 0,
 	profiling = false,
 	-- prints map-generation warnings (sealed rooms, …) to the launching terminal
 	log_generation = true,
@@ -30,7 +31,7 @@ function debug_state.toggle_perf()
 end
 
 function debug_state.toggle_xray()
-	debug_state.show_xray = not debug_state.show_xray
+	debug_state.show_xray = (debug_state.show_xray + 1) % 3
 end
 
 return debug_state

@@ -45,7 +45,7 @@ function debug_panel.update()
 	local entity = cursor.get_moused_entity()
 	local panel = panels:get_panel("debug_panel")
 
-	if debug_state.show_xray then
+	if debug_state.show_xray > 0 then
 		if entity and entity.id ~= last_printed_entity_id and entity.type == "actor" then
 			utils.deep_print(entity)
 		end
@@ -54,7 +54,7 @@ function debug_panel.update()
 		last_printed_entity_id = nil
 	end
 
-	if not entity or not entity.mind or not debug_state.show_xray then
+	if not entity or not entity.mind or debug_state.show_xray == 0 then
 		panel.visible = false
 		panel.anchor = nil
 		target, last_known, arrow, sight_entity_id = nil, nil, nil, nil
