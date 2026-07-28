@@ -189,7 +189,7 @@ local function spawn_pack(pack)
 end
 
 local dread = 0
-local dread_inc = 1
+local dread_inc = 2
 local min_dread_spawn = 40
 local max_dread_spawn = 200
 local min_spawn_chance = 1
