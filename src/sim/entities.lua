@@ -9,6 +9,7 @@ local game_config = require("src.config.game_config")
 
 local entities = {
 	entity_list = {},
+	actor_list = {},
 	player = nil,
 	by_cell = {},
 	by_id = {},
@@ -17,6 +18,7 @@ local entities = {
 
 function entities.reset()
 	entities.entity_list = {}
+	entities.actor_list = {}
 	entities.player = nil
 	entities.by_cell = {}
 	entities.by_id = {}
@@ -181,12 +183,19 @@ end
 
 function entities.remove(target)
 	utils.remove_from_list(entities.entity_list, target)
+	if target.type == "actor" then
+		utils.remove_from_list(entities.actor_list, target)
+	end
 	entities.by_id[target.id] = nil
 	index_remove(target)
 end
 
 function entities.get_list()
 	return entities.entity_list
+end
+
+function entities.get_actors()
+	return entities.actor_list
 end
 
 function entities.get_by_id(id)
@@ -203,6 +212,7 @@ function entities.add(entity)
 	entities.by_id[new_id] = entity
 
 	if entity.type == "actor" then
+		table.insert(entities.actor_list, entity)
 		time.schedule_turn(entity)
 	end
 end

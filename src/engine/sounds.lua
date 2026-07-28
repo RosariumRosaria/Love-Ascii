@@ -11,17 +11,15 @@ function sounds.perceived(entity, sound)
 	return sound.volume * (1 - d / sound.reach)
 end
 
+-- only actors can hear, so scan them directly rather than every cell in reach
 local function candidates(s)
 	local candidate_list = {}
 
 	local ox, oy = math.floor(s.x), math.floor(s.y)
-	for dy = -s.reach, s.reach do
-		for dx = -s.reach, s.reach do
-			local tx, ty = ox + dx, oy + dy
-			local entity_list = entities.get_list_at_column(tx, ty)
-			for _, e in ipairs(entity_list) do
-				table.insert(candidate_list, e)
-			end
+	local reach = s.reach
+	for _, e in ipairs(entities.get_actors()) do
+		if math.abs(e.x - ox) <= reach and math.abs(e.y - oy) <= reach then
+			table.insert(candidate_list, e)
 		end
 	end
 

@@ -94,7 +94,9 @@ end
 function map:gather(actor, range, teams_only)
 	local targets = {}
 
-	for _, entity in ipairs(entities.get_list()) do
+	local source = teams_only and entities.get_actors() or entities.get_list()
+
+	for _, entity in ipairs(source) do
 		if (not teams_only or (entity.team and entity.team ~= actor.team)) and not entity.dead and entity ~= actor then
 			local distance = utils.distance_between(actor, entity)
 
