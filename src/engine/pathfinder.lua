@@ -39,7 +39,7 @@ local function passage_traversal(actor, ent, landing, damage)
 		return nil
 	end
 	if ent.passage.kind == "vaultable" and landing ~= "free" then
-		if landing == "occupied" and not ent.footprint then
+		if landing == "occupied" and not ent.footprint and not can_attack(actor, ent, damage) then
 			return "wait", game_cfg.pathfinding.wait_cost
 		end
 		return nil
