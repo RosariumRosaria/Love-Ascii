@@ -7,31 +7,8 @@ local ai = require("src.engine.ai")
 local entity_types = require("src.sim.entity_types")
 local debug_state = require("src.debug.debug_state")
 local pathfinder = require("src.engine.pathfinder")
+local director_config = require("src.config.director_config")
 local director = {}
-
-local actor_cap = 100
-
-local max_spawn_tries = 20
-local max_path_checks = 5
-
-local spawn_list = {
-	{ name = "zombie", price = 20, weight = 10 },
-	{ name = "shambler", price = 20, weight = 10 },
-	{ name = "skeleton", price = 30, weight = 6 },
-	{ name = "vampire", price = 40, weight = 6 },
-	{ name = "ogre", price = 60, weight = 2 },
-}
-
-local modifiers = {
-	{ name = "normal", price = 0, weight = 30 },
-	{ name = "hunter", price = 10, weight = 10 },
-}
-
-local pack_sizes = {
-	{ size = 1, weight = 10 },
-	{ size = 2, weight = 5 },
-	{ size = 3, weight = 2 },
-}
 
 local function make_probe(name)
 	local probe = utils.create_instance_from_template(entity_types, name)
@@ -49,7 +26,7 @@ end
 
 local function find_viable_spot(ox, oy, min_range, max_range, template)
 	local path_checks = 0
-	for i = 1, max_spawn_tries do
+	for i = 1, director_config.max_spawn_tries do
 		local major = love.math.random(min_range, max_range)
 		local minor = love.math.random(0, max_range)
 		local x, y = major, minor
@@ -64,7 +41,7 @@ local function find_viable_spot(ox, oy, min_range, max_range, template)
 			and map:get_tile(sx, sy, 1) == tile_types.grass
 			and map:is_footprint_free(sx, sy, 1, template)
 		then
-			if path_checks >= max_path_checks then
+			if path_checks >= director_config.max_path_checks then
 				return
 			end
 			path_checks = path_checks + 1
@@ -93,13 +70,13 @@ local function price_pack(pack)
 end
 
 local function build_pack(budget)
-	for i = 1, max_spawn_tries do
-		local pack_size = utils.pick_weighted(pack_sizes)
+	for i = 1, director_config.max_spawn_tries do
+		local pack_size = utils.pick_weighted(director_config.pack_sizes)
 		if pack_size then
 			local pack = {}
 			for ii = 1, pack_size.size do
-				local entity_type = utils.pick_weighted(spawn_list)
-				local modifier = utils.pick_weighted(modifiers)
+				local entity_type = utils.pick_weighted(director_config.spawn_list)
+				local modifier = utils.pick_weighted(director_config.modifiers)
 				table.insert(pack, { ent = entity_type, mod = modifier })
 			end
 			if price_pack(pack) < budget then
@@ -126,11 +103,6 @@ local function spawn_member(origin, entity, modifier, min_range, max_range)
 		return ent
 	end
 end
-
-local min_spawn_range = 20
-local max_spawn_range = 50
-local min_pack_spawn_range = 1
-local max_pack_spawn_range = 10
 
 local function log_pack(pack, leader_spawn)
 	if not debug_state.log_director then
@@ -162,8 +134,13 @@ local function spawn_pack(pack)
 	end
 
 	local spawned = {}
-	local leader_spawn =
-		spawn_member(entities.player, leader.ent.name, leader.mod.name, min_spawn_range, max_spawn_range)
+	local leader_spawn = spawn_member(
+		entities.player,
+		leader.ent.name,
+		leader.mod.name,
+		director_config.min_spawn_range,
+		director_config.max_spawn_range
+	)
 	if leader_spawn then
 		table.insert(spawned, leader)
 
@@ -173,8 +150,8 @@ local function spawn_pack(pack)
 					leader_spawn,
 					member.ent.name,
 					member.mod.name,
-					min_pack_spawn_range,
-					max_pack_spawn_range
+					director_config.min_pack_spawn_range,
+					director_config.max_pack_spawn_range
 				)
 				if member_spawn then
 					table.insert(spawned, member)
@@ -189,20 +166,20 @@ local function spawn_pack(pack)
 end
 
 local dread = 0
-local dread_inc = 2
-local min_dread_spawn = 40
-local max_dread_spawn = 200
-local min_spawn_chance = 1
-local max_spawn_chance = 100
 
 local function spawn_chance()
-	local t = utils.clamp((dread - min_dread_spawn) / (max_dread_spawn - min_dread_spawn), 0, 1)
-	return utils.lerp(min_spawn_chance, max_spawn_chance, t)
+	local cfg = director_config
+	local t = utils.clamp((dread - cfg.min_dread_spawn) / (cfg.max_dread_spawn - cfg.min_dread_spawn), 0, 1)
+	return utils.lerp(cfg.min_spawn_chance, cfg.max_spawn_chance, t)
 end
 
 function director:tick()
-	dread = dread + dread_inc
-	if dread >= min_dread_spawn and #entities.get_actors() <= actor_cap and utils.chance(spawn_chance()) then
+	dread = dread + director_config.dread_inc
+	if
+		dread >= director_config.min_dread_spawn
+		and #entities.get_actors() <= director_config.actor_cap
+		and utils.chance(spawn_chance())
+	then
 		local spawned = spawn_pack(build_pack(dread))
 		if spawned then
 			dread = dread - price_pack(spawned)
