@@ -1,6 +1,6 @@
 return {
 	dull_sword = {
-		name = "Dull Sword",
+		name = "Dull Blade", --TODO: someday this should be the ritual weapon used to kill you
 		description = "A dull blade for combat.",
 		color = { { 0.9, 0.8, 0.8, 1 } },
 		slot = "mainhand",
