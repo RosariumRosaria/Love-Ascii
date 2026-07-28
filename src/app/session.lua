@@ -18,7 +18,6 @@ local particles = require("src.visuals.particles.particles")
 local session = {}
 
 local function spawn_default_entities()
-	entities.add_from_template_free("campfire", 255, 260, 1)
 	entities.add_from_template_free("crystal", 280, 255, 1)
 end
 
