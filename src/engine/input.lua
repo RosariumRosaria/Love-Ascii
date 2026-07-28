@@ -15,7 +15,6 @@ local cursor = require("src.engine.interaction.cursor")
 local game_cfg = require("src.config.game_config")
 local utils = require("src.utils")
 local pathfinder = require("src.engine.pathfinder")
-local state = require("src.app.state")
 
 local input = {
 	actor = nil,
@@ -299,87 +298,81 @@ end
 function input:update(dt)
 	set_mouse_tile()
 
-	local game_state = state:get()
-
 	if not self.actor then
 		return
 	end
 
-	if game_state == "normal" then
-		self:mouse_over_entity()
-		if self.mode == modes.normal then
-			for key in pairs(self.pressed_keys) do
-				remove_from_recency(self.buffered_keys, key)
-				table.insert(self.buffered_keys, key)
-			end
-		end
-
-		debug_input:update_actor(self, self.actor)
-
-		if self:pressed("cycle_next") then
-			if self.mode == modes.aiming then
-				aim.cycle_target()
-			else
-				local entity = (self.mode == modes.container and container.focus_container and container:get())
-					or self.actor
-				inventory.increment_selected_index(entity)
-			end
-		end
-
-		if self.mode == modes.container and (self:pressed("move_left") or self:pressed("move_right")) then
-			container:swap_focus()
-		end
-
-		if self:pressed("interact") and self.mode == modes.container then
-			self:set_mode(modes.normal)
-			self.interact_consumed = true
-		end
-
-		if self:pressed("aim") then
-			if self.mode == modes.aiming then
-				self:set_mode(modes.normal)
-			else
-				local weapon = inventory.get_equipped(self.actor, "mainhand")
-				local possible_weapon = inventory.get_first_with_field(self.actor, "ranged")
-
-				if (not weapon or not weapon.ranged) and possible_weapon then
-					self.pending_draw = possible_weapon
-				elseif not weapon then
-					event_log:add({ type = "action_failed", entity = self.actor.name, reason = "no weapon" })
-				elseif not weapon.ranged then
-					event_log:add({ type = "action_failed", entity = self.actor.name, reason = "no ranged weapon" })
-				else
-					self:enter_aim()
-				end
-			end
-		end
-
-		local slot = self:pressed_slot()
-
-		local slot_entity = (self.mode == modes.container and container.focus_container and container:get())
-			or self.actor
-
-		if slot and inventory.check_index(slot_entity, slot) then
-			local now = love.timer.getTime()
-			if
-				(self.mode == modes.normal or self.mode == modes.container)
-				and slot == self.last_slot
-				and (now - self.last_slot_time) < game_cfg.timing.turn_delay * 1.5
-			then
-				self.last_slot = nil
-				self.pending_slot = slot
-			else
-				self.last_slot, self.last_slot_time = slot, now
-			end
-			inventory.set_selected_index(slot_entity, slot)
-		end
-
-		if self:pressed("switch_character") and self.mode == modes.normal then
-			hud:switch_character()
+	self:mouse_over_entity()
+	if self.mode == modes.normal then
+		for key in pairs(self.pressed_keys) do
+			remove_from_recency(self.buffered_keys, key)
+			table.insert(self.buffered_keys, key)
 		end
 	end
 
-	hud:log_events()
+	debug_input:update_actor(self, self.actor)
+
+	if self:pressed("cycle_next") then
+		if self.mode == modes.aiming then
+			aim.cycle_target()
+		else
+			local entity = (self.mode == modes.container and container.focus_container and container:get())
+				or self.actor
+			inventory.increment_selected_index(entity)
+		end
+	end
+
+	if self.mode == modes.container and (self:pressed("move_left") or self:pressed("move_right")) then
+		container:swap_focus()
+	end
+
+	if self:pressed("interact") and self.mode == modes.container then
+		self:set_mode(modes.normal)
+		self.interact_consumed = true
+	end
+
+	if self:pressed("aim") then
+		if self.mode == modes.aiming then
+			self:set_mode(modes.normal)
+		else
+			local weapon = inventory.get_equipped(self.actor, "mainhand")
+			local possible_weapon = inventory.get_first_with_field(self.actor, "ranged")
+
+			if (not weapon or not weapon.ranged) and possible_weapon then
+				self.pending_draw = possible_weapon
+			elseif not weapon then
+				event_log:add({ type = "action_failed", entity = self.actor.name, reason = "no weapon" })
+			elseif not weapon.ranged then
+				event_log:add({ type = "action_failed", entity = self.actor.name, reason = "no ranged weapon" })
+			else
+				self:enter_aim()
+			end
+		end
+	end
+
+	local slot = self:pressed_slot()
+
+	local slot_entity = (self.mode == modes.container and container.focus_container and container:get())
+		or self.actor
+
+	if slot and inventory.check_index(slot_entity, slot) then
+		local now = love.timer.getTime()
+		if
+			(self.mode == modes.normal or self.mode == modes.container)
+			and slot == self.last_slot
+			and (now - self.last_slot_time) < game_cfg.timing.turn_delay * 1.5
+		then
+			self.last_slot = nil
+			self.pending_slot = slot
+		else
+			self.last_slot, self.last_slot_time = slot, now
+		end
+		inventory.set_selected_index(slot_entity, slot)
+	end
+
+	if self:pressed("switch_character") and self.mode == modes.normal then
+		hud:switch_character()
+	end
 end
 
 function input:face(actor, dx, dy)

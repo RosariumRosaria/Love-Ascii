@@ -7,7 +7,6 @@ local turn = require("src.engine.turn")
 local session = require("src.app.session")
 local input = require("src.engine.input")
 local perf = require("src.engine.perf")
-local state = require("src.app.state")
 local flow = require("src.app.flow")
 local hud = require("src.visuals.ui.hud")
 local debug_panel = require("src.debug.debug_panel")
@@ -30,7 +29,7 @@ function love.resize()
 end
 
 function love.update(dt)
-	local game_state = state:get()
+	local game_state = flow:get_state()
 	perf:begin_frame()
 
 	debug_input:update_global(input)
@@ -40,7 +39,7 @@ function love.update(dt)
 		hud:update()
 	end
 
-	flow:update(game_state)
+	flow:update()
 	scene:update(dt)
 	effects:update(dt)
 	debug_panel.update()

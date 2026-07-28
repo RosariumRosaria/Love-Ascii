@@ -1,13 +1,23 @@
 local input = require("src.engine.input")
-local state = require("src.app.state")
 local menu = require("src.visuals.ui.menu")
-local session = require("src.app.session")
 local settings = require("src.config.settings")
 local entities = require("src.sim.entities")
 local hud = require("src.visuals.ui.hud")
-local flow = {}
+local menu_control = require("src.app.menu_control")
 
-local capturing = false
+local flow = {
+	game_state = "start",
+}
+
+local states = {
+	normal = "normal",
+	paused = "paused",
+	dead = "dead",
+	start = "start",
+	settings = "settings",
+	keybinds = "keybinds",
+}
+
 local menu_for_state =
 	{ paused = "pause", start = "start", dead = "dead", settings = "settings", keybinds = "keybinds" }
 
@@ -23,20 +33,19 @@ local function pop()
 	return head
 end
 
-local function go_back()
-	local previous = pop()
-	flow:set_state(previous, true)
-	settings:save()
-	settings:save_keybinds()
+function flow:get_state()
+	return self.game_state
 end
 
 function flow:set_state(new_state, going_back)
-	local previous = state:get()
-	capturing = false
-	if not state:set(new_state) then
+	local previous = self.game_state
+	menu_control.reset()
+
+	local current = states[new_state]
+	if not current then
 		return false
 	end
-	local current = state:get()
+	self.game_state = current
 
 	local leaving = previous ~= current and menu_for_state[previous]
 	if leaving then
@@ -59,97 +68,15 @@ function flow:set_state(new_state, going_back)
 	return true
 end
 
-local function handle_menu(self, name)
-	if capturing then
-		local key = input.last_key
-		if key then
-			capturing = false
-			local option = menu:get_option(name)
-			if key ~= "escape" and settings:rebind(option.id, menu:get_slot(name) or 1, key) then
-				input:reload_keys()
-			end
-			menu:refresh(name)
-		end
-	else
-		local option = menu:get_option(name)
-		local kind = option.kind
-		if input:pressed("menu_interact") then
-			if kind == "action" then
-				local command = option.label
-				if command == "RESPAWN" then
-					session.respawn()
-					self:set_state("normal")
-				elseif command == "START" or command == "RESUME" then
-					self:set_state("normal")
-				elseif command == "RESTART" then
-					session.reset()
-					session.load()
-					self:set_state("start")
-				elseif command == "SETTINGS" then
-					self:set_state("settings")
-				elseif command == "KEYBINDS" then
-					self:set_state("keybinds")
-				elseif command == "QUIT" then
-					love.event.quit()
-				elseif command == "BACK" then
-					go_back()
-				elseif command == "RESET" then
-					if name == "keybinds" then
-						settings:reset_keybinds()
-						input:reload_keys()
-					else
-						settings:reset()
-					end
-					menu:refresh(name)
-				end
-			end
-		end
-
-		if input:pressed("move_up") then
-			menu:navigate(name, -1)
-		end
-		if input:pressed("move_down") then
-			menu:navigate(name, 1)
-		end
-
-		if kind == "number" or kind == "enum" then
-			local modified = false
-			if input:pressed("move_left") then
-				settings:adjust(option.label, -1)
-				modified = true
-			end
-			if input:pressed("move_right") then
-				settings:adjust(option.label, 1)
-				modified = true
-			end
-
-			if modified then
-				menu:refresh(name)
-			end
-		end
-
-		if kind == "keybind" then
-			local modified = false
-			if input:pressed("menu_interact") then
-				capturing = true
-			end
-			if input:pressed("move_left") then
-				menu:navigate_slot("keybinds", -1)
-				modified = true
-			end
-			if input:pressed("move_right") then
-				menu:navigate_slot("keybinds", 1)
-				modified = true
-			end
-
-			if modified then
-				menu:refresh(name)
-			end
-		end
-	end
+function flow:go_back()
+	self:set_state(pop(), true)
+	settings:save()
+	settings:save_keybinds()
 end
 
-function flow:update(game_state)
+function flow:update()
+	local game_state = self.game_state
+
 	if game_state == "normal" then
 		if entities.player and entities.player.dead then
 			self:set_state("dead")
@@ -166,18 +93,18 @@ function flow:update(game_state)
 	end
 
 	if game_state == "settings" and input:pressed("pause") then
-		go_back()
+		self:go_back()
 		return
 	end
 
-	if game_state == "keybinds" and not capturing and input:pressed("pause") then
-		go_back()
+	if game_state == "keybinds" and not menu_control.is_capturing() and input:pressed("pause") then
+		self:go_back()
 		return
 	end
 
 	local name = menu_for_state[game_state]
 	if name then
-		handle_menu(self, name)
+		menu_control.update(self, name)
 	end
 end
 
