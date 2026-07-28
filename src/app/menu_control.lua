@@ -7,12 +7,31 @@ local menu_control = {}
 
 local capturing = false
 
+local repeat_delay = 0.2
+local repeat_at = {}
+
+local function repeated(action)
+	if not input:is_down(action) then
+		repeat_at[action] = nil
+		return false
+	end
+
+	local now = love.timer.getTime()
+	if repeat_at[action] and now < repeat_at[action] then
+		return false
+	end
+
+	repeat_at[action] = now + repeat_delay
+	return true
+end
+
 function menu_control.is_capturing()
 	return capturing
 end
 
 function menu_control.reset()
 	capturing = false
+	repeat_at = {}
 end
 
 local function capture_key(name)
@@ -71,20 +90,20 @@ function menu_control.update(flow, name)
 		run_command(flow, name, option)
 	end
 
-	if input:pressed("move_up") then
+	if repeated("move_up") then
 		menu:navigate(name, -1)
 	end
-	if input:pressed("move_down") then
+	if repeated("move_down") then
 		menu:navigate(name, 1)
 	end
 
 	if kind == "number" or kind == "enum" then
 		local modified = false
-		if input:pressed("move_left") then
+		if repeated("move_left") then
 			settings:adjust(option.label, -1)
 			modified = true
 		end
-		if input:pressed("move_right") then
+		if repeated("move_right") then
 			settings:adjust(option.label, 1)
 			modified = true
 		end
@@ -99,11 +118,11 @@ function menu_control.update(flow, name)
 		if input:pressed("menu_interact") then
 			capturing = true
 		end
-		if input:pressed("move_left") then
+		if repeated("move_left") then
 			menu:navigate_slot("keybinds", -1)
 			modified = true
 		end
-		if input:pressed("move_right") then
+		if repeated("move_right") then
 			menu:navigate_slot("keybinds", 1)
 			modified = true
 		end
