@@ -46,9 +46,9 @@ return {
 		wait_cost = 4,
 	},
 	perf = {
-		lag_warn_threshold = 0.1,
+		lag_warn_threshold = 0.033,
 		warmup_frames = 30,
-		warn_cooldown = 0.05,
+		warn_cooldown = 1,
 		worst_frame_window = 5,
 	},
 	inventory = {
