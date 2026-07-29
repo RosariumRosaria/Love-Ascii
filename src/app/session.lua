@@ -15,7 +15,7 @@ local map = require("src.map.map")
 local panels = require("src.visuals.ui.panels")
 local particles = require("src.visuals.particles.particles")
 local city_generator = require("src.map.city_generator")
-
+local turn = require("src.engine.turn")
 local session = {}
 
 local FALLBACK_SPAWN = { x = 250, y = 250 }
@@ -80,7 +80,7 @@ function session.load(seed)
 			entities.move_to(entities.player, start.x, start.y, start.z)
 		end
 	end
-
+	map:apply_on_step(entities.player)
 	spawn_default_entities()
 	map:update_visibility(entities.player)
 	hud:load()
@@ -95,6 +95,7 @@ function session.respawn()
 	local phylactery = entities.phylactery
 	local player = entities.add_from_template_free("player", phylactery.x, phylactery.y, 1)
 	entities.set_player(player)
+	map:apply_on_step(entities.player)
 	map:update_visibility(entities.player)
 	input:set_actor(entities.player)
 	input:set_mode("normal")
@@ -112,6 +113,7 @@ function session.reset()
 	particles:reset()
 	panels:reset()
 	menu:reset()
+	turn:reset()
 end
 
 return session

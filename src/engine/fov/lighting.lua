@@ -1,6 +1,7 @@
 local shadowcaster = require("src.engine.fov.shadowcaster")
 local entities = require("src.sim.entities")
 local time = require("src.engine.time")
+local utils = require("src.utils")
 local lighting = {}
 
 local prev_lit = {}
@@ -72,30 +73,47 @@ function lighting.recompute(max_x, max_y, map_grid, lighting_grid, center_x, cen
 
 	for _, entity in ipairs(entities.entity_list) do
 		local ex, ey = entity.x, entity.y
-
-		if entity.light and in_range(ex, ey, center_x, center_y, view_radius, entity.light) then
-			lighting.cast(ex, ey, entity.z, entity.light, max_x, max_y, map_grid, lighting_grid)
-		end
-
-		if
-			entity.item
-			and entity.item.light
-			and in_range(ex, ey, center_x, center_y, view_radius, entity.item.light)
-		then
-			lighting.cast(ex, ey, entity.z, entity.item.light, max_x, max_y, map_grid, lighting_grid)
-		end
-
-		if entity.inventory and entity.inventory.equipped then
-			for _, item in pairs(entity.inventory.equipped) do
-				if item.light and in_range(ex, ey, center_x, center_y, view_radius, item.light) then
-					lighting.cast(ex, ey, entity.z, item.light, max_x, max_y, map_grid, lighting_grid)
+		local statuses = entity.statuses
+		local snuffer
+		if statuses then
+			for _, status in ipairs(statuses) do
+				if utils.get_tag(status, "snuffs") then
+					snuffer = status
 				end
 			end
 		end
 
-		for _, status in ipairs(entity.statuses or {}) do
-			if status.light and in_range(ex, ey, center_x, center_y, view_radius, status.light) then
-				lighting.cast(ex, ey, entity.z, status.light, max_x, max_y, map_grid, lighting_grid)
+		if not snuffer then
+			if entity.light and in_range(ex, ey, center_x, center_y, view_radius, entity.light) then
+				lighting.cast(ex, ey, entity.z, entity.light, max_x, max_y, map_grid, lighting_grid)
+			end
+
+			if
+				entity.item
+				and entity.item.light
+				and in_range(ex, ey, center_x, center_y, view_radius, entity.item.light)
+			then
+				lighting.cast(ex, ey, entity.z, entity.item.light, max_x, max_y, map_grid, lighting_grid)
+			end
+
+			if entity.inventory and entity.inventory.equipped then
+				for _, item in pairs(entity.inventory.equipped) do
+					if item.light and in_range(ex, ey, center_x, center_y, view_radius, item.light) then
+						lighting.cast(ex, ey, entity.z, item.light, max_x, max_y, map_grid, lighting_grid)
+					end
+				end
+			end
+		end
+
+		if statuses then
+			for _, status in ipairs(statuses) do
+				if
+					status.light
+					and in_range(ex, ey, center_x, center_y, view_radius, status.light)
+					and (not snuffer or status == snuffer)
+				then
+					lighting.cast(ex, ey, entity.z, status.light, max_x, max_y, map_grid, lighting_grid)
+				end
 			end
 		end
 	end

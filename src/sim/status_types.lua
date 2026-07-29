@@ -40,6 +40,9 @@ return {
 	phylactery_glow = {
 		name = "Glowing",
 		description = "Glowing.",
+		tags = {
+			snuffs = true,
+		},
 		color = { 0.9, 0.2, 0.22 },
 		light = {
 			color = { r = 1, g = 0.22, b = 0.22 },
