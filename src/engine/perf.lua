@@ -8,10 +8,47 @@ local perf = {
 	frame_count = 0,
 	last_warn_time = -math.huge,
 	worst_frame = nil,
+	-- rolling stats for the draw_buffer:sort phase, shown in the perf overlay
+	sort_sum = 0,
+	sort_frames = 0,
+	sort_avg_ms = 0,
+	sort_max_ms = 0,
+	sort_peak_ms = 0,
+	sort_window_start = nil,
 }
+
+-- Short window so the reported figures track what the renderer is doing *now*
+-- rather than smearing a change across several seconds of history.
+local PHASE_WINDOW = 0.5
 
 function perf:begin_frame()
 	self.frame_start = love.timer.getTime()
+end
+
+-- Called from scene:draw around draw_buffer:sort.
+function perf:record_sort(seconds)
+	local now = love.timer.getTime()
+	if not self.sort_window_start then
+		self.sort_window_start = now
+	end
+
+	local ms = seconds * 1000
+	self.sort_sum = self.sort_sum + ms
+	self.sort_frames = self.sort_frames + 1
+	if ms > self.sort_max_ms then
+		self.sort_max_ms = ms
+	end
+
+	if now - self.sort_window_start >= PHASE_WINDOW then
+		-- Publish the completed window so the overlay shows a settled figure rather
+		-- than one that resets to 0 mid-read.
+		self.sort_avg_ms = self.sort_sum / self.sort_frames
+		self.sort_peak_ms = self.sort_max_ms
+		self.sort_sum = 0
+		self.sort_frames = 0
+		self.sort_max_ms = 0
+		self.sort_window_start = now
+	end
 end
 
 function perf:draw()
@@ -34,6 +71,11 @@ function perf:draw()
 	if debug_state.profiling then
 		table.insert(lines, "PROFILING (f2 to stop)")
 	end
+	table.insert(lines, string.format("Sort: %.3fms avg / %.3fms peak", self.sort_avg_ms, self.sort_peak_ms))
+	-- getStats counters reset at present(), so this is the frame so far -- everything
+	-- scene:draw submitted, missing only the overlay itself.
+	local stats = love.graphics.getStats()
+	table.insert(lines, string.format("Draws: %d (%d batched)", stats.drawcalls, stats.drawcallsbatched or 0))
 	local line_h = font:getHeight()
 	local width = 0
 	for _, l in ipairs(lines) do

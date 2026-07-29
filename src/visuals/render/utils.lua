@@ -339,7 +339,8 @@ function render_utils.apply_lighting(color, light, emissive_scale)
 	if not color then
 		return { 1, 1, 1, 1 }
 	end
-	local emissive = (emissive_scale or render_config.lighting.light_emissive) * render_utils.emissive_by_time()
+
+	local emissive = (emissive_scale or render_config.lighting.light_emissive) * emissive_now
 
 	local zr = light.r or 0
 	local zg = light.g or 0
