@@ -30,7 +30,7 @@ return {
 	rooms = {
 		min_thickness = 5,
 		max_size = 12,
-		split_chance = 0.5,
+		split_chance = 0.4,
 		max_split_depth = 2,
 	},
 
@@ -38,6 +38,7 @@ return {
 		second_chance = 0.75,
 		road_side_weight = 7,
 		open_internal_chance = 0.5,
+		loops = 1,
 	},
 
 	windows = {

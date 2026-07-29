@@ -52,6 +52,15 @@ function utils.shuffle(list)
 	end
 end
 
+function utils.shuffled(list)
+	local copy = {}
+	for i = 1, #list do
+		copy[i] = list[i]
+	end
+	utils.shuffle(copy)
+	return copy
+end
+
 function utils.priority_queue_put(queue, node, priority)
 	for i = 1, #queue do
 		if queue[i][2] > priority then

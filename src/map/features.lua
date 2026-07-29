@@ -247,7 +247,7 @@ local function add_candidate(candidates, x, y, rotation, near_corner)
 	candidates[#candidates + 1] = { x = x, y = y, rotation = rotation, near_corner = near_corner }
 end
 
-local function add_internal_door(walls, a_id, b_id, x, y, facing, near_corner)
+local function add_room_adjacency(walls, a_id, b_id, x, y, facing, near_corner)
 	local key = room_pair_key(a_id, b_id)
 	local wall
 	for _, existing in ipairs(walls) do
@@ -257,10 +257,65 @@ local function add_internal_door(walls, a_id, b_id, x, y, facing, near_corner)
 		end
 	end
 	if not wall then
-		wall = { key = key, candidates = {} }
+		wall = { key = key, candidates = {}, a_id = a_id, b_id = b_id }
 		walls[#walls + 1] = wall
 	end
 	add_candidate(wall.candidates, x, y, utils.pick(facing), near_corner)
+end
+
+local function find(parent, id)
+	parent[id] = parent[id] or id
+	while parent[id] ~= id do
+		parent[id] = parent[parent[id]]
+		id = parent[id]
+	end
+	return id
+end
+
+local function try_edge(parent, wall, kept, rejects)
+	local ra, rb = find(parent, wall.a_id), find(parent, wall.b_id)
+	if ra ~= rb then
+		parent[ra] = rb
+		table.insert(kept, wall)
+	else
+		table.insert(rejects, wall)
+	end
+end
+
+local function choose_openings(walls, rooms)
+	local kept = {}
+	local parent = {}
+	local rejects = {}
+	local biggest = nil
+	local biggest_id = nil
+	for i, room in ipairs(rooms) do
+		if not biggest or (room.w - 2) * (room.h - 2) > (biggest.w - 2) * (biggest.h - 2) then
+			biggest = room
+			biggest_id = i
+		end
+	end
+	utils.shuffle(walls)
+	local near, far = {}, {}
+	for _, w in ipairs(walls) do
+		local t = (w.a_id == biggest_id or w.b_id == biggest_id) and near or far
+		t[#t + 1] = w
+	end
+	for _, wall in ipairs(near) do
+		try_edge(parent, wall, kept, rejects)
+	end
+	for _, wall in ipairs(far) do
+		try_edge(parent, wall, kept, rejects)
+	end
+
+	for _ = 1, gen_cfg.doors.loops do
+		if #rejects > 0 then
+			local wall = utils.pick(rejects)
+			table.insert(kept, wall)
+			utils.remove_from_list(rejects, wall)
+		end
+	end
+
+	return kept
 end
 
 -- kind of hacky but I wanted to reuse some of my utils that needed pairs
@@ -315,7 +370,7 @@ function features.make_building(tiles, rects, top_z, road_side)
 						add_candidate(high.candidates, tile_x, tile_y, high.rotation, near_corner)
 					end
 					if low_id ~= high_id and low_id > 0 and high_id > 0 then
-						add_internal_door(internal_walls, low_id, high_id, tile_x, tile_y, axis.facing, near_corner)
+						add_room_adjacency(internal_walls, low_id, high_id, tile_x, tile_y, axis.facing, near_corner)
 					end
 				end
 			end
@@ -355,7 +410,9 @@ function features.make_building(tiles, rects, top_z, road_side)
 		end
 	end
 
-	for _, wall in ipairs(internal_walls) do
+	local open_walls = choose_openings(internal_walls, rects)
+
+	for _, wall in ipairs(open_walls) do
 		local pos = utils.pick(prefer_non_corner(wall.candidates))
 		if love.math.random() < gen_cfg.doors.open_internal_chance then
 			stamp_door(pos.x, pos.y, pos.rotation, tiles)
