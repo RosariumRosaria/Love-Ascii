@@ -307,7 +307,8 @@ local function choose_openings(walls, rooms)
 		try_edge(parent, wall, kept, rejects)
 	end
 
-	for _ = 1, gen_cfg.doors.loops do
+	local loop_count = love.math.random(gen_cfg.doors.min_loops, gen_cfg.doors.max_loops)
+	for _ = 1, loop_count do
 		if #rejects > 0 then
 			local wall = utils.pick(rejects)
 			table.insert(kept, wall)

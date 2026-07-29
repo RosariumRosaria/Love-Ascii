@@ -389,7 +389,20 @@ function city_generator:find_spawn_room(rooms)
 		return nil
 	end
 
-	return utils.pick(utils.pick(pool).rooms)
+	local cx, cy = self.max_x / 2, self.max_y / 2
+	local max_dist_sq = (cx * cx) + (cy * cy)
+	local bias = gen_cfg.buildings.spawn_center_bias
+	local weighted = {}
+	for _, building in ipairs(pool) do
+		local dx = (building.x + (building.w / 2)) - cx
+		local dy = (building.y + (building.h / 2)) - cy
+		local nearness = 1 - math.sqrt(((dx * dx) + (dy * dy)) / max_dist_sq)
+		table.insert(weighted, { building = building, weight = math.max(nearness, 0) ^ bias })
+	end
+
+	local choice = utils.pick_weighted(weighted)
+	local building = choice and choice.building or utils.pick(pool)
+	return utils.pick(building.rooms)
 end
 
 function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)

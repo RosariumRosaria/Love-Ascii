@@ -24,6 +24,7 @@ return {
 		min_size = 10,
 		max_aspect = 1.5,
 		wing_chance = 0.5,
+		spawn_center_bias = 5,
 	},
 
 	-- Interior subdivision of a footprint into rooms
@@ -38,7 +39,8 @@ return {
 		second_chance = 0.75,
 		road_side_weight = 7,
 		open_internal_chance = 0.5,
-		loops = 1,
+		min_loops = 0,
+		max_loops = 1,
 	},
 
 	windows = {
