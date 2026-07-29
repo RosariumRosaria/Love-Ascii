@@ -119,7 +119,7 @@ end
 
 local half_screen_x, half_screen_y = 0, 0
 local max_dist = 1
-local emissive_now, brighten_now, brighten_gamma = 1, 1, 1
+local emissive_now, brighten_now = 1, 1
 
 function render_utils.get_screen_coords(x, y, center_x, center_y)
 	return (x - center_x + half_screen_x) * tile_size, (y - center_y + half_screen_y) * tile_size
@@ -325,7 +325,6 @@ function render_utils.refresh_frame_cache()
 	local t = time.time_of_day()
 	brighten_now = sample_keyframes(render_config.lighting.brightness_keys, t)
 	emissive_now = sample_keyframes(render_config.lighting.emissive_keys, t)
-	brighten_gamma = 1 / brighten_now
 end
 
 function render_utils.emissive_by_time()
@@ -333,7 +332,7 @@ function render_utils.emissive_by_time()
 end
 
 function render_utils.get_gamma()
-	return 1 / (brighten_gamma + render_config.lighting.brightness)
+	return 1 / (brighten_now + render_config.lighting.brightness)
 end
 
 function render_utils.apply_lighting(color, light, emissive_scale)
