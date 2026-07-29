@@ -125,9 +125,9 @@ return {
 		color = { { 1, 0.5, 0.5, 1 } },
 		chars = { "&" },
 		on_use = { apply_status = "regen" },
-		charges = 3,
-		max_charges = 3,
+		charges = 1,
 		tags = {
+			stacks = true,
 			consumable = true,
 		},
 	},
