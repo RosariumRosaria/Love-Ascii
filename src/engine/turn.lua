@@ -12,6 +12,7 @@ local director = require("src.engine.director")
 local turn = {
 	time_since_last_tick = 0,
 	time_between_ticks = game_cfg.timing.turn_delay,
+	player_turn_iter = 0,
 }
 
 local function commit_turn(actor)
@@ -27,6 +28,8 @@ local function commit_turn(actor)
 		aim.refresh()
 	end
 	if actor == entities.player then
+		turn.player_turn_iter = turn.player_turn_iter + 1
+		entities.player.turn_iter = turn.player_turn_iter
 		map:update_visibility(entities.player)
 		director:tick()
 	end
@@ -77,6 +80,11 @@ local function try_player_turn(player)
 	if input:try_take_turn() then
 		commit_turn(player)
 	end
+end
+
+function turn:reset()
+	self.time_since_last_tick = 0
+	self.player_turn_iter = 0
 end
 
 function turn:update(dt)
