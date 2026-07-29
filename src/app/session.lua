@@ -14,8 +14,11 @@ local game_cfg = require("src.config.game_config")
 local map = require("src.map.map")
 local panels = require("src.visuals.ui.panels")
 local particles = require("src.visuals.particles.particles")
+local city_generator = require("src.map.city_generator")
 
 local session = {}
+
+local FALLBACK_SPAWN = { x = 250, y = 250 }
 
 local function spawn_default_entities()
 	entities.add_from_template_free("crystal", 280, 255, 1)
@@ -32,8 +35,16 @@ function session.load(seed)
 	local map_type = (prefab_cfg and prefab_cfg.map_type) or "town"
 	map:load(map_max_x, map_max_y, map_max_z, map_min_z, map_type)
 
-	local player = entities.add_from_template_free("player", 250, 250, 1)
+	local spawn_room = city_generator:find_spawn_room(game_cfg.map.min_spawn_rooms)
+	local spawn_x, spawn_y = FALLBACK_SPAWN.x, FALLBACK_SPAWN.y
+	if spawn_room then
+		spawn_x = math.floor(spawn_room.x + (spawn_room.w / 2))
+		spawn_y = math.floor(spawn_room.y + (spawn_room.h / 2))
+	end
+	local phylactery = entities.add_from_template_free("phylactery", spawn_x, spawn_y, 1)
+	local player = entities.add_from_template_free("player", phylactery.x, phylactery.y, 1)
 	entities.set_player(player)
+	entities.set_phylactery(phylactery)
 
 	inventory.add_from_template(player, "dull_sword")
 	inventory.add_from_template(player, "bow")
@@ -81,7 +92,8 @@ function session.load(seed)
 end
 
 function session.respawn()
-	local player = entities.add_from_template_free("player", 250, 250, 1)
+	local phylactery = entities.phylactery
+	local player = entities.add_from_template_free("player", phylactery.x, phylactery.y, 1)
 	entities.set_player(player)
 	map:update_visibility(entities.player)
 	input:set_actor(entities.player)

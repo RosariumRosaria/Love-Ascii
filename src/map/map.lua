@@ -30,6 +30,7 @@ function map:reset()
 	self.lighting = {}
 	self.explored = {}
 	self.prev_visible = {}
+	city_generator:reset()
 end
 
 local ZERO_LIGHT = { r = 0, g = 0, b = 0 }

@@ -7,6 +7,22 @@ local utils = require("src.utils")
 local city_generator =
 	{ max_x = nil, max_y = nil, max_z = nil, lots = {}, roads = {}, buildings = {}, empty_lots = {}, civ_distance = {} }
 
+-- Called by map:reset (and by :load before regenerating) so a map that never runs
+-- the generator — an "empty" prefab map — can't be queried for a previous town's lots.
+function city_generator:reset()
+	self.max_x = nil
+	self.max_y = nil
+	self.max_z = nil
+	self.min_z = nil
+	self.lots = {}
+	self.roads = {}
+	self.buildings = {}
+	self.empty_lots = {}
+	self.civ_distance = {}
+	self.noise_ox = nil
+	self.noise_oy = nil
+end
+
 function city_generator:get_civ_distance()
 	return self.civ_distance
 end
@@ -317,10 +333,12 @@ function city_generator:build_building(tiles, lot)
 				rects = make_wing(footprint)
 			end
 			rects = make_room(rects)
-			local building, parts =
+			local building, rooms =
 				features.make_building(tiles, rects, features.roll_height("wall", self.max_z), road_side)
+			building.rooms = rooms
 			table.insert(self.buildings, building)
-			for _, part in ipairs(parts) do
+
+			for _, part in ipairs(rooms) do
 				features.scatter_count(tiles, part, love.math.random(2), function(x, y)
 					if not map:is_tile_free(x, y, 1) then
 						return false
@@ -352,15 +370,34 @@ function city_generator:populate_empty_lots(tiles)
 	end
 end
 
+function city_generator:find_spawn_room(rooms)
+	local qualified, roomiest, best = {}, {}, -1
+	for _, building in ipairs(self.buildings) do
+		local count = #building.rooms
+		if count >= rooms then
+			table.insert(qualified, building)
+		end
+		if count > best then
+			roomiest, best = { building }, count
+		elseif count == best then
+			table.insert(roomiest, building)
+		end
+	end
+
+	local pool = #qualified > 0 and qualified or roomiest
+	if #pool == 0 then
+		return nil
+	end
+
+	return utils.pick(utils.pick(pool).rooms)
+end
+
 function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
+	self:reset()
 	self.max_y = map_max_y
 	self.max_x = map_max_x
 	self.max_z = map_max_z
 	self.min_z = map_min_z
-	self.lots = {}
-	self.roads = {}
-	self.buildings = {}
-	self.empty_lots = {}
 	local root = { x = 1, y = 1, w = self.max_x, h = self.max_y }
 	self.noise_ox = love.math.random() * 1000
 	self.noise_oy = love.math.random() * 1000

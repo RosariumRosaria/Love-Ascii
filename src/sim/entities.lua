@@ -20,6 +20,7 @@ function entities.reset()
 	entities.entity_list = {}
 	entities.actor_list = {}
 	entities.player = nil
+	entities.phylactery = nil
 	entities.by_cell = {}
 	entities.by_id = {}
 	entities.id_num = 0
@@ -27,6 +28,16 @@ end
 
 function entities.set_player(p)
 	entities.player = p
+	for _, e in ipairs(entities.entity_list) do
+		if e == p then
+			return
+		end
+	end
+	entities.add(p)
+end
+
+function entities.set_phylactery(p)
+	entities.phylactery = p
 	for _, e in ipairs(entities.entity_list) do
 		if e == p then
 			return

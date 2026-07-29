@@ -360,6 +360,21 @@ return {
 			flicker = { amp = 0.05, freq = 4, phase = 0 },
 		},
 	},
+	phylactery = {
+		name = "Phylactery",
+		type = "prop",
+		natural_height = 0.25,
+		appearance = {
+			chars = { "<>" },
+			color = { { 1, 0.2, 0.45, 1 } },
+		},
+		description = "A Phylactery",
+		tags = {
+			moveable = false,
+			tilelike = true,
+			walkable = true,
+		},
+	},
 	crate = {
 		name = "Crate",
 		description = "A heavy crate, try pushing it!",

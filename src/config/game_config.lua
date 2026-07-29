@@ -11,6 +11,7 @@ return {
 		max_y = 750,
 		max_z = 10,
 		min_z = -4,
+		min_spawn_rooms = 4,
 	},
 	timing = {
 		frame_ai_budget = 2,
