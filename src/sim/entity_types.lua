@@ -366,7 +366,7 @@ return {
 		natural_height = 0.25,
 		appearance = {
 			chars = { "<>" },
-			color = { { 1, 0.2, 0.45, 1 } },
+			color = { { 1, 0.12, 0.18, 1 } },
 		},
 		description = "A Phylactery",
 		tags = {
@@ -375,8 +375,8 @@ return {
 			walkable = true,
 		},
 		light = {
-			color = { r = 1, g = 0.5, b = 0.7 },
-			intensity = 0.25,
+			color = { r = 1, g = 0.22, b = 0.22 },
+			intensity = 0.33,
 			radius = 8,
 			flicker = { amp = 0.05, freq = 4, phase = 0 },
 		},
