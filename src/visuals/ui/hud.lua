@@ -7,7 +7,7 @@ local panels = require("src.visuals.ui.panels")
 local config = require("src.config.runtime")
 local entities = require("src.sim.entities")
 local map = require("src.map.map")
-local hud = {}
+local hud = { last_player_turn = false }
 
 local character_modes = { "stats", "inventory" }
 local character_position = 1
@@ -284,9 +284,8 @@ function hud:update()
 		return
 	end
 
-	if player.next_turn ~= self.last_player_turn then
-		self.last_player_turn = player.next_turn
-		panels:clear_panel_by_name("terminal")
+	if player.turn_iter ~= self.last_player_turn then
+		self.last_player_turn = player.turn_iter
 		self:update_nearby_entities(gather_nearby(player))
 	end
 
