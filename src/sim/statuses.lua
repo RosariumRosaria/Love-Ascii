@@ -154,16 +154,31 @@ function statuses.can_be_interacted(entity)
 	return not statuses.has_tag(entity, "disables_interaction")
 end
 
+local function apply_from_source(entity, source)
+	local spec = source.applies_status
+	if not spec then
+		return
+	end
+	local overrides = spec.silent and { silent = true } or nil
+	for _, status in ipairs(spec) do
+		statuses.add_from_template(entity, status, overrides, source)
+	end
+end
+
 function statuses.apply_from_tile(entity, tile_stack)
 	if not tile_stack then
 		return
 	end
 	for _, tile in ipairs(tile_stack) do
-		if tile.applies_status then
-			local overrides = tile.applies_status.silent and { silent = true } or nil
-			for _, status in ipairs(tile.applies_status) do
-				statuses.add_from_template(entity, status, overrides, tile)
-			end
+		apply_from_source(entity, tile)
+	end
+end
+
+function statuses.apply_from_entities(entity, entity_list)
+	for i = 1, #entity_list do
+		local source = entity_list[i]
+		if source ~= entity and not source.dead then
+			apply_from_source(entity, source)
 		end
 	end
 end

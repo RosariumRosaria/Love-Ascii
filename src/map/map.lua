@@ -140,6 +140,7 @@ end
 function map:apply_on_step(entity)
 	local tile_stack = map:get_tile_stack(entity.x, entity.y)
 	statuses.apply_from_tile(entity, tile_stack)
+	statuses.apply_from_entities(entity, entities.get_list_at(entity.x, entity.y, entity.z))
 end
 
 function map:get_tile_stack(x, y)

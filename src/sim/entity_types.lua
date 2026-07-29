@@ -368,17 +368,12 @@ return {
 			chars = { "<>" },
 			color = { { 1, 0.12, 0.18, 1 } },
 		},
+		applies_status = { "phylactery_glow", silent = true },
 		description = "A Phylactery",
 		tags = {
 			moveable = false,
 			tilelike = true,
 			walkable = true,
-		},
-		light = {
-			color = { r = 1, g = 0.22, b = 0.22 },
-			intensity = 0.33,
-			radius = 8,
-			flicker = { amp = 0.05, freq = 4, phase = 0 },
 		},
 	},
 	crate = {

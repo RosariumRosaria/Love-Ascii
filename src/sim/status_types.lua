@@ -37,6 +37,18 @@ return {
 		},
 		duration = 5,
 	},
+	phylactery_glow = {
+		name = "Glowing",
+		description = "Glowing.",
+		color = { 0.9, 0.2, 0.22 },
+		light = {
+			color = { r = 1, g = 0.22, b = 0.22 },
+			intensity = 0.33,
+			radius = 8,
+			flicker = { amp = 0.05, freq = 4, phase = 0 },
+		},
+		duration = 1,
+	},
 
 	burning = {
 		name = "Burning",
