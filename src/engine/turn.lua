@@ -61,7 +61,7 @@ local function log_heard_sounds(player)
 		return
 	end
 	for _, heard in ipairs(player.mind.heard_sounds) do
-		if not map:is_visible(math.floor(heard.sound.x), math.floor(heard.sound.y)) or heard.loudness > 4 then
+		if not map:is_visible(math.floor(heard.sound.x), math.floor(heard.sound.y)) or heard.loudness > 10 then --TODO MAKE CONFIG
 			event_log:add({ type = "sound", description = heard.sound.description })
 		end
 	end
