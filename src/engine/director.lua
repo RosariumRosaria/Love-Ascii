@@ -94,10 +94,10 @@ local function spawn_member(origin, entity, modifier, min_range, max_range)
 	local x, y = find_viable_spot(origin.x, origin.y, min_range, max_range, probe)
 	if x and y then
 		local ent = entities.add_from_template(entity, x, y, 1)
+		ent.mind.director = true -- TODO someday these both should maybe go? I just wanted to be able to keep track of who made whatW
 		if modifier == "hunter" then
 			local player = entities.player
 			ai:set_goal(ent.id, { kind = "investigate", x = player.x, y = player.y })
-
 			ent.mind.hunter = true
 		end
 		return ent

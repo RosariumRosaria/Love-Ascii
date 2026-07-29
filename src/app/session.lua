@@ -63,7 +63,7 @@ function session.load(seed)
 	})
 	inventory.add_from_template(player, "plank")
 	inventory.add_from_template(player, "bandage")
-	inventory.add_from_template(player, "health_potion")
+	inventory.add_from_template(player, "health_potion", { charges = 3 })
 	inventory.add_from_template(player, "arrow", { charges = 3 })
 
 	inventory.equip(player, player.inventory.items[1])
