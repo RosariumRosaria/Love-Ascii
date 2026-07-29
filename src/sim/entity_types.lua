@@ -374,6 +374,12 @@ return {
 			tilelike = true,
 			walkable = true,
 		},
+		light = {
+			color = { r = 1, g = 0.5, b = 0.7 },
+			intensity = 0.25,
+			radius = 8,
+			flicker = { amp = 0.05, freq = 4, phase = 0 },
+		},
 	},
 	crate = {
 		name = "Crate",
