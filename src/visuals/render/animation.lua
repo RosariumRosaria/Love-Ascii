@@ -3,6 +3,7 @@ local render_cfg = require("src.config.render_config")
 local entities = require("src.sim.entities")
 local effects = require("src.visuals.effects.effects")
 local animation_types = require("src.visuals.render.animation_types")
+local render_utils = require("src.visuals.render.utils")
 local utils = require("src.utils")
 
 local animation = {}
@@ -161,11 +162,13 @@ local function settle(entity, a)
 end
 
 function animation.update(dt, center_x, center_y)
-	local cull = render_cfg.camera.draw_distance + render_cfg.animation.cull_slack
+	local draw_dist_x, draw_dist_y = render_utils.get_draw_bounds()
+	local cull_x = draw_dist_x + render_cfg.animation.cull_slack
+	local cull_y = draw_dist_y + render_cfg.animation.cull_slack
 	for _, entity in ipairs(entities.get_list()) do
 		local a = entity.anim
 		if a then
-			if math.abs(entity.x - center_x) > cull or math.abs(entity.y - center_y) > cull then
+			if math.abs(entity.x - center_x) > cull_x or math.abs(entity.y - center_y) > cull_y then
 				settle(entity, a)
 			else
 				ensure_init(entity, a)

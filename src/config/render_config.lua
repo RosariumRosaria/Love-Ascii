@@ -12,7 +12,7 @@ return {
 	},
 	camera = {
 		speed = 2,
-		draw_distance = 22,
+		draw_margin = 2,
 	},
 	rendering = {
 		default_offset_type = 1,

@@ -1,5 +1,6 @@
 local config = require("src.config.runtime")
 local render_config = require("src.config.render_config")
+local game_config = require("src.config.game_config")
 local lighting = require("src.engine.fov.lighting")
 local time = require("src.engine.time")
 local utils = require("src.utils")
@@ -147,6 +148,25 @@ end
 local half_screen_x, half_screen_y = 0, 0
 local max_dist = 1
 local emissive_now, brighten_now = 1, 1
+local draw_dist_x, draw_dist_y = 0, 0
+
+local function parallax_slack()
+	if debug_state.offset_type ~= 2 then
+		return 0
+	end
+	local levels = math.max(math.abs(game_config.map.max_z - 1), math.abs(game_config.map.min_z - 1))
+	return levels * render_config.rendering.offset_amount_factor
+end
+
+function render_utils.refresh_draw_bounds()
+	local margin = render_config.camera.draw_margin + parallax_slack()
+	draw_dist_x = math.ceil(love.graphics.getWidth() / tile_size / 2 + margin)
+	draw_dist_y = math.ceil(love.graphics.getHeight() / tile_size / 2 + margin)
+end
+
+function render_utils.get_draw_bounds()
+	return draw_dist_x, draw_dist_y
+end
 
 function render_utils.get_screen_coords(x, y, center_x, center_y)
 	return (x - center_x + half_screen_x) * tile_size, (y - center_y + half_screen_y) * tile_size
@@ -354,6 +374,7 @@ function render_utils.refresh_frame_cache()
 	half_screen_x = love.graphics.getWidth() / tile_size / 2
 	half_screen_y = love.graphics.getHeight() / tile_size / 2
 	max_dist = math.sqrt(half_screen_x ^ 2 + half_screen_y ^ 2)
+	render_utils.refresh_draw_bounds()
 	local t = time.time_of_day()
 	brighten_now = sample_keyframes(render_config.lighting.brightness_keys, t)
 	emissive_now = sample_keyframes(render_config.lighting.emissive_keys, t)

@@ -55,6 +55,7 @@ end
 
 function scene:resize()
 	self:_ensure_canvas()
+	render_utils.refresh_draw_bounds()
 end
 
 function scene:draw()
@@ -65,15 +66,15 @@ function scene:draw()
 	-- TODO(resize-polish): panel/hud outline_width is baked from screen_width at
 	-- creation (panels.lua / hud.lua) and isn't recomputed on resize, so outlines
 	-- render at the old thickness after a resolution change. Cosmetic.a
-	local draw_dist = render_cfg.camera.draw_distance
+	local draw_dist_x, draw_dist_y = render_utils.get_draw_bounds()
 	local camera_x, camera_y = camera:get_position()
 
 	local cx = math.floor(camera_x or 0)
 	local cy = math.floor(camera_y or 0)
-	local end_x = math.min(cx + draw_dist, map:get_max_x())
-	local end_y = math.min(cy + draw_dist, map:get_max_y())
-	local start_x = math.max(cx - draw_dist, 1)
-	local start_y = math.max(cy - draw_dist, 1)
+	local end_x = math.min(cx + draw_dist_x, map:get_max_x())
+	local end_y = math.min(cy + draw_dist_y, map:get_max_y())
+	local start_x = math.max(cx - draw_dist_x, 1)
+	local start_y = math.max(cy - draw_dist_y, 1)
 	local start_z = map.min_z
 	local end_z = map.max_z
 	local tiles = map:get_tiles()

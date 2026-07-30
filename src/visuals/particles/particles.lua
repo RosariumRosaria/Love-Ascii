@@ -2,6 +2,7 @@ local map = require("src.map.map")
 local render_cfg = require("src.config.render_config")
 local types = require("src.map.tile_types")
 local entities = require("src.sim.entities")
+local render_utils = require("src.visuals.render.utils")
 local utils = require("src.utils")
 
 local particles = {
@@ -84,9 +85,9 @@ local particle_types = {
 
 local modes = { rain = "rain", snow = "snow", normal = "normal" }
 
-local function weather_position(cx, cy, draw_dist)
-	return cx + (love.math.random() * 2 - 1) * draw_dist,
-		cy + (love.math.random() * 2 - 1) * draw_dist,
+local function weather_position(cx, cy, draw_dist_x, draw_dist_y)
+	return cx + (love.math.random() * 2 - 1) * draw_dist_x,
+		cy + (love.math.random() * 2 - 1) * draw_dist_y,
 		particles.ceiling - love.math.random(0, 3)
 end
 
@@ -181,8 +182,9 @@ end
 
 function particles:load(cx, cy)
 	self.ceiling = map.max_z * 3
+	local draw_dist_x, draw_dist_y = render_utils.get_draw_bounds()
 	for _ = 1, render_cfg.particles.count do
-		local wx, wy, wz = weather_position(cx, cy, render_cfg.camera.draw_distance)
+		local wx, wy, wz = weather_position(cx, cy, draw_dist_x, draw_dist_y)
 		local p = spawn_particle(wx, wy, wz, true, weather_modes[self.mode], "weather")
 		if p then
 			table.insert(self.particles, p)
@@ -191,14 +193,14 @@ function particles:load(cx, cy)
 end
 
 function particles:update(dt, cx, cy)
-	local draw_dist = render_cfg.camera.draw_distance
+	local draw_dist_x, draw_dist_y = render_utils.get_draw_bounds()
 	local weather_params = weather_modes[self.mode]
 
 	if
 		self.mode ~= modes.normal
 		and #self.particles < render_cfg.particles.count * render_cfg.particles.weather_proportion
 	then
-		local wx, wy, wz = weather_position(cx, cy, draw_dist)
+		local wx, wy, wz = weather_position(cx, cy, draw_dist_x, draw_dist_y)
 		local p = spawn_particle(wx, wy, wz, true, weather_params, "weather")
 		if p then
 			table.insert(self.particles, p)
@@ -242,7 +244,7 @@ function particles:update(dt, cx, cy)
 			break
 		end
 		if entity.emitters or entity.statuses or (entity.inventory and entity.inventory.equipped) then
-			if math.abs(entity.x - cx) <= draw_dist and math.abs(entity.y - cy) <= draw_dist then
+			if math.abs(entity.x - cx) <= draw_dist_x and math.abs(entity.y - cy) <= draw_dist_y then
 				local ex = utils.render_x(entity)
 				local ey = utils.render_y(entity)
 				local top_offset = entity.appearance and entity.appearance.chars and #entity.appearance.chars or 1
@@ -289,8 +291,8 @@ function particles:update(dt, cx, cy)
 				end
 				p.landed = hit
 			end
-			local out_x = math.abs(p.x - cx) > draw_dist
-			local out_y = math.abs(p.y - cy) > draw_dist
+			local out_x = math.abs(p.x - cx) > draw_dist_x
+			local out_y = math.abs(p.y - cy) > draw_dist_y
 
 			if p.lifespan then
 				p.lifespan = p.lifespan - dt
@@ -318,7 +320,7 @@ function particles:update(dt, cx, cy)
 			if kill and (p.linger <= 0 or (p.lifespan and p.lifespan <= 0)) then
 				local new_p = nil
 				if p.source == "weather" then
-					local wx, wy, wz = weather_position(cx, cy, draw_dist)
+					local wx, wy, wz = weather_position(cx, cy, draw_dist_x, draw_dist_y)
 					new_p = spawn_particle(wx, wy, wz, false, weather_params, "weather")
 				end
 				if new_p then
