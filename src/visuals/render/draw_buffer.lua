@@ -25,10 +25,6 @@ local draw_buffer = {
 local buf = {}
 local count = 0
 
--- Entries are bucketed by their high-order sort fields (pass, quantized z, layer)
--- and ordered only *within* a bucket, by (quantized y, insertion order). This is
--- the same total order a single flat sort would produce, but scene:draw emits in
--- y-major order, so most buckets arrive already sorted and cost nothing.
 local buckets = {}
 local bucket_counts = {}
 local occupied = {}
@@ -45,27 +41,33 @@ assert(Y_SLOTS * ORDER_W <= 2 ^ 53, "draw_buffer: packed sort key exceeds double
 local floor = math.floor
 local sort = table.sort
 
-function draw_buffer:emit(entry)
+local function acquire(pass, z, y, layer)
 	local n = count + 1
 	if n >= ORDER_W then
 		error("draw_buffer: exceeded " .. (ORDER_W - 1) .. " entries in one frame")
 	end
 	count = n
-	buf[n] = entry
-	local zq = floor((entry.z - Z_MIN) * 64)
+
+	local d = buf[n]
+	if not d then
+		d = {}
+		buf[n] = d
+	end
+
+	local zq = floor((z - Z_MIN) * 64)
 	if zq < 0 then
 		zq = 0
 	elseif zq >= Z_SLOTS then
 		zq = Z_SLOTS - 1
 	end
-	local yq = floor((entry.y - Y_MIN) * 256)
+	local yq = floor((y - Y_MIN) * 256)
 	if yq < 0 then
 		yq = 0
 	elseif yq >= Y_SLOTS then
 		yq = Y_SLOTS - 1
 	end
 
-	local bucket_index = (((entry.pass or 0) * Z_SLOTS + zq) * LAYER_SLOTS) + entry.layer
+	local bucket_index = (((pass or 0) * Z_SLOTS + zq) * LAYER_SLOTS) + layer
 	local bucket = buckets[bucket_index]
 	if not bucket then
 		bucket = {}
@@ -82,6 +84,74 @@ function draw_buffer:emit(entry)
 	bucket_count = bucket_count + 1
 	bucket_counts[bucket_index] = bucket_count
 	bucket[bucket_count] = yq * ORDER_W + n
+
+	return d
+end
+
+function draw_buffer:emit_char(
+	pass,
+	z,
+	y,
+	layer,
+	x_screen,
+	y_screen,
+	char,
+	r,
+	g,
+	b,
+	a,
+	outline_color,
+	rotation,
+	natural_rotation,
+	size_scale,
+	mirror_facing
+)
+	local d = acquire(pass, z, y, layer)
+	d.kind = "char"
+	d.x_screen = x_screen
+	d.y_screen = y_screen
+	d.char = char
+	d.r = r
+	d.g = g
+	d.b = b
+	d.a = a
+	d.outline_color = outline_color
+	d.rotation = rotation
+	d.natural_rotation = natural_rotation
+	d.size_scale = size_scale
+	d.mirror_facing = mirror_facing
+end
+
+function draw_buffer:emit_rect(
+	pass,
+	z,
+	y,
+	layer,
+	x_screen,
+	y_screen,
+	w,
+	h,
+	r,
+	g,
+	b,
+	a,
+	outline_width,
+	outline_color,
+	rounded_amount
+)
+	local d = acquire(pass, z, y, layer)
+	d.kind = "rect"
+	d.x_screen = x_screen
+	d.y_screen = y_screen
+	d.w = w
+	d.h = h
+	d.r = r
+	d.g = g
+	d.b = b
+	d.a = a
+	d.outline_width = outline_width
+	d.outline_color = outline_color
+	d.rounded_amount = rounded_amount
 end
 
 function draw_buffer:clear()
@@ -127,7 +197,10 @@ local function dispatch(d)
 			d.x_screen,
 			d.y_screen,
 			d.char,
-			d.color,
+			d.r,
+			d.g,
+			d.b,
+			d.a,
 			d.outline_color,
 			d.rotation,
 			d.natural_rotation,
@@ -135,12 +208,15 @@ local function dispatch(d)
 			d.mirror_facing
 		)
 	else
-		render_primitives.draw_rect(
+		render_primitives.draw_rect_rgba(
 			d.x_screen,
 			d.y_screen,
 			d.w,
 			d.h,
-			d.color,
+			d.r,
+			d.g,
+			d.b,
+			d.a,
 			d.outline_width,
 			d.outline_color,
 			d.rounded_amount

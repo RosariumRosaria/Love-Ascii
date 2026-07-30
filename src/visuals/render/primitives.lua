@@ -14,6 +14,35 @@ function render_primitives.draw_rect(
 	outline_color,
 	rounded_amount
 )
+	local r, g, b, a = render_utils.unpack_rgba(color)
+	render_primitives.draw_rect_rgba(
+		x_screen,
+		y_screen,
+		width,
+		height,
+		r,
+		g,
+		b,
+		a,
+		outline_width,
+		outline_color,
+		rounded_amount
+	)
+end
+
+function render_primitives.draw_rect_rgba(
+	x_screen,
+	y_screen,
+	width,
+	height,
+	r,
+	g,
+	b,
+	a,
+	outline_width,
+	outline_color,
+	rounded_amount
+)
 	local rounded_amount_x = 0
 	local rounded_amount_y = 0
 
@@ -22,7 +51,7 @@ function render_primitives.draw_rect(
 		rounded_amount_y = height * rounded_amount
 	end
 
-	love.graphics.setColor(color)
+	love.graphics.setColor(r, g, b, a)
 	love.graphics.rectangle("fill", x_screen, y_screen, width, height, rounded_amount_x, rounded_amount_y)
 
 	if outline_width and outline_color then
@@ -43,11 +72,17 @@ function render_primitives.draw_rect(
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
+-- Colour arrives as loose components: this is called once per glyph per frame from
+-- draw_buffer:walk, and a colour table per call was pure garbage. outline_color stays a
+-- table because it is an alias of a tile/entity template, not a per-frame allocation.
 function render_primitives.draw_char(
 	x_screen,
 	y_screen,
 	text,
-	color,
+	r,
+	g,
+	b,
+	a,
 	outline_color,
 	rotation,
 	natural_rotation,
@@ -88,7 +123,7 @@ function render_primitives.draw_char(
 		love.graphics.print(text, cx + 1, cy + 1, rads, sx, sy, ox, oy)
 	end
 
-	love.graphics.setColor(color)
+	love.graphics.setColor(r, g, b, a)
 	love.graphics.print(text, cx, cy, rads, sx, sy, ox, oy)
 
 	love.graphics.setColor(1, 1, 1, 1)

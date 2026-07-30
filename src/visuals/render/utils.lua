@@ -33,37 +33,45 @@ function render_utils.get_max_text_width(texts, font)
 	return max_width
 end
 
-function render_utils.get_effective_color(color, visible, explored)
+function render_utils.effective_rgba(color, visible, explored)
 	if visible then
 		if color then
-			return {
-				(color[1] or 1),
-				(color[2] or 1),
-				(color[3] or 1),
-				(color[4] or 1),
-			}
-		else
-			return { 1, 1, 1, 1 }
+			return (color[1] or 1), (color[2] or 1), (color[3] or 1), (color[4] or 1)
 		end
+		return 1, 1, 1, 1
 	elseif explored then
 		local e = debug_state.show_xray >= 2 and render_config.debug.xray_explored_color
 			or render_config.lighting.explored_color
-		return { e[1], e[2], e[3], e[4] }
+		return e[1], e[2], e[3], e[4]
 	end
 	return nil
 end
 
+function render_utils.get_effective_color(color, visible, explored)
+	local r, g, b, a = render_utils.effective_rgba(color, visible, explored)
+	if not r then
+		return nil
+	end
+	return { r, g, b, a }
+end
+
+function render_utils.scale_rgba(r, g, b, a, scale)
+	return (r or 1) * scale, (g or 1) * scale, (b or 1) * scale, (a or 1)
+end
+
 function render_utils.scale_color(color, scale)
-	if color then
-		return {
-			(color[1] or 1) * scale,
-			(color[2] or 1) * scale,
-			(color[3] or 1) * scale,
-			(color[4] or 1),
-		}
-	else
+	if not color then
 		return { 1, 1, 1, 1 }
 	end
+	local r, g, b, a = render_utils.scale_rgba(color[1], color[2], color[3], color[4], scale)
+	return { r, g, b, a }
+end
+
+function render_utils.tint_rgba(r, g, b, a, tint)
+	if not tint then
+		return r, g, b, a
+	end
+	return (r or 1) * (tint[1] or 1), (g or 1) * (tint[2] or 1), (b or 1) * (tint[3] or 1), (a or 1)
 end
 
 function render_utils.tint_color(color, tint)
@@ -73,12 +81,8 @@ function render_utils.tint_color(color, tint)
 	if not tint then
 		return color
 	end
-	return {
-		(color[1] or 1) * (tint[1] or 1),
-		(color[2] or 1) * (tint[2] or 1),
-		(color[3] or 1) * (tint[3] or 1),
-		(color[4] or 1),
-	}
+	local r, g, b, a = render_utils.tint_rgba(color[1], color[2], color[3], color[4], tint)
+	return { r, g, b, a }
 end
 
 local clamp_to_unit = lighting.normalize
@@ -87,9 +91,11 @@ function render_utils.normalize_light(light)
 	return clamp_to_unit(light.r or 0, light.g or 0, light.b or 0)
 end
 
-function render_utils.apply_flicker(color, sources, t)
+-- Returns the flicker multiplier for a cell's light sources, or nil when there is
+-- nothing to modulate -- so callers can skip the multiply entirely.
+local function flicker_scale(sources, t)
 	if not sources or #sources == 0 then
-		return color
+		return nil
 	end
 	local mod_sum = 0
 	local total = 0
@@ -104,17 +110,38 @@ function render_utils.apply_flicker(color, sources, t)
 		total = total + src.contribution
 	end
 	if total == 0 then
+		return nil
+	end
+	return mod_sum / total
+end
+
+function render_utils.apply_flicker_rgba(r, g, b, a, sources, t)
+	local scale = flicker_scale(sources, t)
+	if not scale then
+		return r, g, b, a
+	end
+	return render_utils.scale_rgba(r, g, b, a, scale)
+end
+
+function render_utils.apply_flicker(color, sources, t)
+	local scale = flicker_scale(sources, t)
+	if not scale then
 		return color
 	end
-	return render_utils.scale_color(color, mod_sum / total)
+	return render_utils.scale_color(color, scale)
+end
+
+function render_utils.tonemap_rgba(r, g, b, a)
+	local nr, ng, nb = clamp_to_unit(r or 1, g or 1, b or 1)
+	return nr, ng, nb, (a or 1)
 end
 
 function render_utils.tonemap(color)
 	if not color then
 		return { 1, 1, 1, 1 }
 	end
-	local r, g, b = clamp_to_unit(color[1] or 1, color[2] or 1, color[3] or 1)
-	return { r, g, b, (color[4] or 1) }
+	local r, g, b, a = render_utils.tonemap_rgba(color[1], color[2], color[3], color[4])
+	return { r, g, b, a }
 end
 
 local half_screen_x, half_screen_y = 0, 0
@@ -271,9 +298,14 @@ function render_utils.get_center_offset_x(font)
 	return offset
 end
 
+function render_utils.grayscale_rgba(r, g, b, a)
+	local l = (r or 1) * 0.299 + (g or 1) * 0.587 + (b or 1) * 0.114
+	return l, l, l, a
+end
+
 function render_utils.to_grayscale(color)
-	local l = color[1] * 0.299 + color[2] * 0.587 + color[3] * 0.114
-	return { l, l, l, color[4] }
+	local r, g, b, a = render_utils.grayscale_rgba(color[1], color[2], color[3], color[4])
+	return { r, g, b, a }
 end
 
 function render_utils.desaturate(color, amount)
@@ -335,11 +367,7 @@ function render_utils.get_gamma()
 	return 1 / (brighten_now + render_config.lighting.brightness)
 end
 
-function render_utils.apply_lighting(color, light, emissive_scale)
-	if not color then
-		return { 1, 1, 1, 1 }
-	end
-
+function render_utils.apply_lighting_rgba(r, g, b, a, light, emissive_scale)
 	local emissive = (emissive_scale or render_config.lighting.light_emissive) * emissive_now
 
 	local zr = light.r or 0
@@ -350,13 +378,18 @@ function render_utils.apply_lighting(color, light, emissive_scale)
 
 	local lr, lg, lb = clamp_to_unit(zr, zg, zb)
 
-	local r, g, b = clamp_to_unit(
-		(color[1] or 1) * fr + lr * emissive,
-		(color[2] or 1) * fg + lg * emissive,
-		(color[3] or 1) * fb + lb * emissive
-	)
+	local nr, ng, nb =
+		clamp_to_unit((r or 1) * fr + lr * emissive, (g or 1) * fg + lg * emissive, (b or 1) * fb + lb * emissive)
 
-	return { r, g, b, (color[4] or 1) }
+	return nr, ng, nb, (a or 1)
+end
+
+function render_utils.apply_lighting(color, light, emissive_scale)
+	if not color then
+		return { 1, 1, 1, 1 }
+	end
+	local r, g, b, a = render_utils.apply_lighting_rgba(color[1], color[2], color[3], color[4], light, emissive_scale)
+	return { r, g, b, a }
 end
 
 function render_utils.load()
@@ -365,8 +398,19 @@ function render_utils.load()
 	render_utils.refresh_frame_cache()
 end
 
+function render_utils.scale_alpha_rgba(r, g, b, a, scale)
+	return r, g, b, (a or 1) * scale
+end
+
 function render_utils.scale_alpha(color, scale)
 	return { color[1], color[2], color[3], color[4] * scale }
+end
+
+function render_utils.unpack_rgba(color)
+	if not color then
+		return 1, 1, 1, 1
+	end
+	return (color[1] or 1), (color[2] or 1), (color[3] or 1), (color[4] or 1)
 end
 
 function render_utils.get_visual_state(entity)

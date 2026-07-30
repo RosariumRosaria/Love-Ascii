@@ -33,89 +33,98 @@ local small_font
 
 local offset_amount
 
-local function apply_bw_mode(color, outline_color, tier)
+local function apply_bw_mode(r, g, b, a, outline_color, tier)
 	if debug_state.bw_mode < tier then
-		return color, outline_color
+		return r, g, b, a, outline_color
 	end
 
-	local c = render_utils.to_grayscale(color)
+	local nr, ng, nb, na = render_utils.grayscale_rgba(r, g, b, a)
 	local oc = outline_color and render_utils.to_grayscale(outline_color) or nil
-	return c, oc
+	return nr, ng, nb, na, oc
 end
 
 local function get_offset(z, x, y, cx, cy)
 	return render_utils.get_offset(z, debug_state.offset_type, offset_amount, x, y, cx, cy)
 end
 
-local function emit_char(params)
-	draw_buffer:emit({
-		pass = params.pass,
-		z = params.z,
-		y = params.y,
-		layer = params.layer,
-		kind = "char",
-		x_screen = params.x_screen,
-		y_screen = params.y_screen,
-		char = params.char,
-		color = params.color,
-		outline_color = params.outline_color,
-		rotation = params.rotation,
-		natural_rotation = params.natural_rotation,
-		size_scale = params.size_scale,
-		mirror_facing = params.mirror_facing,
-	})
+local function emit_shadow(
+	z,
+	y,
+	layer,
+	x_screen,
+	y_screen,
+	char,
+	r,
+	g,
+	b,
+	a,
+	rotation,
+	natural_rotation,
+	size_scale,
+	mirror_facing
+)
+	local sr, sg, sb = render_utils.scale_rgba(r, g, b, a, render_cfg.lighting.shadow_brightness_scale)
+	local sa = (a or 1) * render_cfg.lighting.shadow_alpha_scale
+	draw_buffer:emit_char(
+		nil,
+		z,
+		y,
+		layer,
+		x_screen,
+		y_screen,
+		char,
+		sr,
+		sg,
+		sb,
+		sa,
+		nil,
+		rotation,
+		natural_rotation,
+		size_scale,
+		mirror_facing
+	)
 end
 
-local function emit_shadow(params)
-	local shadow_color = render_utils.scale_color(params.color, render_cfg.lighting.shadow_brightness_scale)
-	shadow_color[4] = (params.color[4] or 1) * render_cfg.lighting.shadow_alpha_scale
-	emit_char({
-		z = params.z,
-		y = params.y,
-		layer = params.layer,
-		x_screen = params.x_screen,
-		y_screen = params.y_screen,
-		char = params.char,
-		color = shadow_color,
-		rotation = params.rotation,
-		natural_rotation = params.natural_rotation,
-		size_scale = params.size_scale,
-		mirror_facing = params.mirror_facing,
-	})
-end
-
-local function emit_name(params, name)
+local function emit_name(
+	z,
+	y,
+	layer,
+	x_screen,
+	y_screen,
+	r,
+	g,
+	b,
+	a,
+	outline_color,
+	rotation,
+	natural_rotation,
+	size_scale,
+	name
+)
 	for i = 1, #name do
-		local char = name:sub(i, i)
-		draw_buffer:emit({
-			z = params.z,
-			y = params.y,
-			layer = params.layer,
-			kind = "char",
-			x_screen = params.x_screen + ((i - 1) * tile_size),
-			y_screen = params.y_screen,
-			char = char,
-			color = params.color,
-			outline_color = params.outline_color,
-			rotation = params.rotation,
-			natural_rotation = params.natural_rotation,
-			size_scale = params.size_scale,
-		})
+		draw_buffer:emit_char(
+			nil,
+			z,
+			y,
+			layer,
+			x_screen + ((i - 1) * tile_size),
+			y_screen,
+			name:sub(i, i),
+			r,
+			g,
+			b,
+			a,
+			outline_color,
+			rotation,
+			natural_rotation,
+			size_scale,
+			nil
+		)
 	end
 end
 
-local function emit_cover_rect(layer, z, y, x_screen, y_screen, color)
-	draw_buffer:emit({
-		z = z,
-		y = y,
-		layer = layer,
-		kind = "rect",
-		x_screen = x_screen,
-		y_screen = y_screen,
-		color = color,
-		w = tile_size,
-		h = tile_size,
-	})
+local function emit_cover_rect(layer, z, y, x_screen, y_screen, r, g, b, a)
+	draw_buffer:emit_rect(nil, z, y, layer, x_screen, y_screen, tile_size, tile_size, r, g, b, a, nil, nil, nil)
 end
 
 function painter:emit_effect(effect, center_x, center_y, visible)
@@ -130,60 +139,74 @@ function painter:emit_effect(effect, center_x, center_y, visible)
 			local cx, cy = effect.x + (rect.ox or 0), effect.y + (rect.oy or 0)
 			local x_screen, y_screen = render_utils.get_screen_coords(cx, cy, center_x, center_y)
 
-			local color
+			local r, g, b, a
 			if effect.params.decay_over_time then
-				color =
-					render_utils.scale_alpha(rect.colors[1], effect.params.lifespan / effect.params.initial_lifespan)
+				local ur, ug, ub, ua = render_utils.unpack_rgba(rect.colors[1])
+				r, g, b, a = render_utils.scale_alpha_rgba(
+					ur,
+					ug,
+					ub,
+					ua,
+					effect.params.lifespan / effect.params.initial_lifespan
+				)
 			else
-				color = rect.colors[((effect.params.i - 1) % #rect.colors) + 1]
+				r, g, b, a = render_utils.unpack_rgba(rect.colors[((effect.params.i - 1) % #rect.colors) + 1])
 			end
 
 			local effect_size = rect.sizes[((effect.params.i - 1) % #rect.sizes) + 1] * tile_size
 
-			draw_buffer:emit({
-				pass = pass,
-				z = effect.z,
-				y = cy,
-				layer = draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
-				kind = "rect",
-				x_screen = x_screen + ((tile_size - effect_size) / 2),
-				y_screen = y_screen + ((tile_size - effect_size) / 2),
-				w = effect_size,
-				h = effect_size,
-				color = color,
-				outline_width = rect.outline_width,
-				outline_color = rect.outline_color,
-				rounded_amount = rect.rounded_amount,
-			})
+			draw_buffer:emit_rect(
+				pass,
+				effect.z,
+				cy,
+				draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
+				x_screen + ((tile_size - effect_size) / 2),
+				y_screen + ((tile_size - effect_size) / 2),
+				effect_size,
+				effect_size,
+				r,
+				g,
+				b,
+				a,
+				rect.outline_width,
+				rect.outline_color,
+				rect.rounded_amount
+			)
 		end
 	end
 
 	if effect.glyph then
 		local px, py = render_utils.get_screen_coords(effect.x, effect.y, center_x, center_y)
-		local color = effect.glyph.color
+		local r, g, b, a = render_utils.unpack_rgba(effect.glyph.color)
 
 		if effect.params.decay_over_time then
-			color = render_utils.scale_alpha(color, 1 - (effect.params.age / effect.params.duration))
+			r, g, b, a = render_utils.scale_alpha_rgba(r, g, b, a, 1 - (effect.params.age / effect.params.duration))
 		end
-		emit_char({
-			pass = pass,
-			z = effect.z,
-			y = effect.y,
-			layer = EFFECT_LAYERS[effect.layer] or draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
-			x_screen = px,
-			y_screen = py,
-			char = effect.glyph.char,
-			color = color,
-			size_scale = effect.glyph.size,
-			rotation = effect.r or 0,
-		})
+		draw_buffer:emit_char(
+			pass,
+			effect.z,
+			effect.y,
+			EFFECT_LAYERS[effect.layer] or draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
+			px,
+			py,
+			effect.glyph.char,
+			r,
+			g,
+			b,
+			a,
+			nil,
+			effect.r or 0,
+			nil,
+			effect.glyph.size,
+			nil
+		)
 	end
 
 	if effect.panels then
 		local anchor_offset_x = effect.anchor and utils.get_center_of_footprint(effect.anchor) or 0
 
 		for _, panel in ipairs(effect.panels) do
-			local color = panel.colors[effect.params.i] or { 1, 1, 1, 1 }
+			local pr, pg, pb, pa = render_utils.unpack_rgba(panel.colors[effect.params.i])
 			local size_scale = (panel.sizes and panel.sizes[effect.params.i]) or 1
 			local rect_size = tile_size * size_scale
 
@@ -196,33 +219,43 @@ function painter:emit_effect(effect, center_x, center_y, visible)
 
 			local pad = (rect_size - tile_size) / 2
 
-			draw_buffer:emit({
-				pass = pass,
-				z = effect.z,
-				y = effect.y,
-				layer = draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
-				kind = "rect",
-				x_screen = px - pad,
-				y_screen = py - pad,
-				w = rect_size,
-				h = rect_size,
-				color = color,
-				outline_width = panel.outline_width or 1,
-				outline_color = panel.outline_color,
-			})
+			draw_buffer:emit_rect(
+				pass,
+				effect.z,
+				effect.y,
+				draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
+				px - pad,
+				py - pad,
+				rect_size,
+				rect_size,
+				pr,
+				pg,
+				pb,
+				pa,
+				panel.outline_width or 1,
+				panel.outline_color,
+				nil
+			)
 
 			for _, text in ipairs(panel.texts) do
-				emit_char({
-					pass = pass,
-					z = effect.z,
-					y = effect.y,
-					layer = draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
-					x_screen = px,
-					y_screen = py,
-					char = text,
-					color = { 1, 1, 1, 1 },
-					size_scale = size_scale,
-				})
+				draw_buffer:emit_char(
+					pass,
+					effect.z,
+					effect.y,
+					draw_buffer.LAYER.EFFECT_BELOW_ENTITY,
+					px,
+					py,
+					text,
+					1,
+					1,
+					1,
+					1,
+					nil,
+					nil,
+					nil,
+					size_scale,
+					nil
+				)
 			end
 		end
 	end
@@ -306,33 +339,36 @@ function painter:emit_tile_at_z(
 
 	local alpha = render_utils.height_level_scale(z_eff, map.max_z, map.min_z, visible)
 
-	local base_color = render_utils.get_effective_color(tile.color, visible, explored)
-	local scaled_color = render_utils.scale_color(base_color, alpha)
+	local br, bg, bb, ba = render_utils.effective_rgba(tile.color, visible, explored)
+	local r, g, b, a = 1, 1, 1, 1
+	if br then
+		r, g, b, a = render_utils.scale_rgba(br, bg, bb, ba, alpha)
+	end
 
 	if visible then
-		scaled_color = render_utils.apply_lighting(scaled_color, light_data)
-		scaled_color = render_utils.apply_flicker(scaled_color, light_data.sources, time)
+		r, g, b, a = render_utils.apply_lighting_rgba(r, g, b, a, light_data)
+		r, g, b, a = render_utils.apply_flicker_rgba(r, g, b, a, light_data.sources, time)
 	end
 
 	local outline_color = tile.outline_color
 
-	scaled_color, outline_color = apply_bw_mode(scaled_color, outline_color, 1)
+	r, g, b, a, outline_color = apply_bw_mode(r, g, b, a, outline_color, 1)
 
-	scaled_color = render_utils.scale_color(scaled_color, base)
-	scaled_color = render_utils.tonemap(scaled_color)
+	r, g, b, a = render_utils.scale_rgba(r, g, b, a, base)
+	r, g, b, a = render_utils.tonemap_rgba(r, g, b, a)
 
 	local base_dx, base_dy = get_offset(z, x, y, center_x, center_y)
 
 	if tile.covers or (z == 1 and not tile.transparent) then
-		local cover_color = { 0, 0, 0, 1 }
+		local cr, cg, cb, ca = 0, 0, 0, 1
 		if visible then
-			local r, g, b = render_utils.normalize_light(light_data)
+			local lr, lg, lb = render_utils.normalize_light(light_data)
 			local k = render_cfg.lighting.cover_emissive * render_utils.emissive_by_time()
-			cover_color = { r * k, g * k, b * k, 1 }
-			cover_color = render_utils.apply_flicker(cover_color, light_data.sources, time)
+			cr, cg, cb, ca = lr * k, lg * k, lb * k, 1
+			cr, cg, cb, ca = render_utils.apply_flicker_rgba(cr, cg, cb, ca, light_data.sources, time)
 		end
-		cover_color = render_utils.scale_color(cover_color, base)
-		emit_cover_rect(draw_buffer.LAYER.TILE_COVER, z, y, x_screen + base_dx, y_screen + base_dy, cover_color)
+		cr, cg, cb, ca = render_utils.scale_rgba(cr, cg, cb, ca, base)
+		emit_cover_rect(draw_buffer.LAYER.TILE_COVER, z, y, x_screen + base_dx, y_screen + base_dy, cr, cg, cb, ca)
 	end
 
 	local dx, dy = base_dx, base_dy
@@ -341,33 +377,42 @@ function painter:emit_tile_at_z(
 	if natural_height ~= 0 then
 		dx, dy = get_offset(z_eff, x, y, center_x, center_y)
 
-		emit_shadow({
-			z = z,
-			y = y,
-			layer = draw_buffer.LAYER.TILE_SHADOW,
-			x_screen = x_screen + base_dx,
-			y_screen = y_screen + base_dy,
-			char = char,
-			color = scaled_color,
-			rotation = tile.rotation,
-			natural_rotation = tile.natural_rotation,
-			size_scale = 1 + (z - 1) * render_cfg.rendering.z_size_scale_per_level,
-		})
+		emit_shadow(
+			z,
+			y,
+			draw_buffer.LAYER.TILE_SHADOW,
+			x_screen + base_dx,
+			y_screen + base_dy,
+			char,
+			r,
+			g,
+			b,
+			a,
+			tile.rotation,
+			tile.natural_rotation,
+			1 + (z - 1) * render_cfg.rendering.z_size_scale_per_level,
+			nil
+		)
 	end
 
-	emit_char({
-		z = z + natural_height,
-		y = y,
-		layer = draw_buffer.LAYER.TILE_CHAR,
-		x_screen = x_screen + dx,
-		y_screen = y_screen + dy,
-		char = char,
-		color = scaled_color,
-		outline_color = outline_color,
-		rotation = tile.rotation,
-		natural_rotation = tile.natural_rotation,
-		size_scale = size_scale,
-	})
+	draw_buffer:emit_char(
+		nil,
+		z + natural_height,
+		y,
+		draw_buffer.LAYER.TILE_CHAR,
+		x_screen + dx,
+		y_screen + dy,
+		char,
+		r,
+		g,
+		b,
+		a,
+		outline_color,
+		tile.rotation,
+		tile.natural_rotation,
+		size_scale,
+		nil
+	)
 end
 
 function painter:emit_particle(p, center_x, center_y, time)
@@ -386,27 +431,35 @@ function painter:emit_particle(p, center_x, center_y, time)
 	local dx, dy = get_offset(p.z, p.x, p.y, center_x, center_y)
 
 	local alpha = render_utils.height_level_scale(p.z, map.max_z, map.min_z, true)
-	local scaled_color = render_utils.scale_color(p.color, alpha)
+	local r, g, b, a = render_utils.unpack_rgba(p.color)
+	r, g, b, a = render_utils.scale_rgba(r, g, b, a, alpha)
 	local light_data = map:get_lighting_tile(tx, ty)
 	if light_data then
-		scaled_color = render_utils.apply_lighting(scaled_color, light_data, render_cfg.lighting.particle_emissive)
+		r, g, b, a = render_utils.apply_lighting_rgba(r, g, b, a, light_data, render_cfg.lighting.particle_emissive)
 	end
-	scaled_color = apply_bw_mode(scaled_color, nil, 2)
+	r, g, b, a = apply_bw_mode(r, g, b, a, nil, 2)
 
-	scaled_color = render_utils.scale_color(scaled_color, render_utils.distance_scale(p.x, p.y, center_x, center_y))
-	scaled_color = render_utils.tonemap(scaled_color)
-	scaled_color[4] = scaled_color[4] * (p.alpha_mult or 1)
-	emit_char({
-		z = p.z,
-		y = p.y,
-		layer = PARTICLE_LAYERS[p.layer] or draw_buffer.LAYER.WEATHER,
-		x_screen = x_screen + dx,
-		y_screen = y_screen + dy,
-		char = p.char,
-		color = scaled_color,
-		rotation = p.r,
-		size_scale = (1 + (p.z - 1) * render_cfg.rendering.z_size_scale_per_level) * render_cfg.particles.size_scale,
-	})
+	r, g, b, a = render_utils.scale_rgba(r, g, b, a, render_utils.distance_scale(p.x, p.y, center_x, center_y))
+	r, g, b, a = render_utils.tonemap_rgba(r, g, b, a)
+	a = a * (p.alpha_mult or 1)
+	draw_buffer:emit_char(
+		nil,
+		p.z,
+		p.y,
+		PARTICLE_LAYERS[p.layer] or draw_buffer.LAYER.WEATHER,
+		x_screen + dx,
+		y_screen + dy,
+		p.char,
+		r,
+		g,
+		b,
+		a,
+		nil,
+		p.r,
+		nil,
+		(1 + (p.z - 1) * render_cfg.rendering.z_size_scale_per_level) * render_cfg.particles.size_scale,
+		nil
+	)
 end
 
 local function footprint_cells(entity)
@@ -449,27 +502,30 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 		local x_screen, y_screen =
 			render_utils.get_screen_coords(entity_part.render_x, entity_part.render_y, center_x, center_y)
 		if utils.get_tag(entity, "covers") then
-			local cover_color = { 0, 0, 0, 1 }
+			local cr, cg, cb, ca = 0, 0, 0, 1
 			if visible then
 				local rx = math.floor(entity_part.render_x)
 				local ry = math.floor(entity_part.render_y)
 				local cover_light = map:get_lighting_tile(rx, ry)
-				local r, g, b = render_utils.normalize_light(cover_light)
+				local lr, lg, lb = render_utils.normalize_light(cover_light)
 				local k = render_cfg.lighting.cover_emissive * render_utils.emissive_by_time()
-				cover_color = { r * k, g * k, b * k, 1 }
-				cover_color = render_utils.apply_flicker(cover_color, cover_light.sources, time)
+				cr, cg, cb, ca = lr * k, lg * k, lb * k, 1
+				cr, cg, cb, ca = render_utils.apply_flicker_rgba(cr, cg, cb, ca, cover_light.sources, time)
 			end
-			cover_color = render_utils.scale_color(cover_color, base)
+			cr, cg, cb, ca = render_utils.scale_rgba(cr, cg, cb, ca, base)
 			local cover_layer = ENTITY_COVER_LAYERS[entity.render_layer] or draw_buffer.LAYER.ENTITY_COVER
-			emit_cover_rect(cover_layer, entity.z, entity_part.y, x_screen, y_screen, cover_color)
+			emit_cover_rect(cover_layer, entity.z, entity_part.y, x_screen, y_screen, cr, cg, cb, ca)
 		end
 
 		local cell_chars = entity_part.char and { entity_part.char } or entity.appearance.chars
 		for i, char_data in ipairs(cell_chars) do
 			local base_color = entity.appearance.color[i] or entity.appearance.color[#entity.appearance.color]
 
+			local br, bg, bb, ba
 			if tilelike then
-				base_color = render_utils.get_effective_color(base_color, visible, explored)
+				br, bg, bb, ba = render_utils.effective_rgba(base_color, visible, explored)
+			elseif base_color then
+				br, bg, bb, ba = render_utils.unpack_rgba(base_color)
 			end
 
 			local z_eff = entity.z + i - 1 + natural_height
@@ -478,24 +534,26 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 				scale = scale + render_cfg.lighting.entity_brightness_boost
 			end
 
-			local scaled_color = render_utils.scale_color(base_color, scale)
+			local r, g, b, a = 1, 1, 1, 1
+			if br then
+				r, g, b, a = render_utils.scale_rgba(br, bg, bb, ba, scale)
+			end
 			if light_data then
-				scaled_color =
-					render_utils.apply_lighting(scaled_color, light_data, render_cfg.lighting.entity_emissive)
+				r, g, b, a =
+					render_utils.apply_lighting_rgba(r, g, b, a, light_data, render_cfg.lighting.entity_emissive)
 				-- TODO: Determine if this should apply to entity colors
-				-- scaled_color = render_utils.apply_flicker(scaled_color, light_data.flicker, time)
 			end
 
 			if visuals.tint then
-				scaled_color = render_utils.tint_color(scaled_color, visuals.tint)
+				r, g, b, a = render_utils.tint_rgba(r, g, b, a, visuals.tint)
 			end
 			if visuals.alpha then
-				scaled_color = render_utils.scale_color(scaled_color, visuals.alpha)
+				r, g, b, a = render_utils.scale_rgba(r, g, b, a, visuals.alpha)
 			end
-			scaled_color = apply_bw_mode(scaled_color, nil, 2)
+			r, g, b, a = apply_bw_mode(r, g, b, a, nil, 2)
 
-			scaled_color = render_utils.scale_color(scaled_color, base)
-			scaled_color = render_utils.tonemap(scaled_color)
+			r, g, b, a = render_utils.scale_rgba(r, g, b, a, base)
+			r, g, b, a = render_utils.tonemap_rgba(r, g, b, a)
 
 			local dx, dy = get_offset(
 				utils.render_z(entity) + i - 1 + natural_height,
@@ -505,45 +563,67 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 				center_y
 			)
 
-			local p = {
-				z = z_eff,
-				y = entity_part.y,
-				layer = ENTITY_LAYERS[entity.render_layer] or draw_buffer.LAYER.ENTITY_CHAR,
-				x_screen = x_screen + dx,
-				y_screen = y_screen + dy,
-				char = char_data,
-				color = scaled_color,
-				outline_color = outline_color,
-				rotation = entity.rotation,
-				natural_rotation = entity.natural_rotation,
-				size_scale = 1
-					+ (utils.render_z(entity) + i - 1 + natural_height)
-						* render_cfg.rendering.z_size_scale_per_level,
-				mirror_facing = entity.mirror_facing,
-			}
+			local entity_layer = ENTITY_LAYERS[entity.render_layer] or draw_buffer.LAYER.ENTITY_CHAR
+			local char_size_scale = 1
+				+ (utils.render_z(entity) + i - 1 + natural_height) * render_cfg.rendering.z_size_scale_per_level
 
 			if entity.moused and entity.type == "actor" and not entity.footprint then
-				emit_name(p, entity.name)
+				emit_name(
+					z_eff,
+					entity_part.y,
+					entity_layer,
+					x_screen + dx,
+					y_screen + dy,
+					r,
+					g,
+					b,
+					a,
+					outline_color,
+					entity.rotation,
+					entity.natural_rotation,
+					char_size_scale,
+					entity.name
+				)
 				break
 			else
 				if natural_height ~= 0 then
 					local base_dx, base_dy =
 						get_offset(utils.render_z(entity) + i - 1, entity_part.x, entity_part.y, center_x, center_y)
-					emit_shadow({
-						z = z_eff,
-						y = entity_part.y,
-						layer = draw_buffer.LAYER.ENTITY_SHADOW,
-						x_screen = x_screen + base_dx,
-						y_screen = y_screen + base_dy,
-						char = char_data,
-						color = scaled_color,
-						rotation = entity.rotation,
-						natural_rotation = entity.natural_rotation,
-						size_scale = 1 + (utils.render_z(entity) + i - 1) * render_cfg.rendering.z_size_scale_per_level,
-						mirror_facing = entity.mirror_facing,
-					})
+					emit_shadow(
+						z_eff,
+						entity_part.y,
+						draw_buffer.LAYER.ENTITY_SHADOW,
+						x_screen + base_dx,
+						y_screen + base_dy,
+						char_data,
+						r,
+						g,
+						b,
+						a,
+						entity.rotation,
+						entity.natural_rotation,
+						1 + (utils.render_z(entity) + i - 1) * render_cfg.rendering.z_size_scale_per_level,
+						entity.mirror_facing
+					)
 				end
-				emit_char(p)
+				draw_buffer:emit_char(
+					nil,
+					z_eff,
+					entity_part.y,
+					entity_layer,
+					x_screen + dx,
+					y_screen + dy,
+					char_data,
+					r,
+					g,
+					b,
+					a,
+					outline_color,
+					entity.rotation,
+					entity.natural_rotation,
+					char_size_scale,
+					entity.mirror_facing
+				)
 			end
 		end
 	end
