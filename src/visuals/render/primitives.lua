@@ -214,6 +214,12 @@ function render_primitives.draw_grid_cell(x_screen, y_screen)
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
+function render_primitives.draw_sky_mask_cell(x_screen, y_screen)
+	love.graphics.setColor(render_cfg.debug.sky_mask_color)
+	love.graphics.rectangle("fill", x_screen, y_screen, tile_size, tile_size)
+	love.graphics.setColor(1, 1, 1, 1)
+end
+
 function render_primitives.draw_screen_center_lines()
 	local w, h = love.graphics.getDimensions()
 	local cx, cy = w * 0.5, h * 0.5

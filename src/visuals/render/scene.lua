@@ -166,6 +166,7 @@ function scene:draw()
 	love.graphics.setShader()
 
 	painter:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
+	painter:draw_sky_mask_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
 	debug_panel.draw(camera_x, camera_y)
 
 	for _, panel in ipairs(panels:get_panel_list()) do

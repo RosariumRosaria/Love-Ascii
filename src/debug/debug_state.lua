@@ -5,6 +5,8 @@ local debug_state = {
 	bw_mode = render_cfg.debug.bw_mode,
 	offset_type = render_cfg.rendering.default_offset_type,
 	show_perf = false,
+	-- tints cells whose sky exposure is 0, i.e. cells the ambient sky never reaches
+	show_sky_mask = false,
 	-- 0 = off, 1 = entities, 2 = entities + tiles
 	show_xray = 0,
 	profiling = false,
@@ -18,6 +20,10 @@ local debug_state = {
 
 function debug_state.toggle_grid()
 	debug_state.show_grid = not debug_state.show_grid
+end
+
+function debug_state.toggle_sky_mask()
+	debug_state.show_sky_mask = not debug_state.show_sky_mask
 end
 
 function debug_state.toggle_bw()

@@ -1,7 +1,7 @@
 local debug_state = require("src.debug.debug_state")
 
 local profiler = {
-	mode = "3si1m1",
+	mode = "3Fsi1m1",
 }
 
 local ok, jit_p = pcall(require, "jit.p")

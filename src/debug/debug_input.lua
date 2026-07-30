@@ -48,6 +48,10 @@ function debug_input:update_global(input)
 		debug_state.toggle_bw()
 	end
 
+	if input:pressed("toggle_sky_mask") then
+		debug_state.toggle_sky_mask()
+	end
+
 	if input:pressed("toggle_profiler") then
 		profiler:toggle()
 	end

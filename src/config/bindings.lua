@@ -30,10 +30,10 @@ return {
 	{ "toggle_visualizer", "f7", category = "debug" },
 	{ "toggle_font", "f8", category = "debug" },
 	{ "switch_offset", "f9", category = "debug" },
+	{ "toggle_sky_mask", "f10", category = "debug" },
 	{ "debug", "f11", category = "debug" },
 	{ "debug_spawn_zombie", "f12", category = "debug" },
 
-	{ "respawn", "return", "kpenter", category = "menu" },
 	{ "menu_interact", "return", "kpenter", category = "menu" },
 	{ "pause", "escape", category = "menu" },
 }

@@ -33,7 +33,7 @@ function map:reset()
 	city_generator:reset()
 end
 
-local ZERO_LIGHT = { r = 0, g = 0, b = 0 }
+local ZERO_LIGHT = { r = 0, g = 0, b = 0, sky = 0 }
 
 function map:closest_walkable_neighbor(entity, x, y, z)
 	z = z or 1
@@ -263,7 +263,7 @@ local function effective_light(self, x, y, vx, vy)
 			and self:is_visible(nx, ny)
 		then
 			local light = self.lighting[ny][nx]
-			if (light.r + light.g + light.b) > render_config.lighting.dynamic_light_threshold then
+			if lighting.illumination(light) > render_config.lighting.dynamic_light_threshold then
 				return light
 			end
 		end
@@ -308,12 +308,12 @@ function map:load(max_x, max_y, max_z, min_z, map_type)
 			self.tiles[y][x] = {}
 			self.visible[y][x] = false
 			self.explored[y][x] = false
-			self.lighting[y][x] = { r = 0, g = 0, b = 0, sources = {} }
+			self.lighting[y][x] = { r = 0, g = 0, b = 0, sky = 1, sources = {} }
 			self.tiles[y][x][1] = types.grass
 		end
 	end
 	if map_type == "town" then
-		city_generator:load(self.tiles, self.max_y, self.max_x, self.max_z, self.min_z)
+		city_generator:load(self.tiles, self.max_y, self.max_x, self.max_z, self.min_z, self.lighting)
 	end
 end
 

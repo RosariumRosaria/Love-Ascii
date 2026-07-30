@@ -313,7 +313,7 @@ local function make_room(rects, depth)
 	return new_rects
 end
 
-function city_generator:build_building(tiles, lot)
+function city_generator:build_building(tiles, lot, lighting_grid)
 	local map = require("src.map.map")
 
 	local ml, mr, mt, mb =
@@ -334,7 +334,7 @@ function city_generator:build_building(tiles, lot)
 			end
 			rects = make_room(rects)
 			local building, rooms =
-				features.make_building(tiles, rects, features.roll_height("wall", self.max_z), road_side)
+				features.make_building(tiles, rects, features.roll_height("wall", self.max_z), road_side, lighting_grid)
 			building.rooms = rooms
 			table.insert(self.buildings, building)
 
@@ -405,7 +405,7 @@ function city_generator:find_spawn_room(rooms)
 	return utils.pick(building.rooms)
 end
 
-function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
+function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z, lighting_grid)
 	self:reset()
 	self.max_y = map_max_y
 	self.max_x = map_max_x
@@ -422,7 +422,7 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z)
 		self:make_road(tiles, road, i)
 	end
 	for _, lot in ipairs(self.lots) do
-		self:build_building(tiles, lot)
+		self:build_building(tiles, lot, lighting_grid)
 	end
 	self:find_civ_distance()
 	self:wild(1, 1, map_max_x, map_max_y, tiles, root)

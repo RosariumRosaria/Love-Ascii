@@ -338,7 +338,7 @@ local function make_cardinal_buckets()
 	}
 end
 
-function features.make_building(tiles, rects, top_z, road_side)
+function features.make_building(tiles, rects, top_z, road_side, lighting_grid)
 	local bounding_box = get_bounding_box(rects)
 	local ox, oy = bounding_box.x - 1, bounding_box.y - 1
 	local width, height = bounding_box.w, bounding_box.h
@@ -354,8 +354,10 @@ function features.make_building(tiles, rects, top_z, road_side)
 			if mask[y][x] ~= 0 and in_bounds(tile_x, tile_y) then
 				local orientation = is_boundary(mask, x, y)
 				local axis = WALL_AXES[orientation]
+
 				if orientation == "internal" then
 					tiles[tile_y][tile_x][1] = tile_types.floor
+					lighting_grid[tile_y][tile_x].sky = 0
 				elseif orientation == "corner" then
 					features.fill_column(tiles, tile_x, tile_y, 1, top_z, tile_types.c_wall)
 				elseif axis then
@@ -415,6 +417,7 @@ function features.make_building(tiles, rects, top_z, road_side)
 
 	for _, wall in ipairs(open_walls) do
 		local pos = utils.pick(prefer_non_corner(wall.candidates))
+		lighting_grid[pos.y][pos.x].sky = 0
 		if love.math.random() < gen_cfg.doors.open_internal_chance then
 			stamp_door(pos.x, pos.y, pos.rotation, tiles)
 		else

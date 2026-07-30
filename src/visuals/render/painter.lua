@@ -644,6 +644,21 @@ function painter:draw_grid_overlay(start_x, start_y, end_x, end_y, camera_x, cam
 	render_primitives.draw_screen_center_lines()
 end
 
+function painter:draw_sky_mask_overlay(start_x, start_y, end_x, end_y, camera_x, camera_y)
+	if not debug_state.show_sky_mask then
+		return
+	end
+
+	for y = start_y, end_y do
+		for x = start_x, end_x do
+			if map:in_bounds(x, y) and map.lighting[y][x].sky == 0 then
+				local screen_x, screen_y = render_utils.get_screen_coords(x, y, camera_x, camera_y)
+				render_primitives.draw_sky_mask_cell(screen_x, screen_y)
+			end
+		end
+	end
+end
+
 function painter:reload_fonts()
 	tile_size = config.tile_size
 	small_tile_size = config.small_tile_size
