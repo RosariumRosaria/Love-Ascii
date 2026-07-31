@@ -178,7 +178,7 @@ return {
 		generate = "bounce",
 		params = {
 			duration = 1,
-			buffered = true,
+			buffered = false,
 			bounce_height = 0.5,
 			age = 0,
 			bounce_times = 2,
