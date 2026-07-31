@@ -16,6 +16,9 @@ end
 
 function lighting.illumination(cell)
 	local ambient = time.ambient_color()
+	if cell.sky == 0 then
+		ambient = { r = 0.125, g = 0.213, b = 0.422 }
+	end
 	return lighting.normalize(ambient.r + (cell.r or 0), ambient.g + (cell.g or 0), ambient.b + (cell.b or 0))
 end
 
