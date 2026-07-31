@@ -123,6 +123,12 @@ function utils.render_z(entity)
 	return (a and a.render_z) or entity.z
 end
 
+function utils.render_top_z(entity)
+	local chars = entity.appearance and entity.appearance.chars
+	local levels = (chars and not entity.footprint) and #chars or 1
+	return entity.z + (levels - 1) + (entity.natural_height or 0)
+end
+
 function utils.get_center_of_footprint(entity)
 	if not entity.footprint then
 		return 0, 0
