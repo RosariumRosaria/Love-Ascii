@@ -55,7 +55,7 @@ return {
 		transparent = true,
 		covers = true,
 		applies_status = { "obscured", silent = true },
-		natural_height = 0.25,
+		natural_height = 0.3,
 	},
 	road = {
 		name = "Road",
@@ -63,6 +63,7 @@ return {
 		walkable = true,
 
 		color = { 0.32, 0.35, 0.47, 1 },
+
 		transparent = true,
 		covers = true,
 	},
