@@ -13,6 +13,9 @@ return {
 		min_z = -4,
 		min_spawn_rooms = 5,
 	},
+	entities = {
+		perception_brightness_threshold = 1.5,
+	},
 	timing = {
 		frame_ai_budget = 2,
 		turn_delay = 0.175,
@@ -42,7 +45,7 @@ return {
 		transfer_item = 0.5,
 	},
 	pathfinding = {
-		max_iterations = 1000,
+		max_iterations = 2000,
 		wait_cost = 4,
 	},
 	perf = {

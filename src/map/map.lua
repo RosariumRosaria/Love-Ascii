@@ -7,6 +7,7 @@ local render_config = require("src.config.render_config")
 local entities = require("src.sim.entities")
 local statuses = require("src.sim.statuses")
 local stats = require("src.sim.stats")
+local game_config = require("src.config.game_config")
 
 local map = {
 	max_x = nil,
@@ -292,6 +293,11 @@ end
 
 function map:get_visibility_grids()
 	return self.visible, self.explored
+end
+
+function map.can_see(entity, x, y)
+	local brightness = map:brightness_at(x, y)
+	return utils.get_tag(entity, "night_vision") or brightness > game_config.entities.perception_brightness_threshold
 end
 
 function map:load(max_x, max_y, max_z, min_z, map_type)

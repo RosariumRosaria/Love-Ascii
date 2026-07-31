@@ -6,7 +6,6 @@ local fov_handler = require("src.engine.fov.visibility")
 local actions = require("src.engine.actions")
 local utils = require("src.utils")
 local ai_cfg = require("src.config.ai_config")
-local event_log = require("src.engine.event_log")
 local stats = require("src.sim.stats")
 local statuses = require("src.sim.statuses")
 
@@ -103,9 +102,8 @@ end
 function ai:effective_sight(entity, target)
 	local stealth = stats.get(target, "stealth")
 
-	local brightness = map:brightness_at(target.x, target.y)
 	local light_value = ai_cfg.unlit_sight_scale
-	if entity.tags.night_vision or brightness > ai_cfg.perception_brightness_threshold then
+	if map.can_see(entity, target.x, target.y) then
 		light_value = 1
 	end
 

@@ -10,7 +10,7 @@ return {
 	search_attempts = 8,
 	activation_range = 50,
 	investigate_turns = 20,
-	perception_brightness_threshold = 1.5,
+
 	unlit_sight_scale = 0.5,
 	chase_sight_value = 1.5,
 	avoid = {
