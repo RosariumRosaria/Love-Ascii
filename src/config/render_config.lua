@@ -99,4 +99,5 @@ return {
 		solid_damage_color = { 0.9, 0.45, 0.2, 0.7 },
 		burst_count = 4,
 	},
+	nearby_range = 5,
 }
