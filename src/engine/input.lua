@@ -204,7 +204,7 @@ end
 
 function input:enter_aim()
 	if not aim.enter(self.actor, self.actor.x, self.actor.y) then
-		event_log:add({ type = "action_failed", entity = self.actor.name, reason = "no ranged weapon" })
+		event_log:add({ type = "action_failed", entity = self.actor, reason = "no ranged weapon" })
 		return false
 	end
 	self:set_mode(modes.aiming)
@@ -214,8 +214,6 @@ end
 function input:get_direction(cardinal_only)
 	local x, y = 0, 0
 
-	-- The buffer may hold non-movement keys too, so skip anything that isn't a
-	-- direction (get_move_of_key returns nil) rather than assuming a binding.
 	local recency = self.buffer_reading and self.buffered_keys or self.move_recency
 	for i = #recency, 1, -1 do
 		local k = recency[i]
@@ -341,9 +339,9 @@ function input:update(dt)
 			if (not weapon or not weapon.ranged) and possible_weapon then
 				self.pending_draw = possible_weapon
 			elseif not weapon then
-				event_log:add({ type = "action_failed", entity = self.actor.name, reason = "no weapon" })
+				event_log:add({ type = "action_failed", entity = self.actor, reason = "no weapon" })
 			elseif not weapon.ranged then
-				event_log:add({ type = "action_failed", entity = self.actor.name, reason = "no ranged weapon" })
+				event_log:add({ type = "action_failed", entity = self.actor, reason = "no ranged weapon" })
 			else
 				self:enter_aim()
 			end

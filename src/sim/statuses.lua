@@ -17,8 +17,6 @@ function statuses.find(entity, key)
 end
 
 function statuses.absorb_pool(target)
-	-- Hot path (pathfinding cost model); sum in place rather than allocating
-	-- a with_tag list per call.
 	if not target.statuses then
 		return 0
 	end
@@ -33,15 +31,19 @@ end
 
 function statuses.absorb(target, amount)
 	local absorbers = statuses.with_tag(target, "absorbs")
+	local absorbed_by
 	for _, absorber in ipairs(absorbers) do
 		local soaked = math.min(amount, absorber.hp)
 		absorber.hp = absorber.hp - soaked
 		amount = amount - soaked
+		if soaked > 0 then
+			absorbed_by = absorbed_by or absorber.absorb_noun or string.lower(absorber.name or absorber.key)
+		end
 		if absorber.hp == 0 and utils.get_tag(absorber, "remove_when_empty") then
 			statuses.remove(target, absorber.key)
 		end
 	end
-	return amount
+	return amount, absorbed_by
 end
 
 function statuses.remove_with_tag(entity, tag)
@@ -60,7 +62,7 @@ function statuses.remove(entity, key)
 			table.remove(entity.statuses, i)
 			event_log:add({
 				type = "status_expired",
-				entity = entity.name,
+				entity = entity,
 				status = status.name,
 				silent = status.silent,
 				x = entity.x,
@@ -84,7 +86,6 @@ function statuses.add_from_template(entity, name, overrides, source)
 	if entity.type ~= "actor" and not utils.get_tag(new_status, "applies_to_props") then
 		return --TODO someday this should be better, like gating depending on status type.
 	end
-	new_status.source_name = (source and source.name) or "Unknown"
 
 	if not entity.statuses then
 		entity.statuses = {}
@@ -102,9 +103,9 @@ function statuses.add_from_template(entity, name, overrides, source)
 	end
 	event_log:add({
 		type = "status_applied",
-		entity = entity.name,
+		entity = entity,
 		status = new_status.name,
-		source = new_status.source_name,
+		source = source,
 		silent = new_status.silent,
 		x = entity.x,
 		y = entity.y,
@@ -183,11 +184,11 @@ function statuses.apply_from_entities(entity, entity_list)
 	end
 end
 
-function statuses.on_hit(attacker, target)
-	if not (attacker.combat and attacker.combat.applies_on_hit) then
+function statuses.on_hit(attacker, target, weapon)
+	if not (weapon and weapon.applies_on_hit) then
 		return
 	end
-	for _, status in ipairs(attacker.combat.applies_on_hit) do
+	for _, status in ipairs(weapon.applies_on_hit) do
 		if utils.chance(status.chance or 100) then
 			statuses.add_from_template(target, status.name, nil, attacker)
 		end

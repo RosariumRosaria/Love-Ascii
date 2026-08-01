@@ -94,4 +94,9 @@ return {
 		tween_time = 0.5,
 		cull_slack = 6,
 	},
+	combat = {
+		glance_damage_color = { 0.6, 0.3, 0.3, 0.5 },
+		solid_damage_color = { 0.9, 0.45, 0.2, 0.7 },
+		burst_count = 4,
+	},
 }

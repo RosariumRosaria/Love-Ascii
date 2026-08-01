@@ -4,11 +4,10 @@ local event_log = require("src.engine.event_log")
 local map = require("src.map.map")
 local utils = require("src.utils")
 local statuses = require("src.sim.statuses")
-local stats = require("src.sim.stats")
 local inventory = require("src.sim.inventory")
 local animation = require("src.visuals.render.animation")
 local sounds = require("src.engine.sounds")
-local vitals = require("src.engine.vitals")
+local combat = require("src.engine.combat")
 local particles = require("src.visuals.particles.particles")
 local game_cfg = require("src.config.game_config")
 local actions = {}
@@ -34,7 +33,7 @@ local function validate_interaction(actor, target, name, range, spam)
 		end
 	end
 
-	event_log:add({ type = "action_failed", entity = target.name, reason = "Too far apart", spam = spam })
+	event_log:add({ type = "action_failed", entity = target, reason = "Too far apart", spam = spam })
 	return false
 end
 
@@ -87,7 +86,7 @@ local function resolve_target(actor, dx, dy, tag, name, target)
 		return nil
 	end
 	if not utils.get_tag(target, tag) then
-		event_log:add({ type = "action_failed", entity = target.name, reason = "Not " .. tag })
+		event_log:add({ type = "action_failed", entity = target, reason = "Not " .. tag })
 		return nil
 	end
 	return target
@@ -139,7 +138,7 @@ function actions:place(entity, dx, dy, item)
 	local target_y = entity.y + dy
 
 	if not map:is_tile_free(target_x, target_y, entity.z, { [entity] = true }) then
-		event_log:add({ type = "action_failed", entity = entity.name, reason = "Tile not free" })
+		event_log:add({ type = "action_failed", entity = entity, reason = "Tile not free" })
 		return false
 	end
 
@@ -147,14 +146,14 @@ function actions:place(entity, dx, dy, item)
 
 	inventory.remove(entity, item)
 	assign_cost(entity, "place")
-	event_log:add({ type = "entity_placed", entity = item.name, source = entity.name })
+	event_log:add({ type = "entity_placed", entity = item, source = entity })
 	return true
 end
 
 function actions:use_selected(entity, dx, dy)
 	local item = inventory.get_selected(entity)
 	if not item then
-		event_log:add({ type = "action_failed", entity = entity.name, reason = "No item selected" })
+		event_log:add({ type = "action_failed", entity = entity, reason = "No item selected" })
 		return false
 	end
 
@@ -171,7 +170,7 @@ function actions:use_selected(entity, dx, dy)
 
 	event_log:add({
 		type = "action_failed",
-		entity = entity.name,
+		entity = entity,
 		reason = "Item '" .. item.name .. "' cannot be used",
 	})
 	return false
@@ -182,26 +181,26 @@ function actions:equip_item(entity, item)
 	if displaced then
 		event_log:add({
 			type = "item_unequipped",
-			entity = entity.name,
+			entity = entity,
 			item = displaced.name,
 			slot = item.slot,
 		})
 	end
 	assign_cost(entity, "equip")
-	event_log:add({ type = "item_equipped", entity = entity.name, item = item.name, slot = item.slot })
+	event_log:add({ type = "item_equipped", entity = entity, item = item, slot = item.slot })
 	return true
 end
 
 function actions:unequip_item(entity, item)
 	inventory.unequip(entity, item.slot)
 	assign_cost(entity, "unequip")
-	event_log:add({ type = "item_unequipped", entity = entity.name, item = item.name, slot = item.slot })
+	event_log:add({ type = "item_unequipped", entity = entity, item = item, slot = item.slot })
 	return true
 end
 
 function actions:use_item(entity, item, dx, dy)
 	if item.charges and item.charges <= 0 then
-		event_log:add({ type = "action_failed", entity = entity.name, reason = "Out of charges" })
+		event_log:add({ type = "action_failed", entity = entity, reason = "Out of charges" })
 		return false
 	end
 
@@ -239,7 +238,7 @@ function actions:use_item(entity, item, dx, dy)
 	end
 
 	assign_cost(entity, "use_item")
-	event_log:add({ type = "item_used", entity = entity.name, item = item.name })
+	event_log:add({ type = "item_used", entity = entity, item = item })
 	if item.on_use.burst then
 		spawn_burst(target, item.on_use.burst.type, item.on_use.burst.count or 1, {
 			spread = item.on_use.burst.spread or 2,
@@ -249,7 +248,7 @@ function actions:use_item(entity, item, dx, dy)
 	end
 
 	if inventory.use_charge(entity, item) then
-		event_log:add({ type = "item_consumed", entity = entity.name, item = item.name })
+		event_log:add({ type = "item_consumed", entity = entity, item = item })
 	end
 	return true
 end
@@ -257,7 +256,7 @@ end
 function actions:place_selected(entity, dx, dy)
 	local item = inventory.get_selected(entity)
 	if not item then
-		event_log:add({ type = "action_failed", entity = entity.name, reason = "No item selected" })
+		event_log:add({ type = "action_failed", entity = entity, reason = "No item selected" })
 		return false
 	end
 	return actions:place(entity, dx, dy, item)
@@ -273,64 +272,11 @@ function actions:pickup(entity, dx, dy, target)
 
 	entities.remove(target)
 	assign_cost(entity, "pickup")
-	event_log:add({ type = "entity_picked_up", entity = target.name, source = entity.name })
+	event_log:add({ type = "entity_picked_up", entity = target, source = entity })
 	return true
 end
 
-local function deal_damage(target, amount, src, delay)
-	local leftover = statuses.absorb(target, amount)
-	if leftover > 0 then
-		vitals.apply_damage(target, leftover, src, delay)
-	end
-	return leftover
-end
-
-local function build_hit_sound(attacker, target, weapon)
-	local ctx, cty = utils.get_center_of_footprint(target)
-	local combat = attacker.combat
-	return {
-		x = target.x + ctx,
-		y = target.y + cty,
-		z = attacker.z,
-		volume = (weapon and weapon.volume) or (combat and combat.attack_volume) or 6,
-		reach = (weapon and weapon.reach) or (combat and combat.attack_reach) or 12,
-		description = (weapon and weapon.sound) or (combat and combat.attack_sound) or "a thwack",
-		source = attacker,
-	}
-end
-
-local function emit_on_hit_effects(attacker, target, damage)
-	local cx, cy = utils.get_center_of_footprint(attacker)
-	local ctx, cty = utils.get_center_of_footprint(target)
-	local acx, acy = attacker.x + cx, attacker.y + cy
-	local tcx, tcy = target.x + ctx, target.y + cty
-
-	local hit_burst = target.combat and target.combat.hit_burst --TODO: Hit burst and attack burst dup  a lot. Also should this go in vitals? So that statuses can also pop here...
-	if hit_burst then
-		spawn_burst(target, hit_burst, 4, { -- TODO: someday this and things like ths shake could be based on damage
-			dir = { dx = tcx - acx, dy = tcy - acy },
-			spread = 1,
-			smin = 4,
-			smax = 10,
-		})
-	end
-
-	local attack_burst = attacker.combat and attacker.combat.attack_burst
-	if attack_burst then
-		spawn_burst(target, attack_burst, 4, {
-			dir = { dx = tcx - acx, dy = tcy - acy },
-			spread = 1,
-			smin = 4,
-			smax = 10,
-		})
-	end
-
-	animation.add_shake(target)
-	animation.add_flash(target)
-end
-
 function actions:attack(entity, dx, dy, target_entity)
-	local weapon = inventory.get_equipped(entity, "mainhand")
 	target_entity = resolve_target(entity, dx, dy, "attackable", "Attack", target_entity)
 	if not target_entity or not entity.can_perform or not entity.can_perform.attackable then
 		return false
@@ -339,12 +285,8 @@ function actions:attack(entity, dx, dy, target_entity)
 		assign_cost(entity, "attack")
 
 		animation.add_bump(entity, target_entity.x, target_entity.y)
-		local damage = stats.get(entity, "damage", "melee")
-		deal_damage(target_entity, damage, entity.name)
-		statuses.on_hit(entity, target_entity)
-
-		emit_on_hit_effects(entity, target_entity, damage)
-		sounds.emit(build_hit_sound(entity, target_entity, weapon))
+		combat.strike(entity, target_entity, { context = "melee" })
+		sounds.emit(combat.build_hit_sound(entity, target_entity, nil, "melee"))
 	end
 	return true
 end
@@ -364,19 +306,20 @@ function actions:can_ranged_attack(entity, target_x, target_y, target_entity, sp
 		return false
 	end
 	if not utils.get_tag(target_entity, "attackable") then
-		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Not attackable", spam = spam })
+		event_log:add({ type = "action_failed", entity = target_entity, reason = "Not attackable", spam = spam })
 		return false
 	end
 	if utils.get_tag(weapon, "requires_ammo") and not inventory.get_ammo(entity) then
-		event_log:add({ type = "action_failed", entity = entity.name, reason = "Out of ammo", spam = spam })
+		event_log:add({ type = "action_failed", entity = entity, reason = "Out of ammo", spam = spam })
 		return false
 	end
 	if entity.team == target_entity.team then
-		event_log:add({ type = "action_failed", entity = entity.name, reason = "Invalid target", spam = spam })
+		event_log:add({ type = "action_failed", entity = entity, reason = "Invalid target", spam = spam })
 		return false
 	end
 	return { weapon = weapon, target_entity = target_entity }
 end
+
 function actions:ranged_attack(entity, target_x, target_y, target_entity, validated)
 	local attack_ret = validated or self:can_ranged_attack(entity, target_x, target_y, target_entity)
 
@@ -390,14 +333,17 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity, valida
 	assign_cost(entity, "ranged_attack")
 
 	local ammo = inventory.equip_ammo(entity, weapon)
-	local damage = stats.get(entity, "damage", "ranged")
 
 	if ammo then
 		inventory.use_charge(entity, ammo)
 	end
 
-	local dealt = deal_damage(target_entity, damage, entity.name, true)
-	local shot_sound = build_hit_sound(entity, target_entity, weapon)
+	local outcome = combat.strike(entity, target_entity, {
+		context = "ranged",
+		weapon = weapon,
+		defer_feedback = true,
+	})
+	local shot_sound = combat.build_hit_sound(entity, target_entity, weapon)
 	shot_sound.defer_ring = true
 	local player_heard = sounds.emit(shot_sound)
 
@@ -408,14 +354,9 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity, valida
 		/ projectile.params.speed
 
 	projectile.params.on_arrive = function()
-		emit_on_hit_effects(entity, target_entity, damage)
-		sounds.spawn_ring(build_hit_sound(entity, target_entity, weapon), player_heard)
-		if dealt > 0 then
-			vitals.spawn_damage_numbers(target_entity, dealt)
-		end
+		combat.play_hit_feedback(entity, target_entity, outcome)
+		sounds.spawn_ring(combat.build_hit_sound(entity, target_entity, weapon), player_heard)
 	end
-
-	statuses.on_hit(entity, target_entity) --TODO should on hit effects  apply from ranged attacks
 
 	return true
 end
@@ -427,7 +368,7 @@ function actions:interact(entity, dx, dy, target_entity)
 	end
 
 	if not statuses.can_be_interacted(target_entity) then
-		event_log:add({ type = "action_failed", entity = target_entity.name, reason = "Interaction blocked" })
+		event_log:add({ type = "action_failed", entity = target_entity, reason = "Interaction blocked" })
 		return false
 	end
 	if entities.interact(target_entity) then
@@ -498,7 +439,7 @@ function actions:vault(entity, dx, dy, target)
 	local land_x, land_y =
 		actions.vault_landing(entity, entity.x, entity.y, entity.x + dx, entity.y + dy, entity.z, target)
 	if not land_x then
-		event_log:add({ type = "action_failed", entity = entity.name, reason = "Target not free" })
+		event_log:add({ type = "action_failed", entity = entity, reason = "Target not free" })
 		return false
 	end
 
@@ -539,11 +480,11 @@ function actions:drag(entity, dx, dy, target)
 	local target_dest_x, target_dest_y = target.x + dx, target.y + dy
 
 	if not map:is_tile_free(actor_dest_x, actor_dest_y, entity.z, skip) then
-		event_log:add({ type = "action_failed", entity = entity.name, reason = "Actor tile not free" })
+		event_log:add({ type = "action_failed", entity = entity, reason = "Actor tile not free" })
 		return false
 	end
 	if not map:is_tile_free(target_dest_x, target_dest_y, target.z, skip) then
-		event_log:add({ type = "action_failed", entity = target.name, reason = "Target tile not free" })
+		event_log:add({ type = "action_failed", entity = target, reason = "Target tile not free" })
 		return false
 	end
 
@@ -560,8 +501,8 @@ function actions:drag(entity, dx, dy, target)
 
 	event_log:add({
 		type = "entity_dragged",
-		entity = target.name,
-		source = entity.name,
+		entity = target,
+		source = entity,
 		dest_x = target_dest_x,
 		dest_y = target_dest_y,
 	})
@@ -581,7 +522,7 @@ end
 
 function actions:wait(entity)
 	assign_cost(entity, "wait")
-	event_log:add({ type = "entity_waited", entity = entity.name, spam = true })
+	event_log:add({ type = "entity_waited", entity = entity, spam = true })
 	return true
 end
 

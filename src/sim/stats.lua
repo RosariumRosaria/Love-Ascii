@@ -1,6 +1,28 @@
 local event_log = require("src.engine.event_log")
+local item_types = require("src.sim.item_types")
 
 local stats = {}
+
+local function covers_context(weapon, context)
+	if not weapon then
+		return false
+	end
+	if context == "melee" and weapon.ranged then
+		return false
+	end
+	return true
+end
+
+function stats.get_weapon(entity, context)
+	if not entity then
+		return nil
+	end
+	local equipped = entity.inventory and entity.inventory.equipped and entity.inventory.equipped.mainhand
+	if covers_context(equipped, context) then
+		return equipped
+	end
+	return entity.natural_weapon and item_types[entity.natural_weapon] or nil
+end
 
 local function applies_in(mod, context)
 	return mod.context == nil or mod.context == context
@@ -84,6 +106,19 @@ function stats.sum_modifiers(entity, stat_name, context)
 			end
 		end
 	end
+
+	local mainhand = entity.inventory and entity.inventory.equipped and entity.inventory.equipped.mainhand
+	local natural = not covers_context(mainhand, context)
+		and entity.natural_weapon
+		and item_types[entity.natural_weapon]
+	if natural and natural.modifiers then
+		for _, mod in ipairs(natural.modifiers) do
+			if mod.stat == stat_name and applies_in(mod, context) then
+				add, mul = apply_mod(mod, add, mul)
+			end
+		end
+	end
+
 	return add, mul
 end
 

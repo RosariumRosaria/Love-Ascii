@@ -9,8 +9,7 @@ local vitals = {}
 function vitals.spawn_damage_numbers(target, amount, opts)
 	local ctx, cty = utils.get_center_of_footprint(target)
 	local tcx, tcy = target.x + ctx, target.y + cty
-
-	local damage_number = effects:add_from_template("damage_number", tcx, tcy, target.z)
+	local damage_number = effects:add_from_template("damage_number", tcx, tcy, utils.render_top_z(target))
 	damage_number.glyph.char = tostring(math.floor(amount))
 	if opts then
 		damage_number.glyph.color = opts.color or damage_number.glyph.color
@@ -19,30 +18,31 @@ function vitals.spawn_damage_numbers(target, amount, opts)
 	return damage_number
 end
 
-function vitals.apply_damage(target, amount, source_name, delay)
+function vitals.apply_damage(target, amount, source, delay)
 	if not target.stats or not target.stats.health then
 		return nil
 	end
 
 	stats.change_current(target, "health", -amount)
 	local after = stats.get_current(target, "health")
-	event_log:add({
-		type = "damage",
-		entity = target.name,
-		source = source_name,
-		amount = amount,
-		x = target.x,
-		y = target.y,
-	})
+
 	if not delay then
+		event_log:add({
+			type = "damage",
+			entity = target,
+			source = source,
+			amount = amount,
+			x = target.x,
+			y = target.y,
+		})
 		vitals.spawn_damage_numbers(target, amount)
 	end
 	local killed = after <= 0
 
 	if killed then
 		target.dead = true
-		target.death_source = source_name
-		event_log:add({ type = "entity_died", entity = target.name, source = source_name, x = target.x, y = target.y })
+		target.death_source = type(source) == "table" and source.name or source
+		event_log:add({ type = "entity_died", entity = target, source = source, x = target.x, y = target.y })
 		entities.remove(target)
 		if target.type == "actor" or target.corpse then
 			local overrides = {
@@ -81,7 +81,7 @@ function vitals.apply_damage(target, amount, source_name, delay)
 	end
 end
 
-function vitals.apply_heal(target, amount, source_name, delay)
+function vitals.apply_heal(target, amount, source, delay)
 	if not target.stats or not target.stats.health then
 		return nil
 	end
@@ -91,8 +91,8 @@ function vitals.apply_heal(target, amount, source_name, delay)
 	end
 	event_log:add({
 		type = "heal",
-		entity = target.name,
-		source = source_name,
+		entity = target,
+		source = source,
 		amount = amount,
 		x = target.x,
 		y = target.y,

@@ -108,7 +108,7 @@ end
 
 function entities.inspect(entity)
 	if entity.description then
-		event_log:add({ type = "describe", entity = entity.name, description = entity.description })
+		event_log:add({ type = "describe", entity = entity, description = entity.description })
 	end
 end
 

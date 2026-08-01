@@ -1,18 +1,20 @@
 return {
+	--------------------------------------------------------------------------
+	-- ACTORS
+	--------------------------------------------------------------------------
+
 	player = {
+		name = "Player",
+		type = "actor",
+		team = "player",
+		natural_height = 0.25,
+		natural_rotation = 270,
+		mirror_facing = true,
 		appearance = {
 			chars = { "@" },
 			color = { { 0.8, 0.8, 0.9, 1 } },
 			effect_color = { 0.45, 0.45, 0.5, 0.5 },
 		},
-		name = "Player",
-		team = "player",
-		natural_rotation = 270,
-		mirror_facing = true,
-		type = "actor",
-		natural_height = 0.25,
-		combat = { hit_burst = "blood" },
-		tags = { covers = true, attackable = true, can_hear = true },
 		default_action = "attackable",
 		can_perform = {
 			attackable = true,
@@ -21,6 +23,9 @@ return {
 			pickupable = true,
 			vaultable = true,
 		},
+		tags = { covers = true, attackable = true, can_hear = true },
+		combat = { hit_burst = "blood" },
+		natural_weapon = "fists",
 		stats = {
 			health = { base = 20, current = 20 },
 			stamina = { base = 10, current = 10 },
@@ -28,16 +33,21 @@ return {
 			sight = { base = 30 },
 			stealth = { base = 10 },
 			speed = { base = 5 },
-			damage = { base = 1 },
+			accuracy = { base = 5 },
+			evasion = { base = 5 },
+			strength = { base = 1 },
+			damage = { base = 0 },
+			damage_spread = { base = 0 },
 		},
 	},
+
 	zombie = {
 		name = "Zombie",
+		description = "A zombie, try attacking it!",
 		type = "actor",
-		natural_height = 0.25,
 		team = "enemy",
 		mind = { state = "idle" },
-
+		natural_height = 0.25,
 		appearance = {
 			chars = { "Z" },
 			color = { { 0.3, 0.45, 0.25, 1 } },
@@ -49,18 +59,10 @@ return {
 				{ item = "bandage", weight = 10 },
 			},
 		},
-		description = "A zombie, try attacking it!",
 		default_action = "attackable",
-		combat = {
-			attack_volume = 8,
-			attack_sound = "a thump",
-			hit_burst = "blood",
-		},
-		stats = {
-			health = { base = 10, current = 10 },
-			sight = { base = 30 },
-			speed = { base = 4 },
-			damage = { base = 1 },
+		can_perform = {
+			attackable = true,
+			vaultable = true,
 		},
 		tags = {
 			moveable = true,
@@ -68,35 +70,36 @@ return {
 			attackable = true,
 			can_hear = true,
 		},
-		can_perform = {
-			attackable = true,
-			vaultable = true,
+		combat = {
+			hit_burst = "blood",
+		},
+		natural_weapon = "rotting_hands",
+		stats = {
+			health = { base = 10, current = 10 },
+			sight = { base = 30 },
+			speed = { base = 4 },
+			accuracy = { base = 4 },
+			evasion = { base = 4 },
+			damage = { base = 0 },
+			damage_spread = { base = 0 },
 		},
 	},
+
 	shambler = {
 		name = "Shambler",
+		description = "A shambler, try attacking it!",
 		type = "actor",
-		natural_height = 0.25,
 		team = "enemy",
 		mind = { state = "idle" },
+		natural_height = 0.25,
 		appearance = {
 			chars = { "S" },
 			color = { { 0.4, 0.48, 0.38, 1 } },
 			effect_color = { 0.48, 0.56, 0.45, 0.5 },
 		},
-		description = "A shambler, try attacking it!",
 		default_action = "attackable",
-		combat = {
-			attack_volume = 8,
-			attack_sound = "a thump",
-			applies_on_hit = { { name = "poison", chance = 50 } },
-			hit_burst = "blood",
-		},
-		stats = {
-			health = { base = 10, current = 10 },
-			sight = { base = 30 },
-			speed = { base = 4 },
-			damage = { base = 1 },
+		can_perform = {
+			attackable = true,
 		},
 		tags = {
 			moveable = true,
@@ -104,42 +107,131 @@ return {
 			attackable = true,
 			can_hear = true,
 		},
+		combat = {
+			hit_burst = "blood",
+		},
+		natural_weapon = "blighted_claws",
+		stats = {
+			health = { base = 10, current = 10 },
+			sight = { base = 30 },
+			speed = { base = 4 },
+			accuracy = { base = 4 },
+			evasion = { base = 3 },
+			damage = { base = 0 },
+			damage_spread = { base = 0 },
+		},
+	},
+
+	skeleton = {
+		name = "skeleton",
+		description = "A skeleton, try attacking it!",
+		type = "actor",
+		team = "enemy",
+		mind = { state = "idle" },
+		natural_height = 0.25,
+		appearance = {
+			chars = { "S" },
+			color = { { 0.72, 0.65, 0.6, 1 } },
+			effect_color = { 0.65, 0.61, 0.51, 0.5 },
+		},
+		loot = {
+			guaranteed = {
+				{ item = "bow", equip = true },
+			},
+			count = { min = 1, max = 5 },
+			drops = {
+				{ item = "arrow", equip = true, weight = 10 },
+			},
+		},
+		default_action = "attackable",
 		can_perform = {
 			attackable = true,
 		},
+		tags = {
+			moveable = true,
+			covers = true,
+			attackable = true,
+			night_vision = true,
+			can_hear = true,
+			windup = true,
+		},
+		combat = {
+			hit_burst = "dust",
+		},
+		natural_weapon = "bone_claws",
+		stats = {
+			health = { base = 6, current = 6 },
+			sight = { base = 25 },
+			speed = { base = 4 },
+			accuracy = { base = 6 },
+			evasion = { base = 3 },
+			strength = { base = 1 },
+			damage = { base = 0 },
+			damage_spread = { base = 0 },
+		},
 	},
-	ogre = {
-		name = "Ogre",
+
+	vampire = {
+		name = "Vampire",
+		description = "A vampire, try attacking it!",
 		type = "actor",
-		natural_height = 0.25,
 		team = "enemy",
 		mind = { state = "idle" },
+		natural_height = 0.25,
+		appearance = {
+			chars = { "V" },
+			color = { { 0.7, 0.2, 0.2, 1 } },
+			effect_color = { 0.35, 0.1, 0.1, 0.5 },
+		},
+		default_action = "attackable",
+		can_perform = {
+			attackable = true,
+			interactable = true,
+			vaultable = true,
+		},
+		tags = {
+			moveable = true,
+			covers = true,
+			attackable = true,
+			night_vision = true,
+			can_hear = true,
+		},
+		combat = {
+			hit_burst = "blood",
+		},
+		natural_weapon = "fangs",
+		stats = {
+			health = { base = 10, current = 10 },
+			sight = { base = 30 },
+			speed = { base = 6 },
+			accuracy = { base = 6 },
+			evasion = { base = 6 },
+			damage = { base = 0 },
+			damage_spread = { base = 0 },
+		},
+	},
+
+	ogre = {
+		name = "Ogre",
+		description = "An ogre, try attacking it!",
+		type = "actor",
+		team = "enemy",
+		mind = { state = "idle" },
+		natural_height = 0.25,
 		appearance = {
 			chars = { "O" },
 			color = { { 0.72, 0.55, 0.2, 1 } },
 			effect_color = { 0.8, 0.62, 0.23, 0.5 },
 		},
-
 		footprint = {
 			{ dx = 0, dy = 0, char = "O" },
 			{ dx = 1, dy = 0, char = "G" },
 			{ dx = 0, dy = 1, char = "R" },
 			{ dx = 1, dy = 1, char = "E" },
 		},
-		description = "An ogre, try attacking it!",
 		default_action = "attackable",
-		combat = {
-			attack_volume = 16,
-			attack_reach = 20,
-			attack_sound = "a thud",
-			applies_on_hit = { { name = "stun", chance = 50 } },
-			hit_burst = "blood",
-		},
-		stats = {
-			health = { base = 30, current = 30 },
-			sight = { base = 30 },
-			speed = { base = 3 },
-			damage = { base = 3 },
+		can_perform = {
+			attackable = true,
 		},
 		tags = {
 			moveable = true,
@@ -147,16 +239,28 @@ return {
 			attackable = true,
 			can_hear = true,
 		},
-		can_perform = {
-			attackable = true,
+		combat = {
+			hit_burst = "blood",
+		},
+		natural_weapon = "massive_fists",
+		stats = {
+			health = { base = 30, current = 30 },
+			sight = { base = 30 },
+			speed = { base = 3 },
+			accuracy = { base = 3 },
+			evasion = { base = 3 },
+			damage = { base = 0 },
+			damage_spread = { base = 0 },
 		},
 	},
+
 	dragon = {
 		name = "Dragon",
+		description = "A dragon, try attacking it!",
 		type = "actor",
-		natural_height = 0.25,
 		team = "enemy",
 		mind = { state = "idle" },
+		natural_height = 0.25,
 		appearance = {
 			chars = { "D" },
 			color = { { 0.8, 0.05, 0.05, 1 } },
@@ -173,234 +277,39 @@ return {
 			{ dx = 1, dy = 2, char = "O" },
 			{ dx = 2, dy = 2, char = "N" },
 		},
-		description = "A dragon, try attacking it!",
 		default_action = "attackable",
-		combat = {
-			attack_volume = 16,
-			attack_reach = 20,
-			attack_sound = "a crash",
-			applies_on_hit = { { name = "burning", chance = 50 } },
-			hit_burst = "blood",
-			attack_burst = "ember",
+		can_perform = {
+			attackable = true,
 		},
+		tags = {
+			moveable = true,
+			covers = true,
+			attackable = true,
+			can_hear = true,
+		},
+		combat = {
+			hit_burst = "blood",
+		},
+		natural_weapon = "burning_maw",
 		stats = {
 			health = { base = 30, current = 30 },
 			sight = { base = 30 },
 			speed = { base = 5 },
-			damage = { base = 3 },
-		},
-		tags = {
-			moveable = true,
-			covers = true,
-			attackable = true,
-			can_hear = true,
-		},
-		can_perform = {
-			attackable = true,
+			accuracy = { base = 6 },
+			evasion = { base = 6 },
+			damage = { base = 0 },
+			damage_spread = { base = 0 },
 		},
 	},
-	vampire = {
-		name = "Vampire",
-		type = "actor",
-		natural_height = 0.25,
-		team = "enemy",
-		mind = { state = "idle" },
-		appearance = {
-			chars = { "V" },
-			color = { { 0.7, 0.2, 0.2, 1 } },
-			effect_color = { 0.35, 0.1, 0.1, 0.5 },
-		},
-		description = "A vampire, try attacking it!",
-		default_action = "attackable",
-		combat = {
-			attack_volume = 2,
-			attack_sound = "the scratch of claws and fangs",
-			applies_on_hit = { { name = "bleeding", chance = 50 } },
-			hit_burst = "blood",
-		},
-		stats = {
-			health = { base = 10, current = 10 },
-			sight = { base = 30 },
-			speed = { base = 6 },
-			damage = { base = 2 },
-		},
-		tags = {
-			moveable = true,
-			covers = true,
-			attackable = true,
-			night_vision = true,
-			can_hear = true,
-		},
-		can_perform = {
-			attackable = true,
-			interactable = true,
-			vaultable = true,
-		},
-	},
-	skeleton = {
-		name = "skeleton",
-		type = "actor",
-		natural_height = 0.25,
-		team = "enemy",
-		mind = { state = "idle" },
-		appearance = {
-			chars = { "S" },
-			color = { { 0.72, 0.65, 0.6, 1 } },
-			effect_color = { 0.65, 0.61, 0.51, 0.5 },
-		},
-		loot = {
-			guaranteed = {
-				{ item = "bow", equip = true },
-			},
-			count = { min = 1, max = 5 },
-			drops = {
-				{ item = "arrow", equip = true, weight = 10 },
-			},
-		},
-		description = "A skeleton, try attacking it!",
-		default_action = "attackable",
-		combat = {
-			attack_volume = 2,
-			attack_sound = "the clatter of bones",
-			hit_burst = "dust",
-		},
-		stats = {
-			health = { base = 6, current = 6 },
-			sight = { base = 25 },
-			speed = { base = 4 },
-			damage = { base = 1 },
-		},
-		tags = {
-			moveable = true,
-			covers = true,
-			attackable = true,
-			night_vision = true,
-			can_hear = true,
-			windup = true,
-		},
-		can_perform = {
-			attackable = true,
-		},
-	},
-	rat = {
-		name = "Rat",
-		type = "actor",
-		natural_height = 0.25,
-		team = "enemy",
-		mind = { state = "idle" },
-		appearance = {
-			chars = { "r" },
-			color = { { 0.6, 0.66, 0.66, 1 } },
-			effect_color = { 0.65, 0.61, 0.61, 0.5 },
-		},
-		description = "A rat, try attacking it!",
-		default_action = "attackable",
-		combat = {
-			attack_volume = 3,
-			attack_sound = "the scratch of claws and fangs",
-			applies_on_hit = { { name = "bleeding", chance = 20 } },
-			hit_burst = "blood",
-		},
-		stats = {
-			health = { base = 4, current = 4 },
-			sight = { base = 15 },
-			speed = { base = 6 },
-			damage = { base = 1 },
-		},
-		tags = {
-			moveable = true,
-			covers = true,
-			attackable = true,
-			night_vision = true,
-			can_hear = true,
-		},
-		can_perform = {
-			attackable = true,
-		},
-	},
-	campfire = {
-		name = "Campfire",
-		type = "prop",
-		appearance = {
-			chars = { "%" },
-			color = { { 1, 0.35, 0.1, 1 } },
-		},
-		description = "A Campfire",
-		natural_height = 0.25,
-		emitters = { { particle = "smoke", rate = 1 }, { particle = "ember", rate = 1.2 } },
-		tags = {
-			tilelike = true,
-			covers = true,
-		},
-		light = {
-			color = { r = 1.0, g = 0.6, b = 0.25 },
-			intensity = 0.7,
-			radius = 10,
-			flicker = { amp = 0.02, freq = 2, phase = 3 },
-		},
-	},
-	crystal = {
-		name = "Crystal",
-		type = "prop",
-		appearance = {
-			chars = { "<>", "<>" },
-			color = { { 0.7, 0.9, 0.95, 1 } },
-		},
-		description = "A Crystal",
-		default_action = "moveable",
-		tags = {
-			moveable = true,
-			tilelike = true,
-			covers = true,
-		},
-		light = {
-			color = { r = 0.7, g = 0.9, b = 1 },
-			intensity = 0.5,
-			radius = 8,
-			flicker = { amp = 0.05, freq = 4, phase = 0 },
-		},
-	},
-	phylactery = {
-		name = "Phylactery",
-		type = "prop",
-		natural_height = 0.25,
-		appearance = {
-			chars = { "<>" },
-			color = { { 1, 0.12, 0.18, 1 } },
-		},
-		applies_status = { "phylactery_glow", silent = true },
-		description = "A Phylactery",
-		tags = {
-			moveable = false,
-			tilelike = true,
-			walkable = true,
-		},
-	},
-	crate = {
-		name = "Crate",
-		description = "A heavy crate, try pushing it!",
-		type = "prop",
-		combat = { hit_burst = "dust" },
-		appearance = {
-			chars = { "#", "#" },
-			color = { { 0.15, 0.12, 0.06 }, { 0.38, 0.33, 0.30 } },
-		},
-		default_action = "moveable",
-		stats = {
-			health = { base = 5, current = 5 },
-		},
-		tags = {
-			moveable = true,
-			tilelike = true,
-			covers = true,
-			attackable = true,
-		},
-	},
+
+	--------------------------------------------------------------------------
+	-- PROPS: containers
+	--------------------------------------------------------------------------
+
 	corpse = {
 		name = "Corpse",
 		description = "A corpse, try interacting with it!",
 		type = "prop",
-		interact_priority = 1, -- outranks a door/window it happens to be lying on
 		appearance = {
 			chars = { "C" },
 			color = { { 0.2, 0.2, 0.2 } },
@@ -410,9 +319,7 @@ return {
 			equipped = { armor = nil, offhand = nil, accessory = nil, mainhand = nil },
 			selected_index = nil,
 		},
-		stats = {
-			health = { base = 1, current = 1 },
-		},
+		interact_priority = 1, -- outranks a door/window it happens to be lying on
 		tags = {
 			walkable = true,
 			container = true,
@@ -421,14 +328,16 @@ return {
 			moveable = true,
 			attackable = true,
 		},
+		stats = {
+			health = { base = 1, current = 1 },
+			evasion = { base = 0 },
+		},
 	},
 
 	chest = {
 		name = "Chest",
 		description = "A chest, try interacting with it!",
 		type = "prop",
-		interact_priority = 1,
-		combat = { hit_burst = "dust" },
 		appearance = {
 			chars = { "[]", "[]" },
 			color = { { 0.23, 0.21, 0.14 }, { 0.48, 0.43, 0.30 } },
@@ -448,9 +357,7 @@ return {
 			selected_index = nil,
 		},
 		default_action = "moveable",
-		stats = {
-			health = { base = 5, current = 5 },
-		},
+		interact_priority = 1,
 		tags = {
 			moveable = true,
 			tilelike = true,
@@ -459,66 +366,27 @@ return {
 			interactable = true,
 			container = true,
 		},
-	},
-	item = {
-		name = "Item",
-		description = "An item, try picking it up!",
-		type = "prop",
-		appearance = {
-			chars = { "*" },
-			color = { { 1, 1, 0, 1 } },
-		},
-		default_action = "pickupable",
-		tags = {
-			tilelike = true,
-			covers = true,
-			pickupable = true,
-		},
-	},
-	barricade = {
-		name = "Barricade",
-		description = "A heavy barricade, try pushing it!",
-		type = "prop",
 		combat = { hit_burst = "dust" },
-		appearance = {
-			chars = { "[]", "[]" },
-			color = { { 0.30, 0.09, 0.09, 1 }, { 0.47, 0.23, 0.23, 1 } },
-		},
-		default_action = "moveable",
 		stats = {
-			health = { base = 10, current = 10 },
-		},
-		tags = {
-			solid = true,
-			moveable = true,
-			tilelike = true,
-			covers = true,
-			attackable = true,
+			health = { base = 5, current = 5 },
+			evasion = { base = 0 },
 		},
 	},
+
+	--------------------------------------------------------------------------
+	-- PROPS: structures (doors, windows, barricades)
+	--------------------------------------------------------------------------
+
 	door = {
 		name = "Door",
 		description = "A door, try opening it!",
 		type = "prop",
+		natural_rotation = 0,
 		appearance = {
 			chars = { "[", "[" },
 			color = { { 0.30, 0.16, 0.06, 1 } },
 		},
-		default_action = "interactable",
-		stats = {
-			health = { base = 10, current = 10 },
-		},
-		combat = { hit_burst = "dust" },
-		tags = {
-			solid = true,
-			walkable = false, -- swapped by interaction.toggle; must stay explicit
-			tilelike = true,
-			interactable = true,
-			attackable = true,
-			barricadeable = true,
-		},
 		passage = { kind = "walkable" },
-		natural_rotation = 0,
 		interaction = {
 			requires_empty = true,
 			toggle = {
@@ -533,32 +401,33 @@ return {
 				},
 			},
 		},
+		default_action = "interactable",
+		tags = {
+			solid = true,
+			walkable = false, -- swapped by interaction.toggle; must stay explicit
+			tilelike = true,
+			interactable = true,
+			attackable = true,
+			barricadeable = true,
+		},
+		combat = { hit_burst = "dust" },
+		stats = {
+			health = { base = 30, current = 30 },
+			evasion = { base = 0 },
+		},
 	},
+
 	window = {
 		name = "Window",
 		description = "A window, try opening it!",
 		type = "prop",
+		natural_rotation = 90,
 		appearance = {
 			chars = { " ", "-", "-" },
 			color = { { 0.55, 0.35, 0.1, 1 }, { 0.30, 0.16, 0.06, 1 }, { 0.30, 0.16, 0.06, 1 } },
 		},
-		default_action = "interactable",
-		tags = {
-			solid = true,
-			walkable = false,
-			tilelike = true,
-			interactable = true,
-			vaultable = false,
-			barricadeable = true,
-			attackable = true,
-		},
-		stats = {
-			health = { base = 10, current = 10 },
-		},
-		combat = { hit_burst = "dust" },
 		corpse = "broken_window",
 		passage = { kind = "vaultable" },
-		natural_rotation = 90,
 		interaction = {
 			toggle = {
 				appearance = {
@@ -575,29 +444,175 @@ return {
 				},
 			},
 		},
+		default_action = "interactable",
+		tags = {
+			solid = true,
+			walkable = false,
+			tilelike = true,
+			interactable = true,
+			vaultable = false,
+			barricadeable = true,
+			attackable = true,
+		},
+		combat = { hit_burst = "dust" },
+		stats = {
+			health = { base = 20, current = 20 },
+			evasion = { base = 0 },
+		},
 	},
 
 	broken_window = {
 		name = "Broken Window",
 		description = "A broken window, try climbing through it!",
 		type = "prop",
+		natural_rotation = 90,
 		appearance = {
 			chars = { " ", "'", "'" },
 			color = { { 0.55, 0.35, 0.1, 1 }, { 0.30, 0.16, 0.06, 1 }, { 0.30, 0.16, 0.06, 1 } },
 		},
-		default_action = "vaultable",
 		passage = { kind = "vaultable" },
+		default_action = "vaultable",
 		tags = {
 			solid = false,
 			walkable = false,
 			tilelike = true,
 			vaultable = true,
 		},
-		natural_rotation = 90,
+	},
+
+	barricade = {
+		name = "Barricade",
+		description = "A heavy barricade, try pushing it!",
+		type = "prop",
+		appearance = {
+			chars = { "[]", "[]" },
+			color = { { 0.30, 0.09, 0.09, 1 }, { 0.47, 0.23, 0.23, 1 } },
+		},
+		default_action = "moveable",
+		tags = {
+			solid = true,
+			moveable = true,
+			tilelike = true,
+			covers = true,
+			attackable = true,
+		},
+		combat = { hit_burst = "dust" },
+		stats = {
+			health = { base = 20, current = 20 },
+			evasion = { base = 0 },
+		},
+	},
+
+	--------------------------------------------------------------------------
+	-- PROPS: loose objects
+	--------------------------------------------------------------------------
+
+	crate = {
+		name = "Crate",
+		description = "A heavy crate, try pushing it!",
+		type = "prop",
+		appearance = {
+			chars = { "#", "#" },
+			color = { { 0.15, 0.12, 0.06 }, { 0.38, 0.33, 0.30 } },
+		},
+		default_action = "moveable",
+		tags = {
+			moveable = true,
+			tilelike = true,
+			covers = true,
+			attackable = true,
+		},
+		combat = { hit_burst = "dust" },
+		stats = {
+			health = { base = 5, current = 5 },
+			evasion = { base = 0 },
+		},
+	},
+
+	item = {
+		name = "Item",
+		description = "An item, try picking it up!",
+		type = "prop",
+		appearance = {
+			chars = { "*" },
+			color = { { 1, 1, 0, 1 } },
+		},
+		default_action = "pickupable",
+		tags = {
+			tilelike = true,
+			covers = true,
+			pickupable = true,
+		},
+	},
+
+	phylactery = {
+		name = "Phylactery",
+		description = "A Phylactery",
+		type = "prop",
+		natural_height = 0.25,
+		appearance = {
+			chars = { "<>" },
+			color = { { 1, 0.12, 0.18, 1 } },
+		},
+		applies_status = { "phylactery_glow", silent = true },
+		tags = {
+			moveable = false,
+			tilelike = true,
+			walkable = true,
+		},
+	},
+
+	--------------------------------------------------------------------------
+	-- PROPS: light sources
+	--------------------------------------------------------------------------
+
+	campfire = {
+		name = "Campfire",
+		description = "A Campfire",
+		type = "prop",
+		natural_height = 0.25,
+		appearance = {
+			chars = { "%" },
+			color = { { 1, 0.35, 0.1, 1 } },
+		},
+		emitters = { { particle = "smoke", rate = 1 }, { particle = "ember", rate = 1.2 } },
+		light = {
+			color = { r = 1.0, g = 0.6, b = 0.25 },
+			intensity = 0.7,
+			radius = 10,
+			flicker = { amp = 0.02, freq = 2, phase = 3 },
+		},
+		tags = {
+			tilelike = true,
+			covers = true,
+		},
+	},
+
+	crystal = {
+		name = "Crystal",
+		description = "A Crystal",
+		type = "prop",
+		appearance = {
+			chars = { "<>", "<>" },
+			color = { { 0.7, 0.9, 0.95, 1 } },
+		},
+		light = {
+			color = { r = 0.7, g = 0.9, b = 1 },
+			intensity = 0.5,
+			radius = 8,
+			flicker = { amp = 0.05, freq = 4, phase = 0 },
+		},
+		default_action = "moveable",
+		tags = {
+			moveable = true,
+			tilelike = true,
+			covers = true,
+		},
 	},
 
 	street_lamp = {
 		name = "Street Lamp",
+		description = "A Street Lamp",
 		type = "prop",
 		appearance = {
 			chars = { ".", ".", ".", ".", ".", ".", ".", "#" },
@@ -612,18 +627,17 @@ return {
 				{ 0.7, 0.55, 0.25, 1 },
 			},
 		},
-		description = "A Street Lamp",
-		tags = {
-			solid = true,
-			moveable = true,
-			tilelike = true,
-			covers = true,
-		},
 		light = {
 			color = { r = 0.8, g = 0.65, b = 0.45 },
 			flicker = { amp = 0.01, freq = 4, phase = 4 },
 			intensity = 0.7,
 			radius = 9,
+		},
+		tags = {
+			solid = true,
+			moveable = true,
+			tilelike = true,
+			covers = true,
 		},
 	},
 }

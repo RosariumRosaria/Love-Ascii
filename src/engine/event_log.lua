@@ -1,4 +1,16 @@
 local event_log = { current = {} }
+local NAMED_FIELDS = { "entity", "source", "item" }
+
+local function normalize(ev)
+	for _, field in ipairs(NAMED_FIELDS) do
+		local value = ev[field]
+		if type(value) == "table" then
+			ev[field] = value.name
+			ev[field .. "_id"] = value.id
+			ev[field .. "_kind"] = value.id and "entity" or "item"
+		end
+	end
+end
 
 function event_log:reset()
 	self.current = {}
@@ -15,6 +27,7 @@ function event_log:add(ev)
 			return
 		end
 	end
+	normalize(ev)
 	table.insert(event_log.current, ev)
 end
 
