@@ -25,7 +25,9 @@ local function spawn_default_entities()
 end
 
 function session.load(seed)
-	love.math.setRandomSeed(seed or os.time())
+	seed = seed or os.time()
+	love.math.setRandomSeed(seed)
+	print("Seed: " .. seed)
 	local map_max_x = game_cfg.map.max_x
 	local map_max_y = game_cfg.map.max_y
 	local map_max_z = game_cfg.map.max_z
