@@ -15,6 +15,18 @@ local perf = {
 	sort_max_ms = 0,
 	sort_peak_ms = 0,
 	sort_window_start = nil,
+	-- draw_buffer emit stats, refreshed every frame; the churn figures keep a window
+	-- peak because they spike on the frames that matter and would otherwise flicker past.
+	buf_entries = 0,
+	buf_rects = 0,
+	buf_chars = 0,
+	buf_flips = 0,
+	buf_new = 0,
+	buf_flips_max = 0,
+	buf_new_max = 0,
+	buf_flips_peak = 0,
+	buf_new_peak = 0,
+	buf_window_start = nil,
 }
 
 -- Short window so the reported figures track what the renderer is doing *now*
@@ -51,6 +63,34 @@ function perf:record_sort(seconds)
 	end
 end
 
+-- Called from scene:draw once the frame's entries are all emitted.
+function perf:record_buffer(entries, rects, chars, flips, new_tables)
+	self.buf_entries = entries
+	self.buf_rects = rects
+	self.buf_chars = chars
+	self.buf_flips = flips
+	self.buf_new = new_tables
+
+	local now = love.timer.getTime()
+	if not self.buf_window_start then
+		self.buf_window_start = now
+	end
+	if flips > self.buf_flips_max then
+		self.buf_flips_max = flips
+	end
+	if new_tables > self.buf_new_max then
+		self.buf_new_max = new_tables
+	end
+
+	if now - self.buf_window_start >= PHASE_WINDOW then
+		self.buf_flips_peak = self.buf_flips_max
+		self.buf_new_peak = self.buf_new_max
+		self.buf_flips_max = 0
+		self.buf_new_max = 0
+		self.buf_window_start = now
+	end
+end
+
 function perf:draw()
 	if not debug_state.show_perf then
 		return
@@ -72,6 +112,20 @@ function perf:draw()
 		table.insert(lines, "PROFILING (f2 to stop)")
 	end
 	table.insert(lines, string.format("Sort: %.3fms avg / %.3fms peak", self.sort_avg_ms, self.sort_peak_ms))
+	table.insert(
+		lines,
+		string.format("Entries: %d (%d rect / %d char)", self.buf_entries, self.buf_rects, self.buf_chars)
+	)
+	table.insert(
+		lines,
+		string.format(
+			"Churn: %d flips (%d peak) / %d new (%d peak)",
+			self.buf_flips,
+			self.buf_flips_peak,
+			self.buf_new,
+			self.buf_new_peak
+		)
+	)
 	-- getStats counters reset at present(), so this is the frame so far -- everything
 	-- scene:draw submitted, missing only the overlay itself.
 	local stats = love.graphics.getStats()

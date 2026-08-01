@@ -152,6 +152,8 @@ function scene:draw()
 		painter:emit_effect(effect, camera_x, camera_y, map:is_visible(ex, ey))
 	end
 
+	perf:record_buffer(draw_buffer:get_stats())
+
 	local sort_start = love.timer.getTime()
 	draw_buffer:sort()
 	perf:record_sort(love.timer.getTime() - sort_start)
