@@ -108,7 +108,7 @@ function debug_panel.update()
 	if mind.last_known then
 		last_known = effects:add_from_template("ping_last_known", mind.last_known.x, mind.last_known.y, entity.z)
 	end
-	if mind.last_heading then
+	if mind.last_heading and mind.last_known then
 		arrow = effects:add_from_template("arrow", mind.last_known.x, mind.last_known.y, entity.z)
 		arrow.panels[1].texts[1] = arrow_chars[mind.last_heading.x .. "," .. mind.last_heading.y]
 	end
