@@ -1,5 +1,6 @@
 local config = require("src.config.runtime")
 local render_utils = require("src.visuals.render.utils")
+local utils = require("src.utils")
 local small_tile_size
 local small_font
 local very_small_tile_size
@@ -25,7 +26,7 @@ local function to_entry(value)
 	if type(value) == "string" then
 		return { text = value }
 	elseif type(value) == "table" then
-		assert(value.text or value.segments, "Table entry must have a 'text' or 'segments' field")
+		assert(value.text)
 		return value
 	else
 		assert(false, "Invalid entry type: " .. type(value))
@@ -57,18 +58,53 @@ function panels:get_panel_list()
 	return self.panel_list
 end
 
+local function slice_runs(colored, s, e)
+	local out = {}
+	local run_start = 1
+	for i = 1, #colored, 2 do
+		local color = colored[i]
+		local str = colored[i + 1]
+		local run_end = run_start + #str - 1
+		local a = math.max(run_start, s)
+		local b = math.min(run_end, e)
+		if a <= b then
+			table.insert(out, color)
+			table.insert(out, str:sub(a - run_start + 1, b - run_start + 1))
+		end
+		run_start = run_end + 1
+	end
+	return out
+end
+
+local function split_colored(colored, plain, lines)
+	local out = {}
+	local pos = 1
+	for _, line in ipairs(lines) do
+		if #line == 0 then
+			table.insert(out, false)
+		else
+			local s = plain:find(line, pos, true)
+			local e = s + #line - 1
+			table.insert(out, slice_runs(colored, s, e))
+			pos = e + 1
+		end
+	end
+	return out
+end
+
 function panels:get_visible_texts(panel)
 	local font = panel.font or small_font
 	local tile_size = panel.tile_size or small_tile_size
 	local wrapped = {}
 	for _, entry in ipairs(panel.texts) do
-		local text = entry.text or ""
+		local text = entry.text
 		local _, lines = font:getWrap(text, panel.width)
 		if #lines == 0 then
-			table.insert(wrapped, "")
+			table.insert(wrapped, { text = "" })
 		else
-			for _, line in ipairs(lines) do
-				table.insert(wrapped, line)
+			local colored_lines = entry.colored and split_colored(entry.colored, entry.text, lines)
+			for j, l in ipairs(lines) do
+				table.insert(wrapped, { text = l, colored = colored_lines and colored_lines[j] })
 			end
 		end
 	end

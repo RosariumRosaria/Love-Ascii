@@ -72,9 +72,6 @@ function render_primitives.draw_rect_rgba(
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
--- Colour arrives as loose components: this is called once per glyph per frame from
--- draw_buffer:walk, and a colour table per call was pure garbage. outline_color stays a
--- table because it is an alias of a tile/entity template, not a per-frame allocation.
 function render_primitives.draw_char(
 	x_screen,
 	y_screen,
@@ -157,7 +154,7 @@ function render_primitives.draw_text_block(
 
 	for i, line in ipairs(lines) do
 		local offset = outline * 2
-		local text = line.text or line
+		local text = line.text
 		local dx = offset
 		if center_text then
 			dx = (width - font:getWidth(text)) / 2 + render_utils.get_center_offset_x(font)
@@ -165,7 +162,7 @@ function render_primitives.draw_text_block(
 		local draw_x = x_screen + dx + (text_offset_x or 0)
 		local draw_y = y_screen + top + ((i - 1) * line_height)
 
-		love.graphics.print(line, draw_x, draw_y)
+		love.graphics.print(line.colored or text, draw_x, draw_y)
 	end
 end
 

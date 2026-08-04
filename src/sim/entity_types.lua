@@ -13,6 +13,7 @@ return {
 		appearance = {
 			chars = { "@" },
 			color = { { 0.8, 0.8, 0.9, 1 } },
+			text_color = { 0.8, 0.8, 0.9, 1 },
 			effect_color = { 0.45, 0.45, 0.5, 0.5 },
 		},
 		default_action = "attackable",
@@ -51,6 +52,7 @@ return {
 		appearance = {
 			chars = { "Z" },
 			color = { { 0.3, 0.45, 0.25, 1 } },
+			text_color = { 0.3, 0.45, 0.25, 1 },
 			effect_color = { 0.35, 0.6, 0.3, 0.5 },
 		},
 		loot = {
@@ -95,6 +97,7 @@ return {
 		appearance = {
 			chars = { "S" },
 			color = { { 0.4, 0.48, 0.38, 1 } },
+			text_color = { 0.4, 0.48, 0.38, 1 },
 			effect_color = { 0.48, 0.56, 0.45, 0.5 },
 		},
 		default_action = "attackable",
@@ -132,6 +135,7 @@ return {
 		appearance = {
 			chars = { "S" },
 			color = { { 0.72, 0.65, 0.6, 1 } },
+			text_color = { 0.72, 0.65, 0.6, 1 },
 			effect_color = { 0.65, 0.61, 0.51, 0.5 },
 		},
 		loot = {
@@ -181,6 +185,7 @@ return {
 		appearance = {
 			chars = { "V" },
 			color = { { 0.7, 0.2, 0.2, 1 } },
+			text_color = { 0.7, 0.2, 0.2, 1 },
 			effect_color = { 0.35, 0.1, 0.1, 0.5 },
 		},
 		default_action = "attackable",
@@ -221,6 +226,7 @@ return {
 		appearance = {
 			chars = { "O" },
 			color = { { 0.72, 0.55, 0.2, 1 } },
+			text_color = { 0.72, 0.55, 0.2, 1 },
 			effect_color = { 0.8, 0.62, 0.23, 0.5 },
 		},
 		footprint = {
@@ -264,6 +270,7 @@ return {
 		appearance = {
 			chars = { "D" },
 			color = { { 0.8, 0.05, 0.05, 1 } },
+			text_color = { 0.8, 0.05, 0.05, 1 },
 			effect_color = { 0.85, 0.1, 0.05, 0.4 },
 		},
 		footprint = {
@@ -313,6 +320,7 @@ return {
 		appearance = {
 			chars = { "C" },
 			color = { { 0.2, 0.2, 0.2 } },
+			text_color = { 0.2, 0.2, 0.2, 1 },
 		},
 		inventory = {
 			items = {},
@@ -341,6 +349,7 @@ return {
 		appearance = {
 			chars = { "[]", "[]" },
 			color = { { 0.23, 0.21, 0.14 }, { 0.48, 0.43, 0.30 } },
+			text_color = { 0.48, 0.43, 0.30, 1 },
 		},
 		loot = {
 			count = { min = 1, max = 4 },
@@ -385,6 +394,7 @@ return {
 		appearance = {
 			chars = { "[", "[" },
 			color = { { 0.30, 0.16, 0.06, 1 } },
+			text_color = { 0.30, 0.16, 0.06, 1 },
 		},
 		passage = { kind = "walkable" },
 		interaction = {
@@ -425,6 +435,7 @@ return {
 		appearance = {
 			chars = { " ", "-", "-" },
 			color = { { 0.55, 0.35, 0.1, 1 }, { 0.30, 0.16, 0.06, 1 }, { 0.30, 0.16, 0.06, 1 } },
+			text_color = { 0.55, 0.35, 0.1, 1 },
 		},
 		corpse = "broken_window",
 		passage = { kind = "vaultable" },
@@ -469,6 +480,7 @@ return {
 		appearance = {
 			chars = { " ", "'", "'" },
 			color = { { 0.55, 0.35, 0.1, 1 }, { 0.30, 0.16, 0.06, 1 }, { 0.30, 0.16, 0.06, 1 } },
+			text_color = { 0.55, 0.35, 0.1, 1 },
 		},
 		passage = { kind = "vaultable" },
 		default_action = "vaultable",
@@ -487,6 +499,7 @@ return {
 		appearance = {
 			chars = { "[]", "[]" },
 			color = { { 0.30, 0.09, 0.09, 1 }, { 0.47, 0.23, 0.23, 1 } },
+			text_color = { 0.47, 0.23, 0.23, 1 },
 		},
 		default_action = "moveable",
 		tags = {
@@ -503,10 +516,6 @@ return {
 		},
 	},
 
-	--------------------------------------------------------------------------
-	-- PROPS: loose objects
-	--------------------------------------------------------------------------
-
 	crate = {
 		name = "Crate",
 		description = "A heavy crate, try pushing it!",
@@ -514,6 +523,7 @@ return {
 		appearance = {
 			chars = { "#", "#" },
 			color = { { 0.15, 0.12, 0.06 }, { 0.38, 0.33, 0.30 } },
+			text_color = { 0.38, 0.33, 0.30, 1 },
 		},
 		default_action = "moveable",
 		tags = {
@@ -536,6 +546,7 @@ return {
 		appearance = {
 			chars = { "*" },
 			color = { { 1, 1, 0, 1 } },
+			text_color = { 1, 1, 0, 1 },
 		},
 		default_action = "pickupable",
 		tags = {
@@ -555,6 +566,7 @@ return {
 		appearance = {
 			chars = { "<>" },
 			color = { { 1, 0.12, 0.18, 1 } },
+			text_color = { 1, 0.12, 0.18, 1 },
 		},
 		applies_status = { "phylactery_glow", silent = true },
 		tags = {
@@ -576,6 +588,7 @@ return {
 		appearance = {
 			chars = { "%" },
 			color = { { 1, 0.35, 0.1, 1 } },
+			text_color = { 1, 0.35, 0.1, 1 },
 		},
 		emitters = { { particle = "smoke", rate = 1 }, { particle = "ember", rate = 1.2 } },
 		light = {
@@ -597,6 +610,7 @@ return {
 		appearance = {
 			chars = { "<>", "<>" },
 			color = { { 0.7, 0.9, 0.95, 1 } },
+			text_color = { 0.7, 0.9, 0.95, 1 },
 		},
 		light = {
 			color = { r = 0.7, g = 0.9, b = 1 },
@@ -628,6 +642,7 @@ return {
 				{ 0.55, 0.35, 0.1, 1 },
 				{ 0.7, 0.55, 0.25, 1 },
 			},
+			text_color = { 0.7, 0.55, 0.25, 1 },
 		},
 		light = {
 			color = { r = 0.8, g = 0.65, b = 0.45 },

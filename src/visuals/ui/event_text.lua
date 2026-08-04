@@ -1,6 +1,53 @@
 local utils = require("src.utils")
 local entities = require("src.sim.entities")
+local render_config = require("src.config.render_config")
 local event_text = {}
+
+local WHITE = { 1, 1, 1, 1 }
+
+local function run(text, color)
+	return { text = text, color = color }
+end
+
+local function fragment(runs, is_player)
+	return { runs = runs, is_player = is_player or false }
+end
+
+local function append(plain, colored, text, color)
+	if not text or #text == 0 then
+		return
+	end
+	table.insert(plain, text)
+	table.insert(colored, color or WHITE)
+	table.insert(colored, text)
+end
+
+local function line(...)
+	local count = select("#", ...)
+	local plain = {}
+	local colored = {}
+	for i = 1, count do
+		local piece = select(i, ...)
+		if piece ~= nil then
+			if type(piece) == "table" then
+				for _, piece_run in ipairs(piece.runs) do
+					append(plain, colored, piece_run.text, piece_run.color)
+				end
+			else
+				append(plain, colored, tostring(piece))
+			end
+		end
+	end
+	return { text = table.concat(plain), colored = colored }
+end
+
+local function entity_color(entity)
+	local appearance = entity and entity.appearance
+	if not appearance then
+		return nil
+	end
+	return appearance.text_color or (appearance.color and appearance.color[1])
+end
 
 local function refer(ev, field)
 	local name = ev[field]
@@ -8,34 +55,58 @@ local function refer(ev, field)
 		return nil
 	end
 	if not ev[field .. "_kind"] then
-		return string.lower(name), false
+		return fragment({ run(string.lower(name)) })
 	end
 
 	local id = ev[field .. "_id"]
+	local color
 	if id then
 		local player = entities.player
 		if player and player.id == id then
-			return "you", true
+			return fragment({ run("you", entity_color(player)) }, true)
 		end
 		local live = entities.get_by_id(id)
 		if live then
 			name = live.name
+			color = entity_color(live)
 		end
 	end
-	return "a " .. string.lower(name), false
+	return fragment({ run("a "), run(string.lower(name), color) })
 end
 
 local function refer_capital(ev, field)
-	local text, is_player = refer(ev, field)
-	return text and utils.capitalize(text), is_player
+	local referred = refer(ev, field)
+	if not referred then
+		return nil
+	end
+	local runs = {}
+	for i, referred_run in ipairs(referred.runs) do
+		local text = referred_run.text
+		if i == 1 then
+			text = utils.capitalize(text)
+		end
+		runs[i] = run(text, referred_run.color)
+	end
+	return fragment(runs, referred.is_player)
 end
 
 local function was(is_player)
 	return is_player and "were" or "was"
 end
 
+local function damage_color(quality)
+	local cfg = render_config.combat
+	if quality == "glance" then
+		return cfg.glance_damage_text_color
+	end
+	if quality == "solid" then
+		return cfg.solid_damage_text_color
+	end
+	return cfg.damage_text_color
+end
+
 function event_text.describe(ev)
-	local subject, subject_is_player = refer_capital(ev, "entity")
+	local subject = refer_capital(ev, "entity")
 
 	if ev.type == "combat" then
 		local quality = ""
@@ -46,71 +117,88 @@ function event_text.describe(ev)
 			quality = "solid "
 		end
 
-		local line = refer_capital(ev, "source") .. " landed a " .. quality .. "blow on " .. refer(ev, "entity") .. "."
-
 		local tally = {}
 		if ev.amount > 0 then
-			tally[#tally + 1] = ev.amount .. " damage"
+			tally[#tally + 1] = { amount = ev.amount, color = damage_color(ev.quality), label = " damage" }
 		end
 		if ev.absorbed and ev.absorbed > 0 then
-			tally[#tally + 1] = ev.absorbed .. " absorbed by their " .. ev.absorbed_by
+			tally[#tally + 1] = { amount = ev.absorbed, label = " absorbed by their " .. ev.absorbed_by }
 		end
+		local suffix
 		if #tally > 0 then
-			line = line .. " (" .. table.concat(tally, ", ") .. ")"
+			local runs = { run(" (") }
+			for i, entry in ipairs(tally) do
+				if i > 1 then
+					table.insert(runs, run(", "))
+				end
+				table.insert(runs, run(tostring(entry.amount), entry.color))
+				table.insert(runs, run(entry.label))
+			end
+			table.insert(runs, run(")"))
+			suffix = fragment(runs)
 		end
-		return line
+
+		return line(refer_capital(ev, "source"), " landed a ", quality, "blow on ", refer(ev, "entity"), ".", suffix)
 	elseif ev.type == "damage" then
-		return subject .. " took damage from " .. refer(ev, "source") .. ". (" .. ev.amount .. " damage)"
+		return line(subject, " took damage from ", refer(ev, "source"), ". (", ev.amount, " damage)")
 	elseif ev.type == "heal" then
-		return subject .. " recovered from " .. refer(ev, "source") .. ". (" .. ev.amount .. " healed)"
+		return line(subject, " recovered from ", refer(ev, "source"), ". (", ev.amount, " healed)")
 	elseif ev.type == "status_applied" then
 		if ev.source then
-			return refer_capital(ev, "source")
-				.. " inflicted "
-				.. string.lower(ev.status)
-				.. " on "
-				.. refer(ev, "entity")
-				.. "."
+			return line(
+				refer_capital(ev, "source"),
+				" inflicted ",
+				string.lower(ev.status),
+				" on ",
+				refer(ev, "entity"),
+				"."
+			)
 		end
-		return utils.capitalize(string.lower(ev.status)) .. " took hold of " .. refer(ev, "entity") .. "."
+		return line(utils.capitalize(string.lower(ev.status)), " took hold of ", refer(ev, "entity"), ".")
 	elseif ev.type == "status_expired" then
-		return utils.capitalize(string.lower(ev.status)) .. " wore off " .. refer(ev, "entity") .. "."
+		return line(utils.capitalize(string.lower(ev.status)), " wore off ", refer(ev, "entity"), ".")
 	elseif ev.type == "entity_died" then
-		return subject .. " " .. was(subject_is_player) .. " killed by " .. refer(ev, "source") .. "."
+		if subject then
+			return line(subject, " ", was(subject.is_player), " killed by ", refer(ev, "source"), ".")
+		end
 	elseif ev.type == "entity_dragged" then
-		return refer_capital(ev, "source")
-			.. " dragged "
-			.. refer(ev, "entity")
-			.. " to "
-			.. ev.dest_x
-			.. ", "
-			.. ev.dest_y
-			.. "."
+		return line(
+			refer_capital(ev, "source"),
+			" dragged ",
+			refer(ev, "entity"),
+			" to ",
+			ev.dest_x,
+			", ",
+			ev.dest_y,
+			"."
+		)
 	elseif ev.type == "entity_picked_up" then
-		return refer_capital(ev, "source") .. " picked up " .. refer(ev, "entity") .. "."
+		return line(refer_capital(ev, "source"), " picked up ", refer(ev, "entity"), ".")
 	elseif ev.type == "entity_placed" then
-		return refer_capital(ev, "source") .. " placed " .. refer(ev, "entity") .. "."
+		return line(refer_capital(ev, "source"), " placed ", refer(ev, "entity"), ".")
 	elseif ev.type == "item_equipped" then
-		return subject .. " equipped " .. refer(ev, "item") .. ". (" .. ev.slot .. ")"
+		return line(subject, " equipped ", refer(ev, "item"), ". (", ev.slot, ")")
 	elseif ev.type == "item_unequipped" then
-		return subject .. " unequipped " .. refer(ev, "item") .. ". (" .. ev.slot .. ")"
+		return line(subject, " unequipped ", refer(ev, "item"), ". (", ev.slot, ")")
 	elseif ev.type == "item_used" then
-		return subject .. " used " .. refer(ev, "item") .. "."
+		return line(subject, " used ", refer(ev, "item"), ".")
 	elseif ev.type == "ammo_broke" then
-		local owner = subject_is_player and "Your" or (subject .. "'s")
-		return owner .. " " .. string.lower(ev.item) .. " broke!"
+		if subject and subject.is_player then
+			return line("Your ", string.lower(ev.item), " broke!")
+		end
+		return line(subject, "'s ", string.lower(ev.item), " broke!")
 	elseif ev.type == "item_consumed" then
-		return refer_capital(ev, "item") .. " was used up."
+		return line(refer_capital(ev, "item"), " was used up.")
 	elseif ev.type == "entity_waited" then
-		return subject .. " waited."
+		return line(subject, " waited.")
 	elseif ev.type == "describe" then
-		return subject .. ": " .. ev.description
+		return line(subject, ": ", ev.description)
 	elseif ev.type == "action_failed" then
-		return subject .. " could not: " .. string.lower(ev.reason) .. "."
+		return line(subject, " could not: ", string.lower(ev.reason), ".")
 	elseif ev.type == "sound" then
-		return "You heard " .. ev.description .. "."
+		return line("You heard ", ev.description, ".")
 	elseif ev.type == "debug" then
-		return "[DEBUG] " .. ev.message
+		return line("[DEBUG] ", ev.message)
 	end
 end
 
