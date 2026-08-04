@@ -1,8 +1,4 @@
 plans/
 .vscode/
-
-# Map maker tool + its output — local authoring only, not shipped. The game's
-# prefab loader (map/prefab.lua) is inert unless config/game_config.lua names a prefab.
 tools/
 prefabs/
-.gitignore
