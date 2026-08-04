@@ -96,6 +96,9 @@ function event_text.describe(ev)
 		return subject .. " unequipped " .. refer(ev, "item") .. ". (" .. ev.slot .. ")"
 	elseif ev.type == "item_used" then
 		return subject .. " used " .. refer(ev, "item") .. "."
+	elseif ev.type == "ammo_broke" then
+		local owner = subject_is_player and "Your" or (subject .. "'s")
+		return owner .. " " .. string.lower(ev.item) .. " broke!"
 	elseif ev.type == "item_consumed" then
 		return refer_capital(ev, "item") .. " was used up."
 	elseif ev.type == "entity_waited" then

@@ -335,10 +335,14 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity, valida
 	local ammo = inventory.equip_ammo(entity, weapon)
 
 	if ammo then
-		if ammo.break_chance and love.math.random() >= ammo.break_chance then
-			local ammo_copy = utils.deep_copy(ammo)
-			ammo_copy.charges = 1
-			entities.convert_item_to_pickup(target_entity.x, target_entity.y, target_entity.z, ammo_copy)
+		if ammo.break_chance then
+			if love.math.random() >= ammo.break_chance then
+				local ammo_copy = utils.deep_copy(ammo)
+				ammo_copy.charges = 1
+				entities.convert_item_to_pickup(target_entity.x, target_entity.y, target_entity.z, ammo_copy)
+			else
+				event_log:add({ type = "ammo_broke", entity = entity, item = ammo, x = entity.x, y = entity.y })
+			end
 		end
 		inventory.use_charge(entity, ammo)
 	end
