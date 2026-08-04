@@ -542,6 +542,8 @@ return {
 			tilelike = true,
 			covers = true,
 			pickupable = true,
+			interactable = true,
+			walkable = true,
 		},
 	},
 

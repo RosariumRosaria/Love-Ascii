@@ -74,7 +74,7 @@ function statuses.remove(entity, key)
 end
 
 function statuses.has_tag(entity, tag)
-	return utils.has_tag(entity.statuses, tag)
+	return utils.any_with_tag(entity.statuses, tag)
 end
 
 function statuses.with_tag(entity, tag)

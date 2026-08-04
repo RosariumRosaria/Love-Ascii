@@ -346,7 +346,7 @@ function utils.get_tag(taggable, tag)
 	return taggable.tags and taggable.tags[tag]
 end
 
-function utils.has_tag(taggables, tag)
+function utils.any_with_tag(taggables, tag)
 	if not taggables then
 		return false
 	end

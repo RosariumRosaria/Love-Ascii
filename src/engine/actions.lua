@@ -335,6 +335,11 @@ function actions:ranged_attack(entity, target_x, target_y, target_entity, valida
 	local ammo = inventory.equip_ammo(entity, weapon)
 
 	if ammo then
+		if ammo.break_chance and love.math.random() >= ammo.break_chance then
+			local ammo_copy = utils.deep_copy(ammo)
+			ammo_copy.charges = 1
+			entities.convert_item_to_pickup(target_entity.x, target_entity.y, target_entity.z, ammo_copy)
+		end
 		inventory.use_charge(entity, ammo)
 	end
 
@@ -365,6 +370,10 @@ function actions:interact(entity, dx, dy, target_entity)
 	target_entity = resolve_target(entity, dx, dy, "interactable", "Interact", target_entity)
 	if not target_entity then
 		return false
+	end
+
+	if utils.get_tag(target_entity, "pickupable") then
+		return self:pickup(entity, dx, dy, target_entity)
 	end
 
 	if not statuses.can_be_interacted(target_entity) then

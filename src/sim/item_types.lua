@@ -87,12 +87,14 @@ return {
 		color = { { 0.8, 0.8, 0.8, 1 } },
 		chars = { "/" },
 		slot = "ammo",
+		break_chance = 0.5,
 		charges = 1,
 		modifiers = {
 			{ stat = "damage", op = "add", value = 1, context = "ranged" },
 		},
 		tags = {
 			stacks = true,
+
 			consumable = true,
 		},
 	},

@@ -55,7 +55,7 @@ function entities.get_tag_location(x, y, z, tag)
 	if not ents then
 		return false
 	end
-	return utils.has_tag(ents, tag)
+	return utils.any_with_tag(ents, tag)
 end
 
 function entities.get_with_tag(x, y, z, tag)
