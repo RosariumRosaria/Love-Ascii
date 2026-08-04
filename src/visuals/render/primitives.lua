@@ -9,32 +9,6 @@ function render_primitives.draw_rect(
 	y_screen,
 	width,
 	height,
-	color,
-	outline_width,
-	outline_color,
-	rounded_amount
-)
-	local r, g, b, a = render_utils.unpack_rgba(color)
-	render_primitives.draw_rect_rgba(
-		x_screen,
-		y_screen,
-		width,
-		height,
-		r,
-		g,
-		b,
-		a,
-		outline_width,
-		outline_color,
-		rounded_amount
-	)
-end
-
-function render_primitives.draw_rect_rgba(
-	x_screen,
-	y_screen,
-	width,
-	height,
 	r,
 	g,
 	b,
@@ -182,7 +156,8 @@ function render_primitives.draw_panel(
 	text_offset_x,
 	text_offset_y
 )
-	render_primitives.draw_rect(x_screen, y_screen, width, height, fill_color, outline_width, outline_color)
+	local r, g, b, a = render_utils.unpack_rgba(fill_color)
+	render_primitives.draw_rect(x_screen, y_screen, width, height, r, g, b, a, outline_width, outline_color)
 	render_primitives.draw_text_block(
 		texts,
 		x_screen,

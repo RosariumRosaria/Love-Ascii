@@ -12,7 +12,6 @@ local draw_buffer = require("src.visuals.render.draw_buffer")
 local particles = require("src.visuals.particles.particles")
 local debug_panel = require("src.debug.debug_panel")
 local debug_state = require("src.debug.debug_state")
-local perf = require("src.engine.perf")
 
 local scene = {}
 
@@ -59,13 +58,9 @@ function scene:resize()
 end
 
 function scene:draw()
-	-- TODO(resize-polish): re-anchor the HUD here. hud panels are built once in
-	-- hud:load and never re-laid out, so a resolution change (e.g. the settings
-	-- FULLSCREEN toggle) leaves them at the old anchor. Menus survive because
-	-- flow calls menu:refresh after an adjust, but the HUD has no such path.
+	-- TODO(: re-anchor the HUD here.
 	-- TODO(resize-polish): panel/hud outline_width is baked from screen_width at
-	-- creation (panels.lua / hud.lua) and isn't recomputed on resize, so outlines
-	-- render at the old thickness after a resolution change. Cosmetic.a
+	-- creation
 	local draw_dist_x, draw_dist_y = render_utils.get_draw_bounds()
 	local camera_x, camera_y = camera:get_position()
 
@@ -85,9 +80,8 @@ function scene:draw()
 	self.vignette_shader:send("gamma", render_utils.get_gamma())
 	draw_buffer:clear()
 
-	-- Loop order is load-bearing: y outer means tiles reach draw_buffer already
-	-- ordered within each (pass, z, layer) bucket, which is what lets draw_buffer:sort
-	-- skip the sort for them. Reordering these loops stays correct but costs the sort back.
+	-- Loop order: y outer means tiles reach draw_buffer already ordered
+
 	for y = start_y, end_y do
 		local vis_row = visible_grid[y]
 		local exp_row = explored_grid[y]
@@ -152,11 +146,7 @@ function scene:draw()
 		painter:emit_effect(effect, camera_x, camera_y, map:is_visible(ex, ey))
 	end
 
-	perf:record_buffer(draw_buffer:get_stats())
-
-	local sort_start = love.timer.getTime()
 	draw_buffer:sort()
-	perf:record_sort(love.timer.getTime() - sort_start)
 
 	love.graphics.setCanvas(self.world_canvas)
 	love.graphics.clear(0, 0, 0, 1)

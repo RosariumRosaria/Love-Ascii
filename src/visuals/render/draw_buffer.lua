@@ -1,7 +1,6 @@
 local render_primitives = require("src.visuals.render.primitives")
 local config = require("src.config.runtime")
 local game_cfg = require("src.config.game_config")
-local debug_state = require("src.debug.debug_state")
 
 local draw_buffer = {
 	PASS = {
@@ -25,15 +24,6 @@ local draw_buffer = {
 
 local buf = {}
 local count = 0
-
--- Per-frame emit stats, published to perf by scene:draw. rect/char counts are plain
--- increments; the churn counters cost a table read per emit, so they only run while the
--- perf overlay is up (latched once per frame in :clear).
-local rect_count = 0
-local char_count = 0
-local kind_flips = 0
-local new_entries = 0
-local track_churn = false
 
 local buckets = {}
 local bucket_counts = {}
@@ -60,12 +50,6 @@ local function acquire(pass, z, y, layer)
 
 	local d = buf[n]
 	if not d then
-		-- Born holding the union of every field both kinds write. Entries are recycled
-		-- across kinds, so a table that starts empty grows its hash part a key at a time
-		-- and re-grows it whenever a slot flips rect <-> char -- each miss is an
-		-- lj_tab_newkey plus a rehash, in the hottest loop in the frame. Sized once here,
-		-- no store after this is ever a new key. Values are placeholders; acquire is
-		-- always followed by a full assignment for the kind being emitted.
 		d = {
 			kind = false,
 			x_screen = 0,
@@ -86,9 +70,6 @@ local function acquire(pass, z, y, layer)
 			rounded_amount = false,
 		}
 		buf[n] = d
-		if track_churn then
-			new_entries = new_entries + 1
-		end
 	end
 
 	local zq = floor((z - Z_MIN) * 64)
@@ -110,8 +91,7 @@ local function acquire(pass, z, y, layer)
 		bucket = {}
 		buckets[bucket_index] = bucket
 	end
-	-- A live bucket always holds at least one entry, so a count of 0 (or nil)
-	-- means this is the first emit into it this frame.
+
 	local bucket_count = bucket_counts[bucket_index]
 	if not bucket_count or bucket_count == 0 then
 		bucket_count = 0
@@ -144,10 +124,6 @@ function draw_buffer:emit_char(
 	mirror_facing
 )
 	local d = acquire(pass, z, y, layer)
-	char_count = char_count + 1
-	if track_churn and d.kind ~= "char" then
-		kind_flips = kind_flips + 1
-	end
 	d.kind = "char"
 	d.x_screen = x_screen
 	d.y_screen = y_screen
@@ -181,10 +157,6 @@ function draw_buffer:emit_rect(
 	rounded_amount
 )
 	local d = acquire(pass, z, y, layer)
-	rect_count = rect_count + 1
-	if track_churn and d.kind ~= "rect" then
-		kind_flips = kind_flips + 1
-	end
 	d.kind = "rect"
 	d.x_screen = x_screen
 	d.y_screen = y_screen
@@ -205,18 +177,6 @@ function draw_buffer:clear()
 	end
 	occupied_count = 0
 	count = 0
-
-	track_churn = debug_state.show_perf
-	rect_count = 0
-	char_count = 0
-	kind_flips = 0
-	new_entries = 0
-end
-
--- entries, rects, chars, slots that changed kind this frame, tables allocated this frame.
--- The churn figures read 0 unless the perf overlay was up when :clear ran.
-function draw_buffer:get_stats()
-	return count, rect_count, char_count, kind_flips, new_entries
 end
 
 function draw_buffer:sort()
@@ -229,12 +189,11 @@ function draw_buffer:sort()
 		local bucket_index = occupied[i]
 		local bucket = buckets[bucket_index]
 		local bucket_count = bucket_counts[bucket_index]
-		-- Buckets are reused across frames, so drop any tail left by a bigger frame
-		-- before sorting -- table.sort works off #bucket.
+
 		for j = #bucket, bucket_count + 1, -1 do
 			bucket[j] = nil
 		end
-		-- Emission order is usually already correct; only pay for a sort when it isn't.
+
 		local sorted = true
 		for j = 2, bucket_count do
 			if bucket[j] < bucket[j - 1] then
@@ -265,7 +224,7 @@ local function dispatch(d)
 			d.mirror_facing
 		)
 	else
-		render_primitives.draw_rect_rgba(
+		render_primitives.draw_rect(
 			d.x_screen,
 			d.y_screen,
 			d.w,

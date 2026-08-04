@@ -2,93 +2,17 @@ local game_cfg = require("src.config.game_config")
 local debug_state = require("src.debug.debug_state")
 local config = require("src.config.runtime")
 local time = require("src.engine.time")
+local camera = require("src.visuals.camera")
 
 local perf = {
 	frame_start = 0,
 	frame_count = 0,
 	last_warn_time = -math.huge,
 	worst_frame = nil,
-	-- rolling stats for the draw_buffer:sort phase, shown in the perf overlay
-	sort_sum = 0,
-	sort_frames = 0,
-	sort_avg_ms = 0,
-	sort_max_ms = 0,
-	sort_peak_ms = 0,
-	sort_window_start = nil,
-	-- draw_buffer emit stats, refreshed every frame; the churn figures keep a window
-	-- peak because they spike on the frames that matter and would otherwise flicker past.
-	buf_entries = 0,
-	buf_rects = 0,
-	buf_chars = 0,
-	buf_flips = 0,
-	buf_new = 0,
-	buf_flips_max = 0,
-	buf_new_max = 0,
-	buf_flips_peak = 0,
-	buf_new_peak = 0,
-	buf_window_start = nil,
 }
-
--- Short window so the reported figures track what the renderer is doing *now*
--- rather than smearing a change across several seconds of history.
-local PHASE_WINDOW = 0.5
 
 function perf:begin_frame()
 	self.frame_start = love.timer.getTime()
-end
-
--- Called from scene:draw around draw_buffer:sort.
-function perf:record_sort(seconds)
-	local now = love.timer.getTime()
-	if not self.sort_window_start then
-		self.sort_window_start = now
-	end
-
-	local ms = seconds * 1000
-	self.sort_sum = self.sort_sum + ms
-	self.sort_frames = self.sort_frames + 1
-	if ms > self.sort_max_ms then
-		self.sort_max_ms = ms
-	end
-
-	if now - self.sort_window_start >= PHASE_WINDOW then
-		-- Publish the completed window so the overlay shows a settled figure rather
-		-- than one that resets to 0 mid-read.
-		self.sort_avg_ms = self.sort_sum / self.sort_frames
-		self.sort_peak_ms = self.sort_max_ms
-		self.sort_sum = 0
-		self.sort_frames = 0
-		self.sort_max_ms = 0
-		self.sort_window_start = now
-	end
-end
-
--- Called from scene:draw once the frame's entries are all emitted.
-function perf:record_buffer(entries, rects, chars, flips, new_tables)
-	self.buf_entries = entries
-	self.buf_rects = rects
-	self.buf_chars = chars
-	self.buf_flips = flips
-	self.buf_new = new_tables
-
-	local now = love.timer.getTime()
-	if not self.buf_window_start then
-		self.buf_window_start = now
-	end
-	if flips > self.buf_flips_max then
-		self.buf_flips_max = flips
-	end
-	if new_tables > self.buf_new_max then
-		self.buf_new_max = new_tables
-	end
-
-	if now - self.buf_window_start >= PHASE_WINDOW then
-		self.buf_flips_peak = self.buf_flips_max
-		self.buf_new_peak = self.buf_new_max
-		self.buf_flips_max = 0
-		self.buf_new_max = 0
-		self.buf_window_start = now
-	end
 end
 
 function perf:draw()
@@ -103,33 +27,16 @@ function perf:draw()
 	love.graphics.setFont(font)
 	local r, g, b, a = love.graphics.getColor()
 	local pad = 10
+	local cam_x, cam_y = camera:get_position()
 	local lines = {
 		string.format("FPS: %d", love.timer.getFPS()),
 		string.format("Worst: %.1fms", (self.worst_frame and self.worst_frame.elapsed or 0) * 1000),
 		string.format("Time: %s (%.2f)", time.part_of_day(), time.time_of_day()),
+		string.format("Camera: %.2f, %.2f", cam_x or 0, cam_y or 0),
 	}
 	if debug_state.profiling then
 		table.insert(lines, "PROFILING (f2 to stop)")
 	end
-	table.insert(lines, string.format("Sort: %.3fms avg / %.3fms peak", self.sort_avg_ms, self.sort_peak_ms))
-	table.insert(
-		lines,
-		string.format("Entries: %d (%d rect / %d char)", self.buf_entries, self.buf_rects, self.buf_chars)
-	)
-	table.insert(
-		lines,
-		string.format(
-			"Churn: %d flips (%d peak) / %d new (%d peak)",
-			self.buf_flips,
-			self.buf_flips_peak,
-			self.buf_new,
-			self.buf_new_peak
-		)
-	)
-	-- getStats counters reset at present(), so this is the frame so far -- everything
-	-- scene:draw submitted, missing only the overlay itself.
-	local stats = love.graphics.getStats()
-	table.insert(lines, string.format("Draws: %d (%d batched)", stats.drawcalls, stats.drawcallsbatched or 0))
 	local line_h = font:getHeight()
 	local width = 0
 	for _, l in ipairs(lines) do
