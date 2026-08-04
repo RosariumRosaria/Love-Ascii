@@ -25,7 +25,8 @@ end
 function render_utils.get_max_text_width(texts, font)
 	local max_width = 0
 	font = font or default_font
-	for _, text in ipairs(texts) do
+	for _, entry in ipairs(texts) do
+		local text = entry.text or ""
 		local curr_width = font:getWidth(text)
 		if curr_width > max_width then
 			max_width = curr_width

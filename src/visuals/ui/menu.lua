@@ -114,8 +114,10 @@ end
 function menu:refresh(name)
 	local options = menus[name].options
 	local menu_panels = menus[name].panels
-	panels:get_panel(menu_panels.options).texts =
+	panels:set_panel_text_by_name(
+		menu_panels.options,
 		build_texts(options, menus[name].position, menus[name].slot or 1)
+	)
 	layout_menu(name)
 end
 
@@ -148,7 +150,7 @@ function menu:get_slot(name)
 end
 
 function menu:set_death_reason(text)
-	panels:get_panel("death_reason").texts = { text }
+	panels:set_panel_text_by_name("death_reason", { text })
 	layout_menu("dead")
 end
 
@@ -189,7 +191,7 @@ end
 
 function menu:load()
 	local paused_panel = add_menu_panel("pause", "very_big")
-	paused_panel.texts = { "PAUSED" }
+	panels:set_panel_text(paused_panel, { "PAUSED" })
 	paused_panel.visible = false
 
 	local paused_options_panel = add_menu_panel("pause_options", "big")
@@ -197,7 +199,7 @@ function menu:load()
 	paused_options_panel.visible = false
 
 	local start_panel = add_menu_panel("start", "very_big")
-	start_panel.texts = { "START" }
+	panels:set_panel_text(start_panel, { "START" })
 	start_panel.visible = false
 
 	local start_options_panel = add_menu_panel("start_options", "big")
@@ -205,11 +207,11 @@ function menu:load()
 	start_options_panel.visible = false
 
 	local dead_panel = add_menu_panel("dead", "very_big")
-	dead_panel.texts = { "DEAD" }
+	panels:set_panel_text(dead_panel, { "DEAD" })
 	dead_panel.visible = false
 
 	local death_reason_panel = add_menu_panel("death_reason", nil)
-	death_reason_panel.texts = { "" }
+	panels:set_panel_text(death_reason_panel, { "" })
 	death_reason_panel.visible = false
 
 	local dead_options_panel = add_menu_panel("dead_options", "big")
@@ -217,7 +219,7 @@ function menu:load()
 	dead_options_panel.visible = false
 
 	local settings_panel = add_menu_panel("settings", "very_big")
-	settings_panel.texts = { "SETTINGS" }
+	panels:set_panel_text(settings_panel, { "SETTINGS" })
 	settings_panel.visible = false
 
 	local settings_options_panel = add_menu_panel("settings_options", "big")
@@ -225,7 +227,7 @@ function menu:load()
 	settings_options_panel.visible = false
 
 	local keybinds_panel = add_menu_panel("keybinds", "very_big")
-	keybinds_panel.texts = { "KEYBINDS" }
+	panels:set_panel_text(keybinds_panel, { "KEYBINDS" })
 	keybinds_panel.visible = false
 
 	local keybinds_options_panel = add_menu_panel("keybinds_options", "medium")

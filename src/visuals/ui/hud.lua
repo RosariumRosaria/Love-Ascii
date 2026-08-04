@@ -111,7 +111,7 @@ function hud:load()
 	container_panel.visible = false
 	character_panel.mode = "inventory"
 	local vitals_panel = panels:add_panel("vitals", vitals_panel_opts)
-	vitals_panel.texts = { "" }
+	panels:set_panel_text(vitals_panel, { "" })
 	panels:measure_auto_size(vitals_panel)
 	vitals_panel.visible = false
 end
@@ -135,7 +135,7 @@ function hud:update_vitals(entity)
 		local max = stats.get(entity, stat_name)
 		local current = stats.get_current(entity, stat_name)
 		panel.visible = true
-		panel.texts = { "Health: " .. current .. " / " .. max }
+		panels:set_panel_text(panel, { "Health: " .. current .. " / " .. max })
 	else
 		panel.visible = false
 	end
@@ -263,7 +263,7 @@ function hud:update()
 end
 
 function hud:update_equipment(entity)
-	equipment_panel.texts = {}
+	panels:clear_panel_by_name("equipment")
 	if not entity or not entity.inventory then
 		return
 	end
@@ -293,7 +293,7 @@ function hud:update_equipment(entity)
 end
 
 function hud:update_character(entity)
-	character_panel.texts = {}
+	panels:clear_panel_by_name("character")
 	character_panel.entity = entity
 	self:update_equipment(entity)
 
@@ -324,7 +324,7 @@ function hud:update_character(entity)
 		end
 		container_panel.visible = container.is_open
 		if container.is_open then
-			container_panel.texts = {}
+			panels:clear_panel_by_name("container")
 			local container_entity = container:get()
 			if container_entity then
 				for i, item in ipairs(container_entity.inventory.items) do

@@ -21,14 +21,35 @@ function panels:reset()
 	self.panel_list = {}
 end
 
+local function to_entry(value)
+	if type(value) == "string" then
+		return { text = value }
+	elseif type(value) == "table" then
+		assert(value.text or value.segments, "Table entry must have a 'text' or 'segments' field")
+		return value
+	else
+		assert(false, "Invalid entry type: " .. type(value))
+	end
+end
+
 function panels:add_text_to_panel(panel, text)
 	if not panel then
 		return false
 	end
-	table.insert(panel.texts, text)
+	table.insert(panel.texts, to_entry(text))
 
 	if #panel.texts > panel.capacity then
 		table.remove(panel.texts, 1)
+	end
+end
+
+function panels:set_panel_text(panel, list)
+	if not panel then
+		return false
+	end
+	panel.texts = {}
+	for _, value in ipairs(list) do
+		self:add_text_to_panel(panel, value)
 	end
 end
 
@@ -40,7 +61,8 @@ function panels:get_visible_texts(panel)
 	local font = panel.font or small_font
 	local tile_size = panel.tile_size or small_tile_size
 	local wrapped = {}
-	for _, text in ipairs(panel.texts) do
+	for _, entry in ipairs(panel.texts) do
+		local text = entry.text or ""
 		local _, lines = font:getWrap(text, panel.width)
 		if #lines == 0 then
 			table.insert(wrapped, "")
@@ -142,6 +164,10 @@ end
 
 function panels:add_text_to_panel_by_name(name, text)
 	self:add_text_to_panel(self:get_panel(name), text)
+end
+
+function panels:set_panel_text_by_name(name, list)
+	self:set_panel_text(self:get_panel(name), list)
 end
 
 function panels:clear_panel_by_name(name)

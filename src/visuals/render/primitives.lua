@@ -130,7 +130,7 @@ function render_primitives.draw_char(
 end
 
 function render_primitives.draw_text_block(
-	texts,
+	lines,
 	x_screen,
 	y_screen,
 	width,
@@ -151,12 +151,13 @@ function render_primitives.draw_text_block(
 
 	local top = outline + outline * 2 + (text_offset_y or 0)
 	if center_vertical and height then
-		local block_height = #texts * line_height
+		local block_height = #lines * line_height
 		top = (height - block_height) / 2 + line_height * (render_cfg.font.center_nudge_y or 0) + (text_offset_y or 0)
 	end
 
-	for i, text in ipairs(texts) do
+	for i, line in ipairs(lines) do
 		local offset = outline * 2
+		local text = line.text or line
 		local dx = offset
 		if center_text then
 			dx = (width - font:getWidth(text)) / 2 + render_utils.get_center_offset_x(font)
@@ -164,7 +165,7 @@ function render_primitives.draw_text_block(
 		local draw_x = x_screen + dx + (text_offset_x or 0)
 		local draw_y = y_screen + top + ((i - 1) * line_height)
 
-		love.graphics.print(text, draw_x, draw_y)
+		love.graphics.print(line, draw_x, draw_y)
 	end
 end
 
