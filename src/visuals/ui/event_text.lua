@@ -41,14 +41,6 @@ local function line(...)
 	return { text = table.concat(plain), colored = colored }
 end
 
-local function entity_color(entity)
-	local appearance = entity and entity.appearance
-	if not appearance then
-		return nil
-	end
-	return appearance.text_color or (appearance.color and appearance.color[1])
-end
-
 local function refer(ev, field)
 	local name = ev[field]
 	if not name then
@@ -58,17 +50,12 @@ local function refer(ev, field)
 		return fragment({ run(string.lower(name)) })
 	end
 
+	local color = ev[field .. "_color"]
 	local id = ev[field .. "_id"]
-	local color
 	if id then
 		local player = entities.player
 		if player and player.id == id then
-			return fragment({ run("you", entity_color(player)) }, true)
-		end
-		local live = entities.get_by_id(id)
-		if live then
-			name = live.name
-			color = entity_color(live)
+			return fragment({ run("you", color) }, true)
 		end
 	end
 	return fragment({ run("a "), run(string.lower(name), color) })

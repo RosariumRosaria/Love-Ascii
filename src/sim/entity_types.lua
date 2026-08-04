@@ -13,7 +13,7 @@ return {
 		appearance = {
 			chars = { "@" },
 			color = { { 0.8, 0.8, 0.9, 1 } },
-			text_color = { 0.8, 0.8, 0.9, 1 },
+			text_color = { 1, 1, 1, 1 },
 			effect_color = { 0.45, 0.45, 0.5, 0.5 },
 		},
 		default_action = "attackable",
@@ -523,7 +523,7 @@ return {
 		appearance = {
 			chars = { "#", "#" },
 			color = { { 0.15, 0.12, 0.06 }, { 0.38, 0.33, 0.30 } },
-			text_color = { 0.38, 0.33, 0.30, 1 },
+			text_color = { 0.48, 0.36, 0.33, 1 },
 		},
 		default_action = "moveable",
 		tags = {

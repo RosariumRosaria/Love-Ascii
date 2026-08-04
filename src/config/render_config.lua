@@ -104,4 +104,5 @@ return {
 		burst_count = 4,
 	},
 	nearby_range = 5,
+	terminal_fade_rate = 0.2,
 }

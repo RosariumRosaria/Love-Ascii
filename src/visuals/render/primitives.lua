@@ -142,9 +142,8 @@ function render_primitives.draw_text_block(
 )
 	local font = love.graphics.getFont()
 	line_height = line_height or tile_size
-	if color then
-		love.graphics.setColor(color)
-	end
+	local r, g, b, a = render_utils.unpack_rgba(color)
+	love.graphics.setColor(r, g, b, a)
 
 	local top = outline + outline * 2 + (text_offset_y or 0)
 	if center_vertical and height then
@@ -153,6 +152,7 @@ function render_primitives.draw_text_block(
 	end
 
 	for i, line in ipairs(lines) do
+		love.graphics.setColor(r, g, b, a * (line.alpha or 1))
 		local offset = outline * 2
 		local text = line.text
 		local dx = offset

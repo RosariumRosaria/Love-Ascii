@@ -100,11 +100,11 @@ function panels:get_visible_texts(panel)
 		local text = entry.text
 		local _, lines = font:getWrap(text, panel.width)
 		if #lines == 0 then
-			table.insert(wrapped, { text = "" })
+			table.insert(wrapped, { text = "", alpha = entry.alpha })
 		else
 			local colored_lines = entry.colored and split_colored(entry.colored, entry.text, lines)
 			for j, l in ipairs(lines) do
-				table.insert(wrapped, { text = l, colored = colored_lines and colored_lines[j] })
+				table.insert(wrapped, { text = l, colored = colored_lines and colored_lines[j], alpha = entry.alpha })
 			end
 		end
 	end

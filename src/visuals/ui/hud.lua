@@ -121,8 +121,9 @@ function hud:log_events()
 		if not ev.silent then
 			local line = event_text.describe(ev)
 			if line then
+				line.alpha = 1
 				panels:add_text_to_panel_by_name("terminal", line)
-				panels:add_text_to_panel_by_name("terminal", "")
+				panels:add_text_to_panel_by_name("terminal", { text = "", alpha = 1 })
 			end
 		end
 	end
@@ -253,6 +254,15 @@ function hud:update()
 
 	if player.turn_iter ~= self.last_player_turn then
 		self.last_player_turn = player.turn_iter
+		local panel = panels:get_panel("terminal")
+		if panel then
+			for _, line in ipairs(panel.texts) do
+				line.alpha = math.max(line.alpha - render_config.terminal_fade_rate, 0)
+			end
+			while panel.texts[1] and panel.texts[1].alpha <= 0 do
+				table.remove(panel.texts, 1)
+			end
+		end
 		self:update_nearby_entities(gather_nearby(player))
 	end
 
