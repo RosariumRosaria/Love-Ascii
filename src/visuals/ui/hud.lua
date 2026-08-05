@@ -180,7 +180,6 @@ local nearby_anchor = { x = vital_anchor.x }
 local nearby_panel_opts = {
 	x = nearby_anchor.x,
 	font = "medium",
-	center_text = true,
 	center_vertical = true,
 	color = { 0, 0, 0, 0 },
 	outline_color = { 0, 0, 0, 0 },
