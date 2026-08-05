@@ -13,6 +13,10 @@ local function fragment(runs, is_player)
 	return { runs = runs, is_player = is_player or false }
 end
 
+local function tinted(text, color)
+	return fragment({ run(tostring(text), color) })
+end
+
 local function append(plain, colored, text, color)
 	if not text or #text == 0 then
 		return
@@ -47,7 +51,7 @@ local function refer(ev, field)
 		return nil
 	end
 	if not ev[field .. "_kind"] then
-		return fragment({ run(string.lower(name)) })
+		return tinted(string.lower(name))
 	end
 
 	local color = ev[field .. "_color"]
@@ -77,6 +81,14 @@ local function refer_capital(ev, field)
 	return fragment(runs, referred.is_player)
 end
 
+local function status_name(ev, capital)
+	local name = string.lower(ev.status)
+	if capital then
+		name = utils.capitalize(name)
+	end
+	return tinted(name, ev.status_color)
+end
+
 local function was(is_player)
 	return is_player and "were" or "was"
 end
@@ -89,11 +101,7 @@ local function combat_color(quality)
 	if quality == "solid" then
 		return cfg.solid_text_color
 	end
-	return cfg.strike_text_color
-end
-
-local function tinted(text, color)
-	return fragment({ run(tostring(text), color) })
+	return render_config.vitals.damage_text_color
 end
 
 function event_text.describe(ev)
@@ -150,28 +158,11 @@ function event_text.describe(ev)
 		)
 	elseif ev.type == "status_applied" then
 		if ev.source then
-			return line(
-				refer_capital(ev, "source"),
-				" inflicted ",
-				tinted(string.lower(ev.status), ev.status_color),
-				" on ",
-				refer(ev, "entity"),
-				"."
-			)
+			return line(refer_capital(ev, "source"), " inflicted ", status_name(ev), " on ", refer(ev, "entity"), ".")
 		end
-		return line(
-			tinted(utils.capitalize(string.lower(ev.status)), ev.status_color),
-			" took hold of ",
-			refer(ev, "entity"),
-			"."
-		)
+		return line(status_name(ev, true), " took hold of ", refer(ev, "entity"), ".")
 	elseif ev.type == "status_expired" then
-		return line(
-			tinted(utils.capitalize(string.lower(ev.status)), ev.status_color),
-			" wore off ",
-			refer(ev, "entity"),
-			"."
-		)
+		return line(status_name(ev, true), " wore off ", refer(ev, "entity"), ".")
 	elseif ev.type == "entity_died" then
 		if subject then
 			return line(subject, " ", was(subject.is_player), " killed by ", refer(ev, "source"), ".")
