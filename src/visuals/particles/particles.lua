@@ -274,7 +274,8 @@ function particles:update(dt, cx, cy)
 			p.z = p.z + p.vz * dt
 			p.vz = p.vz - ((p.gravity or 0) * dt)
 			p.r = (p.r or 0) + ((p.r_rate or 0) * dt)
-			local tx, ty = math.floor(p.x), math.floor(p.y)
+
+			local tx, ty = math.floor(p.x + 0.5), math.floor(p.y + 0.5)
 			local hit = p.landed or false
 			if not hit and map:in_bounds(tx, ty) then
 				local surface = nil
