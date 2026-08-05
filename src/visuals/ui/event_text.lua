@@ -142,7 +142,7 @@ function event_text.describe(ev)
 	elseif ev.type == "heal" then
 		return line(
 			subject,
-			" recovered from ",
+			" was healed by ",
 			refer(ev, "source"),
 			". (",
 			tinted(ev.amount, render_config.vitals.heal_text_color),
