@@ -225,7 +225,7 @@ function hud:update_nearby_entities(seen)
 end
 
 local function gather_nearby(player)
-	local gather = map:gather(player, render_config.nearby_range)
+	local gather = map:gather(player, render_config.hud.nearby_range)
 	if not gather then
 		return {}
 	end
@@ -256,12 +256,14 @@ function hud:update()
 		self.last_player_turn = player.turn_iter
 		local panel = panels:get_panel("terminal")
 		if panel then
+			local kept = {}
 			for _, line in ipairs(panel.texts) do
-				line.alpha = math.max(line.alpha - render_config.terminal_fade_rate, 0)
+				line.alpha = math.max(line.alpha - render_config.hud.terminal_fade_rate, 0)
+				if line.alpha > render_config.hud.min_terminal_alpha then
+					table.insert(kept, line)
+				end
 			end
-			while panel.texts[1] and panel.texts[1].alpha <= 0 do
-				table.remove(panel.texts, 1)
-			end
+			panel.texts = kept
 		end
 		self:update_nearby_entities(gather_nearby(player))
 	end

@@ -103,6 +103,5 @@ return {
 
 		burst_count = 4,
 	},
-	nearby_range = 5,
-	terminal_fade_rate = 0.2,
+	hud = { nearby_range = 5, terminal_fade_rate = 0.2, min_terminal_alpha = 0.01 },
 }
