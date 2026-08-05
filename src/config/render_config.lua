@@ -99,7 +99,6 @@ return {
 		solid_damage_color = { 0.9, 0.45, 0.2, 0.7 },
 		glance_text_color = { 0.6, 0.3, 0.3 },
 		solid_text_color = { 0.9, 0.45, 0.2 },
-		strike_text_color = { 0.8, 0.1, 0.1 },
 
 		burst_count = 4,
 	},
