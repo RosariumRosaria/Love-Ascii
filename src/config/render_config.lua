@@ -97,11 +97,15 @@ return {
 	combat = {
 		glance_damage_color = { 0.6, 0.3, 0.3, 0.5 },
 		solid_damage_color = { 0.9, 0.45, 0.2, 0.7 },
-		glance_damage_text_color = { 0.6, 0.3, 0.3 },
-		solid_damage_text_color = { 0.9, 0.45, 0.2 },
-		damage_text_color = { 0.8, 0.1, 0.1 },
+		glance_text_color = { 0.6, 0.3, 0.3 },
+		solid_text_color = { 0.9, 0.45, 0.2 },
+		strike_text_color = { 0.8, 0.1, 0.1 },
 
 		burst_count = 4,
+	},
+	vitals = {
+		damage_text_color = { 0.8, 0.1, 0.1 },
+		heal_text_color = { 0.3, 0.8, 0.3 },
 	},
 	hud = { nearby_range = 5, terminal_fade_rate = 0.2, min_terminal_alpha = 0.01 },
 }

@@ -81,15 +81,19 @@ local function was(is_player)
 	return is_player and "were" or "was"
 end
 
-local function damage_color(quality)
+local function combat_color(quality)
 	local cfg = render_config.combat
 	if quality == "glance" then
-		return cfg.glance_damage_text_color
+		return cfg.glance_text_color
 	end
 	if quality == "solid" then
-		return cfg.solid_damage_text_color
+		return cfg.solid_text_color
 	end
-	return cfg.damage_text_color
+	return cfg.strike_text_color
+end
+
+local function tinted(text, color)
+	return fragment({ run(tostring(text), color) })
 end
 
 function event_text.describe(ev)
@@ -106,7 +110,7 @@ function event_text.describe(ev)
 
 		local tally = {}
 		if ev.amount > 0 then
-			tally[#tally + 1] = { amount = ev.amount, color = damage_color(ev.quality), label = " damage" }
+			tally[#tally + 1] = { amount = ev.amount, color = combat_color(ev.quality), label = " damage" }
 		end
 		if ev.absorbed and ev.absorbed > 0 then
 			tally[#tally + 1] = { amount = ev.absorbed, label = " absorbed by their " .. ev.absorbed_by }
@@ -127,9 +131,23 @@ function event_text.describe(ev)
 
 		return line(refer_capital(ev, "source"), " landed a ", quality, "blow on ", refer(ev, "entity"), ".", suffix)
 	elseif ev.type == "damage" then
-		return line(subject, " took damage from ", refer(ev, "source"), ". (", ev.amount, " damage)")
+		return line(
+			subject,
+			" took damage from ",
+			refer(ev, "source"),
+			". (",
+			tinted(ev.amount, render_config.vitals.damage_text_color),
+			" damage)"
+		)
 	elseif ev.type == "heal" then
-		return line(subject, " recovered from ", refer(ev, "source"), ". (", ev.amount, " healed)")
+		return line(
+			subject,
+			" recovered from ",
+			refer(ev, "source"),
+			". (",
+			tinted(ev.amount, render_config.vitals.heal_text_color),
+			" healed)"
+		)
 	elseif ev.type == "status_applied" then
 		if ev.source then
 			return line(

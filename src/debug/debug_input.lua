@@ -11,13 +11,11 @@ local cursor = require("src.engine.interaction.cursor")
 local prefab = require("src.map.prefab")
 local game_cfg = require("src.config.game_config")
 
--- Debug-only keybinding handling, split out of src/engine/input.lua. `input` is
--- passed in rather than required, so this module stays off input's require cycle.
 local debug_input = {}
 
 local function debug_spawn()
 	local mx, my = cursor.get_moused_coords()
-	local entity_type = "zombie"
+	local entity_type = "shambler"
 
 	if map:is_tile_free(mx, my, 1) then
 		entities.add_from_template(entity_type, mx, my, 1)
@@ -37,8 +35,6 @@ local function debug_spawn()
 	event_log:add({ type = "debug", message = "no free cell to spawn " .. entity_type })
 end
 
--- Render/inspection toggles: valid regardless of game state or whether there is
--- a player actor.
 function debug_input:update_global(input)
 	if input:pressed("toggle_grid") then
 		debug_state.toggle_grid()
@@ -78,10 +74,7 @@ function debug_input:update_global(input)
 	end
 end
 
--- Toggles that touch the world or the player, so they only run while play is live.
 function debug_input:update_actor(input, actor)
-	-- Debug: re-read + re-stamp the configured prefab without restarting (map maker
-	-- edit→save→tap-key loop). No-op unless game_config.prefab is set.
 	if input:pressed("reload_prefab") and game_cfg.prefab then
 		prefab.clear_last()
 		prefab.stamp(game_cfg.prefab.file, game_cfg.prefab.ox, game_cfg.prefab.oy)
