@@ -67,6 +67,7 @@ function statuses.remove(entity, key)
 				silent = status.silent,
 				x = entity.x,
 				y = entity.y,
+				status_color = status.color,
 			})
 			return
 		end
@@ -94,8 +95,8 @@ function statuses.add_from_template(entity, name, overrides, source)
 	local existing_status = statuses.find(entity, new_status.key)
 
 	if existing_status then
-		-- [[TODO Could maybe be more robust, like checking if the damage is higher instead of just refreshing the duration
-		-- Or should it care about the source? Maybe only refresh if it's the same source? Also I feel like statuses should be able to call out if they stack or not]]
+		-- TODO Could maybe be more robust, like checking if the damage is higher instead of just refreshing the duration
+		-- Or should it care about the source? Maybe only refresh if it's the same source? Also I feel like statuses should be able to call out if they stack or not
 		if existing_status.duration and new_status.duration then
 			existing_status.duration = math.max(existing_status.duration, new_status.duration)
 		end
@@ -109,6 +110,7 @@ function statuses.add_from_template(entity, name, overrides, source)
 		silent = new_status.silent,
 		x = entity.x,
 		y = entity.y,
+		status_color = new_status.color,
 	})
 	table.insert(entity.statuses, new_status)
 end

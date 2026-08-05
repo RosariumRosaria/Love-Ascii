@@ -153,15 +153,25 @@ function event_text.describe(ev)
 			return line(
 				refer_capital(ev, "source"),
 				" inflicted ",
-				string.lower(ev.status),
+				tinted(string.lower(ev.status), ev.status_color),
 				" on ",
 				refer(ev, "entity"),
 				"."
 			)
 		end
-		return line(utils.capitalize(string.lower(ev.status)), " took hold of ", refer(ev, "entity"), ".")
+		return line(
+			tinted(utils.capitalize(string.lower(ev.status)), ev.status_color),
+			" took hold of ",
+			refer(ev, "entity"),
+			"."
+		)
 	elseif ev.type == "status_expired" then
-		return line(utils.capitalize(string.lower(ev.status)), " wore off ", refer(ev, "entity"), ".")
+		return line(
+			tinted(utils.capitalize(string.lower(ev.status)), ev.status_color),
+			" wore off ",
+			refer(ev, "entity"),
+			"."
+		)
 	elseif ev.type == "entity_died" then
 		if subject then
 			return line(subject, " ", was(subject.is_player), " killed by ", refer(ev, "source"), ".")

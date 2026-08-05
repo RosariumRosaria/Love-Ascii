@@ -2,14 +2,14 @@ return {
 	poison = {
 		name = "Poison",
 		description = "Losing health over time.",
-		color = { 0.5, 1, 0.5 },
+		color = { 0.5, 0.8, 0.5 },
 		duration = 5,
 		on_tick = { damage = 1 },
 	},
 	regen = {
 		name = "Regeneration",
 		description = "Gaining health over time.",
-		color = { 1, 0.5, 0.5 },
+		color = { 0.5, 1, 0.5 },
 		duration = 5,
 		on_tick = { heal = 3 },
 		emitters = { { particle = "heal", rate = 2, jitter = true } },
@@ -72,7 +72,7 @@ return {
 		description = "Unable to move or act.",
 		tags = { disables_action = true },
 		emitters = { { particle = "dazed", rate = 5, jitter = true } },
-		color = { 0.5, 0.5, 1 },
+		color = { 0.7, 0.7, 0.5 },
 		duration = 2,
 	},
 	obscured = {
