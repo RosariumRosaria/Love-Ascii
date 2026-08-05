@@ -1,6 +1,8 @@
+local game_config = require("src.config.game_config")
+
 local event_log = { current = {} }
 local NAMED_FIELDS = { "entity", "source", "item" }
-local SPAM_TYPES = { action_failed = true }
+local SUPPRESSED_TYPES = game_config.event_log.suppressed_types
 
 local function snapshot_color(value)
 	local appearance = value.appearance
@@ -27,7 +29,7 @@ function event_log:reset()
 end
 
 function event_log:add(ev)
-	if ev.spam or SPAM_TYPES[ev.type] then
+	if ev.spam or SUPPRESSED_TYPES[ev.type] then
 		return
 	end
 	if ev.x and ev.y then
