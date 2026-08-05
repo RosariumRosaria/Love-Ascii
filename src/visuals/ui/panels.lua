@@ -24,9 +24,10 @@ end
 
 local function to_entry(value)
 	if type(value) == "string" then
-		return { text = value }
+		return { text = value, alpha = 1 }
 	elseif type(value) == "table" then
 		assert(value.text)
+		value.alpha = value.alpha or 1
 		return value
 	else
 		assert(false, "Invalid entry type: " .. type(value))

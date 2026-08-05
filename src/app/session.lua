@@ -73,9 +73,6 @@ function session.load(seed)
 	inventory.equip(player, player.inventory.items[4])
 	input:set_actor(entities.player)
 
-	-- Prefab stamp (inert unless game_cfg.prefab is set — see config/game_config.lua).
-	-- After the player exists, so it can be moved to the prefab's start marker; before
-	-- spawn_default_entities, so free-cell checks see the stamped geometry.
 	if prefab_cfg then
 		local start = prefab.stamp(prefab_cfg.file, prefab_cfg.ox, prefab_cfg.oy)
 		if start and prefab_cfg.move_player ~= false then
