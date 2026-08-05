@@ -98,7 +98,7 @@ return {
 	bleeding = {
 		name = "Bleeding",
 		description = "Losing health over time.",
-		color = { 1, 0.5, 0.6 },
+		color = { 0.85, 0.12, 0.1 },
 		visual = { tint = { 0.6, 0.35, 0.3 } },
 		emitters = { { particle = "blood", rate = 2, z_offset = 0, jitter = true } },
 		duration = 40,
