@@ -87,8 +87,12 @@ function entities.interact(entity)
 		return ret
 	end
 
+	if interaction.requires_empty and cell_has_other_entity(entity) then
+		return ret
+	end
+
 	local toggle = interaction.toggle
-	if toggle and (not interaction.requires_empty or not cell_has_other_entity(entity)) then
+	if toggle then
 		for k, v in pairs(toggle) do
 			if (k == "tags" or k == "appearance") and type(v) == "table" and type(entity[k]) == "table" then
 				for sub_key, sub_val in pairs(v) do
@@ -100,6 +104,16 @@ function entities.interact(entity)
 				entity[k], toggle[k] = v, entity[k]
 			end
 		end
+		ret = true
+	end
+
+	local replace = interaction.replace
+	if replace then
+		entities.remove(entity)
+		local overrides = {
+			rotation = entity.rotation,
+		}
+		entities.add_from_template(replace, entity.x, entity.y, entity.z, overrides)
 		ret = true
 	end
 

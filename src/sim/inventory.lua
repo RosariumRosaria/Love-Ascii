@@ -245,6 +245,14 @@ function inventory.use_charge(entity, item)
 	return item.charges <= 0
 end
 
+function inventory.get_item(entity, name)
+	local function check_item(item)
+		return item.key == name and (item.charges or 0) > 0
+	end
+
+	return find_item(entity, check_item)
+end
+
 function inventory.get_ammo(entity)
 	local ammo = inventory.get_equipped(entity, "ammo")
 	if ammo and (ammo.charges or 0) > 0 then

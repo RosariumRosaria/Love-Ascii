@@ -14,7 +14,7 @@ local actions = {}
 
 --TODO: Someday this should split the validatity and targeting of an action from it's execution, so that it and pathfinder can always be in sync.
 
-local function validate_interaction(actor, target, name, range, spam)
+local function validate_reach(actor, target, name, range, spam)
 	range = range or 1
 	if not actor then
 		event_log:add({ type = "action_failed", entity = "Unknown", reason = name .. " actor is nil" })
@@ -66,8 +66,8 @@ end
 
 local action_cost = game_cfg.action_cost
 
-local function assign_cost(entity, action_type)
-	entity.action_cost = action_cost[action_type]
+local function assign_cost(entity, action_type, extra_cost)
+	entity.action_cost = action_cost[action_type] + (extra_cost or 0)
 end
 
 local function record_trail(entity)
@@ -82,7 +82,7 @@ end
 
 local function resolve_target(actor, dx, dy, tag, name, target)
 	target = target or pick_target(actor.x + dx, actor.y + dy, actor.z, tag)
-	if not validate_interaction(actor, target, name) then
+	if not validate_reach(actor, target, name) then
 		return nil
 	end
 	if not utils.get_tag(target, tag) then
@@ -207,7 +207,7 @@ function actions:use_item(entity, item, dx, dy)
 	local target = entity
 	if item.on_use.targets then
 		target = entities.get_with_tag(entity.x + dx, entity.y + dy, entity.z, item.on_use.target_tag)
-		if not validate_interaction(entity, target, "Use Item") then
+		if not validate_reach(entity, target, "Use Item") then
 			return false
 		end
 		if item.on_use.apply_status and statuses.find(target, item.on_use.apply_status) then
@@ -302,7 +302,7 @@ function actions:can_ranged_attack(entity, target_x, target_y, target_entity, sp
 	end
 
 	target_entity = target_entity or entities.get_with_tag(target_x, target_y, entity.z, "attackable")
-	if not validate_interaction(entity, target_entity, "Ranged_Attack", weapon.range, spam) then
+	if not validate_reach(entity, target_entity, "Ranged_Attack", weapon.range, spam) then
 		return false
 	end
 	if not utils.get_tag(target_entity, "attackable") then
@@ -384,8 +384,23 @@ function actions:interact(entity, dx, dy, target_entity)
 		event_log:add({ type = "action_failed", entity = target_entity, reason = "Interaction blocked" })
 		return false
 	end
+
+	local extra_cost = 0
+	local used_item = nil
+	if target_entity.interaction and target_entity.interaction.cost then
+		used_item = inventory.get_item(entity, target_entity.interaction.cost.item)
+		if not used_item then
+			event_log:add({ type = "action_failed", entity = entity, reason = "Missing required items" })
+			return false
+		end
+		extra_cost = target_entity.interaction.cost.action_cost or 0
+	end
+
 	if entities.interact(target_entity) then
-		assign_cost(entity, "interact")
+		if used_item then
+			inventory.use_charge(entity, used_item)
+		end
+		assign_cost(entity, "interact", extra_cost)
 		return true
 	end
 	return false
@@ -393,7 +408,7 @@ end
 
 function actions:inspect(entity, dx, dy)
 	local target_entity = entities.get_first(entity.x + dx, entity.y + dy, entity.z)
-	if not validate_interaction(entity, target_entity, "Inspect") then
+	if not validate_reach(entity, target_entity, "Inspect") then
 		return false
 	end
 

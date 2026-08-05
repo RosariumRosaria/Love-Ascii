@@ -411,6 +411,7 @@ return {
 				},
 			},
 		},
+		corpse = "broken_door",
 		default_action = "interactable",
 		tags = {
 			solid = true,
@@ -482,13 +483,42 @@ return {
 			color = { { 0.55, 0.35, 0.1, 1 }, { 0.30, 0.16, 0.06, 1 }, { 0.30, 0.16, 0.06, 1 } },
 			text_color = { 0.55, 0.35, 0.1, 1 },
 		},
+		interaction = {
+			requires_empty = true,
+			cost = { item = "plank", action_cost = 2 },
+			replace = "window",
+		},
 		passage = { kind = "vaultable" },
 		default_action = "vaultable",
 		tags = {
 			solid = false,
 			walkable = false,
 			tilelike = true,
+			interactable = true,
 			vaultable = true,
+		},
+	},
+	broken_door = {
+		name = "Broken Door",
+		description = "A broken door, try climbing through it!",
+		type = "prop",
+		natural_rotation = 90,
+		appearance = {
+			chars = { "-", "-" },
+			color = { { 0.30, 0.16, 0.06, 1 } },
+			text_color = { 0.30, 0.16, 0.06, 1 },
+		},
+		interaction = {
+			requires_empty = true,
+			cost = { item = "plank", action_cost = 3 },
+			replace = "door",
+		},
+		passage = { kind = "walkable" },
+		tags = {
+			interactable = true,
+			solid = false,
+			walkable = true,
+			tilelike = true,
 		},
 	},
 

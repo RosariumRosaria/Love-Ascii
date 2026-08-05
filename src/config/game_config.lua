@@ -60,7 +60,7 @@ return {
 
 	event_log = {
 		suppressed_types = {
-			action_failed = false,
+			action_failed = true,
 		},
 	},
 
