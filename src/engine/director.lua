@@ -167,6 +167,10 @@ end
 
 local dread = 0
 
+function director:get_dread()
+	return dread
+end
+
 local function spawn_chance()
 	local cfg = director_config
 	local t = utils.clamp((dread - cfg.min_dread_spawn) / (cfg.max_dread_spawn - cfg.min_dread_spawn), 0, 1)
