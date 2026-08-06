@@ -9,6 +9,6 @@ return {
 
 	wall = {
 		min_height = 4,
-		max_height = 6,
+		max_height = 5,
 	},
 }
