@@ -13,6 +13,7 @@ return {
 	camera = {
 		speed = 2,
 		draw_margin = 2,
+		dead_zone = 5, -- pixels; inside this the camera stops rather than coasting forever
 	},
 	rendering = {
 		default_offset_type = 1,

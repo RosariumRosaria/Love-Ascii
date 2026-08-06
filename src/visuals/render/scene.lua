@@ -172,6 +172,7 @@ function scene:reload_fonts()
 	render_primitives.load()
 	panels:reload_fonts()
 	painter:reload_fonts()
+	camera:reload_fonts()
 end
 
 function scene:load(player_x, player_y)
