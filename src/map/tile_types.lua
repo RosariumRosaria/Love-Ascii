@@ -91,7 +91,7 @@ return {
 		name = "Pillar",
 		chars = { "+" },
 		walkable = false,
-		color = { 0.11, 0.12, 0.10, 1 },
+		color = { 0.25, 0.125, 0.1, 1 },
 		transparent = false,
 	},
 

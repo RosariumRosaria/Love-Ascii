@@ -348,8 +348,8 @@ return {
 		type = "prop",
 		appearance = {
 			chars = { "[]", "[]" },
-			color = { { 0.23, 0.21, 0.14 }, { 0.48, 0.43, 0.30 } },
-			text_color = { 0.48, 0.43, 0.30, 1 },
+			color = { { 0.28, 0.22, 0.11, 1 }, { 0.60, 0.47, 0.22, 1 } },
+			text_color = { 0.60, 0.47, 0.22, 1 },
 		},
 		loot = {
 			count = { min = 1, max = 4 },
@@ -527,9 +527,9 @@ return {
 		description = "A heavy barricade, try pushing it!",
 		type = "prop",
 		appearance = {
-			chars = { "[]", "[]" },
-			color = { { 0.30, 0.09, 0.09, 1 }, { 0.47, 0.23, 0.23, 1 } },
-			text_color = { 0.47, 0.23, 0.23, 1 },
+			chars = { "X", "X" },
+			color = { { 0.11, 0.12, 0.10, 1 }, { 0.26, 0.28, 0.24, 1 } },
+			text_color = { 0.30, 0.32, 0.27, 1 },
 		},
 		default_action = "moveable",
 		tags = {
@@ -552,8 +552,8 @@ return {
 		type = "prop",
 		appearance = {
 			chars = { "#", "#" },
-			color = { { 0.15, 0.12, 0.06 }, { 0.38, 0.33, 0.30 } },
-			text_color = { 0.48, 0.36, 0.33, 1 },
+			color = { { 0.17, 0.15, 0.11, 1 }, { 0.43, 0.39, 0.32, 1 } },
+			text_color = { 0.53, 0.47, 0.38, 1 },
 		},
 		default_action = "moveable",
 		tags = {
@@ -565,6 +565,81 @@ return {
 		combat = { hit_burst = "dust" },
 		stats = {
 			health = { base = 5, current = 5 },
+			evasion = { base = 0 },
+		},
+	},
+
+	barrel = {
+		name = "Barrel",
+		description = "A stout barrel, try interacting with it!",
+		type = "prop",
+		appearance = {
+			chars = { "()", "()" },
+			color = { { 0.18, 0.13, 0.08 }, { 0.42, 0.30, 0.17 } },
+			text_color = { 0.42, 0.30, 0.17, 1 },
+		},
+		loot = {
+			count = { min = 1, max = 3 },
+			drops = {
+				{ item = "bandage", weight = 6 },
+				{ item = "plank", weight = 8 },
+				{ item = "health_potion", weight = 1 },
+			},
+		},
+		inventory = {
+			items = {},
+			equipped = { armor = nil, offhand = nil, accessory = nil, mainhand = nil },
+			selected_index = nil,
+		},
+		default_action = "moveable",
+		interact_priority = 1,
+		tags = {
+			moveable = true,
+			tilelike = true,
+			covers = true,
+			attackable = true,
+			interactable = true,
+			container = true,
+		},
+		combat = { hit_burst = "dust" },
+		stats = {
+			health = { base = 4, current = 4 },
+			evasion = { base = 0 },
+		},
+	},
+	bookshelf = {
+		name = "Bookshelf",
+		description = "A bookshelf, try interacting with it!",
+		type = "prop",
+		appearance = {
+			chars = { "[-]", "[-]", "[-]" },
+			color = { { 0.18, 0.13, 0.08 }, { 0.42, 0.30, 0.17 } },
+			text_color = { 0.42, 0.30, 0.17, 1 },
+		},
+		loot = {
+			count = { min = 1, max = 3 },
+			drops = {
+				{ item = "bandage", weight = 6 },
+				{ item = "plank", weight = 8 },
+				{ item = "health_potion", weight = 1 },
+			},
+		},
+		inventory = {
+			items = {},
+			equipped = { armor = nil, offhand = nil, accessory = nil, mainhand = nil },
+			selected_index = nil,
+		},
+		interact_priority = 1,
+		tags = {
+			tilelike = true,
+			covers = true,
+			attackable = true,
+			interactable = true,
+			container = true,
+		},
+		combat = { hit_burst = "dust" },
+		stats = {
+			health = { base = 4, current = 4 },
 			evasion = { base = 0 },
 		},
 	},
