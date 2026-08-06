@@ -82,7 +82,7 @@ return {
 		range = 15,
 	},
 	arrow = {
-		name = "Arrows",
+		name = "Arrow",
 		description = "Sharp arrows for combat.",
 		color = { { 0.8, 0.8, 0.8, 1 } },
 		chars = { "/" },
@@ -111,7 +111,7 @@ return {
 		},
 	},
 	bandage = {
-		name = "Bandages",
+		name = "Bandage",
 		description = "Can be used to bandage wounds.",
 		color = { { 0.7, 0.7, 0.8, 1 } },
 		on_use = { clear_status = "bandageable", burst = { type = "heal", count = 3 } },
