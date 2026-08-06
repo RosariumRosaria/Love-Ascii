@@ -86,7 +86,8 @@ local function passage_entity(actor, ent, x, y, landing, damage)
 	end
 
 	if kind == "wait" then
-		cost = cost + (actor.mind and actor.mind.avoid[y + (x * stride)] or 0)
+		local avoid = actor.mind and actor.mind.avoid
+		cost = cost + (avoid and avoid[y + (x * stride)] or 0)
 	end
 
 	return kind, cost
