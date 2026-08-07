@@ -67,7 +67,7 @@ return {
 	bow = {
 		name = "Bow",
 		description = "A keen bow for combat.",
-		color = { { 0.8, 0.8, 0.8, 1 } },
+		color = { { 0.8, 0.5, 0.2, 1 } },
 		slot = "mainhand",
 		chars = { "D" },
 		modifiers = {
@@ -84,7 +84,7 @@ return {
 	arrow = {
 		name = "Arrow",
 		description = "Sharp arrows for combat.",
-		color = { { 0.8, 0.8, 0.8, 1 } },
+		color = { { 0.8, 0.5, 0.2, 1 } },
 		chars = { "/" },
 		slot = "ammo",
 		break_chance = 0.5,
