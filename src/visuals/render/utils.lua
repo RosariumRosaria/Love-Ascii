@@ -350,10 +350,7 @@ function render_utils.apply_lighting_rgba(r, g, b, a, light, emissive_scale)
 
 	local lr, lg, lb = clamp_to_unit(zr, zg, zb)
 
-	local nr, ng, nb =
-		clamp_to_unit((r or 1) * fr + lr * emissive, (g or 1) * fg + lg * emissive, (b or 1) * fb + lb * emissive)
-
-	return nr, ng, nb, (a or 1)
+	return (r or 1) * fr + lr * emissive, (g or 1) * fg + lg * emissive, (b or 1) * fb + lb * emissive, (a or 1)
 end
 
 function render_utils.load()
