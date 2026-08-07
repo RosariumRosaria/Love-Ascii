@@ -656,7 +656,6 @@ return {
 		default_action = "pickupable",
 		tags = {
 			tilelike = true,
-			covers = true,
 			pickupable = true,
 			interactable = true,
 			walkable = true,
@@ -699,7 +698,7 @@ return {
 		light = {
 			color = { r = 1.0, g = 0.6, b = 0.25 },
 			intensity = 0.7,
-			radius = 10,
+			radius = 12,
 			flicker = { amp = 0.02, freq = 2, phase = 3 },
 		},
 		tags = {
@@ -736,9 +735,8 @@ return {
 		description = "A Street Lamp",
 		type = "prop",
 		appearance = {
-			chars = { ".", ".", ".", ".", ".", "#", "#" },
+			chars = { ".", ".", ".", ".", "#", "#" },
 			color = {
-				{ 0.55, 0.35, 0.1, 1 },
 				{ 0.55, 0.35, 0.1, 1 },
 				{ 0.55, 0.35, 0.1, 1 },
 				{ 0.55, 0.35, 0.1, 1 },
@@ -749,7 +747,7 @@ return {
 			text_color = { 0.9, 0.5, 0.25, 1 },
 		},
 		light = {
-			color = { r = 1.0, g = 0.55, b = 0.3 },
+			color = { r = 1.0, g = 0.65, b = 0.35 },
 			intensity = 0.7,
 			radius = 11,
 			flicker = { amp = 0.02, freq = 2, phase = 3 },

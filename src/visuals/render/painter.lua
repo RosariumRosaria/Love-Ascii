@@ -363,7 +363,7 @@ function painter:emit_tile_at_z(
 		local cr, cg, cb, ca = 0, 0, 0, 1
 		if visible then
 			local lr, lg, lb = render_utils.normalize_light(light_data)
-			local k = render_cfg.lighting.cover_emissive * render_utils.emissive_by_time()
+			local k = render_cfg.lighting.cover_additive * render_utils.additive_by_time()
 			cr, cg, cb, ca = lr * k, lg * k, lb * k, 1
 			cr, cg, cb, ca = render_utils.apply_flicker_rgba(cr, cg, cb, ca, light_data.sources, time)
 		end
@@ -435,7 +435,7 @@ function painter:emit_particle(p, center_x, center_y, time)
 	r, g, b, a = render_utils.scale_rgba(r, g, b, a, alpha)
 	local light_data = map:get_lighting_tile(tx, ty)
 	if light_data then
-		r, g, b, a = render_utils.apply_lighting_rgba(r, g, b, a, light_data, render_cfg.lighting.particle_emissive)
+		r, g, b, a = render_utils.apply_lighting_rgba(r, g, b, a, light_data, render_cfg.lighting.particle_additive)
 	end
 	r, g, b, a = apply_bw_mode(r, g, b, a, nil, 2)
 
@@ -508,7 +508,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 				local ry = math.floor(entity_part.render_y)
 				local cover_light = map:get_lighting_tile(rx, ry)
 				local lr, lg, lb = render_utils.normalize_light(cover_light)
-				local k = render_cfg.lighting.cover_emissive * render_utils.emissive_by_time()
+				local k = render_cfg.lighting.cover_additive * render_utils.additive_by_time()
 				cr, cg, cb, ca = lr * k, lg * k, lb * k, 1
 				cr, cg, cb, ca = render_utils.apply_flicker_rgba(cr, cg, cb, ca, cover_light.sources, time)
 			end
@@ -540,7 +540,7 @@ function painter:emit_entity(entity, center_x, center_y, visible, explored, time
 			end
 			if light_data then
 				r, g, b, a =
-					render_utils.apply_lighting_rgba(r, g, b, a, light_data, render_cfg.lighting.entity_emissive)
+					render_utils.apply_lighting_rgba(r, g, b, a, light_data, render_cfg.lighting.entity_additive)
 				-- TODO: Determine if this should apply to entity colors
 			end
 

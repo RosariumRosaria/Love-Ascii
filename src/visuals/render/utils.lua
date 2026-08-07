@@ -103,7 +103,7 @@ end
 
 local half_screen_x, half_screen_y = 0, 0
 local max_dist = 1
-local emissive_now, brighten_now = 1, 1
+local additive_now, brighten_now = 1, 1
 local draw_dist_x, draw_dist_y = 0, 0
 
 local function parallax_slack()
@@ -328,19 +328,19 @@ function render_utils.refresh_frame_cache()
 	render_utils.refresh_draw_bounds()
 	local t = time.time_of_day()
 	brighten_now = sample_keyframes(render_config.lighting.brightness_keys, t)
-	emissive_now = sample_keyframes(render_config.lighting.emissive_keys, t)
+	additive_now = sample_keyframes(render_config.lighting.additive_keys, t)
 end
 
-function render_utils.emissive_by_time()
-	return emissive_now
+function render_utils.additive_by_time()
+	return additive_now
 end
 
 function render_utils.get_gamma()
 	return 1 / (brighten_now + render_config.lighting.brightness)
 end
 
-function render_utils.apply_lighting_rgba(r, g, b, a, light, emissive_scale)
-	local emissive = (emissive_scale or render_config.lighting.light_emissive) * emissive_now
+function render_utils.apply_lighting_rgba(r, g, b, a, light, additive_scale)
+	local additive = (additive_scale or render_config.lighting.light_additive) * additive_now
 
 	local zr = light.r or 0
 	local zg = light.g or 0
@@ -350,7 +350,7 @@ function render_utils.apply_lighting_rgba(r, g, b, a, light, emissive_scale)
 
 	local lr, lg, lb = clamp_to_unit(zr, zg, zb)
 
-	return (r or 1) * fr + lr * emissive, (g or 1) * fg + lg * emissive, (b or 1) * fb + lb * emissive, (a or 1)
+	return (r or 1) * fr + lr * additive, (g or 1) * fg + lg * additive, (b or 1) * fb + lb * additive, (a or 1)
 end
 
 function render_utils.load()
