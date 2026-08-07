@@ -55,8 +55,9 @@ return {
 		},
 
 		dynamic_light_threshold = 0.1,
-		light_additive = 1,
-		cover_additive = 0.4,
+		light_additive = 0.75,
+		additive_light_tint = 0.5,
+		cover_additive = 0.33,
 		particle_additive = 0.5,
 		entity_additive = 0.75,
 		entity_brightness_boost = 0.4,

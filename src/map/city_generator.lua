@@ -91,7 +91,7 @@ function city_generator:nearest_road_side(rect)
 	return utils.pick(tied)
 end
 
-local SHRUBS = { types.shrub, types.short_shrub, types.tall_shrub } --TODO someday I'd like a system to be able to jitter color and natural height, but being considerate for perf
+--TODO someday I'd like a system to be able to jitter color and natural height, but being considerate for perf
 function city_generator:wild(start_x, start_y, end_x, end_y, tiles, root)
 	local map = require("src.map.map")
 	for y = start_y, end_y do
@@ -107,9 +107,7 @@ function city_generator:wild(start_x, start_y, end_x, end_y, tiles, root)
 				if love.math.random() < tree_strength and map:is_tile_free(x, y, 1) then
 					features.place("tree", x, y, tiles, self.max_z)
 				elseif love.math.random() < shrub_strength then
-					local t = math.ceil(utils.clamp(shrub_strength, 0, 1) * #SHRUBS)
-					local shrub_type = SHRUBS[t]
-					tiles[y][x][1] = shrub_type
+					tiles[y][x][1] = types.shrub
 				end
 			end
 		end

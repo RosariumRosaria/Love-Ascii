@@ -1,3 +1,7 @@
+local WOOD_DARK = { 0.26, 0.20, 0.15, 1 }
+local WOOD = { 0.42, 0.33, 0.25, 1 }
+local WOOD_LIGHT = { 0.55, 0.43, 0.34, 1 }
+
 return {
 	--------------------------------------------------------------------------
 	-- ACTORS
@@ -184,9 +188,9 @@ return {
 		natural_height = 0.25,
 		appearance = {
 			chars = { "V" },
-			color = { { 0.7, 0.2, 0.2, 1 } },
-			text_color = { 0.7, 0.2, 0.2, 1 },
-			effect_color = { 0.35, 0.1, 0.1, 0.5 },
+			color = { { 0.58, 0.11, 0.15, 1 } },
+			text_color = { 0.58, 0.11, 0.15, 1 },
+			effect_color = { 0.30, 0.06, 0.08, 0.5 },
 		},
 		default_action = "attackable",
 		can_perform = {
@@ -269,9 +273,9 @@ return {
 		natural_height = 0.25,
 		appearance = {
 			chars = { "D" },
-			color = { { 0.8, 0.05, 0.05, 1 } },
-			text_color = { 0.8, 0.05, 0.05, 1 },
-			effect_color = { 0.85, 0.1, 0.05, 0.4 },
+			color = { { 0.74, 0.28, 0.14, 1 } },
+			text_color = { 0.74, 0.28, 0.14, 1 },
+			effect_color = { 0.70, 0.24, 0.10, 0.4 },
 		},
 		footprint = {
 			{ dx = 0, dy = 0, char = "R" },
@@ -348,8 +352,8 @@ return {
 		type = "prop",
 		appearance = {
 			chars = { "[]", "[]" },
-			color = { { 0.28, 0.22, 0.11, 1 }, { 0.60, 0.47, 0.22, 1 } },
-			text_color = { 0.60, 0.47, 0.22, 1 },
+			color = { WOOD_DARK, WOOD_LIGHT },
+			text_color = WOOD_LIGHT,
 		},
 		loot = {
 			count = { min = 1, max = 4 },
@@ -393,8 +397,8 @@ return {
 		natural_rotation = 0,
 		appearance = {
 			chars = { "[", "[" },
-			color = { { 0.30, 0.16, 0.06, 1 } },
-			text_color = { 0.30, 0.16, 0.06, 1 },
+			color = { WOOD },
+			text_color = WOOD,
 		},
 		passage = { kind = "walkable" },
 		interaction = {
@@ -435,8 +439,8 @@ return {
 		natural_rotation = 90,
 		appearance = {
 			chars = { " ", "-", "-" },
-			color = { { 0.55, 0.35, 0.1, 1 }, { 0.30, 0.16, 0.06, 1 }, { 0.30, 0.16, 0.06, 1 } },
-			text_color = { 0.55, 0.35, 0.1, 1 },
+			color = { WOOD_LIGHT, WOOD, WOOD },
+			text_color = WOOD_LIGHT,
 		},
 		corpse = "broken_window",
 		passage = { kind = "vaultable" },
@@ -480,8 +484,8 @@ return {
 		natural_rotation = 90,
 		appearance = {
 			chars = { " ", "'", "'" },
-			color = { { 0.55, 0.35, 0.1, 1 }, { 0.30, 0.16, 0.06, 1 }, { 0.30, 0.16, 0.06, 1 } },
-			text_color = { 0.55, 0.35, 0.1, 1 },
+			color = { WOOD_LIGHT, WOOD, WOOD },
+			text_color = WOOD_LIGHT,
 		},
 		interaction = {
 			requires_empty = true,
@@ -505,8 +509,8 @@ return {
 		natural_rotation = 90,
 		appearance = {
 			chars = { "-", "-" },
-			color = { { 0.30, 0.16, 0.06, 1 } },
-			text_color = { 0.30, 0.16, 0.06, 1 },
+			color = { WOOD },
+			text_color = WOOD,
 		},
 		interaction = {
 			requires_empty = true,
@@ -528,8 +532,8 @@ return {
 		type = "prop",
 		appearance = {
 			chars = { "X", "X" },
-			color = { { 0.11, 0.12, 0.10, 1 }, { 0.26, 0.28, 0.24, 1 } },
-			text_color = { 0.30, 0.32, 0.27, 1 },
+			color = { WOOD_DARK, WOOD },
+			text_color = WOOD_LIGHT,
 		},
 		default_action = "moveable",
 		tags = {
@@ -552,8 +556,8 @@ return {
 		type = "prop",
 		appearance = {
 			chars = { "#", "#" },
-			color = { { 0.17, 0.15, 0.11, 1 }, { 0.43, 0.39, 0.32, 1 } },
-			text_color = { 0.53, 0.47, 0.38, 1 },
+			color = { WOOD_DARK, WOOD_LIGHT },
+			text_color = WOOD_LIGHT,
 		},
 		default_action = "moveable",
 		tags = {
@@ -575,8 +579,8 @@ return {
 		type = "prop",
 		appearance = {
 			chars = { "()", "()" },
-			color = { { 0.18, 0.13, 0.08 }, { 0.42, 0.30, 0.17 } },
-			text_color = { 0.42, 0.30, 0.17, 1 },
+			color = { WOOD_DARK, WOOD_LIGHT },
+			text_color = WOOD_LIGHT,
 		},
 		loot = {
 			count = { min = 1, max = 3 },
@@ -613,8 +617,8 @@ return {
 		type = "prop",
 		appearance = {
 			chars = { "[-]", "[-]", "[-]" },
-			color = { { 0.18, 0.13, 0.08 }, { 0.42, 0.30, 0.17 } },
-			text_color = { 0.42, 0.30, 0.17, 1 },
+			color = { WOOD_DARK, WOOD, WOOD_LIGHT },
+			text_color = WOOD_LIGHT,
 		},
 		loot = {
 			count = { min = 1, max = 3 },
@@ -691,8 +695,8 @@ return {
 		natural_height = 0.25,
 		appearance = {
 			chars = { "%" },
-			color = { { 1, 0.35, 0.1, 1 } },
-			text_color = { 1, 0.35, 0.1, 1 },
+			color = { { 0.92, 0.49, 0.32, 1 } },
+			text_color = { 0.92, 0.49, 0.32, 1 },
 		},
 		emitters = { { particle = "smoke", rate = 1 }, { particle = "ember", rate = 1.2 } },
 		light = {
@@ -718,8 +722,8 @@ return {
 		},
 		light = {
 			color = { r = 0.7, g = 0.9, b = 1 },
-			intensity = 0.5,
-			radius = 8,
+			intensity = 0.75,
+			radius = 9,
 			flicker = { amp = 0.05, freq = 4, phase = 0 },
 		},
 		default_action = "moveable",

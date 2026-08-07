@@ -199,7 +199,7 @@ return {
 	torch = {
 		name = "Torch",
 		description = "Provides light in dark areas.",
-		color = { { 1, 0.35, 0.1, 1 } },
+		color = { { 0.92, 0.49, 0.32, 1 } },
 		chars = { "Y" },
 		slot = "offhand",
 		light = {

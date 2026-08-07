@@ -60,7 +60,7 @@ function render_utils.tint_rgba(r, g, b, a, tint)
 	return (r or 1) * (tint[1] or 1), (g or 1) * (tint[2] or 1), (b or 1) * (tint[3] or 1), (a or 1)
 end
 
-local clamp_to_unit = lighting.normalize
+local clamp_to_unit = lighting.clamp_hue
 
 function render_utils.normalize_light(light)
 	return clamp_to_unit(light.r or 0, light.g or 0, light.b or 0)
@@ -339,18 +339,35 @@ function render_utils.get_gamma()
 	return 1 / (brighten_now + render_config.lighting.brightness)
 end
 
+local function additive_rgb(lr, lg, lb, sr, sg, sb, scale)
+	local lm = math.max(lr, lg, lb)
+	if lm <= 0 or scale <= 0 then
+		return 0, 0, 0
+	end
+
+	local hr, hg, hb = lr / lm, lg / lm, lb / lm
+	local magnitude = math.min(lm, 1) * scale
+
+	local tint = render_config.lighting.additive_light_tint or 1
+	local sm = math.max(sr, sg, sb)
+	if tint < 1 and sm > 0 then
+		local ur, ug, ub = sr / sm, sg / sm, sb / sm
+		hr = ur + (hr - ur) * tint
+		hg = ug + (hg - ug) * tint
+		hb = ub + (hb - ub) * tint
+	end
+
+	return hr * magnitude, hg * magnitude, hb * magnitude
+end
+
 function render_utils.apply_lighting_rgba(r, g, b, a, light, additive_scale)
+	r, g, b = (r or 1), (g or 1), (b or 1)
 	local additive = (additive_scale or render_config.lighting.light_additive) * additive_now
 
-	local zr = light.r or 0
-	local zg = light.g or 0
-	local zb = light.b or 0
-
 	local fr, fg, fb = lighting.illumination(light)
+	local ar, ag, ab = additive_rgb(light.r or 0, light.g or 0, light.b or 0, r, g, b, additive)
 
-	local lr, lg, lb = clamp_to_unit(zr, zg, zb)
-
-	return (r or 1) * fr + lr * additive, (g or 1) * fg + lg * additive, (b or 1) * fb + lb * additive, (a or 1)
+	return r * fr + ar, g * fg + ag, b * fb + ab, (a or 1)
 end
 
 function render_utils.load()

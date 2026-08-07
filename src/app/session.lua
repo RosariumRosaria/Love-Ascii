@@ -20,8 +20,9 @@ local session = {}
 
 local FALLBACK_SPAWN = { x = 250, y = 250 }
 
-local function spawn_default_entities()
-	entities.add_from_template_free("crystal", 280, 255, 1)
+local function spawn_default_entities(x, y)
+	entities.add_from_template_free("crystal", x + 15, y, 1)
+	entities.add_from_template_free("campfire", x - 15, y, 1)
 end
 
 function session.load(seed)
@@ -57,7 +58,7 @@ function session.load(seed)
 		chars = { "8" },
 		color = { { 1, 0.8, 0.6, 1 } },
 		light = {
-			color = { r = 1.0, g = 0.85, b = 0.6 },
+			color = { r = 1.0, g = 0.85, b = 0.7 },
 			flicker = { amp = 0.1, freq = 2, phase = 6 },
 			intensity = 0.55,
 			radius = 11,
@@ -80,7 +81,7 @@ function session.load(seed)
 		end
 	end
 	map:apply_on_step(entities.player)
-	spawn_default_entities()
+	spawn_default_entities(phylactery.x, phylactery.y)
 	map:update_visibility(entities.player)
 	hud:load()
 	hud:update_character(entities.player)

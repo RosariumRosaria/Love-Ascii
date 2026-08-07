@@ -6,7 +6,9 @@ local lighting = {}
 
 local prev_lit = {}
 
-function lighting.normalize(r, g, b)
+local UNDERGROUND_AMBIENT = { r = 0.125, g = 0.213, b = 0.422 }
+
+function lighting.clamp_hue(r, g, b)
 	local m = math.max(r, g, b)
 	if m > 1 then
 		return r / m, g / m, b / m
@@ -17,9 +19,9 @@ end
 function lighting.illumination(cell)
 	local ambient = time.ambient_color()
 	if cell.sky == 0 then
-		ambient = { r = 0.125, g = 0.213, b = 0.422 }
+		ambient = UNDERGROUND_AMBIENT
 	end
-	return lighting.normalize(ambient.r + (cell.r or 0), ambient.g + (cell.g or 0), ambient.b + (cell.b or 0))
+	return lighting.clamp_hue(ambient.r + (cell.r or 0), ambient.g + (cell.g or 0), ambient.b + (cell.b or 0))
 end
 
 local function deposit(cell, color, contribution, flicker, source_z)
