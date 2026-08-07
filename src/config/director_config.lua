@@ -1,5 +1,6 @@
 return {
-	actor_cap = 100,
+	pressure_range = 60,
+	local_actor_cap = 25,
 
 	max_spawn_tries = 20,
 	max_path_checks = 5,

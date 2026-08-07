@@ -3,6 +3,7 @@ local debug_state = require("src.debug.debug_state")
 local config = require("src.config.runtime")
 local time = require("src.engine.time")
 local director = require("src.engine.director")
+local director_config = require("src.config.director_config")
 local camera = require("src.visuals.camera")
 
 local perf = {
@@ -34,7 +35,12 @@ function perf:draw()
 		string.format("Worst: %.1fms", (self.worst_frame and self.worst_frame.elapsed or 0) * 1000),
 		string.format("Time: %s (%.2f)", time.part_of_day(), time.time_of_day()),
 		string.format("Camera: %.2f, %.2f", cam_x or 0, cam_y or 0),
-		string.format("Dread: %.1f", director:get_dread()),
+		string.format(
+			"Dread: %.1f  Near: %d/%d",
+			director:get_dread(),
+			director:get_pressure(),
+			director_config.local_actor_cap
+		),
 	}
 	if debug_state.profiling then
 		table.insert(lines, "PROFILING (f2 to stop)")

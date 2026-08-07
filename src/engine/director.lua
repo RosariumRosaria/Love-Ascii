@@ -171,6 +171,30 @@ function director:get_dread()
 	return dread
 end
 
+local function local_pressure(player, range)
+	local n = 0
+	local px, py = player.x, player.y
+	for _, actor in ipairs(entities.get_actors()) do
+		if
+			actor ~= player
+			and not actor.dead
+			and math.abs(actor.x - px) <= range
+			and math.abs(actor.y - py) <= range
+		then
+			n = n + 1
+		end
+	end
+	return n
+end
+
+function director:get_pressure()
+	local player = entities.player
+	if not player then
+		return 0
+	end
+	return local_pressure(player, director_config.pressure_range)
+end
+
 local function spawn_chance()
 	local cfg = director_config
 	local t = utils.clamp((dread - cfg.min_dread_spawn) / (cfg.max_dread_spawn - cfg.min_dread_spawn), 0, 1)
@@ -181,7 +205,7 @@ function director:tick()
 	dread = dread + director_config.dread_inc
 	if
 		dread >= director_config.min_dread_spawn
-		and #entities.get_actors() <= director_config.actor_cap
+		and director:get_pressure() <= director_config.local_actor_cap
 		and utils.chance(spawn_chance())
 	then
 		local spawned = spawn_pack(build_pack(dread))
