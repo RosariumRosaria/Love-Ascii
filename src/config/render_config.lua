@@ -25,13 +25,13 @@ return {
 	lighting = {
 		brightness = 0,
 		ambient_keys = {
-			{ at = 0.00, color = { r = 0.215, g = 0.253, b = 0.422 } }, -- night
-			{ at = 0.22, color = { r = 0.215, g = 0.253, b = 0.422 } }, -- night
+			{ at = 0.00, color = { r = 0.115, g = 0.153, b = 0.322 } }, -- night
+			{ at = 0.22, color = { r = 0.115, g = 0.153, b = 0.322 } }, -- night
 			{ at = 0.27, color = { r = 1, g = 0.75, b = 0.6 } }, -- dawn
 			{ at = 0.33, color = { r = 1, g = 0.85, b = 0.7 } }, -- day
 			{ at = 0.70, color = { r = 1, g = 0.85, b = 0.7 } }, --  day
 			{ at = 0.78, color = { r = 1, g = 0.75, b = 0.6 } }, -- dusk
-			{ at = 0.85, color = { r = 0.215, g = 0.253, b = 0.422 } }, --night
+			{ at = 0.85, color = { r = 0.115, g = 0.153, b = 0.322 } }, --night
 		},
 		brightness_keys = {
 			{ at = 0.00, v = 1 },
@@ -57,7 +57,7 @@ return {
 		dynamic_light_threshold = 0.1,
 		light_additive = 0.75,
 		additive_light_tint = 0.5,
-		cover_additive = 0.33,
+		cover_additive = 0.3,
 		particle_additive = 0.5,
 		entity_additive = 0.75,
 		entity_brightness_boost = 0.4,
@@ -65,7 +65,7 @@ return {
 		distance_drama = 0.5,
 		shadow_brightness_scale = 0.25,
 		shadow_alpha_scale = 0.7,
-		explored_color = { 0.21, 0.271, 0.762, 0.45 },
+		explored_color = { 0.11, 0.171, 0.562, 0.35 },
 	},
 
 	vignette = {

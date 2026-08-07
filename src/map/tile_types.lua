@@ -104,7 +104,7 @@ return {
 		name = "Floor",
 		chars = { ":" },
 		walkable = true,
-		color = { 0.34, 0.37, 0.41, 1 },
+		color = { 0.482, 0.4, 0.357, 1 },
 		transparent = true,
 		covers = true,
 	},

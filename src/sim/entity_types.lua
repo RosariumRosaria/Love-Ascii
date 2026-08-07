@@ -701,8 +701,8 @@ return {
 		emitters = { { particle = "smoke", rate = 1 }, { particle = "ember", rate = 1.2 } },
 		light = {
 			color = { r = 1.0, g = 0.6, b = 0.25 },
-			intensity = 0.7,
-			radius = 12,
+			intensity = 1,
+			radius = 11,
 			flicker = { amp = 0.02, freq = 2, phase = 3 },
 		},
 		tags = {
@@ -722,7 +722,7 @@ return {
 		},
 		light = {
 			color = { r = 0.7, g = 0.9, b = 1 },
-			intensity = 0.75,
+			intensity = 0.7,
 			radius = 9,
 			flicker = { amp = 0.05, freq = 4, phase = 0 },
 		},
