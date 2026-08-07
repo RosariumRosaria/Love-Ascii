@@ -49,24 +49,8 @@ function render_utils.effective_rgba(color, visible, explored)
 	return nil
 end
 
-function render_utils.get_effective_color(color, visible, explored)
-	local r, g, b, a = render_utils.effective_rgba(color, visible, explored)
-	if not r then
-		return nil
-	end
-	return { r, g, b, a }
-end
-
 function render_utils.scale_rgba(r, g, b, a, scale)
 	return (r or 1) * scale, (g or 1) * scale, (b or 1) * scale, (a or 1)
-end
-
-function render_utils.scale_color(color, scale)
-	if not color then
-		return { 1, 1, 1, 1 }
-	end
-	local r, g, b, a = render_utils.scale_rgba(color[1], color[2], color[3], color[4], scale)
-	return { r, g, b, a }
 end
 
 function render_utils.tint_rgba(r, g, b, a, tint)
@@ -76,25 +60,12 @@ function render_utils.tint_rgba(r, g, b, a, tint)
 	return (r or 1) * (tint[1] or 1), (g or 1) * (tint[2] or 1), (b or 1) * (tint[3] or 1), (a or 1)
 end
 
-function render_utils.tint_color(color, tint)
-	if not color then
-		return { 1, 1, 1, 1 }
-	end
-	if not tint then
-		return color
-	end
-	local r, g, b, a = render_utils.tint_rgba(color[1], color[2], color[3], color[4], tint)
-	return { r, g, b, a }
-end
-
 local clamp_to_unit = lighting.normalize
 
 function render_utils.normalize_light(light)
 	return clamp_to_unit(light.r or 0, light.g or 0, light.b or 0)
 end
 
--- Returns the flicker multiplier for a cell's light sources, or nil when there is
--- nothing to modulate -- so callers can skip the multiply entirely.
 local function flicker_scale(sources, t)
 	if not sources or #sources == 0 then
 		return nil
@@ -125,25 +96,9 @@ function render_utils.apply_flicker_rgba(r, g, b, a, sources, t)
 	return render_utils.scale_rgba(r, g, b, a, scale)
 end
 
-function render_utils.apply_flicker(color, sources, t)
-	local scale = flicker_scale(sources, t)
-	if not scale then
-		return color
-	end
-	return render_utils.scale_color(color, scale)
-end
-
 function render_utils.tonemap_rgba(r, g, b, a)
 	local nr, ng, nb = clamp_to_unit(r or 1, g or 1, b or 1)
 	return nr, ng, nb, (a or 1)
-end
-
-function render_utils.tonemap(color)
-	if not color then
-		return { 1, 1, 1, 1 }
-	end
-	local r, g, b, a = render_utils.tonemap_rgba(color[1], color[2], color[3], color[4])
-	return { r, g, b, a }
 end
 
 local half_screen_x, half_screen_y = 0, 0
@@ -266,11 +221,6 @@ end
 
 local center_offset_x_cache = setmetatable({}, { __mode = "k" })
 
--- A glyph's advance width includes its side bearings, and PressStart2P's are
--- lopsided: ink starts ~3px left of the pen origin and ~4px of spacing is left
--- over on the right. So centering a string by its advance width parks the ink
--- left of centre. The correction is half the difference between the two
--- bearings -- one number per font, measured once off a representative glyph.
 function render_utils.get_center_offset_x(font)
 	local cached = center_offset_x_cache[font]
 	if cached then
@@ -406,14 +356,6 @@ function render_utils.apply_lighting_rgba(r, g, b, a, light, emissive_scale)
 	return nr, ng, nb, (a or 1)
 end
 
-function render_utils.apply_lighting(color, light, emissive_scale)
-	if not color then
-		return { 1, 1, 1, 1 }
-	end
-	local r, g, b, a = render_utils.apply_lighting_rgba(color[1], color[2], color[3], color[4], light, emissive_scale)
-	return { r, g, b, a }
-end
-
 function render_utils.load()
 	tile_size = config.tile_size
 	default_font = config.font
@@ -422,10 +364,6 @@ end
 
 function render_utils.scale_alpha_rgba(r, g, b, a, scale)
 	return r, g, b, (a or 1) * scale
-end
-
-function render_utils.scale_alpha(color, scale)
-	return { color[1], color[2], color[3], color[4] * scale }
 end
 
 function render_utils.unpack_rgba(color)
