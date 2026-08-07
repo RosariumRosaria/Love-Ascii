@@ -299,7 +299,12 @@ function entities.convert_item_to_pickup(x, y, z, item)
 		x,
 		y,
 		z,
-		{ appearance = { chars = item.chars, color = item.color }, item = item }
+		{
+			appearance = { chars = item.chars, color = item.color },
+			item = item,
+			name = item.name,
+			description = item.description,
+		}
 	)
 	return new_entity
 end
