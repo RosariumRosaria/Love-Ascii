@@ -213,9 +213,13 @@ end
 local NORTH_SOUTH_FACING = { 90, 270 }
 local WEST_EAST_FACING = { 0, 180 }
 
+local WALL_SETS = {
+	timber = { vertical = tile_types.v_wall, horizontal = tile_types.h_wall, corner = tile_types.c_wall },
+	stone = { vertical = tile_types.v_stone_wall, horizontal = tile_types.h_stone_wall, corner = tile_types.c_wall },
+}
+
 local WALL_AXES = {
 	vertical = {
-		tile = tile_types.v_wall,
 		along_x = 1,
 		along_y = 0,
 		across_x = 0,
@@ -225,7 +229,6 @@ local WALL_AXES = {
 		facing = NORTH_SOUTH_FACING,
 	},
 	horizontal = {
-		tile = tile_types.h_wall,
 		along_x = 0,
 		along_y = 1,
 		across_x = 1,
@@ -338,12 +341,12 @@ local function make_cardinal_buckets()
 	}
 end
 
-function features.make_building(tiles, rects, top_z, road_side, lighting_grid)
+function features.make_building(tiles, rects, top_z, road_side, lighting_grid, material)
 	local bounding_box = get_bounding_box(rects)
 	local ox, oy = bounding_box.x - 1, bounding_box.y - 1
 	local width, height = bounding_box.w, bounding_box.h
 	local mask = make_building_mask(bounding_box, rects)
-
+	material = material or "timber"
 	local by_cardinal = make_cardinal_buckets()
 	local internal_walls = {}
 
@@ -354,14 +357,14 @@ function features.make_building(tiles, rects, top_z, road_side, lighting_grid)
 			if mask[y][x] ~= 0 and in_bounds(tile_x, tile_y) then
 				local orientation = is_boundary(mask, x, y)
 				local axis = WALL_AXES[orientation]
-
+				local tile = WALL_SETS[material][orientation]
 				if orientation == "internal" then
 					tiles[tile_y][tile_x][1] = tile_types.floor
 					lighting_grid[tile_y][tile_x].sky = 0
 				elseif orientation == "corner" then
-					features.fill_column(tiles, tile_x, tile_y, 1, top_z, tile_types.c_wall)
+					features.fill_column(tiles, tile_x, tile_y, 1, top_z, tile)
 				elseif axis then
-					features.fill_column(tiles, tile_x, tile_y, 1, top_z, axis.tile)
+					features.fill_column(tiles, tile_x, tile_y, 1, top_z, tile)
 					local low_id = mask[y - axis.across_y][x - axis.across_x]
 					local high_id = mask[y + axis.across_y][x + axis.across_x]
 					local near_corner = touches_corner(mask, x, y, axis, width, height)

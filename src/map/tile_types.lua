@@ -91,8 +91,25 @@ return {
 		name = "Pillar",
 		chars = { "+" },
 		walkable = false,
-		color = { 0.5, 0.3, 0.15, 1 },
+		color = { 0.30, 0.155, 0.055, 1 },
 		transparent = false,
+	},
+
+	v_stone_wall = {
+		name = "Wall",
+		chars = { "=" },
+		walkable = false,
+		color = { 0.1, 0.275, 0.55, 1 },
+		transparent = false,
+	},
+
+	h_stone_wall = {
+		name = "Wall",
+		chars = { "=" },
+		walkable = false,
+		color = { 0.1, 0.275, 0.55, 1 },
+		transparent = false,
+		rotation = 90,
 	},
 
 	water = {

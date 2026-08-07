@@ -344,8 +344,14 @@ function city_generator:build_building(tiles, lot, lighting_grid)
 				rects = make_wing(footprint)
 			end
 			rects = make_room(rects)
-			local building, rooms =
-				features.make_building(tiles, rects, features.roll_height("wall", self.max_z), road_side, lighting_grid)
+			local building, rooms = features.make_building(
+				tiles,
+				rects,
+				features.roll_height("wall", self.max_z),
+				road_side,
+				lighting_grid,
+				"timber"
+			)
 			building.rooms = rooms
 			table.insert(self.buildings, building)
 
