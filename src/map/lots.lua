@@ -17,14 +17,13 @@ function lots.subdivide(rect, depth, lots_list, road_list)
 
 	if
 		cut < gen_cfg.lots.min_size * 2 + road_width
-		or (chance > gen_cfg.lots.stop_chance and cut < gen_cfg.lots.max_size)
+		or (chance < gen_cfg.lots.stop_chance and cut < gen_cfg.lots.max_size)
 	then
 		table.insert(lots_list, rect)
 		return
 	end
-
 	local frac = 0.3 + (0.1 * love.math.random(3))
-	local offset = math.floor((vertical and rect.w or rect.h) * frac)
+	local offset = utils.clamp(math.floor(cut * frac), gen_cfg.lots.min_size, cut - gen_cfg.lots.min_size - road_width)
 
 	local a, b, road = utils.split_rect(rect, vertical, offset, road_width)
 

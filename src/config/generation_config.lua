@@ -2,9 +2,9 @@ return {
 
 	-- Binary-space subdivision of the map into lots + the roads between them
 	lots = {
-		min_size = 12,
-		max_size = 17,
-		stop_chance = 0.55,
+		min_size = 17,
+		max_size = 36,
+		stop_chance = 0.4,
 		subdivide_depth = 12,
 	},
 
@@ -23,6 +23,8 @@ return {
 		margin = 5,
 		min_size = 10,
 		max_aspect = 1.5,
+		min_coverage = 0.55,
+		max_coverage = 0.85,
 		wing_chance = 0.5,
 		spawn_center_bias = 5,
 	},
@@ -32,7 +34,7 @@ return {
 		min_thickness = 5,
 		max_size = 12,
 		split_chance = 0.4,
-		max_split_depth = 2,
+		max_split_depth = 3,
 	},
 
 	doors = {
@@ -40,7 +42,7 @@ return {
 		road_side_weight = 7,
 		open_internal_chance = 0.5,
 		min_loops = 0,
-		max_loops = 1,
+		max_loops = 2,
 	},
 
 	windows = {

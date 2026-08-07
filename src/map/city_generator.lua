@@ -4,11 +4,17 @@ local lots = require("src.map.lots")
 local features = require("src.map.features")
 local entities = require("src.sim.entities")
 local utils = require("src.utils")
-local city_generator =
-	{ max_x = nil, max_y = nil, max_z = nil, lots = {}, roads = {}, buildings = {}, empty_lots = {}, civ_distance = {} }
+local city_generator = {
+	max_x = nil,
+	max_y = nil,
+	max_z = nil,
+	lots = {},
+	roads = {},
+	buildings = {},
+	empty_lots = {},
+	civ_distance = {},
+}
 
--- Called by map:reset (and by :load before regenerating) so a map that never runs
--- the generator — an "empty" prefab map — can't be queried for a previous town's lots.
 function city_generator:reset()
 	self.max_x = nil
 	self.max_y = nil
@@ -241,10 +247,14 @@ function city_generator:make_road(tiles, road, index)
 end
 
 local function shape_footprint(inset, road_side)
-	local cap_w = math.max(gen_cfg.buildings.min_size, math.floor(inset.h * gen_cfg.buildings.max_aspect))
-	local cap_h = math.max(gen_cfg.buildings.min_size, math.floor(inset.w * gen_cfg.buildings.max_aspect))
-	local w = math.min(inset.w, cap_w)
-	local h = math.min(inset.h, cap_h)
+	local cfg = gen_cfg.buildings
+	local coverage = cfg.min_coverage + love.math.random() * (cfg.max_coverage - cfg.min_coverage)
+
+	local cap_w = math.max(cfg.min_size, math.floor(inset.h * cfg.max_aspect))
+	local cap_h = math.max(cfg.min_size, math.floor(inset.w * cfg.max_aspect))
+
+	local w = math.max(cfg.min_size, math.min(inset.w, cap_w, math.floor(inset.w * coverage)))
+	local h = math.max(cfg.min_size, math.min(inset.h, cap_h, math.floor(inset.h * coverage)))
 
 	local slack_x, slack_y = inset.w - w, inset.h - h
 	local dx, dy
@@ -315,12 +325,13 @@ end
 
 function city_generator:build_building(tiles, lot, lighting_grid)
 	local map = require("src.map.map")
-
+	local floor_margin = 1 + math.floor(gen_cfg.roads.wave_amp + 0.5)
 	local ml, mr, mt, mb =
-		love.math.random(1, gen_cfg.buildings.margin),
-		love.math.random(1, gen_cfg.buildings.margin),
-		love.math.random(1, gen_cfg.buildings.margin),
-		love.math.random(1, gen_cfg.buildings.margin)
+		love.math.random(floor_margin, gen_cfg.buildings.margin),
+		love.math.random(floor_margin, gen_cfg.buildings.margin),
+		love.math.random(floor_margin, gen_cfg.buildings.margin),
+		love.math.random(floor_margin, gen_cfg.buildings.margin)
+
 	local bw, bh = lot.w - ml - mr, lot.h - mt - mb
 
 	local inset = { x = lot.x + ml, y = lot.y + mt, w = bw, h = bh }
@@ -344,13 +355,15 @@ function city_generator:build_building(tiles, lot, lighting_grid)
 						return false
 					end
 
-					entities.add_from_template(utils.pick({ "crate", "barricade", "chest" }), x, y, 1)
+					entities.add_from_template(utils.pick({ "crate", "barricade", "chest", "barrel" }), x, y, 1)
 					return true
 				end)
 			end
 		else
 			table.insert(self.empty_lots, lot)
 		end
+	else
+		table.insert(self.empty_lots, lot)
 	end
 end
 
