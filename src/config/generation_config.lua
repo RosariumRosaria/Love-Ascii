@@ -10,7 +10,7 @@ return {
 
 	roads = {
 		skip_chance = 0.1,
-		lamp_step = 30,
+		lamp_step = 36,
 		lamp_skip_chance = 0.65,
 		wave_amp = 1.5,
 		wave_scale = 0.06,

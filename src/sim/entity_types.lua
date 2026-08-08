@@ -654,8 +654,8 @@ return {
 		type = "prop",
 		appearance = {
 			chars = { "*" },
-			color = { { 1, 1, 0, 1 } },
-			text_color = { 1, 1, 0, 1 },
+			color = { { 0.88, 0.76, 0.34, 1 } },
+			text_color = { 0.88, 0.76, 0.34, 1 },
 		},
 		default_action = "pickupable",
 		tags = {
@@ -673,8 +673,8 @@ return {
 		natural_height = 0.25,
 		appearance = {
 			chars = { "<>" },
-			color = { { 1, 0.12, 0.18, 1 } },
-			text_color = { 1, 0.12, 0.18, 1 },
+			color = { { 0.30, 0.06, 0.08, 1 } },
+			text_color = { 0.30, 0.06, 0.08, 1 },
 		},
 		applies_status = { "phylactery_glow", silent = true },
 		tags = {
@@ -700,7 +700,7 @@ return {
 		},
 		emitters = { { particle = "smoke", rate = 1 }, { particle = "ember", rate = 1.2 } },
 		light = {
-			color = { r = 1.0, g = 0.6, b = 0.25 },
+			color = { r = 1.0, g = 0.65, b = 0.25 },
 			intensity = 1,
 			radius = 11,
 			flicker = { amp = 0.02, freq = 2, phase = 3 },
@@ -741,14 +741,15 @@ return {
 		appearance = {
 			chars = { ".", ".", ".", ".", "#", "#" },
 			color = {
-				{ 0.55, 0.35, 0.1, 1 },
-				{ 0.55, 0.35, 0.1, 1 },
-				{ 0.55, 0.35, 0.1, 1 },
-				{ 0.55, 0.35, 0.1, 1 },
+				-- wooden post on the shared ramp, then the metal housing
+				WOOD_DARK,
+				WOOD_DARK,
+				WOOD,
+				WOOD,
 				{ 0.5, 0.5, 0.55, 1 },
 				{ 0.5, 0.5, 0.55, 1 },
 			},
-			text_color = { 0.9, 0.5, 0.25, 1 },
+			text_color = { 0.92, 0.49, 0.32, 1 },
 		},
 		light = {
 			color = { r = 1.0, g = 0.65, b = 0.35 },

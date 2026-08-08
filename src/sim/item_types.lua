@@ -136,7 +136,7 @@ return {
 	health_potion = {
 		name = "Poultice",
 		description = "Restores health when consumed.",
-		color = { { 1, 0.5, 0.5, 1 } },
+		color = { { 0.82, 0.30, 0.34, 1 } },
 		chars = { "&" },
 		on_use = { apply_status = "regen" },
 		charges = 1,
@@ -148,7 +148,7 @@ return {
 	strength_potion = {
 		name = "Strength Potion",
 		description = "Improves strength when consumed.",
-		color = { { 1, 0.5, 0.5, 1 } },
+		color = { { 0.55, 0.34, 0.72, 1 } },
 		chars = { "&" },
 		on_use = { apply_status = "strength" },
 		charges = 1,

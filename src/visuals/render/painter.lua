@@ -313,7 +313,7 @@ function painter:draw_panel(panel, center_x, center_y)
 		{ 1, 1, 1, 1 },
 		panel.tile_size or small_tile_size,
 		panel.center_vertical,
-		panel.text_offset_x,
+		panels:get_text_inset_x(panel),
 		panel.text_offset_y
 	)
 end

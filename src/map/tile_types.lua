@@ -79,7 +79,7 @@ return {
 		name = "Wall",
 		chars = { "=" },
 		walkable = false,
-		color = { 0.1, 0.275, 0.55, 1 },
+		color = { 0.44, 0.50, 0.58, 1 },
 		transparent = false,
 	},
 
@@ -87,7 +87,7 @@ return {
 		name = "Wall",
 		chars = { "=" },
 		walkable = false,
-		color = { 0.1, 0.275, 0.55, 1 },
+		color = { 0.44, 0.50, 0.58, 1 },
 		transparent = false,
 		rotation = 90,
 	},

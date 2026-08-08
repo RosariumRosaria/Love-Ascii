@@ -127,13 +127,12 @@ function render_primitives.draw_text_block(
 
 	for i, line in ipairs(lines) do
 		love.graphics.setColor(r, g, b, a * (line.alpha or 1))
-		local offset = outline * 2
 		local text = line.text
-		local dx = offset
+		local dx = text_offset_x or 0
 		if center_text then
 			dx = (width - font:getWidth(text)) / 2 + render_utils.get_center_offset_x(font)
 		end
-		local draw_x = x_screen + dx + (text_offset_x or 0)
+		local draw_x = x_screen + dx
 		local draw_y = y_screen + top + ((i - 1) * line_height)
 
 		love.graphics.print(line.colored or text, draw_x, draw_y)

@@ -93,13 +93,20 @@ local function split_colored(colored, plain, lines)
 	return out
 end
 
+local BASE_TEXT_INSET_X = 2
+
+function panels:get_text_inset_x(panel)
+	return BASE_TEXT_INSET_X + (panel.text_offset_x or 0)
+end
+
 function panels:get_visible_texts(panel)
 	local font = panel.font or small_font
 	local tile_size = panel.tile_size or small_tile_size
+	local wrap_width = math.max(1, panel.width - self:get_text_inset_x(panel) * 2)
 	local wrapped = {}
 	for _, entry in ipairs(panel.texts) do
 		local text = entry.text
-		local _, lines = font:getWrap(text, panel.width)
+		local _, lines = font:getWrap(text, wrap_width)
 		if #lines == 0 then
 			table.insert(wrapped, { text = "", alpha = entry.alpha })
 		else

@@ -43,10 +43,10 @@ return {
 		tags = {
 			snuffs = true,
 		},
-		color = { 0.9, 0.2, 0.22 },
+		color = { 0.30, 0.06, 0.08 },
 		light = {
-			color = { r = 1, g = 0.22, b = 0.22 },
-			intensity = 0.33,
+			color = { r = 0.9, g = 0.22, b = 0.12 },
+			intensity = 0.66,
 			radius = 8,
 			flicker = { amp = 0.05, freq = 4, phase = 0 },
 		},

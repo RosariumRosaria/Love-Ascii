@@ -113,7 +113,7 @@ function event_text.describe(ev)
 			quality = "glancing "
 		end
 		if ev.quality == "solid" then
-			quality = "solid "
+			quality = "precise "
 		end
 
 		local tally = {}
