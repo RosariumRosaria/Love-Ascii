@@ -1,4 +1,3 @@
--- { action, key, key, ..., category = "..." } -- ordered so menus can list them in this order.
 return {
 	{ "attack", "f", category = "combat" },
 	{ "aim", "r", category = "combat" },

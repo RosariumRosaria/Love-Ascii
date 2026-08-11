@@ -26,7 +26,7 @@ return {
 			duration = 0.45,
 			age = 0,
 			reach = 4,
-			peak_alpha = 0.035,
+			peak_alpha = 0.05,
 			alpha_variance = 1,
 			color = { 0.8, 0.85, 1.0 },
 			decay_over_time = false,
