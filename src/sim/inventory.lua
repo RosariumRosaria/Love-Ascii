@@ -8,6 +8,7 @@ local inventory_template = {
 	items = {},
 	equipped = { armor = nil, offhand = nil, accessory = nil, mainhand = nil },
 	selected_index = nil,
+	max_items = game_cfg.inventory.max_items,
 }
 
 function inventory.get_equipped(entity, slot)
@@ -51,6 +52,9 @@ function inventory.add(entity, item)
 	if not entity.inventory then
 		entity.inventory = utils.deep_copy(inventory_template)
 	end
+
+	local max_items = entity.inventory.max_items or game_cfg.inventory.max_items
+
 	if utils.get_tag(item, "stacks") and item.charges then
 		if item.charges <= 0 then
 			return nil
@@ -64,7 +68,7 @@ function inventory.add(entity, item)
 			stored = stored or existing_item
 			existing_item = inventory.get_with_name_where_not_full(entity, item.name)
 		end
-		while item.charges > cap do
+		while item.charges > cap and #entity.inventory.items < max_items do
 			local overflow = utils.deep_copy(item)
 			overflow.charges = cap
 			table.insert(entity.inventory.items, overflow)
@@ -73,11 +77,18 @@ function inventory.add(entity, item)
 		end
 
 		if item.charges > 0 then
+			if #entity.inventory.items >= max_items then
+				return nil
+			end
 			table.insert(entity.inventory.items, item)
 			stored = stored or item
 		end
 
 		return stored
+	end
+
+	if #entity.inventory.items >= max_items then
+		return nil
 	end
 
 	table.insert(entity.inventory.items, item)
@@ -304,11 +315,12 @@ function inventory.transfer(from, to, item)
 	if not item then
 		return false
 	end
-	inventory.add(to, item)
+	if inventory.add(to, item) then
+		inventory.remove(from, item)
+		return true
+	end
 
-	inventory.remove(from, item)
-
-	return true
+	return false
 end
 
 return inventory

@@ -699,6 +699,7 @@ return {
 			color = { { 0.88, 0.76, 0.34, 1 } },
 			text_color = { 0.88, 0.76, 0.34, 1 },
 		},
+		natural_height = 0.25,
 		default_action = "pickupable",
 		tags = {
 			tilelike = true,

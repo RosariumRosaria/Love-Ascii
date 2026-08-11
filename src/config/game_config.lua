@@ -7,8 +7,8 @@ return {
 		resizable = true,
 	},
 	map = {
-		max_x = 750,
-		max_y = 750,
+		max_x = 1300,
+		max_y = 400,
 		max_z = 10,
 		min_z = -4,
 		min_spawn_rooms = 5,
@@ -56,6 +56,7 @@ return {
 	},
 	inventory = {
 		max_stack_limit = 10,
+		max_items = 10,
 	},
 
 	event_log = {

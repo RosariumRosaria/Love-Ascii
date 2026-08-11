@@ -39,8 +39,8 @@ end
 
 local action_order = {
 	attackable = 5,
-	pickupable = 4,
-	moveable = 3,
+	moveable = 4,
+	pickupable = 3,
 	vaultable = 2,
 	interactable = 1,
 }
@@ -267,13 +267,20 @@ function actions:pickup(entity, dx, dy, target)
 	if not target then
 		return false
 	end
-
-	inventory.add(entity, target.item)
-
-	entities.remove(target)
-	assign_cost(entity, "pickup")
-	event_log:add({ type = "entity_picked_up", entity = target, source = entity })
-	return true
+	local before = target.item.charges
+	if inventory.add(entity, target.item) then
+		entities.remove(target)
+		assign_cost(entity, "pickup")
+		event_log:add({ type = "entity_picked_up", entity = target, source = entity })
+		return true
+	end
+	if before and target.item.charges < before then
+		assign_cost(entity, "pickup")
+		event_log:add({ type = "entity_picked_up", entity = target, source = entity })
+		return true
+	end
+	event_log:add({ type = "action_failed", entity = entity, reason = "Your pack is full" })
+	return false
 end
 
 function actions:attack(entity, dx, dy, target_entity)
