@@ -17,7 +17,7 @@ return {
 	{ "cycle_next", "tab", category = "inventory" },
 	{ "use_selected", "u", category = "inventory" },
 	{ "place_selected", "p", category = "inventory" },
-	{ "select_slot", "1", "2", "3", "4", "5", "6", "7", "8", "9", category = "inventory" },
+	{ "select_slot", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", category = "inventory" },
 
 	{ "switch_character", "z", category = "hud" },
 
