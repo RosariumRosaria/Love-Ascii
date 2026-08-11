@@ -13,13 +13,13 @@ function render_utils.height_level_scale(z, max_z, min_z, visible)
 	local range = max_z - min_z
 	local normalized = (z - min_z) / range
 
-	local height_factor = 0.2 + (normalized ^ 2) * 0.9
-	local alpha = height_factor
+	local cfg = render_config.rendering.height_brightness
+	local alpha = cfg.floor + (normalized ^ cfg.curve) * cfg.span
 	if not visible then
-		alpha = alpha * 0.5
+		alpha = alpha * cfg.unseen_scale
 	end
 
-	return math.max(math.min(alpha, z), 0.25)
+	return math.max(math.min(alpha, z), cfg.min_alpha)
 end
 
 function render_utils.get_max_text_width(texts, font)

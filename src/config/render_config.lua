@@ -21,6 +21,13 @@ return {
 		z_size_scale_per_level = 0.055,
 		z_offset = 0.125,
 		entity_cull_margin = 4,
+		height_brightness = {
+			floor = 0.15,
+			span = 0.9,
+			curve = 2,
+			unseen_scale = 0.5,
+			min_alpha = 0.2,
+		},
 	},
 	lighting = {
 		brightness = 0,
