@@ -83,9 +83,7 @@ function input:reload_keys()
 end
 
 function input:reset()
-	-- Through set_mode, not a direct assignment, so aim/container get torn down.
 	self:set_mode(modes.normal)
-
 	self.actor = nil
 	self.down_keys = {}
 	self.pressed_keys = {}
