@@ -10,6 +10,8 @@ local city_generator = {
 	max_z = nil,
 	lots = {},
 	roads = {},
+	wards = {},
+	rivers = {},
 	buildings = {},
 	empty_lots = {},
 	civ_distance = {},
@@ -22,6 +24,8 @@ function city_generator:reset()
 	self.min_z = nil
 	self.lots = {}
 	self.roads = {}
+	self.wards = {}
+	self.rivers = {}
 	self.buildings = {}
 	self.empty_lots = {}
 	self.civ_distance = {}
@@ -422,6 +426,15 @@ function city_generator:find_spawn_room(rooms)
 	return utils.pick(building.rooms)
 end
 
+function city_generator:make_river(tiles, river)
+	for y = river.y, river.y + river.h - 1 do
+		for x = river.x, river.x + river.w - 1 do
+			tiles[y][x][-1] = types.water
+			tiles[y][x][1] = types.air
+		end
+	end
+end
+
 function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z, lighting_grid)
 	self:reset()
 	self.max_y = map_max_y
@@ -432,15 +445,36 @@ function city_generator:load(tiles, map_max_y, map_max_x, map_max_z, map_min_z, 
 	self.noise_ox = love.math.random() * 1000
 	self.noise_oy = love.math.random() * 1000
 	features.load(self.max_x, self.max_y)
+	local parts, arterials = lots.partition(root, 2, gen_cfg.wards.arterial_width, false)
+	for _, arterial in ipairs(arterials) do
+		table.insert(self.roads, arterial)
+	end
 
-	lots.subdivide(root, gen_cfg.lots.subdivide_depth, self.lots, self.roads)
+	for _, part in ipairs(parts) do
+		local wards, rivers = lots.partition(part, gen_cfg.wards.ward_count, gen_cfg.wards.river_width, true)
 
+		for _, ward in ipairs(wards) do
+			table.insert(self.wards, ward)
+		end
+		for _, river in ipairs(rivers) do
+			table.insert(self.rivers, river)
+		end
+	end
+
+	for _, ward in ipairs(self.wards) do
+		lots.subdivide(ward, gen_cfg.lots.subdivide_depth, self.lots, self.roads)
+	end
+
+	for _, river in ipairs(self.rivers) do
+		self:make_river(tiles, river)
+	end
 	for i, road in ipairs(self.roads) do
 		self:make_road(tiles, road, i)
 	end
 	for _, lot in ipairs(self.lots) do
 		self:build_building(tiles, lot, lighting_grid)
 	end
+
 	self:find_civ_distance()
 	self:wild(1, 1, map_max_x, map_max_y, tiles, root)
 	self:populate_empty_lots(tiles)

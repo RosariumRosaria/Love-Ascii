@@ -3,6 +3,23 @@ local utils = require("src.utils")
 
 local lots = {}
 
+function lots.partition(rect, count, border_width, vertical)
+	local wards = {}
+	local borders = {}
+	local remaining = rect
+	local border_count = count - 1
+	local width = (vertical and rect.w) or rect.h
+	local ward_width = math.floor((width - (border_count * border_width)) / count)
+	for _ = 1, border_count do
+		local ward, border
+		ward, remaining, border = utils.split_rect(remaining, vertical, ward_width, border_width)
+		table.insert(wards, ward)
+		table.insert(borders, border)
+	end
+	table.insert(wards, remaining)
+	return wards, borders
+end
+
 function lots.subdivide(rect, depth, lots_list, road_list)
 	if depth == 0 then
 		table.insert(lots_list, rect)

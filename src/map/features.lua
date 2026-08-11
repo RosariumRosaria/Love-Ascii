@@ -61,24 +61,6 @@ function features.place(name, x, y, tiles, max_z)
 	return true
 end
 
-function features.make_lake(tiles, cx, cy, radius)
-	for dy = -radius, radius do
-		for dx = -radius, radius do
-			local tx, ty = cx + dx, cy + dy
-			if in_bounds(tx, ty) and utils.in_radius(dx, dy, radius) then
-				tiles[ty][tx][-1] = tile_types.water
-				tiles[ty][tx][1] = tile_types.air
-			end
-		end
-	end
-
-	for bx = cx - radius - 2, cx + radius + 2 do
-		if in_bounds(bx, cy) then
-			tiles[cy][bx][1] = tile_types.floor
-		end
-	end
-end
-
 local function make_building_mask(bounding_box, rects)
 	local mask = {}
 	for y = 0, bounding_box.h + 1 do

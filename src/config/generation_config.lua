@@ -1,6 +1,10 @@
 return {
+	wards = {
+		river_width = 10,
+		arterial_width = 5,
+		ward_count = 4,
+	},
 
-	-- Binary-space subdivision of the map into lots + the roads between them
 	lots = {
 		min_size = 17,
 		max_size = 36,
@@ -17,7 +21,6 @@ return {
 		envelope = 5,
 	},
 
-	-- Building footprint carved out of a lot
 	buildings = {
 		chance = 0.75,
 		margin = 5,
@@ -29,7 +32,6 @@ return {
 		spawn_center_bias = 5,
 	},
 
-	-- Interior subdivision of a footprint into rooms
 	rooms = {
 		min_thickness = 5,
 		max_size = 12,
@@ -49,7 +51,6 @@ return {
 		door_gap = 1,
 	},
 
-	-- Distance-from-civilization field + noise that drives wild growth
 	noise = {
 		scale = 0.125,
 		strength = 1,
