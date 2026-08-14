@@ -39,7 +39,7 @@ function perf:draw()
 			"Dread: %.1f  Near: %d/%d",
 			director:get_dread(),
 			director:get_pressure(),
-			director_config.local_actor_cap
+			director_config.spawn_actor_cap
 		),
 	}
 	if debug_state.profiling then

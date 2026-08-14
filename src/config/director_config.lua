@@ -1,6 +1,11 @@
 return {
-	pressure_range = 60,
-	local_actor_cap = 25,
+	spawn_pressure_range = 60,
+	spawn_actor_cap = 15,
+
+	dread_pressure_range = 20,
+	dread_pressure_cap = 8,
+
+	reap_range = 90,
 
 	max_spawn_tries = 20,
 	max_path_checks = 5,

@@ -7,6 +7,8 @@ local ai = require("src.engine.ai")
 local entity_types = require("src.sim.entity_types")
 local debug_state = require("src.debug.debug_state")
 local pathfinder = require("src.engine.pathfinder")
+local time = require("src.engine.time")
+local effects = require("src.visuals.effects.effects")
 local director_config = require("src.config.director_config")
 local director = {}
 
@@ -97,7 +99,7 @@ local function spawn_member(origin, entity, modifier, min_range, max_range)
 		ent.mind.director = true -- TODO someday these both should maybe go? I just wanted to be able to keep track of who made whatW
 		if modifier == "hunter" then
 			local player = entities.player
-			ai:set_goal(ent.id, { kind = "investigate", x = player.x, y = player.y })
+			ai:set_goal(ent.id, { kind = "investigate", x = player.x, y = player.y, value = 12, turns = 70 })
 			ent.mind.hunter = true
 		end
 		return ent
@@ -187,12 +189,44 @@ local function local_pressure(player, range)
 	return n
 end
 
-function director:get_pressure()
+function director:get_pressure(range)
 	local player = entities.player
 	if not player then
 		return 0
 	end
-	return local_pressure(player, director_config.pressure_range)
+	return local_pressure(player, range or director_config.spawn_pressure_range)
+end
+
+function director:reap()
+	local player = entities.player
+	if not player then
+		return 0
+	end
+
+	local range = director_config.reap_range
+	local actors = entities.get_actors()
+	local reaped = 0
+
+	for i = #actors, 1, -1 do
+		local actor = actors[i]
+		if
+			actor.mind
+			and actor.mind.director
+			and not actor.dead
+			and (math.abs(actor.x - player.x) > range or math.abs(actor.y - player.y) > range)
+		then
+			time.remove(actor)
+			effects:remove_anchored(actor)
+			entities.remove(actor)
+			reaped = reaped + 1
+		end
+	end
+
+	if reaped > 0 and debug_state.log_director then
+		event_log:add({ type = "debug", message = "Reaped " .. reaped .. " director actors" })
+	end
+
+	return reaped
 end
 
 local function spawn_chance()
@@ -202,10 +236,17 @@ local function spawn_chance()
 end
 
 function director:tick()
-	dread = dread + director_config.dread_inc
+	local cfg = director_config
+
+	director:reap()
+
+	local near = director:get_pressure(cfg.dread_pressure_range)
+	local ramp = utils.clamp((cfg.dread_pressure_cap - near) / cfg.dread_pressure_cap, 0, 1)
+	dread = utils.clamp(dread + cfg.dread_inc * ramp, 0, cfg.max_dread_spawn)
+
 	if
-		dread >= director_config.min_dread_spawn
-		and director:get_pressure() <= director_config.local_actor_cap
+		dread >= cfg.min_dread_spawn
+		and director:get_pressure() <= cfg.spawn_actor_cap
 		and utils.chance(spawn_chance())
 	then
 		local spawned = spawn_pack(build_pack(dread))

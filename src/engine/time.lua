@@ -93,6 +93,17 @@ function time.ambient_color()
 	return ambient_cache
 end
 
+function time.remove(entity)
+	local removed = 0
+	for i = #queue, 1, -1 do
+		if queue[i][1] == entity then
+			table.remove(queue, i)
+			removed = removed + 1
+		end
+	end
+	return removed
+end
+
 function time.schedule_turn(entity, cost)
 	if entity.dead then
 		return
