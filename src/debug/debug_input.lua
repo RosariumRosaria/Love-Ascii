@@ -79,6 +79,7 @@ function debug_input:update_actor(input, actor)
 		prefab.clear_last()
 		prefab.stamp(game_cfg.prefab.file, game_cfg.prefab.ox, game_cfg.prefab.oy)
 		map:update_visibility(actor)
+		visualizer:invalidate()
 		event_log:add({ type = "debug", message = "reloaded prefab" })
 	end
 

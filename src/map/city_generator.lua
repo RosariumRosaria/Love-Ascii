@@ -41,6 +41,10 @@ function city_generator:get_lots()
 	return self.lots
 end
 
+function city_generator:get_wards()
+	return self.wards
+end
+
 function city_generator:get_roads()
 	return self.roads
 end
@@ -186,7 +190,6 @@ function city_generator:find_civ_distance()
 	end
 end
 
--- Perpendicular wobble along a road's long axis, tapered to zero at both ends so junctions still meet.
 local function wave_offsets(start, span, index, noise_ox)
 	local cfg = gen_cfg.roads
 	local last = start + span - 1
