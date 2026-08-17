@@ -262,6 +262,10 @@ function utils.create_instance_from_template(templates, name, overrides)
 	return instance
 end
 
+function utils.point_in_rect(x, y, px, py, w, h)
+	return x >= px and x < px + w and y >= py and y < py + h
+end
+
 function utils.overlapping_rectangles(r1, r2)
 	return not (
 		r1.x + r1.width <= r2.x

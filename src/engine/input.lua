@@ -77,8 +77,12 @@ function input:reload_keys()
 		for i = 2, #binding do
 			keys[i - 1] = binding[i]
 		end
+		for _, key in ipairs(binding.fixed or {}) do
+			table.insert(keys, key)
+		end
 		keys_of[binding[1]] = keys
 	end
+
 	move_axis_of_key = nil
 end
 
@@ -115,6 +119,22 @@ function love.keyreleased(key)
 	if get_move_of_key(key) then
 		remove_from_recency(input.move_recency, key)
 	end
+end
+
+local function mouse_to_key(button)
+	return "mouse" .. button
+end
+
+function love.mousepressed(x, y, button)
+	local key = mouse_to_key(button)
+	input.down_keys[key] = true
+	input.pressed_keys[key] = true
+end
+
+function love.mousereleased(x, y, button)
+	local key = mouse_to_key(button)
+	input.down_keys[key] = nil
+	input.released_keys[key] = true
 end
 
 function input:set_actor(entity)

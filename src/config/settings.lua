@@ -123,7 +123,7 @@ local function set_keys(binding, keys)
 end
 
 local function is_rebindable(binding)
-	return binding.category ~= "debug" and binding[1] ~= "select_slot"
+	return binding.category ~= "debug" and binding[1] ~= "select_slot" and binding.category ~= "hidden"
 end
 
 local function binding_of(action)

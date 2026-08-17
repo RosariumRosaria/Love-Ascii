@@ -1,5 +1,6 @@
 local input = require("src.engine.input")
 local menu = require("src.visuals.ui.menu")
+local panels = require("src.visuals.ui.panels")
 local session = require("src.app.session")
 local settings = require("src.config.settings")
 
@@ -77,11 +78,21 @@ local function run_command(flow, name, option)
 	end
 end
 
+local last_i
+
 function menu_control.update(flow, name)
 	if capturing then
 		capture_key(name)
 		return
 	end
+
+	local panel = menu:get_option_panel(name)
+	local mx, my = love.mouse.getPosition()
+	local i = panels:row_at(panel, mx, my)
+	if i and i ~= last_i then
+		menu:navigate_to(name, i)
+	end
+	last_i = i
 
 	local option = menu:get_option(name)
 	local kind = option.kind
@@ -99,11 +110,11 @@ function menu_control.update(flow, name)
 
 	if kind == "number" or kind == "enum" then
 		local modified = false
-		if repeated("move_left") then
+		if repeated("move_left") or input:pressed("menu_decrease") then
 			settings:adjust(option.label, -1)
 			modified = true
 		end
-		if repeated("move_right") then
+		if repeated("move_right") or input:pressed("menu_interact") then
 			settings:adjust(option.label, 1)
 			modified = true
 		end

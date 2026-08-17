@@ -206,6 +206,20 @@ function panels:remove_panel(name)
 	end
 end
 
+function panels:row_at(panel, mx, my)
+	if
+		not panel.screen_y
+		or not panel.screen_x
+		or not panel.top
+		or not utils.point_in_rect(mx, my, panel.screen_x, panel.screen_y, panel.width, panel.height)
+	then
+		return
+	end
+	local i = math.floor((my - panel.screen_y - panel.top) / (panel.tile_size or small_tile_size)) + 1
+
+	return i
+end
+
 function panels:add_text_to_panel_by_name(name, text)
 	self:add_text_to_panel(self:get_panel(name), text)
 end

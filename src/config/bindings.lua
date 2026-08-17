@@ -33,6 +33,8 @@ return {
 	{ "debug", "f11", category = "debug" },
 	{ "debug_spawn_zombie", "f12", category = "debug" },
 
-	{ "menu_interact", "return", "kpenter", category = "menu" },
+	{ "menu_interact", "return", "kpenter", fixed = { "mouse1" }, category = "menu" },
+	{ "menu_decrease", "mouse2", category = "hidden" },
+
 	{ "pause", "escape", category = "menu" },
 }

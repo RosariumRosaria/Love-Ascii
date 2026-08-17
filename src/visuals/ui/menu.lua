@@ -131,6 +131,30 @@ function menu:navigate(name, dir)
 	menu:refresh(name)
 end
 
+function menu:navigate_to(name, pos)
+	local option_pos = self:row_to_option(name, pos)
+	if option_pos then
+		menus[name].position = option_pos
+
+		menu:refresh(name)
+	end
+end
+
+function menu:row_to_option(name, pos)
+	if pos % 2 == 0 then
+		return
+	end
+	local option_pos = math.floor(pos / 2) + 1
+	local options = menus[name].options
+	if not options[option_pos] then
+		return
+	end
+	if options[option_pos].kind == "category" then
+		return
+	end
+	return option_pos
+end
+
 function menu:navigate_slot(name, dir)
 	local options = menus[name].options
 	if options[menus[name].position].kind ~= "keybind" then
@@ -139,6 +163,10 @@ function menu:navigate_slot(name, dir)
 	local slot = menus[name].slot or 1
 	menus[name].slot = ((slot - 1 + dir) % 2) + 1
 	menu:refresh(name)
+end
+
+function menu:get_option_panel(name)
+	return panels:get_panel(menus[name].panels.options)
 end
 
 function menu:get_option(name)

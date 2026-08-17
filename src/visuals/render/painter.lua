@@ -300,6 +300,9 @@ function painter:draw_panel(panel, center_x, center_y)
 		py = py - panel.height - panel.offset_y
 		px = px - panel.width / 2
 	end
+
+	panel.screen_x, panel.screen_y = px, py
+
 	render_primitives.draw_panel(
 		px,
 		py,
@@ -314,7 +317,8 @@ function painter:draw_panel(panel, center_x, center_y)
 		panel.tile_size or small_tile_size,
 		panel.center_vertical,
 		panels:get_text_inset_x(panel),
-		panel.text_offset_y
+		panel.text_offset_y,
+		panel
 	)
 end
 

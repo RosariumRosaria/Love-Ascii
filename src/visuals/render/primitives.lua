@@ -112,7 +112,8 @@ function render_primitives.draw_text_block(
 	height,
 	center_vertical,
 	text_offset_x,
-	text_offset_y
+	text_offset_y,
+	panel
 )
 	local font = love.graphics.getFont()
 	line_height = line_height or tile_size
@@ -120,6 +121,7 @@ function render_primitives.draw_text_block(
 	love.graphics.setColor(r, g, b, a)
 
 	local top = outline + outline * 2 + (text_offset_y or 0)
+
 	if center_vertical and height then
 		local block_height = #lines * line_height
 		top = (height - block_height) / 2 + line_height * (render_cfg.font.center_nudge_y or 0) + (text_offset_y or 0)
@@ -137,6 +139,10 @@ function render_primitives.draw_text_block(
 
 		love.graphics.print(line.colored or text, draw_x, draw_y)
 	end
+
+	if panel then
+		panel.top = top
+	end
 end
 
 function render_primitives.draw_panel(
@@ -153,7 +159,8 @@ function render_primitives.draw_panel(
 	line_height,
 	center_vertical,
 	text_offset_x,
-	text_offset_y
+	text_offset_y,
+	panel
 )
 	local r, g, b, a = render_utils.unpack_rgba(fill_color)
 	render_primitives.draw_rect(x_screen, y_screen, width, height, r, g, b, a, outline_width, outline_color)
@@ -169,7 +176,8 @@ function render_primitives.draw_panel(
 		height,
 		center_vertical,
 		text_offset_x,
-		text_offset_y
+		text_offset_y,
+		panel
 	)
 end
 
