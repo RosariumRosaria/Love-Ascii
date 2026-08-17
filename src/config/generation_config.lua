@@ -53,9 +53,9 @@ return {
 
 	noise = {
 		scale = 0.125,
-		strength = 1,
-		jitter = 0.15,
-		civ_falloff = 12,
+		strength = 1.2,
+		jitter = 0.2,
+		civ_falloff = 11,
 	},
 
 	flora = {
