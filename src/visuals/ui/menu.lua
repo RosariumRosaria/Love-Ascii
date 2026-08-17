@@ -5,6 +5,7 @@ local menu = {}
 
 local menus = {
 	pause = {
+		title = "PAUSED",
 		options = {
 			{ label = "RESUME", kind = "action" },
 			{ label = "SETTINGS", kind = "action" },
@@ -13,8 +14,10 @@ local menus = {
 		},
 		position = 1,
 		panels = { main = "pause", options = "pause_options" },
+		fonts = { main = "very_big", options = "big" },
 	},
 	start = {
+		title = "START",
 		options = {
 			{ label = "START", kind = "action" },
 			{ label = "SETTINGS", kind = "action" },
@@ -22,8 +25,10 @@ local menus = {
 		},
 		position = 1,
 		panels = { main = "start", options = "start_options" },
+		fonts = { main = "very_big", options = "big" },
 	},
 	dead = {
+		title = "DEAD",
 		options = {
 			{ label = "RESPAWN", kind = "action" },
 			{ label = "RESTART", kind = "action" },
@@ -31,8 +36,10 @@ local menus = {
 		},
 		position = 1,
 		panels = { main = "dead", options = "dead_options", extra = "death_reason" },
+		fonts = { main = "very_big", options = "big" },
 	},
 	settings = {
+		title = "SETTINGS",
 		options = {
 			{ label = "BACK", kind = "action" },
 			{ label = "RESET", kind = "action" },
@@ -45,14 +52,18 @@ local menus = {
 		},
 		position = 1,
 		panels = { main = "settings", options = "settings_options" },
+		fonts = { main = "very_big", options = "big" },
 	},
 	keybinds = {
+		title = "KEYBINDS",
 		options = {},
 		position = 1,
 		panels = { main = "keybinds", options = "keybinds_options" },
+		fonts = { main = "very_big", options = "medium" },
 	},
 }
 
+local MENU_ORDER = { "pause", "start", "dead", "settings", "keybinds" }
 local LAYOUT_ORDER = { "main", "extra", "options" }
 local GAP_LINES = 1
 
@@ -85,6 +96,7 @@ local function build_texts(options, position, slot_position)
 		end
 		local label = option.label
 		local settings_value = ""
+		local row_index = option.kind ~= "category" and i or nil
 
 		if option.kind == "number" or option.kind == "enum" then
 			settings_value = ": " .. tostring(settings:value_text(label)) .. " "
@@ -103,9 +115,12 @@ local function build_texts(options, position, slot_position)
 						.. ((i == position and ii == slot_position) and " <" or "  ")
 				end
 			end
-			table.insert(texts, "  " .. label .. settings_value)
+			table.insert(texts, { text = "  " .. label .. settings_value, row_index = row_index })
 		else
-			table.insert(texts, "  " .. label .. settings_value .. (i == position and " <" or "  "))
+			table.insert(texts, {
+				text = "  " .. label .. settings_value .. (i == position and " <" or "  "),
+				row_index = row_index,
+			})
 		end
 	end
 	return texts
@@ -132,27 +147,9 @@ function menu:navigate(name, dir)
 end
 
 function menu:navigate_to(name, pos)
-	local option_pos = self:row_to_option(name, pos)
-	if option_pos then
-		menus[name].position = option_pos
+	menus[name].position = pos
 
-		menu:refresh(name)
-	end
-end
-
-function menu:row_to_option(name, pos)
-	if pos % 2 == 0 then
-		return
-	end
-	local option_pos = math.floor(pos / 2) + 1
-	local options = menus[name].options
-	if not options[option_pos] then
-		return
-	end
-	if options[option_pos].kind == "category" then
-		return
-	end
-	return option_pos
+	menu:refresh(name)
 end
 
 function menu:navigate_slot(name, dir)
@@ -217,64 +214,40 @@ local function add_menu_panel(name, font)
 	})
 end
 
-function menu:load()
-	local paused_panel = add_menu_panel("pause", "very_big")
-	panels:set_panel_text(paused_panel, { "PAUSED" })
-	paused_panel.visible = false
+local function build_keybind_options()
+	local options = menus.keybinds.options
+	table.insert(options, { label = "BACK", kind = "action" })
+	table.insert(options, { label = "RESET", kind = "action" })
 
-	local paused_options_panel = add_menu_panel("pause_options", "big")
-	self:refresh("pause")
-	paused_options_panel.visible = false
-
-	local start_panel = add_menu_panel("start", "very_big")
-	panels:set_panel_text(start_panel, { "START" })
-	start_panel.visible = false
-
-	local start_options_panel = add_menu_panel("start_options", "big")
-	self:refresh("start")
-	start_options_panel.visible = false
-
-	local dead_panel = add_menu_panel("dead", "very_big")
-	panels:set_panel_text(dead_panel, { "DEAD" })
-	dead_panel.visible = false
-
-	local death_reason_panel = add_menu_panel("death_reason", nil)
-	panels:set_panel_text(death_reason_panel, { "" })
-	death_reason_panel.visible = false
-
-	local dead_options_panel = add_menu_panel("dead_options", "big")
-	self:refresh("dead")
-	dead_options_panel.visible = false
-
-	local settings_panel = add_menu_panel("settings", "very_big")
-	panels:set_panel_text(settings_panel, { "SETTINGS" })
-	settings_panel.visible = false
-
-	local settings_options_panel = add_menu_panel("settings_options", "big")
-	self:refresh("settings")
-	settings_options_panel.visible = false
-
-	local keybinds_panel = add_menu_panel("keybinds", "very_big")
-	panels:set_panel_text(keybinds_panel, { "KEYBINDS" })
-	keybinds_panel.visible = false
-
-	local keybinds_options_panel = add_menu_panel("keybinds_options", "medium")
-
-	local bindings = settings:get_keybinds()
-	table.insert(menus["keybinds"].options, { label = "BACK", kind = "action" })
-	table.insert(menus["keybinds"].options, { label = "RESET", kind = "action" })
 	local category = nil
-	for _, binding in ipairs(bindings) do
+	for _, binding in ipairs(settings:get_keybinds()) do
 		if not category or category ~= binding.category then
 			category = binding.category
 			local label = string.upper(category):gsub("_", " ")
-			table.insert(menus["keybinds"].options, { label = label, kind = "category" })
+			table.insert(options, { label = label, kind = "category" })
 		end
 		local label = string.upper(binding[1]):gsub("_", " ")
-		table.insert(menus["keybinds"].options, { id = binding[1], label = label, kind = "keybind" })
+		table.insert(options, { id = binding[1], label = label, kind = "keybind" })
 	end
-	self:refresh("keybinds")
-	keybinds_options_panel.visible = false
+end
+
+function menu:load()
+	build_keybind_options()
+
+	for _, name in ipairs(MENU_ORDER) do
+		local entry = menus[name]
+		for _, key in ipairs(LAYOUT_ORDER) do
+			local panel_name = entry.panels[key]
+			if panel_name then
+				local panel = add_menu_panel(panel_name, entry.fonts[key])
+				if key ~= "options" then
+					panels:set_panel_text(panel, { key == "main" and entry.title or "" })
+				end
+				panel.visible = false
+			end
+		end
+		self:refresh(name)
+	end
 end
 
 return menu

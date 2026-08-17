@@ -329,7 +329,10 @@ function hud:update_character(entity)
 						and inventory.get_selected(entity) == item
 						and " <"
 					or ""
-				panels:add_text_to_panel_by_name("character", i .. " " .. label .. equipped .. charges .. selected)
+				panels:add_text_to_panel_by_name(
+					"character",
+					{ text = i .. " " .. label .. equipped .. charges .. selected, row_index = i }
+				)
 				panels:add_text_to_panel_by_name("character", "")
 			end
 		end
@@ -355,7 +358,10 @@ function hud:update_character(entity)
 							and inventory.get_selected(container_entity) == item
 							and " <"
 						or ""
-					panels:add_text_to_panel_by_name("container", i .. "-" .. label .. charges .. selected)
+					panels:add_text_to_panel_by_name(
+						"container",
+						{ text = i .. "-" .. label .. charges .. selected, row_index = i }
+					)
 				end
 			end
 		end

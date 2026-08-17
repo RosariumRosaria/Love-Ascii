@@ -112,7 +112,12 @@ function panels:get_visible_texts(panel)
 		else
 			local colored_lines = entry.colored and split_colored(entry.colored, entry.text, lines)
 			for j, l in ipairs(lines) do
-				table.insert(wrapped, { text = l, colored = colored_lines and colored_lines[j], alpha = entry.alpha })
+				table.insert(wrapped, {
+					text = l,
+					colored = colored_lines and colored_lines[j],
+					alpha = entry.alpha,
+					row_index = entry.row_index,
+				})
 			end
 		end
 	end
@@ -206,18 +211,24 @@ function panels:remove_panel(name)
 	end
 end
 
+function panels:mouse_in(panel, mx, my)
+	return panel
+		and panel.screen_y
+		and panel.screen_x
+		and panel.top
+		and panel.visible_texts
+		and utils.point_in_rect(mx, my, panel.screen_x, panel.screen_y, panel.width, panel.height)
+end
+
 function panels:row_at(panel, mx, my)
-	if
-		not panel.screen_y
-		or not panel.screen_x
-		or not panel.top
-		or not utils.point_in_rect(mx, my, panel.screen_x, panel.screen_y, panel.width, panel.height)
-	then
+	if not self:mouse_in(panel, mx, my) then
 		return
 	end
 	local i = math.floor((my - panel.screen_y - panel.top) / (panel.tile_size or small_tile_size)) + 1
-
-	return i
+	if not panel.visible_texts[i] then
+		return
+	end
+	return panel.visible_texts[i].row_index
 end
 
 function panels:add_text_to_panel_by_name(name, text)

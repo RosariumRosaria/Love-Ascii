@@ -7,7 +7,7 @@ local settings = require("src.config.settings")
 local menu_control = {}
 
 local capturing = false
-
+local last_i
 local repeat_delay = 0.2
 local repeat_at = {}
 
@@ -28,11 +28,6 @@ end
 
 function menu_control.is_capturing()
 	return capturing
-end
-
-function menu_control.reset()
-	capturing = false
-	repeat_at = {}
 end
 
 local function capture_key(name)
@@ -77,8 +72,6 @@ local function run_command(flow, name, option)
 		menu:refresh(name)
 	end
 end
-
-local last_i
 
 function menu_control.update(flow, name)
 	if capturing then
@@ -142,6 +135,12 @@ function menu_control.update(flow, name)
 			menu:refresh(name)
 		end
 	end
+end
+
+function menu_control.reset()
+	capturing = false
+	last_i = nil
+	repeat_at = {}
 end
 
 return menu_control

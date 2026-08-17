@@ -272,6 +272,7 @@ end
 
 function painter:draw_panel(panel, center_x, center_y)
 	if not panel.visible then
+		panel.visible_texts = nil
 		return
 	end
 	love.graphics.setFont(panel.font or small_font)
@@ -281,7 +282,7 @@ function painter:draw_panel(panel, center_x, center_y)
 	end
 
 	local visible_texts = panels:get_visible_texts(panel)
-
+	panel.visible_texts = visible_texts
 	local px, py = panel.x, panel.y
 
 	local screen_anchor = panel.screen_anchor

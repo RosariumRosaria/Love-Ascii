@@ -17,6 +17,7 @@ return {
 	{ "use_selected", "u", category = "inventory" },
 	{ "place_selected", "p", category = "inventory" },
 	{ "select_slot", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", category = "inventory" }, --The order matters since we rely on it in input
+	{ "click_hud", "mouse1", category = "hidden" },
 
 	{ "switch_character", "z", category = "hud" },
 

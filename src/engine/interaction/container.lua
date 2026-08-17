@@ -23,6 +23,10 @@ function container:swap_focus()
 	self.focus_container = not self.focus_container
 end
 
+function container:set_focus(on_container)
+	self.focus_container = on_container and true or false
+end
+
 function container:open(entity)
 	local con = container:set(entity)
 

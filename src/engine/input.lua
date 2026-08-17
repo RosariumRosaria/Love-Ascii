@@ -201,6 +201,30 @@ local function move_with_mouse(actor)
 	return { x = 0, y = 0 }
 end
 
+local HOVER_PANELS = { "character", "container" }
+
+local function hovered_row()
+	local mx, my = love.mouse.getPosition()
+	for _, name in ipairs(HOVER_PANELS) do
+		local panel = panels:get_panel(name)
+		local i = panels:row_at(panel, mx, my)
+		if i then
+			return name, i, panel
+		end
+	end
+end
+local function mouse_over_hud()
+	local mx, my = love.mouse.getPosition()
+	for _, name in ipairs(HOVER_PANELS) do
+		if panels:mouse_in(panels:get_panel(name), mx, my) then
+			return true
+		end
+	end
+	return false
+end
+
+local last_panel, last_i
+
 local function exit_mode(mode)
 	if mode == modes.container then
 		container:close()
@@ -218,6 +242,7 @@ function input:set_mode(new_mode)
 	self.pending_slot = nil
 	self.last_slot = nil
 	self.buffered_keys = {}
+	last_panel, last_i = nil, nil
 end
 
 function input:enter_aim()
@@ -311,6 +336,29 @@ function input:handle_container()
 
 	return took_action
 end
+
+local function update_hover(self)
+	if self.mode == modes.aiming then
+		return
+	end
+
+	local name, i, panel = hovered_row()
+	if not name or (name == "container" and self.mode ~= modes.container) then
+		return
+	end
+	if name == last_panel and i == last_i then
+		return
+	end
+	last_panel, last_i = name, i
+
+	if self.mode == modes.container then
+		container:set_focus(name == "container")
+	end
+
+	local entity = (name == "container" and container:get()) or panel.entity or self.actor
+	inventory.set_selected_index(entity, i)
+end
+
 function input:update(dt)
 	set_mouse_tile()
 
@@ -335,6 +383,14 @@ function input:update(dt)
 			local entity = (self.mode == modes.container and container.focus_container and container:get())
 				or self.actor
 			inventory.increment_selected_index(entity)
+		end
+	end
+	update_hover(self)
+
+	if self:pressed("click_hud") and (self.mode == modes.normal or self.mode == modes.container) then
+		local name, i = hovered_row()
+		if i and (name == "character" or self.mode == modes.container) then
+			self.pending_slot = i
 		end
 	end
 
@@ -445,7 +501,7 @@ function input:_take_normal_turn()
 	local took_action = false
 
 	local move_dir = self:get_direction(true)
-	if love.mouse.isDown(1) and move_dir.x == 0 and move_dir.y == 0 then
+	if love.mouse.isDown(1) and not mouse_over_hud() and move_dir.x == 0 and move_dir.y == 0 then
 		move_dir = move_with_mouse(actor)
 	end
 	local is_moving = move_dir.x ~= 0 or move_dir.y ~= 0
