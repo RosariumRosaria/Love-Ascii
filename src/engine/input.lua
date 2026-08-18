@@ -376,6 +376,16 @@ local function update_hover(self)
 	inventory.set_selected_index(entity, i)
 end
 
+local function confirm_slot(self, slot, window)
+	local now = love.timer.getTime()
+	if slot == self.last_slot and (now - self.last_slot_time) < window then
+		self.last_slot = nil
+		return true
+	end
+	self.last_slot, self.last_slot_time = slot, now
+	return false
+end
+
 function input:update(dt)
 	set_mouse_tile()
 
@@ -412,13 +422,13 @@ function input:update(dt)
 
 	if self:released("click_hud") and grab:is_active() then
 		local name, i, panel = hovered_slot()
-		if
-			(i == grab.index or i == grab.index + 1)
-			and (name == "character" or self.mode == modes.container)
-		then
-			self.pending_slot = grab.index
+		if (i == grab.index or i == grab.index + 1) and (name == "character" or self.mode == modes.container) then
+			if self.mode == modes.container or confirm_slot(self, grab.index, game_cfg.timing.double_click) then
+				self.pending_slot = grab.index
+			end
 		elseif i and panel == grab.panel then
 			inventory.move_to(panel.entity, grab.index, i)
+			self.last_slot = nil
 		end
 		grab:clear()
 	end
@@ -456,16 +466,11 @@ function input:update(dt)
 	local slot_entity = (self.mode == modes.container and container.focus_container and container:get()) or self.actor
 
 	if slot and inventory.check_index(slot_entity, slot) then
-		local now = love.timer.getTime()
 		if
 			(self.mode == modes.normal or self.mode == modes.container)
-			and slot == self.last_slot
-			and (now - self.last_slot_time) < game_cfg.timing.turn_delay * 1.5
+			and confirm_slot(self, slot, game_cfg.timing.turn_delay * 1.5)
 		then
-			self.last_slot = nil
 			self.pending_slot = slot
-		else
-			self.last_slot, self.last_slot_time = slot, now
 		end
 		inventory.set_selected_index(slot_entity, slot)
 	end

@@ -19,6 +19,7 @@ return {
 	timing = {
 		frame_ai_budget = 2,
 		turn_delay = 0.175,
+		double_click = 0.4,
 		base_turn_cost = 100,
 		day_length = 50000,
 		time_keyframes = {
