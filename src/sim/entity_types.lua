@@ -513,7 +513,7 @@ return {
 		},
 		interaction = {
 			requires_empty = true,
-			cost = { item = "plank", action_cost = 2 },
+			cost = { item = "plank", action_cost = 2, verb = "repaired" },
 			replace = "window",
 		},
 		passage = { kind = "vaultable" },
@@ -538,7 +538,7 @@ return {
 		},
 		interaction = {
 			requires_empty = true,
-			cost = { item = "plank", action_cost = 3 },
+			cost = { item = "plank", action_cost = 3, verb = "repaired" },
 			replace = "door",
 		},
 		passage = { kind = "walkable" },

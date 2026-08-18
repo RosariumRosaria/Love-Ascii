@@ -394,17 +394,29 @@ function actions:interact(entity, dx, dy, target_entity)
 
 	local extra_cost = 0
 	local used_item = nil
+	local used_verb = nil
 	if target_entity.interaction and target_entity.interaction.cost then
-		used_item = inventory.get_item(entity, target_entity.interaction.cost.item)
+		local cost = target_entity.interaction.cost
+		used_item = inventory.get_item(entity, cost.item)
 		if not used_item then
 			event_log:add({ type = "action_failed", entity = entity, reason = "Missing required items" })
 			return false
 		end
-		extra_cost = target_entity.interaction.cost.action_cost or 0
+		extra_cost = cost.action_cost or 0
+		used_verb = cost.verb
 	end
 
 	if entities.interact(target_entity) then
 		if used_item then
+			if used_verb then
+				event_log:add({
+					type = "item_spent_on",
+					source = entity,
+					entity = target_entity,
+					item = used_item,
+					verb = used_verb,
+				})
+			end
 			inventory.use_charge(entity, used_item)
 		end
 		assign_cost(entity, "interact", extra_cost)

@@ -178,6 +178,8 @@ function event_text.describe(ev)
 			ev.dest_y,
 			"."
 		)
+	elseif ev.type == "item_spent_on" then
+		return line(refer_capital(ev, "source"), " ", ev.verb, " ", refer(ev, "entity"), " with ", refer(ev, "item"), ".")
 	elseif ev.type == "entity_picked_up" then
 		return line(refer_capital(ev, "source"), " picked up ", refer(ev, "entity"), ".")
 	elseif ev.type == "entity_placed" then
