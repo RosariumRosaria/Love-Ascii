@@ -225,10 +225,48 @@ function panels:row_at(panel, mx, my)
 		return
 	end
 	local i = math.floor((my - panel.screen_y - panel.top) / (panel.tile_size or small_tile_size)) + 1
+
 	if not panel.visible_texts[i] then
 		return
 	end
 	return panel.visible_texts[i].row_index
+end
+
+function panels:nearest_row(panel, mx, my)
+	if not self:mouse_in(panel, mx, my) then
+		return
+	end
+
+	local bands = {}
+	local current_band
+	for i, text in ipairs(panel.visible_texts) do
+		if not current_band or current_band.row_index ~= text.row_index then
+			if current_band then
+				current_band.bottom_line = i - 1
+				if current_band.row_index then
+					table.insert(bands, current_band)
+				end
+			end
+			current_band = { row_index = text.row_index, top_line = i }
+		end
+	end
+	if current_band and current_band.row_index then
+		current_band.bottom_line = #panel.visible_texts
+		table.insert(bands, current_band)
+	end
+
+	if #bands == 0 then
+		return nil
+	end
+	local line_pos = (my - panel.screen_y - panel.top) / (panel.tile_size or small_tile_size) + 1
+	for _, band in ipairs(bands) do
+		local mid = (band.top_line + band.bottom_line + 1) / 2
+		if line_pos < mid then
+			return band.row_index
+		end
+	end
+
+	return bands[#bands].row_index + 1
 end
 
 function panels:add_text_to_panel_by_name(name, text)

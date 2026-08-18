@@ -33,6 +33,7 @@ return {
 	{ "toggle_sky_mask", "f10", category = "debug" },
 	{ "debug", "f11", category = "debug" },
 	{ "debug_spawn_zombie", "f12", category = "debug" },
+	{ "debug_test", "`", category = "debug" },
 
 	{ "menu_interact", "return", "kpenter", fixed = { "mouse1" }, category = "menu" },
 	{ "menu_decrease", "mouse2", category = "hidden" },

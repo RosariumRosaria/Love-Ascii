@@ -2,6 +2,7 @@ local stats = require("src.sim.stats")
 local inventory = require("src.sim.inventory")
 local utils = require("src.utils")
 local container = require("src.engine.interaction.container")
+local grab = require("src.engine.interaction.grab")
 local event_log = require("src.engine.event_log")
 local event_text = require("src.visuals.ui.event_text")
 local panels = require("src.visuals.ui.panels")
@@ -329,17 +330,20 @@ function hud:update_character(entity)
 						and inventory.get_selected(entity) == item
 						and " <"
 					or ""
-				panels:add_text_to_panel_by_name(
-					"character",
-					{ text = i .. " " .. label .. equipped .. charges .. selected, row_index = i }
-				)
+				panels:add_text_to_panel_by_name("character", {
+					text = i .. " " .. label .. equipped .. charges .. selected,
+					row_index = i,
+					alpha = grab:holds(character_panel, i) and render_config.hud.grabbed_alpha or 1,
+				})
 				panels:add_text_to_panel_by_name("character", "")
 			end
 		end
 		container_panel.visible = container.is_open
 		if container.is_open then
 			panels:clear_panel_by_name("container")
+
 			local container_entity = container:get()
+			container_panel.entity = container_entity
 			if container_entity then
 				for i, item in ipairs(container_entity.inventory.items) do
 					local label = item.name or item.key or "?"
@@ -358,10 +362,11 @@ function hud:update_character(entity)
 							and inventory.get_selected(container_entity) == item
 							and " <"
 						or ""
-					panels:add_text_to_panel_by_name(
-						"container",
-						{ text = i .. "-" .. label .. charges .. selected, row_index = i }
-					)
+					panels:add_text_to_panel_by_name("container", {
+						text = i .. "-" .. label .. charges .. selected,
+						row_index = i,
+						alpha = grab:holds(container_panel, i) and render_config.hud.grabbed_alpha or 1,
+					})
 				end
 			end
 		end

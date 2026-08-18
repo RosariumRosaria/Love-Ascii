@@ -72,6 +72,9 @@ function debug_input:update_global(input)
 	if input:pressed("switch_offset") then
 		debug_state.switch_offset()
 	end
+
+	if input:pressed("debug_test") then
+	end
 end
 
 function debug_input:update_actor(input, actor)

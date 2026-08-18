@@ -115,5 +115,11 @@ return {
 		damage_text_color = { 0.8, 0.1, 0.1 },
 		heal_text_color = { 0.3, 0.8, 0.3 },
 	},
-	hud = { nearby_range = 5, terminal_fade_rate = 0.2, min_terminal_alpha = 0.01 },
+	hud = {
+		nearby_range = 5,
+		terminal_fade_rate = 0.2,
+		min_terminal_alpha = 0.01,
+		grabbed_alpha = 0.45,
+		grab_cursor = true,
+	},
 }

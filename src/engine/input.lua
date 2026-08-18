@@ -11,6 +11,7 @@ local map = require("src.map.map")
 local camera = require("src.visuals.camera")
 local render_utils = require("src.visuals.render.utils")
 local container = require("src.engine.interaction.container")
+local grab = require("src.engine.interaction.grab")
 local cursor = require("src.engine.interaction.cursor")
 local game_cfg = require("src.config.game_config")
 local utils = require("src.utils")
@@ -100,6 +101,7 @@ function input:reset()
 	self.interact_consumed = false
 	self.grabbed = nil
 	self.last_key = nil
+	grab:clear()
 	self:reload_keys()
 end
 
@@ -172,6 +174,10 @@ function input:pressed(action)
 	return self:_has(action, self.pressed_keys)
 end
 
+function input:released(action)
+	return self:_has(action, self.released_keys)
+end
+
 function input:pressed_slot()
 	for index, key in ipairs(keys_of.select_slot or {}) do
 		if self.pressed_keys[key] then
@@ -208,6 +214,17 @@ local function hovered_row()
 	for _, name in ipairs(HOVER_PANELS) do
 		local panel = panels:get_panel(name)
 		local i = panels:row_at(panel, mx, my)
+		if i then
+			return name, i, panel
+		end
+	end
+end
+
+local function hovered_slot()
+	local mx, my = love.mouse.getPosition()
+	for _, name in ipairs(HOVER_PANELS) do
+		local panel = panels:get_panel(name)
+		local i = panels:nearest_row(panel, mx, my)
 		if i then
 			return name, i, panel
 		end
@@ -388,10 +405,22 @@ function input:update(dt)
 	update_hover(self)
 
 	if self:pressed("click_hud") and (self.mode == modes.normal or self.mode == modes.container) then
-		local name, i = hovered_row()
-		if i and (name == "character" or self.mode == modes.container) then
-			self.pending_slot = i
+		local _, i, panel = hovered_row()
+
+		grab:set(i, panel)
+	end
+
+	if self:released("click_hud") and grab:is_active() then
+		local name, i, panel = hovered_slot()
+		if
+			(i == grab.index or i == grab.index + 1)
+			and (name == "character" or self.mode == modes.container)
+		then
+			self.pending_slot = grab.index
+		elseif i and panel == grab.panel then
+			inventory.move_to(panel.entity, grab.index, i)
 		end
+		grab:clear()
 	end
 
 	if self.mode == modes.container and (self:pressed("move_left") or self:pressed("move_right")) then

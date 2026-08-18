@@ -167,6 +167,21 @@ function inventory.fixup_selected_index(entity, removed_index)
 	end
 end
 
+function inventory.move_to(entity, from, to)
+	local inv = entity.inventory
+	if not inv then
+		return
+	end
+	if to > from then
+		to = to - 1
+	end
+	local item = entity.inventory.items[from]
+	table.remove(inv.items, from)
+	table.insert(inv.items, to, item)
+
+	return true
+end
+
 local function find_item(entity, predicate, arg)
 	if not entity.inventory then
 		return nil
