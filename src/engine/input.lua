@@ -135,66 +135,106 @@ function input:clear_confirm()
 	self.last_slot = nil
 end
 
+local function focused_inventory(self)
+	if container.focus_container then
+		return container:get() or self.actor
+	end
+	return self.actor
+end
+
+local function select_slot(self, entity, allow_queue)
+	local slot = self:pressed_slot()
+	if not slot or not inventory.check_index(entity, slot) then
+		return
+	end
+
+	if allow_queue and self:confirm_slot(slot, game_cfg.timing.turn_delay * 1.5) then
+		self:queue_slot(slot)
+	end
+	inventory.set_selected_index(entity, slot)
+end
+
+local function draw_or_aim(self)
+	local weapon = inventory.get_equipped(self.actor, "mainhand")
+	local possible_weapon = inventory.get_first_with_field(self.actor, "ranged")
+
+	if (not weapon or not weapon.ranged) and possible_weapon then
+		self.pending_draw = possible_weapon
+	elseif not weapon then
+		event_log:add({ type = "action_failed", entity = self.actor, reason = "no weapon" })
+	elseif not weapon.ranged then
+		event_log:add({ type = "action_failed", entity = self.actor, reason = "no ranged weapon" })
+	else
+		self:enter_aim()
+	end
+end
+
+local function update_normal(self)
+	keys:buffer_pressed()
+
+	if self:pressed("cycle_next") then
+		inventory.increment_selected_index(self.actor)
+	end
+
+	if self:pressed("aim") then
+		draw_or_aim(self)
+	end
+
+	select_slot(self, self.actor, true)
+end
+
+local function update_container(self)
+	if self:pressed("cycle_next") then
+		inventory.increment_selected_index(focused_inventory(self))
+	end
+
+	if self:pressed("move_left") or self:pressed("move_right") then
+		container:swap_focus()
+	end
+
+	if self:pressed("interact") then
+		self:set_mode(modes.normal)
+		self.interact_consumed = true
+		return
+	end
+
+	if self:pressed("aim") then
+		draw_or_aim(self)
+		return
+	end
+
+	select_slot(self, focused_inventory(self), true)
+end
+
+local function update_aiming(self)
+	if self:pressed("cycle_next") then
+		aim.cycle_target()
+	end
+
+	if self:pressed("aim") then
+		self:set_mode(modes.normal)
+		return
+	end
+
+	select_slot(self, self.actor, false)
+end
+
+local mode_update = {
+	[modes.normal] = update_normal,
+	[modes.container] = update_container,
+	[modes.aiming] = update_aiming,
+}
+
 function input:update(dt)
 	if not self.actor then
 		return
 	end
 
-	if self.mode == modes.normal then
-		keys:buffer_pressed()
-	end
-
 	debug_input:update_actor(self, self.actor)
 
-	if self:pressed("cycle_next") then
-		if self.mode == modes.aiming then
-			aim.cycle_target()
-		else
-			local entity = (self.mode == modes.container and container.focus_container and container:get())
-				or self.actor
-			inventory.increment_selected_index(entity)
-		end
-	end
-
-	if self.mode == modes.container and (self:pressed("move_left") or self:pressed("move_right")) then
-		container:swap_focus()
-	end
-
-	if self:pressed("interact") and self.mode == modes.container then
-		self:set_mode(modes.normal)
-		self.interact_consumed = true
-	end
-
-	if self:pressed("aim") then
-		if self.mode == modes.aiming then
-			self:set_mode(modes.normal)
-		else
-			local weapon = inventory.get_equipped(self.actor, "mainhand")
-			local possible_weapon = inventory.get_first_with_field(self.actor, "ranged")
-
-			if (not weapon or not weapon.ranged) and possible_weapon then
-				self.pending_draw = possible_weapon
-			elseif not weapon then
-				event_log:add({ type = "action_failed", entity = self.actor, reason = "no weapon" })
-			elseif not weapon.ranged then
-				event_log:add({ type = "action_failed", entity = self.actor, reason = "no ranged weapon" })
-			else
-				self:enter_aim()
-			end
-		end
-	end
-
-	local slot = self:pressed_slot()
-	local slot_entity = (self.mode == modes.container and container.focus_container and container:get()) or self.actor
-
-	if slot and inventory.check_index(slot_entity, slot) then
-		if
-			(self.mode == modes.normal or self.mode == modes.container)
-			and self:confirm_slot(slot, game_cfg.timing.turn_delay * 1.5)
-		then
-			self:queue_slot(slot)
-		end
-		inventory.set_selected_index(slot_entity, slot)
+	local update_mode = mode_update[self.mode]
+	if update_mode then
+		update_mode(self)
 	end
 end
 
@@ -257,8 +297,7 @@ function input:handle_container()
 	self.pending_slot = nil
 
 	if use_slot then
-		local focused = (container.focus_container and container:get()) or self.actor
-		if not inventory.set_selected_index(focused, use_slot) then
+		if not inventory.set_selected_index(focused_inventory(self), use_slot) then
 			return false
 		end
 		return self:transfer_selected()
