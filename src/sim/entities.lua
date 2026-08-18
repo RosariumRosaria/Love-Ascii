@@ -200,6 +200,13 @@ function entities.move_to(entity, nx, ny, nz)
 	index_add(entity)
 end
 
+function entities.face(entity, dx, dy)
+	if dx == 0 and dy == 0 then
+		return
+	end
+	entity.rotation = math.deg(math.atan2(dy, dx)) % 360
+end
+
 ---@return any entity
 function entities.get_first(x, y, z)
 	local list = cell_list(z, y, x, false)

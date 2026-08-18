@@ -31,7 +31,7 @@ function menu_control.is_capturing()
 end
 
 local function capture_key(name)
-	local key = input.last_key
+	local key = input:get_last_key()
 	if not key then
 		return
 	end

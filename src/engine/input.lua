@@ -1,15 +1,11 @@
 local actions = require("src.engine.actions")
-local panels = require("src.visuals.ui.panels")
-local hud = require("src.visuals.ui.hud")
 local debug_input = require("src.debug.debug_input")
-local bindings = require("src.config.bindings")
+local keys = require("src.engine.keys")
 local event_log = require("src.engine.event_log")
 local inventory = require("src.sim.inventory")
 local aim = require("src.engine.interaction.aim")
 local entities = require("src.sim.entities")
 local map = require("src.map.map")
-local camera = require("src.visuals.camera")
-local render_utils = require("src.visuals.render.utils")
 local container = require("src.engine.interaction.container")
 local grab = require("src.engine.interaction.grab")
 local cursor = require("src.engine.interaction.cursor")
@@ -21,11 +17,6 @@ local input = {
 	actor = nil,
 	pending_draw = nil,
 	pending_slot = nil,
-	down_keys = {},
-	pressed_keys = {},
-	released_keys = {},
-	move_recency = {},
-	buffered_keys = {},
 	mode = "normal",
 	last_turn = { x = 0, y = 0 },
 	interact_consumed = false,
@@ -34,109 +25,56 @@ local input = {
 
 local modes = { normal = "normal", aiming = "aiming", container = "container" }
 
-local keys_of = {}
-
-local move_axis_of_key
-local function get_move_of_key(key)
-	if not move_axis_of_key then
-		move_axis_of_key = {}
-		for _, k in ipairs(keys_of.move_left or {}) do
-			move_axis_of_key[k] = { axis = "x", dir = -1 }
-		end
-		for _, k in ipairs(keys_of.move_right or {}) do
-			move_axis_of_key[k] = { axis = "x", dir = 1 }
-		end
-		for _, k in ipairs(keys_of.move_up or {}) do
-			move_axis_of_key[k] = { axis = "y", dir = -1 }
-		end
-		for _, k in ipairs(keys_of.move_down or {}) do
-			move_axis_of_key[k] = { axis = "y", dir = 1 }
-		end
-	end
-	return move_axis_of_key[key]
-end
-
-local function remove_from_recency(list, key)
-	for i, k in ipairs(list) do
-		if k == key then
-			table.remove(list, i)
-			return
-		end
-	end
-end
-
-local function set_mouse_tile()
-	local mx, my = love.mouse.getPosition()
-	local cx, cy = camera:get_position()
-	local x, y = render_utils.get_map_coords(mx, my, cx, cy)
-	cursor.set_moused_coords(x, y)
-end
-
 function input:reload_keys()
-	for _, binding in ipairs(bindings) do
-		local keys = {}
-		for i = 2, #binding do
-			keys[i - 1] = binding[i]
-		end
-		for _, key in ipairs(binding.fixed or {}) do
-			table.insert(keys, key)
-		end
-		keys_of[binding[1]] = keys
-	end
+	keys:reload()
+end
 
-	move_axis_of_key = nil
+function input:get_keys(action)
+	return keys:get_keys(action)
+end
+
+function input:get_last_key()
+	return keys:get_last_key()
+end
+
+function input:is_down(action)
+	return keys:is_down(action)
+end
+
+function input:pressed(action)
+	return keys:pressed(action)
+end
+
+function input:released(action)
+	return keys:released(action)
+end
+
+function input:pressed_slot()
+	return keys:pressed_slot()
+end
+
+function input:get_direction(cardinal_only)
+	return keys:get_direction(cardinal_only)
+end
+
+function input:end_frame()
+	keys:end_frame()
+	if not self:is_down("interact") then
+		self.interact_consumed = false
+	end
 end
 
 function input:reset()
 	self:set_mode(modes.normal)
 	self.actor = nil
-	self.down_keys = {}
-	self.pressed_keys = {}
-	self.released_keys = {}
-	self.move_recency = {}
-	self.buffered_keys = {}
 	self.pending_draw = nil
+	self.pending_slot = nil
 	self.last_slot = nil
 	self.last_turn = { x = 0, y = 0 }
 	self.interact_consumed = false
 	self.grabbed = nil
-	self.last_key = nil
 	grab:clear()
-	self:reload_keys()
-end
-
-function love.keypressed(key)
-	input.down_keys[key] = true
-	input.pressed_keys[key] = true
-	input.last_key = key
-	if get_move_of_key(key) then
-		remove_from_recency(input.move_recency, key)
-		table.insert(input.move_recency, key)
-	end
-end
-
-function love.keyreleased(key)
-	input.down_keys[key] = nil
-	input.released_keys[key] = true
-	if get_move_of_key(key) then
-		remove_from_recency(input.move_recency, key)
-	end
-end
-
-local function mouse_to_key(button)
-	return "mouse" .. button
-end
-
-function love.mousepressed(x, y, button)
-	local key = mouse_to_key(button)
-	input.down_keys[key] = true
-	input.pressed_keys[key] = true
-end
-
-function love.mousereleased(x, y, button)
-	local key = mouse_to_key(button)
-	input.down_keys[key] = nil
-	input.released_keys[key] = true
+	keys:reset()
 end
 
 function input:set_actor(entity)
@@ -147,100 +85,9 @@ function input:get_actor()
 	return self.actor
 end
 
-function input:_has(action, state_table)
-	local keys = keys_of[action]
-	if not keys then
-		return false
-	end
-
-	for _, key in ipairs(keys) do
-		if state_table[key] then
-			return true
-		end
-	end
-	return false
+function input:get_mode()
+	return self.mode
 end
-
-function input:get_keys(action)
-	return keys_of[action]
-end
-
-function input:is_down(action)
-	local source = self.buffer_reading and self.buffer_set or self.down_keys
-	return self:_has(action, source)
-end
-
-function input:pressed(action)
-	return self:_has(action, self.pressed_keys)
-end
-
-function input:released(action)
-	return self:_has(action, self.released_keys)
-end
-
-function input:pressed_slot()
-	for index, key in ipairs(keys_of.select_slot or {}) do
-		if self.pressed_keys[key] then
-			return index
-		end
-	end
-	return nil
-end
-
-function input:mouse_over_entity()
-	local mx, my = cursor.get_moused_coords()
-	local entity_list = entities.get_list_at(mx, my, 1)
-	cursor.set_moused_entity(entity_list)
-end
-
-local function move_with_mouse(actor)
-	local mx, my = cursor.get_moused_coords()
-
-	local tx, ty = map:closest_walkable_neighbor(actor, mx, my, actor.z)
-	local target = { x = tx, y = ty }
-	local path = pathfinder.a_star({ x = actor.x, y = actor.y }, target, actor, true)
-	if path and path[2] then
-		local dx = path[2].x - actor.x
-		local dy = path[2].y - actor.y
-		return { x = utils.sign(dx), y = utils.sign(dy) }
-	end
-	return { x = 0, y = 0 }
-end
-
-local HOVER_PANELS = { "character", "container" }
-
-local function hovered_row()
-	local mx, my = love.mouse.getPosition()
-	for _, name in ipairs(HOVER_PANELS) do
-		local panel = panels:get_panel(name)
-		local i = panels:row_at(panel, mx, my)
-		if i then
-			return name, i, panel
-		end
-	end
-end
-
-local function hovered_slot()
-	local mx, my = love.mouse.getPosition()
-	for _, name in ipairs(HOVER_PANELS) do
-		local panel = panels:get_panel(name)
-		local i = panels:nearest_row(panel, mx, my)
-		if i then
-			return name, i, panel
-		end
-	end
-end
-local function mouse_over_hud()
-	local mx, my = love.mouse.getPosition()
-	for _, name in ipairs(HOVER_PANELS) do
-		if panels:mouse_in(panels:get_panel(name), mx, my) then
-			return true
-		end
-	end
-	return false
-end
-
-local last_panel, last_i
 
 local function exit_mode(mode)
 	if mode == modes.container then
@@ -258,8 +105,7 @@ function input:set_mode(new_mode)
 	self.mode = new_mode
 	self.pending_slot = nil
 	self.last_slot = nil
-	self.buffered_keys = {}
-	last_panel, last_i = nil, nil
+	keys:clear_buffer()
 end
 
 function input:enter_aim()
@@ -271,26 +117,99 @@ function input:enter_aim()
 	return true
 end
 
-function input:get_direction(cardinal_only)
-	local x, y = 0, 0
+function input:queue_slot(slot)
+	self.pending_slot = slot
+end
 
-	local recency = self.buffer_reading and self.buffered_keys or self.move_recency
-	for i = #recency, 1, -1 do
-		local k = recency[i]
-		local binding = get_move_of_key(k)
-		if binding then
-			if binding.axis == "y" and y == 0 then
-				y = binding.dir
-			elseif binding.axis == "x" and x == 0 then
-				x = binding.dir
-			end
-			if cardinal_only then
-				break
+function input:confirm_slot(slot, window)
+	local now = love.timer.getTime()
+	if slot == self.last_slot and (now - self.last_slot_time) < window then
+		self.last_slot = nil
+		return true
+	end
+	self.last_slot, self.last_slot_time = slot, now
+	return false
+end
+
+function input:clear_confirm()
+	self.last_slot = nil
+end
+
+function input:update(dt)
+	if not self.actor then
+		return
+	end
+
+	if self.mode == modes.normal then
+		keys:buffer_pressed()
+	end
+
+	debug_input:update_actor(self, self.actor)
+
+	if self:pressed("cycle_next") then
+		if self.mode == modes.aiming then
+			aim.cycle_target()
+		else
+			local entity = (self.mode == modes.container and container.focus_container and container:get())
+				or self.actor
+			inventory.increment_selected_index(entity)
+		end
+	end
+
+	if self.mode == modes.container and (self:pressed("move_left") or self:pressed("move_right")) then
+		container:swap_focus()
+	end
+
+	if self:pressed("interact") and self.mode == modes.container then
+		self:set_mode(modes.normal)
+		self.interact_consumed = true
+	end
+
+	if self:pressed("aim") then
+		if self.mode == modes.aiming then
+			self:set_mode(modes.normal)
+		else
+			local weapon = inventory.get_equipped(self.actor, "mainhand")
+			local possible_weapon = inventory.get_first_with_field(self.actor, "ranged")
+
+			if (not weapon or not weapon.ranged) and possible_weapon then
+				self.pending_draw = possible_weapon
+			elseif not weapon then
+				event_log:add({ type = "action_failed", entity = self.actor, reason = "no weapon" })
+			elseif not weapon.ranged then
+				event_log:add({ type = "action_failed", entity = self.actor, reason = "no ranged weapon" })
+			else
+				self:enter_aim()
 			end
 		end
 	end
 
-	return { x = x, y = y }
+	local slot = self:pressed_slot()
+	local slot_entity = (self.mode == modes.container and container.focus_container and container:get()) or self.actor
+
+	if slot and inventory.check_index(slot_entity, slot) then
+		if
+			(self.mode == modes.normal or self.mode == modes.container)
+			and self:confirm_slot(slot, game_cfg.timing.turn_delay * 1.5)
+		then
+			self:queue_slot(slot)
+		end
+		inventory.set_selected_index(slot_entity, slot)
+	end
+end
+
+local function move_with_mouse(actor)
+	local mx, my = cursor.get_moused_coords()
+
+	local tx, ty = map:closest_walkable_neighbor(actor, mx, my, actor.z)
+	local target = { x = tx, y = ty }
+	local path = pathfinder.a_star({ x = actor.x, y = actor.y }, target, actor, true)
+	if path and path[2] then
+		local dx = path[2].x - actor.x
+		local dy = path[2].y - actor.y
+		return { x = utils.sign(dx), y = utils.sign(dy) }
+	end
+	return { x = 0, y = 0 }
 end
 
 function input:handle_aim()
@@ -354,139 +273,6 @@ function input:handle_container()
 	return took_action
 end
 
-local function update_hover(self)
-	if self.mode == modes.aiming then
-		return
-	end
-
-	local name, i, panel = hovered_row()
-	if not name or (name == "container" and self.mode ~= modes.container) then
-		return
-	end
-	if name == last_panel and i == last_i then
-		return
-	end
-	last_panel, last_i = name, i
-
-	if self.mode == modes.container then
-		container:set_focus(name == "container")
-	end
-
-	local entity = (name == "container" and container:get()) or panel.entity or self.actor
-	inventory.set_selected_index(entity, i)
-end
-
-local function confirm_slot(self, slot, window)
-	local now = love.timer.getTime()
-	if slot == self.last_slot and (now - self.last_slot_time) < window then
-		self.last_slot = nil
-		return true
-	end
-	self.last_slot, self.last_slot_time = slot, now
-	return false
-end
-
-function input:update(dt)
-	set_mouse_tile()
-
-	if not self.actor then
-		return
-	end
-
-	self:mouse_over_entity()
-	if self.mode == modes.normal then
-		for key in pairs(self.pressed_keys) do
-			remove_from_recency(self.buffered_keys, key)
-			table.insert(self.buffered_keys, key)
-		end
-	end
-
-	debug_input:update_actor(self, self.actor)
-
-	if self:pressed("cycle_next") then
-		if self.mode == modes.aiming then
-			aim.cycle_target()
-		else
-			local entity = (self.mode == modes.container and container.focus_container and container:get())
-				or self.actor
-			inventory.increment_selected_index(entity)
-		end
-	end
-	update_hover(self)
-
-	if self:pressed("click_hud") and (self.mode == modes.normal or self.mode == modes.container) then
-		local _, i, panel = hovered_row()
-
-		grab:set(i, panel)
-	end
-
-	if self:released("click_hud") and grab:is_active() then
-		local name, i, panel = hovered_slot()
-		if (i == grab.index or i == grab.index + 1) and (name == "character" or self.mode == modes.container) then
-			if self.mode == modes.container or confirm_slot(self, grab.index, game_cfg.timing.double_click) then
-				self.pending_slot = grab.index
-			end
-		elseif i and panel == grab.panel then
-			inventory.move_to(panel.entity, grab.index, i)
-			self.last_slot = nil
-		end
-		grab:clear()
-	end
-
-	if self.mode == modes.container and (self:pressed("move_left") or self:pressed("move_right")) then
-		container:swap_focus()
-	end
-
-	if self:pressed("interact") and self.mode == modes.container then
-		self:set_mode(modes.normal)
-		self.interact_consumed = true
-	end
-
-	if self:pressed("aim") then
-		if self.mode == modes.aiming then
-			self:set_mode(modes.normal)
-		else
-			local weapon = inventory.get_equipped(self.actor, "mainhand")
-			local possible_weapon = inventory.get_first_with_field(self.actor, "ranged")
-
-			if (not weapon or not weapon.ranged) and possible_weapon then
-				self.pending_draw = possible_weapon
-			elseif not weapon then
-				event_log:add({ type = "action_failed", entity = self.actor, reason = "no weapon" })
-			elseif not weapon.ranged then
-				event_log:add({ type = "action_failed", entity = self.actor, reason = "no ranged weapon" })
-			else
-				self:enter_aim()
-			end
-		end
-	end
-
-	local slot = self:pressed_slot()
-
-	local slot_entity = (self.mode == modes.container and container.focus_container and container:get()) or self.actor
-
-	if slot and inventory.check_index(slot_entity, slot) then
-		if
-			(self.mode == modes.normal or self.mode == modes.container)
-			and confirm_slot(self, slot, game_cfg.timing.turn_delay * 1.5)
-		then
-			self.pending_slot = slot
-		end
-		inventory.set_selected_index(slot_entity, slot)
-	end
-
-	if self:pressed("switch_character") and self.mode == modes.normal then
-		hud:switch_character()
-	end
-end
-
-function input:face(actor, dx, dy)
-	if dx == 0 and dy == 0 then
-		return
-	end
-	actor.rotation = math.deg(math.atan2(dy, dx)) % 360
-end
-
 function input:try_take_turn()
 	local actor = self.actor
 
@@ -495,7 +281,6 @@ function input:try_take_turn()
 	end
 
 	local draw_weapon = self.pending_draw
-
 	self.pending_draw = nil
 
 	if draw_weapon then
@@ -505,26 +290,20 @@ function input:try_take_turn()
 	end
 
 	if self.mode == modes.aiming then
-		self.pending_draw = nil
 		return self:handle_aim()
 	elseif self.mode == modes.container then
-		self.pending_draw = nil
 		return self:handle_container()
 	end
 
 	local took_action = self:_take_normal_turn()
 
-	local live_moving = #self.move_recency > 0 or love.mouse.isDown(1)
-	if not took_action and not live_moving and #self.buffered_keys > 0 then
-		self.buffer_set = {}
-		for _, key in ipairs(self.buffered_keys) do
-			self.buffer_set[key] = true
-		end
-		self.buffer_reading = true
-		took_action = self:_take_normal_turn()
-		self.buffer_reading = false
+	local live_moving = keys:is_moving_live() or love.mouse.isDown(1)
+	if not took_action and not live_moving and keys:has_buffer() then
+		took_action = keys:read_buffered(function()
+			return self:_take_normal_turn()
+		end)
 	end
-	self.buffered_keys = {}
+	keys:clear_buffer()
 	return took_action
 end
 
@@ -535,7 +314,7 @@ function input:_take_normal_turn()
 	local took_action = false
 
 	local move_dir = self:get_direction(true)
-	if love.mouse.isDown(1) and not mouse_over_hud() and move_dir.x == 0 and move_dir.y == 0 then
+	if love.mouse.isDown(1) and not cursor.is_over_hud() and move_dir.x == 0 and move_dir.y == 0 then
 		move_dir = move_with_mouse(actor)
 	end
 	local is_moving = move_dir.x ~= 0 or move_dir.y ~= 0
@@ -544,7 +323,7 @@ function input:_take_normal_turn()
 	if not is_moving then
 		move_dir = self.last_turn
 	end
-	input:face(actor, move_dir.x, move_dir.y)
+	entities.face(actor, move_dir.x, move_dir.y)
 
 	if use_slot then
 		if not inventory.set_selected_index(actor, use_slot) then
@@ -628,25 +407,6 @@ function input:_take_normal_turn()
 
 	self.last_turn = { x = move_dir.x, y = move_dir.y }
 	return took_action
-end
-
-function input:end_frame()
-	self.pressed_keys = {}
-	self.released_keys = {}
-	self.last_key = nil
-	if not self:is_down("interact") then
-		self.interact_consumed = false
-	end
-end
-
-function love.wheelmoved(_, y)
-	if cursor.scroll_entity(-y) then
-		return
-	end
-	local term = panels:get_panel("terminal")
-	if term then
-		term.scroll_offset = math.max(0, term.scroll_offset - y)
-	end
 end
 
 return input

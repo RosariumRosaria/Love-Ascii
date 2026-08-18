@@ -7,6 +7,7 @@ local moused_x = nil
 local moused_y = nil
 local sel_x, sel_y = nil, nil
 local flagged_id = nil
+local over_hud = false
 
 function cursor.reset()
 	moused_ids = nil
@@ -15,6 +16,15 @@ function cursor.reset()
 	moused_y = nil
 	sel_x, sel_y = nil, nil
 	flagged_id = nil
+	over_hud = false
+end
+
+function cursor.set_over_hud(value)
+	over_hud = value
+end
+
+function cursor.is_over_hud()
+	return over_hud
 end
 
 function cursor.set_moused_coords(x, y)
