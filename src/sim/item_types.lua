@@ -1,3 +1,10 @@
+local WOOD_DARK = { 0.50, 0.37, 0.26, 1 }
+local WOOD = { 0.60, 0.45, 0.32, 1 }
+local WOOD_LIGHT = { 0.70, 0.55, 0.40, 1 }
+local LINEN = { 0.86, 0.80, 0.68, 1 }
+local LINEN_WORN = { 0.72, 0.64, 0.49, 1 }
+local STEEL = { 0.8, 0.8, 0.8, 1 }
+
 return {
 	dull_sword = {
 		name = "Dull Blade", --TODO: someday this should be the ritual weapon used to kill you
@@ -14,7 +21,7 @@ return {
 	sword = {
 		name = "Sword",
 		description = "A sharp blade for combat. Balanced for both offense and defense.",
-		color = { { 0.8, 0.8, 0.8, 1 } },
+		color = { STEEL },
 		slot = "mainhand",
 		chars = { "/" },
 		volume = 6,
@@ -27,7 +34,7 @@ return {
 	axe = {
 		name = "Axe",
 		description = "A heavy, dull, blade for combat. Inaccurate, but effective.",
-		color = { { 0.8, 0.8, 0.8, 1 } },
+		color = { STEEL },
 		slot = "mainhand",
 		chars = { "P" },
 		volume = 9,
@@ -40,7 +47,7 @@ return {
 	dagger = {
 		name = "Dagger",
 		description = "A quick blade for combat. Quiet and keen.",
-		color = { { 0.8, 0.8, 0.8, 1 } },
+		color = { STEEL },
 		slot = "mainhand",
 		chars = { "-" },
 		volume = 3,
@@ -54,7 +61,7 @@ return {
 	spear = {
 		name = "Spear",
 		description = "A sharp spear for combat. Accurate.",
-		color = { { 0.8, 0.8, 0.8, 1 } },
+		color = { STEEL },
 		slot = "mainhand",
 		chars = { "|" },
 		volume = 5,
@@ -67,7 +74,7 @@ return {
 	bow = {
 		name = "Bow",
 		description = "A keen bow for combat.",
-		color = { { 0.8, 0.5, 0.2, 1 } },
+		color = { WOOD_DARK },
 		slot = "mainhand",
 		chars = { "D" },
 		modifiers = {
@@ -84,7 +91,7 @@ return {
 	arrow = {
 		name = "Arrow",
 		description = "Sharp arrows for combat.",
-		color = { { 0.8, 0.5, 0.2, 1 } },
+		color = { WOOD },
 		chars = { "/" },
 		slot = "ammo",
 		break_chance = 0.5,
@@ -101,7 +108,7 @@ return {
 	plank = {
 		name = "Plank",
 		description = "Can be used to barricade walls and windows.",
-		color = { { 0.8, 0.7, 0.5, 1 } },
+		color = { WOOD_LIGHT },
 		on_use = { apply_status = "barricaded", target_tag = "barricadeable", targets = true },
 		chars = { "=" },
 		charges = 1,
@@ -113,7 +120,7 @@ return {
 	bandage = {
 		name = "Bandage",
 		description = "Can be used to bandage wounds.",
-		color = { { 0.7, 0.7, 0.8, 1 } },
+		color = { LINEN },
 		on_use = { clear_status = "bandageable", burst = { type = "heal", count = 3 } },
 		chars = { "~" },
 		charges = 1,
@@ -125,7 +132,7 @@ return {
 	splint = {
 		name = "Splint",
 		description = "Can be used to splint broken bones.",
-		color = { { 0.65, 0.7, 0.5, 1 } },
+		color = { { 0.66, 0.58, 0.44, 1 } },
 		on_use = { clear_status = "splintable", burst = { type = "heal", count = 3 } },
 		chars = { "/" },
 		charges = 1,
@@ -136,7 +143,7 @@ return {
 	health_potion = {
 		name = "Poultice",
 		description = "Restores health when consumed.",
-		color = { { 0.82, 0.30, 0.34, 1 } },
+		color = { { 0.76, 0.71, 0.52, 1 } },
 		chars = { "&" },
 		on_use = { apply_status = "regen" },
 		charges = 1,
@@ -159,7 +166,7 @@ return {
 	tunic = {
 		name = "Tattered Tunic",
 		description = "What you died in.",
-		color = { { 0.7, 0.7, 0.5, 1 } },
+		color = { LINEN_WORN },
 		chars = { "A" },
 		slot = "armor",
 		modifiers = {
@@ -169,7 +176,7 @@ return {
 	leather_armor = {
 		name = "Leather Armor",
 		description = "Provides protection against attacks.",
-		color = { { 0.5, 0.5, 0.7, 1 } },
+		color = { { 0.45, 0.32, 0.22, 1 } },
 		chars = { "A" },
 		slot = "armor",
 		modifiers = {
@@ -179,7 +186,7 @@ return {
 	chainmail = {
 		name = "Chainmail",
 		description = "Provides protection against attacks.",
-		color = { { 0.5, 0.5, 0.7, 1 } },
+		color = { { 0.55, 0.56, 0.60, 1 } },
 		chars = { "A" },
 		slot = "armor",
 		modifiers = {
@@ -189,7 +196,7 @@ return {
 	platemail = {
 		name = "Platemail",
 		description = "Provides protection against attacks.",
-		color = { { 0.5, 0.5, 0.7, 1 } },
+		color = { { 0.72, 0.74, 0.78, 1 } },
 		chars = { "A" },
 		slot = "armor",
 		modifiers = {
