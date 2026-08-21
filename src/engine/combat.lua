@@ -1,6 +1,7 @@
 local utils = require("src.utils")
 local stats = require("src.sim.stats")
 local statuses = require("src.sim.statuses")
+local inventory = require("src.sim.inventory")
 local event_log = require("src.engine.event_log")
 local vitals = require("src.engine.vitals")
 local animation = require("src.visuals.render.animation")
@@ -67,8 +68,9 @@ local function resolve(attacker, target, context)
 	if map.can_see(attacker, target.x, target.y) then
 		dark_accuracy_mod = 0
 	end
+	local raw_diff = accuracy - evasion + dark_accuracy_mod
 
-	local diff = math.max(-max_accuracy_mod, math.min(max_accuracy_mod, accuracy - evasion + dark_accuracy_mod))
+	local diff = max_accuracy_mod * math.tanh(raw_diff / max_accuracy_mod)
 	local roll = math.floor(love.math.randomNormal(2, 5.5 + diff) + 0.5)
 	roll = math.max(1, math.min(10, roll))
 
@@ -92,8 +94,22 @@ function combat.strike(attacker, target, opts)
 	local outcome = resolve(attacker, target, opts.context)
 	local weapon = stats.get_weapon(attacker, opts.context)
 
-	outcome.amount, outcome.absorbed_by = statuses.absorb(target, outcome.adjusted)
-	outcome.absorbed = outcome.adjusted - outcome.amount
+	outcome.mitigation = {}
+
+	local padding = stats.get(target, "padding", opts.context)
+	local piercing = stats.get(attacker, "piercing", opts.context)
+		+ (outcome.quality == "solid" and combat_config.solid_piercing or 0)
+	local adjusted_padding = math.max(0, padding - piercing)
+	outcome.amount = math.max(0, outcome.adjusted - adjusted_padding)
+
+	local turned = outcome.adjusted - outcome.amount
+	if turned > 0 then
+		local worn = inventory.get_equipped(target, "armor")
+		local noun = (worn and string.lower(worn.name or worn.key)) or target.padding_noun or "armor"
+		outcome.mitigation[#outcome.mitigation + 1] = { amount = turned, verb = "turned", noun = noun }
+	end
+
+	outcome.amount = statuses.absorb(target, outcome.amount, outcome.mitigation)
 
 	if outcome.amount > 0 then
 		vitals.apply_damage(target, outcome.amount, attacker, true)
@@ -114,8 +130,7 @@ function combat.strike(attacker, target, opts)
 		source = attacker,
 		weapon = weapon_name,
 		quality = outcome.quality,
-		absorbed = outcome.absorbed,
-		absorbed_by = outcome.absorbed_by,
+		mitigation = outcome.mitigation,
 		amount = outcome.amount,
 		x = target.x,
 		y = target.y,

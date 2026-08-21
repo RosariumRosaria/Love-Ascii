@@ -29,11 +29,12 @@ return {
 			{ stat = "damage", op = "add", value = 3, context = "melee" },
 			{ stat = "evasion", op = "add", value = 1, context = "melee" },
 			{ stat = "damage_spread", op = "add", value = 1, context = "melee" },
+			{ stat = "piercing", op = "add", value = 1, context = "melee" },
 		},
 	},
-	axe = {
-		name = "Axe",
-		description = "A heavy, dull, blade for combat. Inaccurate, but effective.",
+	maul = {
+		name = "Maul",
+		description = "A heavy, blunt head on a long haft. Inaccurate, but it caves things in.",
 		color = { STEEL },
 		slot = "mainhand",
 		chars = { "P" },
@@ -56,11 +57,12 @@ return {
 			{ stat = "damage", op = "add", value = 2, context = "melee" },
 			{ stat = "damage_spread", op = "add", value = 1, context = "melee" },
 			{ stat = "accuracy", op = "add", value = 1, context = "melee" },
+			{ stat = "piercing", op = "add", value = 1, context = "melee" },
 		},
 	},
 	spear = {
 		name = "Spear",
-		description = "A sharp spear for combat. Accurate.",
+		description = "A sharp spear for combat. Can find gaps in armor.",
 		color = { STEEL },
 		slot = "mainhand",
 		chars = { "|" },
@@ -68,7 +70,7 @@ return {
 		modifiers = {
 			{ stat = "damage", op = "add", value = 3, context = "melee" },
 			{ stat = "damage_spread", op = "add", value = 1, context = "melee" },
-			{ stat = "accuracy", op = "add", value = 1, context = "melee" },
+			{ stat = "piercing", op = "add", value = 2, context = "melee" },
 		},
 	},
 	bow = {
@@ -98,6 +100,7 @@ return {
 		charges = 1,
 		modifiers = {
 			{ stat = "damage", op = "add", value = 1, context = "ranged" },
+			{ stat = "piercing", op = "add", value = 1, context = "ranged" },
 		},
 		tags = {
 			stacks = true,
@@ -170,7 +173,8 @@ return {
 		chars = { "A" },
 		slot = "armor",
 		modifiers = {
-			{ stat = "health", op = "add", value = 2 },
+			{ stat = "stealth", op = "add", value = 1 },
+			{ stat = "evasion", op = "add", value = 1 },
 		},
 	},
 	leather_armor = {
@@ -180,7 +184,8 @@ return {
 		chars = { "A" },
 		slot = "armor",
 		modifiers = {
-			{ stat = "health", op = "add", value = 5 },
+			{ stat = "padding", op = "add", value = 1 },
+			{ stat = "stealth", op = "add", value = 1 },
 		},
 	},
 	chainmail = {
@@ -190,7 +195,9 @@ return {
 		chars = { "A" },
 		slot = "armor",
 		modifiers = {
-			{ stat = "health", op = "add", value = 10 },
+			{ stat = "padding", op = "add", value = 2 },
+			{ stat = "evasion", op = "add", value = -1 },
+			{ stat = "stealth", op = "add", value = -1 },
 		},
 	},
 	platemail = {
@@ -200,7 +207,9 @@ return {
 		chars = { "A" },
 		slot = "armor",
 		modifiers = {
-			{ stat = "health", op = "add", value = 15 },
+			{ stat = "padding", op = "add", value = 3 },
+			{ stat = "evasion", op = "add", value = -2 },
+			{ stat = "stealth", op = "add", value = -2 },
 		},
 	},
 	torch = {
@@ -223,6 +232,8 @@ return {
 		description = "Bare hands.",
 		slot = "mainhand",
 		tags = { natural = true },
+		volume = 2,
+		sound = "a dull smack",
 		modifiers = {
 			{ stat = "damage", op = "add", value = 1, context = "melee" },
 			{ stat = "damage_spread", op = "add", value = 1, context = "melee" },
@@ -251,6 +262,7 @@ return {
 		modifiers = {
 			{ stat = "damage", op = "add", value = 3, context = "melee" },
 			{ stat = "damage_spread", op = "add", value = 1, context = "melee" },
+			{ stat = "piercing", op = "add", value = 1, context = "melee" },
 		},
 	},
 	bone_claws = {
@@ -276,6 +288,7 @@ return {
 		modifiers = {
 			{ stat = "damage", op = "add", value = 3, context = "melee" },
 			{ stat = "damage_spread", op = "add", value = 1, context = "melee" },
+			{ stat = "piercing", op = "add", value = 1, context = "melee" },
 		},
 	},
 	massive_fists = {
@@ -305,6 +318,7 @@ return {
 		modifiers = {
 			{ stat = "damage", op = "add", value = 6, context = "melee" },
 			{ stat = "damage_spread", op = "add", value = 2, context = "melee" },
+			{ stat = "piercing", op = "add", value = 1, context = "melee" },
 		},
 	},
 }

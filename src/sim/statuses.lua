@@ -29,21 +29,24 @@ function statuses.absorb_pool(target)
 	return total
 end
 
-function statuses.absorb(target, amount)
+function statuses.absorb(target, amount, mitigation)
 	local absorbers = statuses.with_tag(target, "absorbs")
-	local absorbed_by
 	for _, absorber in ipairs(absorbers) do
 		local soaked = math.min(amount, absorber.hp)
 		absorber.hp = absorber.hp - soaked
 		amount = amount - soaked
-		if soaked > 0 then
-			absorbed_by = absorbed_by or absorber.absorb_noun or string.lower(absorber.name or absorber.key)
+		if soaked > 0 and mitigation then
+			mitigation[#mitigation + 1] = {
+				amount = soaked,
+				verb = "absorbed",
+				noun = absorber.absorb_noun or string.lower(absorber.name or absorber.key),
+			}
 		end
 		if absorber.hp == 0 and utils.get_tag(absorber, "remove_when_empty") then
 			statuses.remove(target, absorber.key)
 		end
 	end
-	return amount, absorbed_by
+	return amount
 end
 
 function statuses.remove_with_tag(entity, tag)

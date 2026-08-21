@@ -43,6 +43,8 @@ return {
 			strength = { base = 1 },
 			damage = { base = 0 },
 			damage_spread = { base = 0 },
+			padding = { base = 0 },
+			piercing = { base = 0 },
 		},
 	},
 
@@ -68,13 +70,13 @@ return {
 				{ item = "health_potion", weight = 4 },
 				{ item = "torch", weight = 4 },
 				{ item = "arrow", weight = 6 },
-				{ item = "tunic", weight = 4 },
-				{ item = "dagger", weight = 2 },
-				{ item = "spear", weight = 1 },
-				{ item = "axe", weight = 1 },
-				{ item = "sword", weight = 1 },
-				{ item = "leather_armor", weight = 1 },
-				{ item = "chainmail", weight = 0.5 },
+				{ item = "tunic", equip = true, weight = 4 },
+				{ item = "dagger", equip = true, weight = 2 },
+				{ item = "spear", equip = true, weight = 1 },
+				{ item = "maul", equip = true, weight = 1 },
+				{ item = "sword", equip = true, weight = 1 },
+				{ item = "leather_armor", equip = true, weight = 1 },
+				{ item = "chainmail", equip = true, weight = 0.5 },
 			},
 		},
 		default_action = "attackable",
@@ -91,6 +93,7 @@ return {
 		combat = {
 			hit_burst = "blood",
 		},
+		padding_noun = "rotting flesh",
 		natural_weapon = "rotting_hands",
 		stats = {
 			health = { base = 10, current = 10 },
@@ -100,6 +103,8 @@ return {
 			evasion = { base = 4 },
 			damage = { base = 0 },
 			damage_spread = { base = 0 },
+			padding = { base = 1 },
+			piercing = { base = 0 },
 		},
 	},
 
@@ -119,6 +124,7 @@ return {
 		default_action = "attackable",
 		can_perform = {
 			attackable = true,
+			vaultable = true,
 		},
 		tags = {
 			moveable = true,
@@ -129,6 +135,7 @@ return {
 		combat = {
 			hit_burst = "blood",
 		},
+		padding_noun = "rotting flesh",
 		natural_weapon = "blighted_claws",
 		stats = {
 			health = { base = 10, current = 10 },
@@ -138,6 +145,8 @@ return {
 			evasion = { base = 3 },
 			damage = { base = 0 },
 			damage_spread = { base = 0 },
+			padding = { base = 1 },
+			piercing = { base = 0 },
 		},
 	},
 
@@ -188,6 +197,8 @@ return {
 			strength = { base = 1 },
 			damage = { base = 0 },
 			damage_spread = { base = 0 },
+			padding = { base = 0 },
+			piercing = { base = 0 },
 		},
 	},
 
@@ -229,6 +240,8 @@ return {
 			evasion = { base = 6 },
 			damage = { base = 0 },
 			damage_spread = { base = 0 },
+			padding = { base = 0 },
+			piercing = { base = 0 },
 		},
 	},
 
@@ -264,6 +277,7 @@ return {
 		combat = {
 			hit_burst = "blood",
 		},
+		padding_noun = "thick hide",
 		natural_weapon = "massive_fists",
 		stats = {
 			health = { base = 30, current = 30 },
@@ -273,6 +287,8 @@ return {
 			evasion = { base = 3 },
 			damage = { base = 0 },
 			damage_spread = { base = 0 },
+			padding = { base = 1 },
+			piercing = { base = 0 },
 		},
 	},
 
@@ -313,6 +329,7 @@ return {
 		combat = {
 			hit_burst = "blood",
 		},
+		padding_noun = "scales",
 		natural_weapon = "burning_maw",
 		stats = {
 			health = { base = 30, current = 30 },
@@ -322,6 +339,8 @@ return {
 			evasion = { base = 6 },
 			damage = { base = 0 },
 			damage_spread = { base = 0 },
+			padding = { base = 2 },
+			piercing = { base = 0 },
 		},
 	},
 
@@ -379,7 +398,7 @@ return {
 				{ item = "strength_potion", weight = 4 },
 				{ item = "dagger", weight = 3 },
 				{ item = "spear", weight = 2 },
-				{ item = "axe", weight = 2 },
+				{ item = "maul", weight = 2 },
 				{ item = "sword", weight = 2 },
 				{ item = "bow", weight = 2 },
 				{ item = "tunic", weight = 3 },
@@ -617,7 +636,7 @@ return {
 				{ item = "splint", weight = 4 },
 				{ item = "strength_potion", weight = 1 },
 				{ item = "dagger", weight = 1.5 },
-				{ item = "axe", weight = 1 },
+				{ item = "maul", weight = 1 },
 				{ item = "spear", weight = 1 },
 				{ item = "sword", weight = 0.5 },
 				{ item = "bow", weight = 0.5 },

@@ -22,8 +22,8 @@ local equipment_panel
 local EQUIP_SLOTS = { "mainhand", "offhand", "armor", "accessory", "ammo" }
 
 local POOLED_STATS = { "health", "stamina", "hunger" }
-local FLAT_STATS = { "strength", "speed", "sight", "stealth" }
-local WEAPON_STATS = { "damage", "damage_spread" }
+local FLAT_STATS = { "strength", "speed", "sight", "stealth", "padding" }
+local WEAPON_STATS = { "damage", "damage_spread", "piercing" }
 
 function hud:set_visible(visible)
 	panels:get_panel("vitals").visible = visible
@@ -294,9 +294,10 @@ function hud:update_equipment(entity)
 		if shown and slot == "mainhand" then
 			local context = shown.ranged and "ranged" or "melee"
 			local glance, hit, solid = combat.damage_bands(entity, context)
+			local piercing = stats.get(entity, "piercing", context)
 			panels:add_text_to_panel_by_name(
 				"equipment",
-				"  " .. context .. " " .. glance .. "-" .. hit .. "-" .. solid
+				"  " .. glance .. "-" .. hit .. "-" .. solid .. " " .. "(" .. piercing .. " piercing)"
 			)
 		end
 

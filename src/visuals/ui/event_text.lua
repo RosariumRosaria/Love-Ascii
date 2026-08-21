@@ -52,6 +52,15 @@ local function was(is_player)
 	return is_player and "were" or "was"
 end
 
+local function possessive(ev, field)
+	local id = ev[field .. "_id"]
+	local player = entities.player
+	if id and player and player.id == id then
+		return "your "
+	end
+	return "their "
+end
+
 local function combat_color(quality)
 	local cfg = render_config.combat
 	if quality == "glance" then
@@ -79,8 +88,11 @@ function event_text.describe(ev)
 		if ev.amount > 0 then
 			tally[#tally + 1] = { amount = ev.amount, color = combat_color(ev.quality), label = " damage" }
 		end
-		if ev.absorbed and ev.absorbed > 0 then
-			tally[#tally + 1] = { amount = ev.absorbed, label = " absorbed by their " .. ev.absorbed_by }
+		for _, entry in ipairs(ev.mitigation or {}) do
+			tally[#tally + 1] = {
+				amount = entry.amount,
+				label = " " .. entry.verb .. " by " .. possessive(ev, "entity") .. entry.noun,
+			}
 		end
 		local suffix
 		if #tally > 0 then

@@ -220,8 +220,8 @@ function panels:mouse_in(panel, mx, my)
 		and utils.point_in_rect(mx, my, panel.screen_x, panel.screen_y, panel.width, panel.height)
 end
 
-function panels:row_at(panel, mx, my)
-	if not self:mouse_in(panel, mx, my) then
+local function row_at(panel, mx, my)
+	if not panels:mouse_in(panel, mx, my) then
 		return
 	end
 	local i = math.floor((my - panel.screen_y - panel.top) / (panel.tile_size or small_tile_size)) + 1
@@ -229,7 +229,25 @@ function panels:row_at(panel, mx, my)
 	if not panel.visible_texts[i] then
 		return
 	end
+
+	return i
+end
+
+function panels:row_at(panel, mx, my)
+	local i = row_at(panel, mx, my)
+	if not i then
+		return false
+	end
 	return panel.visible_texts[i].row_index
+end
+
+function panels:row_slot_at(panel, mx, my)
+	local i = row_at(panel, mx, my)
+
+	local row_index = panel.visible_texts[i].row_index
+	local dx = panel.visible_texts
+	local local_x = mx - panel.screen_x
+	return row_index
 end
 
 function panels:nearest_row(panel, mx, my)
