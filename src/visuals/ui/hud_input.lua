@@ -12,6 +12,7 @@ local game_cfg = require("src.config.game_config")
 local hud_input = {}
 
 local HOVER_PANELS = { "character", "container" }
+local BLOCKING_PANELS = { "character", "container", "equipment" }
 
 local last_panel, last_i
 local last_mode
@@ -40,7 +41,7 @@ end
 
 local function mouse_over_hud()
 	local mx, my = love.mouse.getPosition()
-	for _, name in ipairs(HOVER_PANELS) do
+	for _, name in ipairs(BLOCKING_PANELS) do
 		if panels:mouse_in(panels:get_panel(name), mx, my) then
 			return true
 		end
@@ -54,9 +55,12 @@ local function update_world_cursor(actor)
 	local x, y = render_utils.get_map_coords(mx, my, cx, cy)
 	cursor.set_moused_coords(x, y)
 
-	if actor then
-		cursor.set_moused_entity(entities.get_list_at(x, y, 1))
+	if not actor or cursor.is_over_hud() then
+		cursor.set_moused_entity(nil)
+		return
 	end
+
+	cursor.set_moused_entity(entities.get_list_at(x, y, 1))
 end
 
 local function update_hover(input, mode)
@@ -110,6 +114,7 @@ end
 
 function hud_input:update(input)
 	local actor = input:get_actor()
+	cursor.set_over_hud(mouse_over_hud())
 	update_world_cursor(actor)
 
 	if not actor then
@@ -121,8 +126,6 @@ function hud_input:update(input)
 		last_mode = mode
 		last_panel, last_i = nil, nil
 	end
-
-	cursor.set_over_hud(mouse_over_hud())
 
 	update_hover(input, mode)
 	update_grab(input, mode)

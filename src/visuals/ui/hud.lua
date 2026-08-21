@@ -11,6 +11,7 @@ local entities = require("src.sim.entities")
 local map = require("src.map.map")
 local combat = require("src.engine.combat")
 local render_config = require("src.config.render_config")
+local cursor = require("src.engine.interaction.cursor")
 local hud = { last_player_turn = false }
 
 local character_modes = { "stats", "inventory" }
@@ -248,6 +249,7 @@ end
 
 function hud:update()
 	local player = entities.player
+
 	if not player then
 		return
 	end
@@ -269,6 +271,7 @@ function hud:update()
 	end
 
 	self:log_events()
+
 	self:update_character(player)
 	self:update_vitals(player)
 	self:update_statuses(player)
@@ -276,7 +279,7 @@ end
 
 function hud:update_equipment(entity)
 	panels:clear_panel_by_name("equipment")
-	if not entity or not entity.inventory then
+	if not entity then
 		return
 	end
 	for _, slot in ipairs(EQUIP_SLOTS) do
@@ -307,10 +310,27 @@ end
 
 function hud:update_character(entity)
 	panels:clear_panel_by_name("character")
+	local mode = character_panel.mode
+
+	local moused = cursor.get_moused_entity()
+	if
+		moused
+		and moused.type == "actor"
+		and moused ~= entities.player
+		and not container.is_open
+	then
+		entity = moused
+		mode = "stats"
+	end
+
 	character_panel.entity = entity
+	panels:add_text_to_panel_by_name("character", utils.capitalize(entity.name or "?"))
+	panels:add_text_to_panel_by_name("character", "")
+	panels:add_text_to_panel_by_name("character", "---")
+	panels:add_text_to_panel_by_name("character", "")
 	self:update_equipment(entity)
 
-	if character_panel.mode == "inventory" or container.is_open then
+	if mode == "inventory" or container.is_open then
 		if entity.inventory then
 			for i, item in ipairs(entity.inventory.items) do
 				local label = item.name or item.key or "?"
@@ -371,7 +391,7 @@ function hud:update_character(entity)
 				end
 			end
 		end
-	elseif character_panel.mode == "stats" and entity.stats then
+	elseif mode == "stats" and entity.stats then
 		local weapon = inventory.get_equipped(entity, "mainhand")
 		local attack_context = weapon and weapon.ranged and "ranged" or "melee"
 		local function add_stat(stat_name)
