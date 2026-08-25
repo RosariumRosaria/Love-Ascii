@@ -17,15 +17,19 @@ local BLOCKING_PANELS = { "character", "container", "equipment" }
 local last_panel, last_i
 local last_mode
 
-local function hovered_row()
+local function hovered_panel()
 	local mx, my = love.mouse.getPosition()
 	for _, name in ipairs(HOVER_PANELS) do
 		local panel = panels:get_panel(name)
-		local i = panels:row_at(panel, mx, my)
-		if i then
-			return name, i, panel
+		if panel and panels:mouse_in(panel, mx, my) then
+			return name, panel
 		end
 	end
+end
+
+local function hovered_row(panel)
+	local mx, my = love.mouse.getPosition()
+	return panels:row_at(panel, mx, my)
 end
 
 local function hovered_slot()
@@ -67,8 +71,9 @@ local function update_hover(input, mode)
 	if mode == "aiming" then
 		return
 	end
+	local name, panel = hovered_panel()
+	local i = hovered_row(panel)
 
-	local name, i, panel = hovered_row()
 	if not name or (name == "container" and mode ~= "container") then
 		return
 	end
@@ -82,12 +87,15 @@ local function update_hover(input, mode)
 	end
 
 	local entity = (name == "container" and container:get()) or panel.entity or input:get_actor()
-	inventory.set_selected_index(entity, i)
+	if i then
+		inventory.set_selected_index(entity, i)
+	end
 end
 
 local function update_grab(input, mode)
 	if input:pressed("click_hud") and (mode == "normal" or mode == "container") then
-		local _, i, panel = hovered_row()
+		local _, panel = hovered_panel()
+		local i = hovered_row(panel)
 		grab:set(i, panel)
 	end
 
@@ -95,7 +103,8 @@ local function update_grab(input, mode)
 		return
 	end
 
-	local name, i, panel = hovered_slot()
+	local name, panel = hovered_panel()
+	local i = hovered_row(panel)
 	if (i == grab.index or i == grab.index + 1) and (name == "character" or mode == "container") then
 		if mode == "container" or input:confirm_slot(grab.index, game_cfg.timing.double_click) then
 			input:queue_slot(grab.index)

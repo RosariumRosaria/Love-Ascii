@@ -236,7 +236,7 @@ end
 function panels:row_at(panel, mx, my)
 	local i = row_at(panel, mx, my)
 	if not i then
-		return false
+		return nil
 	end
 	return panel.visible_texts[i].row_index
 end
