@@ -1,0 +1,3 @@
+local tooltips = {}
+
+return tooltips
