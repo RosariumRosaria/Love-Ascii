@@ -100,7 +100,7 @@ function combat.strike(attacker, target, opts)
 	local piercing = stats.get(attacker, "piercing", opts.context)
 		+ (outcome.quality == "solid" and combat_config.solid_piercing or 0)
 	local adjusted_padding = math.max(0, padding - piercing)
-	outcome.amount = math.max(0, outcome.adjusted - adjusted_padding)
+	outcome.amount = math.max(1, outcome.adjusted - adjusted_padding)
 
 	local turned = outcome.adjusted - outcome.amount
 	if turned > 0 then

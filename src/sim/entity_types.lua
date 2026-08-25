@@ -62,7 +62,7 @@ return {
 			effect_color = { 0.35, 0.6, 0.3, 0.5 },
 		},
 		loot = {
-			count = { min = 0, max = 1 },
+			count = { min = 0, max = 2 },
 			drops = {
 				{ item = "bandage", weight = 40 },
 				{ item = "plank", weight = 10 },
@@ -137,6 +137,18 @@ return {
 		},
 		padding_noun = "rotting flesh",
 		natural_weapon = "blighted_claws",
+		loot = {
+			count = { min = 0, max = 2 },
+			drops = {
+				{ item = "bandage", weight = 40 },
+				{ item = "plank", weight = 10 },
+				{ item = "splint", weight = 6 },
+				{ item = "health_potion", weight = 4 },
+				{ item = "torch", weight = 4 },
+				{ item = "arrow", weight = 6 },
+				{ item = "tunic", equip = true, weight = 4 },
+			},
+		},
 		stats = {
 			health = { base = 10, current = 10 },
 			sight = { base = 30 },
@@ -214,6 +226,17 @@ return {
 			color = { { 0.58, 0.11, 0.15, 1 } },
 			text_color = { 0.58, 0.11, 0.15, 1 },
 			effect_color = { 0.30, 0.06, 0.08, 0.5 },
+		},
+		loot = {
+			count = { min = 0, max = 2 },
+			drops = {
+				{ item = "bandage", weight = 40 },
+				{ item = "rapier", equip = true, weight = 3 },
+				{ item = "dagger", equip = true, weight = 4 },
+				{ item = "cloak", equip = true, weight = 5 },
+				{ item = "tunic", equip = true, weight = 5 },
+				{ item = "buckler", equip = true, weight = 3 },
+			},
 		},
 		default_action = "attackable",
 		can_perform = {

@@ -90,10 +90,10 @@ return {
 		name = "Barricaded",
 		description = "Blocked interaction and increased health.",
 		color = { 1, 0.8, 0.5 },
-		hp = 10,
+		hp = 15,
 		absorb_noun = "barricade",
 		modifiers = {
-			{ stat = "padding", op = "add", value = 1 },
+			{ stat = "padding", op = "add", value = 2 },
 		},
 		tags = { absorbs = true, disables_interaction = true, remove_when_empty = true, applies_to_props = true },
 		visual = { tint = { 1, 0.8, 0.5 } },

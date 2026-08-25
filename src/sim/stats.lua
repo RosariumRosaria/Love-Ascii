@@ -39,11 +39,9 @@ end
 
 function stats.get(entity, name, context)
 	local stat = entity.stats and entity.stats[name]
-	if not stat then
-		return 0
-	end
+	local base = stat and stat.base or 0
 	local add, mul = stats.sum_modifiers(entity, name, context)
-	return (stat.base + add) * mul
+	return (base + add) * mul
 end
 
 function stats.get_current(entity, name)

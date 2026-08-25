@@ -22,8 +22,8 @@ local session = {}
 local FALLBACK_SPAWN = { x = 250, y = 250 }
 
 local function spawn_default_entities(x, y)
-	entities.add_from_template_free("crystal", x + 15, y, 1)
-	entities.add_from_template_free("campfire", x - 15, y, 1)
+	--entities.add_from_template_free("crystal", x + 15, y, 1)
+	--entities.add_from_template_free("campfire", x - 15, y, 1)
 end
 
 function session.load(seed)
@@ -51,7 +51,6 @@ function session.load(seed)
 	entities.set_phylactery(phylactery)
 
 	inventory.add_from_template(player, "dull_sword")
-	inventory.add_from_template(player, "bow")
 	inventory.add_from_template(player, "tunic")
 	inventory.add_from_template(player, "torch", {
 		name = "Lantern",
@@ -66,9 +65,7 @@ function session.load(seed)
 		},
 	})
 	inventory.add_from_template(player, "plank")
-	inventory.add_from_template(player, "bandage")
 	inventory.add_from_template(player, "health_potion", { charges = 3 })
-	inventory.add_from_template(player, "arrow", { charges = 3 })
 
 	inventory.equip(player, player.inventory.items[1])
 	inventory.equip(player, player.inventory.items[3])
@@ -90,6 +87,7 @@ function session.load(seed)
 	debug_panel.load()
 	menu:load()
 	input:reload_keys()
+	inventory.set_selected_index(entities.player, 1)
 end
 
 function session.respawn()
