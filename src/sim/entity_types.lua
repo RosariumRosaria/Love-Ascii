@@ -260,7 +260,7 @@ return {
 			sight = { base = 30 },
 			speed = { base = 6 },
 			accuracy = { base = 6 },
-			evasion = { base = 6 },
+			evasion = { base = 8 },
 			damage = { base = 0 },
 			damage_spread = { base = 0 },
 			padding = { base = 0 },
@@ -786,7 +786,7 @@ return {
 		emitters = { { particle = "smoke", rate = 1 }, { particle = "ember", rate = 1.2 } },
 		light = {
 			color = { r = 1.0, g = 0.65, b = 0.25 },
-			intensity = 1,
+			intensity = 0.7,
 			radius = 11,
 			flicker = { amp = 0.02, freq = 2, phase = 3 },
 		},
