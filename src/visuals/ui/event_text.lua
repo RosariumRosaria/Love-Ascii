@@ -76,6 +76,15 @@ function event_text.describe(ev)
 	local subject = refer_capital(ev, "entity")
 
 	if ev.type == "combat" then
+		if ev.quality == "dodge" then
+			return text_runs.line(
+				refer_capital(ev, "entity"),
+				" dodged ",
+				possessive(ev, "source"),
+				"blow."
+			)
+		end
+
 		local quality = ""
 		if ev.quality == "glance" then
 			quality = "glancing "

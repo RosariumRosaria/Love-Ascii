@@ -57,10 +57,12 @@ local function resolve(attacker, target, context)
 	local max_accuracy_mod = combat_config.max_accuracy_mod
 	local solid = combat_config.solid
 	local glance = combat_config.glance
+	local dodge = combat_config.dodge
 	local accuracy = stats.get(attacker, "accuracy", context)
 	local evasion = stats.get(target, "evasion", context)
 
-	if not statuses.can_act(target) then
+	local can_dodge = statuses.can_act(target)
+	if not can_dodge then
 		evasion = 0
 	end
 
@@ -76,6 +78,12 @@ local function resolve(attacker, target, context)
 
 	outcome.quality = "hit"
 	outcome.adjusted = outcome.raw
+
+	if can_dodge and roll <= dodge then
+		outcome.quality = "dodge"
+		outcome.adjusted = 0
+		return outcome
+	end
 
 	if roll <= glance then
 		outcome.quality = "glance"
@@ -95,6 +103,28 @@ function combat.strike(attacker, target, opts)
 	local weapon = stats.get_weapon(attacker, opts.context)
 
 	outcome.mitigation = {}
+
+	if outcome.quality == "dodge" then
+		outcome.amount = 0
+
+		if not opts.defer_feedback then
+			combat.play_dodge_feedback(attacker, target)
+		end
+
+		event_log:add({
+			type = "combat",
+			entity = target,
+			source = attacker,
+			weapon = weapon and weapon.name or "Unknown",
+			quality = outcome.quality,
+			mitigation = outcome.mitigation,
+			amount = outcome.amount,
+			x = target.x,
+			y = target.y,
+		})
+
+		return outcome
+	end
 
 	local padding = stats.get(target, "padding", opts.context)
 	local piercing = stats.get(attacker, "piercing", opts.context)
@@ -139,7 +169,15 @@ function combat.strike(attacker, target, opts)
 	return outcome
 end
 
+function combat.play_dodge_feedback(attacker, target)
+	animation.add_shake(target)
+end
+
 function combat.play_hit_feedback(attacker, target, outcome, weapon)
+	if outcome.quality == "dodge" then
+		return combat.play_dodge_feedback(attacker, target)
+	end
+
 	weapon = weapon or stats.get_weapon(attacker, outcome.context)
 	local cx, cy = utils.get_center_of_footprint(attacker)
 	local ctx, cty = utils.get_center_of_footprint(target)
