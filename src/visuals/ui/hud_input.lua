@@ -32,15 +32,10 @@ local function hovered_row(panel)
 	return panels:row_at(panel, mx, my)
 end
 
-local function hovered_slot()
+local function hovered_slot(panel)
 	local mx, my = love.mouse.getPosition()
-	for _, name in ipairs(HOVER_PANELS) do
-		local panel = panels:get_panel(name)
-		local i = panels:nearest_row(panel, mx, my)
-		if i then
-			return name, i, panel
-		end
-	end
+
+	return panels:nearest_row(panel, mx, my)
 end
 
 local function mouse_over_hud()
@@ -104,7 +99,7 @@ local function update_grab(input, mode)
 	end
 
 	local name, panel = hovered_panel()
-	local i = hovered_row(panel)
+	local i = hovered_slot(panel)
 	if (i == grab.index or i == grab.index + 1) and (name == "character" or mode == "container") then
 		if mode == "container" or input:confirm_slot(grab.index, game_cfg.timing.double_click) then
 			input:queue_slot(grab.index)

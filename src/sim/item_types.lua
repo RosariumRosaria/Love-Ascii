@@ -61,7 +61,7 @@ return {
 	},
 	dagger = {
 		name = "Dagger",
-		description = "A quick blade for combat. Quiet and keen.",
+		description = "A quiet and quick blade.",
 		color = { STEEL },
 		slot = "mainhand",
 		chars = { "-" },
@@ -194,7 +194,7 @@ return {
 	},
 	health_potion = {
 		name = "Poultice",
-		description = "Restores health when consumed.",
+		description = "Can aid in healing wounds when applied.",
 		color = { { 0.76, 0.71, 0.52, 1 } },
 		chars = { "&" },
 		on_use = { apply_status = "regen" },

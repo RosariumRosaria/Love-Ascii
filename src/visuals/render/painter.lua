@@ -281,8 +281,13 @@ function painter:draw_panel(panel, center_x, center_y)
 		panels:measure_auto_size(panel)
 	end
 
+	if panel.auto_height then
+		panels:measure_auto_height(panel)
+	end
+
 	local visible_texts = panels:get_visible_texts(panel)
 	panel.visible_texts = visible_texts
+
 	local px, py = panel.x, panel.y
 
 	local screen_anchor = panel.screen_anchor

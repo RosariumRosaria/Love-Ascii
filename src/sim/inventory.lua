@@ -223,7 +223,7 @@ function inventory.get_first_with_field(entity, field)
 end
 
 function inventory.equip(entity, item)
-	if not entity.inventory or not item.slot then
+	if not entity.inventory or not item or not item.slot then
 		return nil
 	end
 
@@ -253,11 +253,18 @@ function inventory.is_equipped(entity, item)
 	return false
 end
 
-function inventory.get_selected(entity)
-	if not entity.inventory or not entity.inventory.selected_index then
+function inventory.get_at_index(entity, index)
+	if not index or not inventory.check_index(entity, index) then
 		return nil
 	end
-	return entity.inventory.items[entity.inventory.selected_index]
+	return entity.inventory.items[index]
+end
+
+function inventory.get_selected(entity)
+	if not entity.inventory then
+		return nil
+	end
+	return inventory.get_at_index(entity, entity.inventory.selected_index)
 end
 
 function inventory.use_charge(entity, item)

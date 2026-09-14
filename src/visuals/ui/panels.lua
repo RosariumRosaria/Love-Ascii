@@ -99,9 +99,9 @@ function panels:get_text_inset_x(panel)
 	return BASE_TEXT_INSET_X + (panel.text_offset_x or 0)
 end
 
-function panels:get_visible_texts(panel)
+function panels:wrap_entries(panel)
 	local font = panel.font or small_font
-	local tile_size = panel.tile_size or small_tile_size
+
 	local wrap_width = math.max(1, panel.width - self:get_text_inset_x(panel) * 2)
 	local wrapped = {}
 	for _, entry in ipairs(panel.texts) do
@@ -121,7 +121,12 @@ function panels:get_visible_texts(panel)
 			end
 		end
 	end
+	return wrapped
+end
 
+function panels:get_visible_texts(panel)
+	local wrapped = self:wrap_entries(panel)
+	local tile_size = panel.tile_size or small_tile_size
 	local max_lines = math.floor(panel.height / tile_size)
 	local total_lines = #wrapped
 
@@ -172,6 +177,7 @@ function panels:add_panel(name, opts)
 		tile_size = tile_size,
 		visible = true,
 		auto_size = opts.auto_size or false,
+		auto_height = opts.auto_height or false,
 		center_vertical = opts.center_vertical or opts.auto_size or false,
 		screen_anchor = opts.screen_anchor,
 		capacity = math.floor(height / tile_size) * 10,
@@ -220,7 +226,7 @@ function panels:mouse_in(panel, mx, my)
 		and utils.point_in_rect(mx, my, panel.screen_x, panel.screen_y, panel.width, panel.height)
 end
 
-local function row_at(panel, mx, my)
+function panels:line_at(panel, mx, my)
 	if not panels:mouse_in(panel, mx, my) then
 		return
 	end
@@ -229,12 +235,11 @@ local function row_at(panel, mx, my)
 	if not panel.visible_texts[i] then
 		return
 	end
-
 	return i
 end
 
 function panels:row_at(panel, mx, my)
-	local i = row_at(panel, mx, my)
+	local i = panels:line_at(panel, mx, my)
 	if not i then
 		return nil
 	end
@@ -242,7 +247,7 @@ function panels:row_at(panel, mx, my)
 end
 
 function panels:row_slot_at(panel, mx, my)
-	local i = row_at(panel, mx, my)
+	local i = panels:line_at(panel, mx, my)
 
 	local row_index = panel.visible_texts[i].row_index
 	local dx = panel.visible_texts
@@ -330,6 +335,13 @@ function panels:measure_auto_size(panel)
 	local pad_y = line_height * 0.2
 	panel.width = render_utils.get_max_text_width(panel.texts, panel.font) + pad_x * 2
 	panel.height = #panel.texts * line_height + pad_y * 2
+end
+
+function panels:measure_auto_height(panel)
+	local wrapped = self:wrap_entries(panel)
+	local line_height = panel.tile_size or small_tile_size
+	local pad_y = line_height * 0.2
+	panel.height = #wrapped * line_height + pad_y * 2 + (panel.text_offset_y or 0)
 end
 
 return panels

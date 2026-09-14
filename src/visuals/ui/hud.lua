@@ -54,9 +54,11 @@ function hud:load()
 	local screen_width = love.graphics.getWidth()
 	local outline_width = screen_width / 400
 	local buffer = 4 * outline_width
+	self.outline_width = outline_width
+	self.buffer = buffer
 	local width = screen_width / 6
-	local black = { 0, 0, 0, 0.5 }
-	local white = { 1, 1, 1, 0.5 }
+	local bg_color = { 0, 0, 0, 0.5 }
+	local outline_color = { 0.5, 0.5, 0.5, 1 }
 
 	panels:reload_fonts()
 
@@ -69,9 +71,9 @@ function hud:load()
 		width = width,
 		height = terminal_height,
 		screen_anchor = { x = "end", y = "start", margin_x = buffer, margin_y = buffer },
-		color = black,
+		color = bg_color,
 		outline_width = outline_width,
-		outline_color = white,
+		outline_color = outline_color,
 		font = "very_small",
 		text_offset_x = config.terminal_tile_size * 0.5,
 		text_offset_y = config.terminal_tile_size * 0.5,
@@ -81,9 +83,9 @@ function hud:load()
 		width = width,
 		height = equipment_height,
 		screen_anchor = { x = "end", y = "start", margin_x = buffer, margin_y = (2 * buffer) + terminal_height },
-		color = black,
+		color = bg_color,
 		outline_width = outline_width,
-		outline_color = white,
+		outline_color = outline_color,
 		font = "medium",
 		text_offset_x = config.small_tile_size * 0.5,
 		text_offset_y = config.small_tile_size * 0.5,
@@ -93,9 +95,9 @@ function hud:load()
 		width = width,
 		height = character_height,
 		screen_anchor = { x = "end", y = "start", margin_x = buffer, margin_y = character_margin_y },
-		color = black,
+		color = bg_color,
 		outline_width = outline_width,
-		outline_color = white,
+		outline_color = outline_color,
 		font = "medium",
 		text_offset_x = config.small_tile_size * 0.5,
 		text_offset_y = config.small_tile_size * 0.5,
@@ -105,10 +107,12 @@ function hud:load()
 		width = width,
 		height = character_height,
 		screen_anchor = { x = "end", y = "start", margin_x = width + (3 * buffer), margin_y = character_margin_y },
-		color = black,
+		color = bg_color,
 		outline_width = outline_width,
-		outline_color = white,
+		outline_color = outline_color,
 		font = "medium",
+		text_offset_x = config.small_tile_size * 0.5,
+		text_offset_y = config.small_tile_size * 0.5,
 	})
 	container_panel.visible = false
 	character_panel.mode = "inventory"
@@ -313,12 +317,7 @@ function hud:update_character(entity)
 	local mode = character_panel.mode
 
 	local moused = cursor.get_moused_entity()
-	if
-		moused
-		and moused.type == "actor"
-		and moused ~= entities.player
-		and not container.is_open
-	then
+	if moused and moused.type == "actor" and moused ~= entities.player and not container.is_open then
 		entity = moused
 		mode = "stats"
 	end
