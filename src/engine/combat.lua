@@ -33,17 +33,17 @@ function combat.build_hit_sound(attacker, target, weapon, context)
 	}
 end
 
-local function attack_values(attacker, context)
-	local raw = stats.get(attacker, "damage", context) + stats.get(attacker, "strength", context)
-	return raw, stats.get(attacker, "damage_spread", context)
+local function attack_values(attacker, context, weapon)
+	local raw = stats.get(attacker, "damage", context, weapon) + stats.get(attacker, "strength", context)
+	return raw, stats.get(attacker, "damage_spread", context, weapon)
 end
 
 local function band(value)
 	return math.max(1, math.floor(value + 0.5))
 end
 
-function combat.damage_bands(attacker, context)
-	local raw, spread = attack_values(attacker, context)
+function combat.damage_bands(attacker, context, weapon)
+	local raw, spread = attack_values(attacker, context, weapon)
 	return band(raw - spread), band(raw), band(raw + spread)
 end
 

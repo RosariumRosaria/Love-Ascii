@@ -100,7 +100,11 @@ local function update_grab(input, mode)
 
 	local name, panel = hovered_panel()
 	local i = hovered_slot(panel)
-	if (i == grab.index or i == grab.index + 1) and (name == "character" or mode == "container") then
+	if
+		(i == grab.index or i == grab.index + 1)
+		and (name == "character" or mode == "container")
+		and panel == grab.panel
+	then
 		if mode == "container" or input:confirm_slot(grab.index, game_cfg.timing.double_click) then
 			input:queue_slot(grab.index)
 		end

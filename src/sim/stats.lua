@@ -37,10 +37,10 @@ local function apply_mod(mod, add, mul)
 	return add, mul
 end
 
-function stats.get(entity, name, context)
+function stats.get(entity, name, context, override_item)
 	local stat = entity.stats and entity.stats[name]
 	local base = stat and stat.base or 0
-	local add, mul = stats.sum_modifiers(entity, name, context)
+	local add, mul = stats.sum_modifiers(entity, name, context, override_item)
 	return (base + add) * mul
 end
 
@@ -78,43 +78,48 @@ function stats.change_current(entity, name, value)
 	stats.set_current(entity, name, new)
 end
 
-function stats.sum_modifiers(entity, stat_name, context)
+local function accumulate(source, stat, context, add, mul)
+	if not source.modifiers then
+		return add, mul
+	end
+
+	for _, mod in ipairs(source.modifiers) do
+		if mod.stat == stat and applies_in(mod, context) then
+			add, mul = apply_mod(mod, add, mul)
+		end
+	end
+
+	return add, mul
+end
+
+function stats.sum_modifiers(entity, stat_name, context, override_item)
 	local add, mul = 0, 1
 
 	if entity.statuses then
 		for _, status in ipairs(entity.statuses) do
-			if status.modifiers then
-				for _, mod in ipairs(status.modifiers) do
-					if mod.stat == stat_name and applies_in(mod, context) then
-						add, mul = apply_mod(mod, add, mul)
-					end
-				end
-			end
+			add, mul = accumulate(status, stat_name, context, add, mul)
 		end
+	end
+
+	if override_item then
+		add, mul = accumulate(override_item, stat_name, context, add, mul)
 	end
 
 	if entity.inventory and entity.inventory.equipped then
-		for _, item in pairs(entity.inventory.equipped) do
-			if item.modifiers then
-				for _, mod in ipairs(item.modifiers) do
-					if mod.stat == stat_name and applies_in(mod, context) then
-						add, mul = apply_mod(mod, add, mul)
-					end
-				end
+		for slot, item in pairs(entity.inventory.equipped) do
+			if not (override_item and slot == override_item.slot) then
+				add, mul = accumulate(item, stat_name, context, add, mul)
 			end
 		end
 	end
 
-	local mainhand = entity.inventory and entity.inventory.equipped and entity.inventory.equipped.mainhand
+	local mainhand = (override_item and override_item.slot == "mainhand" and override_item)
+		or (entity.inventory and entity.inventory.equipped and entity.inventory.equipped.mainhand)
 	local natural = not covers_context(mainhand, context)
 		and entity.natural_weapon
 		and item_types[entity.natural_weapon]
-	if natural and natural.modifiers then
-		for _, mod in ipairs(natural.modifiers) do
-			if mod.stat == stat_name and applies_in(mod, context) then
-				add, mul = apply_mod(mod, add, mul)
-			end
-		end
+	if natural then
+		add, mul = accumulate(natural, stat_name, context, add, mul)
 	end
 
 	return add, mul

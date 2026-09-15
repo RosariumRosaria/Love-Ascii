@@ -4,6 +4,7 @@ local grab = require("src.engine.interaction.grab")
 local item_text = require("src.visuals.ui.item_text")
 local hud = require("src.visuals.ui.hud")
 local config = require("src.config.runtime")
+local entities = require("src.sim.entities")
 local tooltip = {}
 
 local HOVER_PANELS = { "character", "container" }
@@ -47,7 +48,7 @@ function tooltip:update()
 				auto_height = true,
 			})
 
-			for _, line in ipairs(item_text.lines(item)) do
+			for _, line in ipairs(item_text.lines(item, entities.player)) do
 				panels:add_text_to_panel_by_name("tooltip", line)
 			end
 			panels:measure_auto_height(tooltip_panel)

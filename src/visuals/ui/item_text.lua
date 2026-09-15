@@ -1,5 +1,6 @@
 local status_types = require("src.sim.status_types")
 local text_runs = require("src.visuals.ui.text_runs")
+local combat = require("src.engine.combat")
 local item_text = {}
 
 local GOOD = { 0.55, 0.80, 0.55, 1 }
@@ -44,19 +45,14 @@ local function title(out, item)
 	table.insert(out, text_runs.line("---"))
 end
 
-local function damage_line(out, item, mod)
-	local spread = 0
-	for _, other in ipairs(item.modifiers) do
-		if other.stat == "damage_spread" and other.context == mod.context then
-			spread = spread + math.abs(other.value)
-		end
-	end
+local function damage_line(out, item, mod, entity)
+	local context = item.ranged and "ranged" or "melee"
+	local glance, hit, solid = combat.damage_bands(entity, context, item)
 
-	local low = math.max(0, mod.value - spread)
-	local high = mod.value + spread
-	local amount = (spread > 0) and (low .. "-" .. high) or tostring(mod.value)
-
-	table.insert(out, text_runs.line(text_runs.tinted(amount, GOOD), " damage" .. context_of(mod)))
+	table.insert(
+		out,
+		text_runs.line(text_runs.tinted(glance .. "-" .. hit .. "-" .. solid, GOOD), context_of(mod))
+	)
 end
 
 local function modifier_line(out, mod)
@@ -75,16 +71,17 @@ local function modifier_line(out, mod)
 	)
 end
 
-local function modifiers(out, item)
+local function modifiers(out, item, entity)
 	if not item.modifiers then
 		return
 	end
 
 	separate(out)
+	local bands = item.slot == "mainhand"
 	for _, mod in ipairs(item.modifiers) do
-		if mod.stat == "damage" then
-			damage_line(out, item, mod)
-		elseif mod.stat ~= "damage_spread" then
+		if mod.stat == "damage" and bands then
+			damage_line(out, item, mod, entity)
+		elseif mod.stat ~= "damage_spread" or not bands then
 			modifier_line(out, mod)
 		end
 	end
@@ -126,6 +123,7 @@ local function on_use(out, item)
 		end
 	end
 	if use.targets then
+		table.insert(out, "")
 		table.insert(out, "Used on a nearby target")
 	end
 end
@@ -176,10 +174,10 @@ local function flavor(out, item)
 	end
 end
 
-function item_text.lines(item)
+function item_text.lines(item, entity)
 	local out = {}
 	title(out, item)
-	modifiers(out, item)
+	modifiers(out, item, entity)
 	effects(out, item)
 	footer(out, item)
 	flavor(out, item)
