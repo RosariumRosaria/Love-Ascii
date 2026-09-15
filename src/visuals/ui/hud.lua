@@ -388,6 +388,7 @@ function hud:update_character(entity)
 						alpha = grab:holds(container_panel, i) and render_config.hud.grabbed_alpha or 1,
 					})
 				end
+				panels:add_text_to_panel_by_name("container", "")
 			end
 		end
 	elseif mode == "stats" and entity.stats then

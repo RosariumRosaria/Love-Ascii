@@ -41,7 +41,7 @@ function love.update(dt)
 		turn:update(dt)
 		hud:update()
 	end
-	tooltip:update()
+	tooltip:update(dt)
 	flow:update()
 	scene:update(dt)
 	effects:update(dt)

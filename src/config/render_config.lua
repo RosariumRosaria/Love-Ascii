@@ -121,5 +121,6 @@ return {
 		min_terminal_alpha = 0.01,
 		grabbed_alpha = 0.45,
 		grab_cursor = true,
+		tooltip_delay = 0.5,
 	},
 }
