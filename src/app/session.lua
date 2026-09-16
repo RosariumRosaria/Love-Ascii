@@ -49,10 +49,9 @@ function session.load(seed)
 	local player = entities.add_from_template_free("player", phylactery.x, phylactery.y, 1)
 	entities.set_player(player)
 	entities.set_phylactery(phylactery)
-
-	inventory.add_from_template(player, "dull_sword")
-	inventory.add_from_template(player, "tunic")
-	inventory.add_from_template(player, "torch", {
+	local weapon = inventory.add_from_template(player, "dull_sword")
+	local armor = inventory.add_from_template(player, "tunic")
+	local offhand = inventory.add_from_template(player, "torch", {
 		name = "Lantern",
 		key = "Lantern",
 		chars = { "8" },
@@ -67,9 +66,9 @@ function session.load(seed)
 	inventory.add_from_template(player, "plank")
 	inventory.add_from_template(player, "health_potion", { charges = 3 })
 
-	inventory.equip(player, player.inventory.items[1])
-	inventory.equip(player, player.inventory.items[3])
-	inventory.equip(player, player.inventory.items[4])
+	inventory.equip(player, weapon)
+	inventory.equip(player, armor)
+	inventory.equip(player, offhand)
 	input:set_actor(entities.player)
 
 	if prefab_cfg then
